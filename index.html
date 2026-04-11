@@ -1153,6 +1153,34 @@
   </div>
 </div>
 
+<!-- EDIT PLAYER MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('edit-modal')">✕</button>
+    <div class="modal-title">Edit Howler</div>
+    <input type="hidden" id="edit-player-id">
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input class="form-input" type="text" id="edit-name" placeholder="Full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">House</label>
+      <select class="form-select" id="edit-house">
+        <option value="Gold">House Gold</option>
+        <option value="Red">House Red</option>
+        <option value="Obsidian">House Obsidian</option>
+        <option value="Violet">House Violet</option>
+        <option value="Green">House Green</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subtitle</label>
+      <input class="form-input" type="text" id="edit-subtitle" placeholder="e.g. Chandler, AZ">
+    </div>
+    <button class="btn-primary" onclick="saveEditPlayer()">✦ SAVE CHANGES ✦</button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -1475,6 +1503,10 @@ function renderPlayers() {
           <div class="stat-item"><span class="stat-val">${s.miles}</span><span class="stat-label">Miles</span></div>
         </div>
         <div class="player-badges">${earnedBadges || '<span style="font-style:italic;font-size:0.75rem;color:var(--ink-light)">No badges yet</span>'}</div>
+        <div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+          <button onclick="openEditModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
+          <button onclick="removePlayer('${p.id}','${p.name}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
+        </div>
       </div>`;
   });
   html += `<div class="induct-card" onclick="openInductModal()">
@@ -1760,6 +1792,43 @@ async function inductPlayer() {
   renderAll();
 }
 
+function openEditModal(pid) {
+  const player = state.players.find(p => p.id === pid);
+  if (!player) return;
+  document.getElementById('edit-player-id').value = pid;
+  document.getElementById('edit-name').value = player.name;
+  document.getElementById('edit-house').value = player.house;
+  document.getElementById('edit-subtitle').value = player.subtitle || '';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+async function saveEditPlayer() {
+  const pid = document.getElementById('edit-player-id').value;
+  const name = document.getElementById('edit-name').value.trim();
+  const house = document.getElementById('edit-house').value;
+  const subtitle = document.getElementById('edit-subtitle').value.trim();
+  if (!name) { showToast('Name is required.'); return; }
+  const player = state.players.find(p => p.id === pid);
+  if (!player) return;
+  player.name = name;
+  player.house = house;
+  player.subtitle = subtitle;
+  await saveState();
+  closeModal('edit-modal');
+  showToast(`${name} updated. The pack record stands corrected. ✦`);
+  renderAll();
+}
+
+async function removePlayer(pid, name) {
+  if (!confirm(`Remove ${name} from the pack? Their workout history will also be deleted.`)) return;
+  state.players = state.players.filter(p => p.id !== pid);
+  state.workouts = state.workouts.filter(w => w.player_id !== pid);
+  delete state.badges_awarded[pid];
+  await saveState();
+  showToast(`${name} has been removed from the pack.`);
+  renderAll();
+}
+
 function updateLaurelPreview() {
   const workout = document.getElementById('log-workout').value;
   const miles = document.getElementById('log-miles').value;
@@ -1887,6 +1956,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Close modal on overlay click
   document.getElementById('induct-modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal('induct-modal');
+  });
+  document.getElementById('edit-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('edit-modal');
   });
 
   // Dispatch custom input
