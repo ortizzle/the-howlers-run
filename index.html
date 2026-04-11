@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Howlers — Red Rising Training Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment: #f5efe4;
+    --parchment-dark: #ede3d0;
+    --parchment-mid: #e8dcc8;
+    --ink: #1a1410;
+    --ink-mid: #3d2e1e;
+    --ink-light: #6b5040;
+    --amber: #7a5006;
+    --amber-light: #b87a1a;
+    --amber-pale: #f0d080;
+    --amber-glow: #fae8a0;
+    --gold: #c8900a;
+    --house-gold: #7a5006;
+    --house-red: #9a1010;
+    --house-obsidian: #1e3858;
+    --house-violet: #4a1878;
+    --house-green: #1a4818;
+    --border: rgba(122,80,6,0.25);
+    --border-strong: rgba(122,80,6,0.5);
+    --shadow: 0 2px 12px rgba(122,80,6,0.15);
+    --shadow-strong: 0 4px 24px rgba(122,80,6,0.25);
+    --radius: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  /* HEADER */
+  .site-header {
+    background: var(--ink);
+    color: var(--amber-pale);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+    border-bottom: 3px solid var(--amber);
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-title-block { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .header-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.3rem, 3vw, 2rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: var(--amber-pale);
+    text-shadow: 0 0 20px rgba(200,144,10,0.5);
+  }
+  .header-title span { color: var(--amber-light); }
+  .header-subtitle {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: rgba(240,208,128,0.65);
+    letter-spacing: 0.05em;
+  }
+  .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .countdown-block {
+    text-align: right;
+    font-family: 'Cinzel', serif;
+  }
+  .countdown-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(240,208,128,0.5);
+  }
+  .countdown-days {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    font-weight: 700;
+    color: var(--amber-pale);
+    letter-spacing: 0.04em;
+  }
+  .countdown-days span { color: var(--amber-light); font-size: 0.7em; margin-left: 4px; }
+  .sync-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: rgba(240,208,128,0.6);
+    cursor: pointer;
+    user-select: none;
+  }
+  .sync-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4caf50;
+    box-shadow: 0 0 6px #4caf50;
+    transition: all 0.3s;
+  }
+  .sync-dot.loading { background: var(--amber-light); box-shadow: 0 0 6px var(--amber-light); animation: pulse 1s infinite; }
+  .sync-dot.error { background: #e53935; box-shadow: 0 0 6px #e53935; animation: none; }
+  .sync-dot.live { animation: pulse-green 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+  @keyframes pulse-green { 0%,100%{box-shadow:0 0 6px #4caf50}50%{box-shadow:0 0 12px #4caf50} }
+  .refresh-btn {
+    background: none;
+    border: 1px solid rgba(240,208,128,0.3);
+    color: rgba(240,208,128,0.7);
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .refresh-btn:hover { background: rgba(240,208,128,0.1); border-color: var(--amber-pale); color: var(--amber-pale); }
+
+  /* NAV */
+  .nav-strip {
+    background: var(--parchment-dark);
+    border-bottom: 2px solid var(--border-strong);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-strip::-webkit-scrollbar { display: none; }
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    padding: 0 16px;
+    gap: 0;
+  }
+  .nav-tab {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    padding: 12px 18px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    user-select: none;
+    position: relative;
+  }
+  .nav-tab:hover { color: var(--amber); }
+  .nav-tab.active {
+    color: var(--amber);
+    border-bottom-color: var(--amber);
+    background: var(--parchment);
+  }
+
+  /* MAIN */
+  .main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  /* PLAYER GRID */
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::before {
+    content: '✦';
+    color: var(--amber);
+    font-size: 0.8em;
+  }
+  .player-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .player-card {
+    background: var(--parchment);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    position: relative;
+    transition: all 0.2s;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .player-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--house-color, var(--amber));
+  }
+  .player-card:hover { box-shadow: var(--shadow-strong); transform: translateY(-2px); }
+  .player-card.primus { border-color: var(--gold); }
+  .player-card.primus::after {
+    content: '★ PRIMUS';
+    position: absolute;
+    top: 8px; right: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--amber);
+    background: var(--amber-glow);
+    border: 1px solid var(--amber-light);
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+  .player-house-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--house-color, var(--amber));
+    margin-bottom: 4px;
+  }
+  .player-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+  .player-subtitle {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    margin-bottom: 8px;
+  }
+  .player-rank {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--parchment);
+    background: var(--house-color, var(--amber));
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 10px;
+  }
+  .player-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .stat-item { text-align: center; }
+  .stat-val {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ink);
+    display: block;
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.65rem;
+    color: var(--ink-light);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .player-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+    min-height: 24px;
+  }
+  .badge-pill {
+    font-size: 0.75rem;
+    background: var(--parchment-dark);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 1px 5px;
+    cursor: default;
+    transition: transform 0.15s;
+  }
+  .badge-pill:hover { transform: scale(1.15); }
+
+  /* INDUCT CARD */
+  .induct-card {
+    background: var(--parchment-dark);
+    border: 2px dashed var(--border-strong);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 200px;
+    gap: 10px;
+  }
+  .induct-card:hover {
+    background: var(--parchment-mid);
+    border-color: var(--amber);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .induct-icon { font-size: 1.8rem; opacity: 0.5; }
+  .induct-text {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--amber);
+    text-transform: uppercase;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,20,16,0.7);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-box {
+    background: var(--parchment);
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 28px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.4);
+    transform: translateY(12px);
+    transition: transform 0.2s;
+    position: relative;
+  }
+  .modal-overlay.open .modal-box { transform: translateY(0); }
+  .modal-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--ink-light);
+    line-height: 1;
+    padding: 4px;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 5px;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--parchment-dark);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 9px 12px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 1rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--amber);
+    background: #fff;
+  }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-select { cursor: pointer; }
+  .btn-primary {
+    width: 100%;
+    background: var(--ink);
+    color: var(--amber-pale);
+    border: 2px solid var(--ink);
+    border-radius: var(--radius);
+    padding: 12px 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .btn-primary:hover {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--parchment);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(122,80,6,0.35);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink-mid);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 9px 18px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: var(--parchment-dark); border-color: var(--amber); color: var(--amber); }
+
+  /* LAUREL PREVIEW */
+  .laurel-preview {
+    background: var(--amber-glow);
+    border: 1.5px solid var(--amber-light);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Cinzel', serif;
+  }
+  .laurel-preview-label { font-size: 0.65rem; letter-spacing: 0.1em; color: var(--amber); text-transform: uppercase; }
+  .laurel-preview-val { font-size: 1.3rem; font-weight: 700; color: var(--amber); margin-left: auto; }
+
+  /* TABS CONTENT */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* LOG TRIAL */
+  .log-form-card {
+    background: var(--parchment);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 24px;
+    max-width: 560px;
+    box-shadow: var(--shadow);
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+  /* CHRONICLE */
+  .chronicle-feed { display: flex; flex-direction: column; gap: 14px; }
+  .chronicle-entry {
+    background: var(--parchment);
+    border: 1.5px solid var(--border);
+    border-left: 4px solid var(--house-color, var(--amber));
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    animation: fadeSlideIn 0.3s ease;
+  }
+  @keyframes fadeSlideIn { from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none} }
+  .chronicle-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .chronicle-player {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--house-color, var(--amber));
+  }
+  .chronicle-workout {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .chronicle-meta {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    margin-left: auto;
+  }
+  .chronicle-detail {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.9rem;
+    color: var(--ink-mid);
+    margin: 2px 0;
+  }
+  .chronicle-quote {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--amber);
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .chronicle-badge {
+    display: inline-block;
+    background: var(--amber-glow);
+    border: 1px solid var(--amber-light);
+    border-radius: 2px;
+    font-size: 0.75rem;
+    padding: 1px 7px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    margin-top: 4px;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    color: var(--ink-light);
+    font-size: 1.1rem;
+  }
+  .empty-state .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 12px; opacity: 0.4; }
+
+  /* CHALLENGES */
+  .challenges-grid { display: flex; flex-direction: column; gap: 14px; }
+  .challenge-card {
+    background: var(--parchment);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .challenge-card.completed {
+    border-color: var(--gold);
+    background: linear-gradient(to right, var(--amber-glow), var(--parchment) 40%);
+  }
+  .challenge-card:hover { box-shadow: var(--shadow-strong); }
+  .challenge-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .challenge-type-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    padding: 3px 7px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .challenge-type-badge.duel { background: rgba(154,16,16,0.12); color: var(--house-red); border: 1px solid rgba(154,16,16,0.3); }
+  .challenge-type-badge.pack { background: rgba(26,72,24,0.12); color: var(--house-green); border: 1px solid rgba(26,72,24,0.3); }
+  .challenge-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink);
+    flex: 1;
+  }
+  .challenge-reward {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--amber);
+    flex-shrink: 0;
+  }
+  .challenge-desc {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .progress-bar-wrap {
+    background: var(--parchment-mid);
+    border-radius: 3px;
+    height: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--amber), var(--amber-light));
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    color: var(--ink-light);
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+  .challenge-winner {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    color: var(--gold);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .conquered-stamp {
+    position: absolute;
+    top: 12px; right: 14px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    border: 1.5px solid var(--gold);
+    padding: 2px 7px;
+    border-radius: 2px;
+    background: var(--amber-glow);
+    font-weight: 700;
+  }
+
+  /* CONQUESTS TIMELINE */
+  .timeline { position: relative; padding-left: 36px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-item {
+    position: relative;
+    padding: 0 0 24px 16px;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -25px; top: 4px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    background: var(--parchment-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    transition: all 0.3s;
+    z-index: 1;
+  }
+  .timeline-item.done .timeline-dot {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--parchment);
+    box-shadow: 0 0 8px rgba(122,80,6,0.4);
+  }
+  .timeline-card {
+    background: var(--parchment);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
+  }
+  .timeline-item.done .timeline-card {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, var(--amber-glow) 0%, var(--parchment) 50%);
+  }
+  .timeline-num {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-light);
+    margin-bottom: 2px;
+  }
+  .timeline-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .timeline-item.done .timeline-title { color: var(--amber); }
+  .timeline-desc {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--ink-light);
+  }
+  .timeline-conquered {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* DISPATCH */
+  .dispatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .dispatch-type-btn {
+    background: var(--parchment-dark);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Cinzel', serif;
+  }
+  .dispatch-type-btn:hover, .dispatch-type-btn.selected {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--amber-pale);
+    box-shadow: var(--shadow);
+  }
+  .dispatch-type-emoji { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+  .dispatch-type-label { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .dispatch-output {
+    background: var(--ink);
+    color: var(--amber-pale);
+    border-radius: var(--radius);
+    padding: 20px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    margin-bottom: 14px;
+    min-height: 120px;
+    border: 1px solid rgba(200,144,10,0.3);
+  }
+  .copy-btn {
+    background: var(--amber);
+    color: var(--parchment);
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 22px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { background: var(--amber-light); }
+  .copy-btn.copied { background: #4caf50; }
+
+  /* CODEX */
+  .codex-section { margin-bottom: 32px; }
+  .codex-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.95rem;
+  }
+  .codex-table th {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border-strong);
+  }
+  .codex-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-mid);
+  }
+  .codex-table tr:last-child td { border-bottom: none; }
+  .codex-table tr:hover td { background: var(--parchment-dark); }
+  .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .badge-card {
+    background: var(--parchment);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Crimson Pro', serif;
+    box-shadow: var(--shadow);
+  }
+  .badge-card-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .badge-card-name { font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+  .badge-card-cond { font-size: 0.8rem; color: var(--ink-light); font-style: italic; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--parchment-dark); }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--amber); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--ink);
+    color: var(--amber-pale);
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    border: 1px solid rgba(200,144,10,0.4);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    z-index: 300;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    max-width: 340px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* MISC */
+  .divider {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 24px 0;
+  }
+  .ornament {
+    text-align: center;
+    color: var(--amber);
+    font-size: 1rem;
+    letter-spacing: 0.5em;
+    margin: 16px 0;
+    opacity: 0.5;
+  }
+  .leaderboard-rank { display: flex; align-items: center; gap: 6px; }
+  .rank-num {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--ink-light);
+    width: 20px;
+    text-align: right;
+  }
+  .tabs-header-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .dispatch-custom-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 6px;
+    display: block;
+  }
+  .dispatch-custom-area {
+    width: 100%;
+    background: var(--parchment-dark);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 1rem;
+    color: var(--ink);
+    resize: vertical;
+    min-height: 80px;
+    margin-bottom: 12px;
+    outline: none;
+  }
+  .dispatch-custom-area:focus { border-color: var(--amber); }
+
+  @media (max-width: 600px) {
+    .header-inner { gap: 8px; }
+    .main-content { padding: 16px 12px 40px; }
+    .player-grid { grid-template-columns: 1fr 1fr; }
+    .nav-tab { padding: 10px 12px; font-size: 0.62rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SITE HEADER -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-title-block">
+      <div>
+        <div class="header-title">THE <span>HOWLERS</span></div>
+        <div class="header-subtitle">Rock 'n' Roll Arizona · Half Marathon · Tempe, AZ</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="countdown-block">
+        <div class="countdown-label">Days to the Laurel</div>
+        <div class="countdown-days" id="countdown-days">— <span>days</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <div class="sync-bar" onclick="manualRefresh()">
+          <div class="sync-dot loading" id="sync-dot"></div>
+          <span id="sync-label">LOADING</span>
+        </div>
+        <button class="refresh-btn" onclick="manualRefresh()">↻ Refresh</button>
+        <button class="refresh-btn" onclick="openSetup()" style="border-color:rgba(240,208,128,0.5);color:rgba(240,208,128,0.8)">⚙ Setup</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-strip">
+  <div class="nav-inner">
+    <div class="nav-tab active" onclick="switchTab('log')">⚔ Log Trial</div>
+    <div class="nav-tab" onclick="switchTab('chronicle')">📜 Chronicle</div>
+    <div class="nav-tab" onclick="switchTab('trials')">🏆 Trials</div>
+    <div class="nav-tab" onclick="switchTab('conquests')">✦ Conquests</div>
+    <div class="nav-tab" onclick="switchTab('dispatch')">📣 Dispatch</div>
+    <div class="nav-tab" onclick="switchTab('codex')">📖 Codex</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main-content">
+
+  <!-- LEADERBOARD always visible -->
+  <div id="leaderboard-section" style="margin-bottom:28px">
+    <div class="section-title">The Pack — Leaderboard</div>
+    <div class="player-grid" id="player-grid">
+      <div class="induct-card" onclick="openInductModal()">
+        <div class="induct-icon">🐺</div>
+        <div class="induct-text">✦ Induct a Howler</div>
+        <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">Join the Pack</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: LOG TRIAL -->
+  <div class="tab-content active" id="tab-log">
+    <div class="section-title">Log Trial</div>
+    <div class="log-form-card">
+      <div class="form-group">
+        <label class="form-label">Howler</label>
+        <select class="form-select" id="log-player" onchange="updateLaurelPreview()"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Workout Type</label>
+        <select class="form-select" id="log-workout" onchange="updateLaurelPreview()">
+          <option value="">— Select Workout —</option>
+          <option value="long_run">The March — Long Run (12L/mile)</option>
+          <option value="tempo">The Charge — Tempo / Race Pace (10L/mile)</option>
+          <option value="easy_run">Easy Run (8L/mile)</option>
+          <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
+          <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
+          <option value="walk_run">Walk/Run Intervals (15L flat)</option>
+          <option value="peloton">The Steed — Peloton Ride (10L per 30 min)</option>
+          <option value="strength">Iron Forged — Strength (12L flat)</option>
+          <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group" id="miles-group">
+          <label class="form-label">Miles</label>
+          <input class="form-input" type="number" id="log-miles" min="0" step="0.1" placeholder="e.g. 6.2" oninput="updateLaurelPreview()">
+        </div>
+        <div class="form-group" id="minutes-group" style="display:none">
+          <label class="form-label">Minutes</label>
+          <input class="form-input" type="number" id="log-minutes" min="0" step="1" placeholder="e.g. 45" oninput="updateLaurelPreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input class="form-input" type="date" id="log-date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <textarea class="form-textarea" id="log-notes" placeholder="How'd it feel? Any highlights?"></textarea>
+      </div>
+      <div class="laurel-preview" id="laurel-preview" style="display:none">
+        <div>
+          <div class="laurel-preview-label">Laurels Earned</div>
+          <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.75rem;color:var(--amber);" id="laurel-preview-note"></div>
+        </div>
+        <div class="laurel-preview-val" id="laurel-preview-val">+0</div>
+      </div>
+      <button class="btn-primary" onclick="submitTrial()">✦ RECORD TRIAL ✦</button>
+    </div>
+  </div>
+
+  <!-- TAB: CHRONICLE -->
+  <div class="tab-content" id="tab-chronicle">
+    <div class="tabs-header-flex">
+      <div class="section-title" style="margin-bottom:0">Chronicle — Recent Trials</div>
+    </div>
+    <div class="chronicle-feed" id="chronicle-feed">
+      <div class="empty-state"><span class="empty-icon">📜</span>No trials logged yet. The pack awaits its first march.</div>
+    </div>
+  </div>
+
+  <!-- TAB: TRIALS (challenges) -->
+  <div class="tab-content" id="tab-trials">
+    <div class="section-title">Trials — Active Challenges</div>
+    <div class="challenges-grid" id="challenges-grid"></div>
+  </div>
+
+  <!-- TAB: CONQUESTS -->
+  <div class="tab-content" id="tab-conquests">
+    <div class="section-title">Conquests — Pack Milestones</div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <!-- TAB: DISPATCH -->
+  <div class="tab-content" id="tab-dispatch">
+    <div class="section-title">Dispatch — Share the Word</div>
+    <div class="dispatch-grid" id="dispatch-grid"></div>
+    <div id="dispatch-custom-block" style="display:none;margin-bottom:12px">
+      <label class="dispatch-custom-label">Custom Message</label>
+      <textarea class="dispatch-custom-area" id="dispatch-custom-input" placeholder="Write your dispatch..."></textarea>
+    </div>
+    <div class="dispatch-output" id="dispatch-output">Select a message type above to generate dispatch.</div>
+    <button class="copy-btn" id="copy-btn" onclick="copyDispatch()">Copy to Clipboard</button>
+  </div>
+
+  <!-- TAB: CODEX -->
+  <div class="tab-content" id="tab-codex">
+    <div class="section-title">Codex — Rules of the Pack</div>
+    <div class="codex-section">
+      <div class="section-title" style="font-size:0.95rem">Ranks by Laurels</div>
+      <table class="codex-table">
+        <thead><tr><th>Laurels</th><th>Rank</th></tr></thead>
+        <tbody id="codex-ranks"></tbody>
+      </table>
+    </div>
+    <div class="codex-section">
+      <div class="section-title" style="font-size:0.95rem">Points System</div>
+      <table class="codex-table">
+        <thead><tr><th>Workout</th><th>Laurels</th></tr></thead>
+        <tbody>
+          <tr><td>The March — Long Run</td><td>12 per mile</td></tr>
+          <tr><td>The Charge — Tempo / Race Pace</td><td>10 per mile</td></tr>
+          <tr><td>Easy Run</td><td>8 per mile</td></tr>
+          <tr><td>Optional 5th Day Run</td><td>8 per mile</td></tr>
+          <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
+          <tr><td>Walk/Run Intervals</td><td>15 flat</td></tr>
+          <tr><td>The Steed — Peloton Ride</td><td>10 per 30 min</td></tr>
+          <tr><td>Iron Forged — Strength</td><td>12 flat</td></tr>
+          <tr><td>Mind & Body — Mobility/Yoga</td><td>8 flat</td></tr>
+          <tr><td>Perfect Week Bonus (all 4 core days)</td><td>+25</td></tr>
+          <tr><td>Consecutive Week Streak Bonus</td><td>+10 per week</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="codex-section">
+      <div class="section-title" style="font-size:0.95rem">Badges</div>
+      <div class="badges-grid" id="codex-badges"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- INDUCT MODAL -->
+<div class="modal-overlay" id="induct-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('induct-modal')">✕</button>
+    <div class="modal-title">Induct a Howler</div>
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input class="form-input" type="text" id="induct-name" placeholder="Full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">House</label>
+      <select class="form-select" id="induct-house">
+        <option value="Gold">House Gold</option>
+        <option value="Red">House Red</option>
+        <option value="Obsidian">House Obsidian</option>
+        <option value="Violet">House Violet</option>
+        <option value="Green">House Green</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subtitle (e.g. city, tagline)</label>
+      <input class="form-input" type="text" id="induct-subtitle" placeholder="e.g. Chandler, AZ">
+    </div>
+    <button class="btn-primary" onclick="inductPlayer()">Join the Pack ✦</button>
+  </div>
+</div>
+
+
+<!-- SETUP OVERLAY -->
+<div id="setup-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">
+  <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:32px;width:100%;max-width:480px;box-shadow:0 8px 48px rgba(0,0,0,0.5)">
+    <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;letter-spacing:0.1em;color:var(--ink);margin-bottom:8px;text-align:center">⚙ Pack Setup</div>
+    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);text-align:center;margin-bottom:24px">Connect your JSONBin.io database for live sync across all devices.</div>
+    
+    <div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.7">
+      <strong style="font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.1em;color:var(--amber)">ONE-TIME SETUP STEPS</strong><br>
+      1. Go to <strong>jsonbin.io</strong> → Sign up free<br>
+      2. Click <strong>+ New Bin</strong> → paste <code style="background:var(--parchment-mid);padding:1px 4px;border-radius:2px">{}</code> as content → Save<br>
+      3. Copy the <strong>Bin ID</strong> from the URL or bin details<br>
+      4. Go to <strong>API Keys</strong> tab → copy your <strong>Master Key</strong><br>
+      5. Paste both below — done! Share the HTML file with your pack.
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px">JSONBin Bin ID</label>
+      <input id="setup-bin-id" type="text" placeholder="e.g. 64f3a1b2e3c5d6789abcdef0" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:9px 12px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);outline:none">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px">Master API Key</label>
+      <input id="setup-api-key" type="password" placeholder="$2a$10$..." style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:9px 12px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);outline:none">
+    </div>
+    <button onclick="submitSetup()" style="width:100%;background:var(--ink);color:var(--amber-pale);border:2px solid var(--ink);border-radius:var(--radius);padding:12px 20px;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer">
+      ✦ CONNECT THE PACK ✦
+    </button>
+    <div style="text-align:center;margin-top:12px">
+      <span onclick="hideSetupScreen()" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);cursor:pointer;text-decoration:underline">dismiss (credentials already saved)</span>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const RACE_DATE = new Date('2027-01-17T07:00:00');
+const QUOTES = [
+  "Go Howler, Go! 🐺",
+  "Hic sunt leones. Here there be lions. ⚔️",
+  "Break the chains. 🔴",
+  "Rage, rage, rage. 🔥",
+  "I am the Reaper and death needs no armor. ☀️",
+  "Per aspera ad astra — through hardship to the stars. ✦",
+  "Eo, Eo, Eo! 🌕",
+  "The laurel doesn't belong to the fastest — it belongs to the one who refuses to stop. 🏅",
+  "Obsidian and gold, forged in fire. 💎",
+  "My name is Darrow of Lykos. And I am not what they made me. 🐺",
+  "I would have lived in peace — but my enemies brought me war. 🗡️",
+  "The Howlers don't fall. They rise. ⬆️",
+  "You do not follow me because I am strong. You follow me because you are. ⚔️",
+  "Break the chains and run. 🏃"
+];
+const HOUSES = {
+  Gold: '#7a5006', Red: '#9a1010', Obsidian: '#1e3858', Violet: '#4a1878', Green: '#1a4818'
+};
+const RANKS = [
+  {min:0, name:'Lowborn'}, {min:50, name:'Drafted'}, {min:150, name:'Lancer'},
+  {min:300, name:'Legate'}, {min:600, name:'Imperator'},
+  {min:1000, name:'Peerless Scarred'}, {min:2000, name:'The Reaper ☀️'}
+];
+const BADGES_DEF = [
+  {id:'first_step', icon:'👟', name:'First Step', desc:'Log first workout'},
+  {id:'week_warrior', icon:'⚔️', name:'Week Warrior', desc:'4 workouts in one week'},
+  {id:'steed_master', icon:'🚴', name:'Steed Master', desc:'5 Peloton rides'},
+  {id:'the_runner', icon:'🏃', name:'The Runner', desc:'25 total miles'},
+  {id:'iron_forged', icon:'🦵', name:'Iron Forged', desc:'5 strength sessions'},
+  {id:'mind_body', icon:'🧘', name:'Mind & Body', desc:'3 mobility sessions'},
+  {id:'long_march', icon:'🗺️', name:'The Long March', desc:'Complete a 10-mile run'},
+  {id:'unbroken', icon:'🔥', name:'Unbroken', desc:'3-week streak'},
+  {id:'extra_mile', icon:'⭐', name:'Extra Mile', desc:'5 optional 5th day workouts'},
+  {id:'centurion', icon:'💯', name:'Centurion', desc:'500 Laurels'},
+  {id:'peerless', icon:'🌟', name:'Peerless', desc:'Complete a 12-mile run'},
+  {id:'the_reaper', icon:'☀️', name:'The Reaper', desc:'2000 Laurels'}
+];
+const CHALLENGES_DEF = [
+  {id:'first_blood', name:'First Blood', icon:'⚔️', type:'duel', desc:'First to log any trial', reward:50, goal:1},
+  {id:'century_laurels', name:'Century Laurels', icon:'💰', type:'duel', desc:'First to reach 100 Laurels', reward:75, goal:100},
+  {id:'pack_trains', name:'The Pack Trains', icon:'🤝', type:'pack', desc:'Everyone logs 10+ trials', reward:60, goal:10},
+  {id:'five_league', name:'Five-League March', icon:'🗺️', type:'duel', desc:'First to run 5+ miles in one session', reward:50, goal:5},
+  {id:'the_unbroken', name:'The Unbroken', icon:'🔥', type:'duel', desc:'First to a 3-week streak', reward:80, goal:3},
+  {id:'society_rising', name:'Society Rising', icon:'🤝', type:'pack', desc:'Pack earns 500 combined Laurels', reward:100, goal:500},
+  {id:'grand_march', name:'The Grand March', icon:'🏔️', type:'duel', desc:'First to run 10+ miles in one session', reward:120, goal:10},
+  {id:'primus_pares', name:'Primus Inter Pares', icon:'👑', type:'duel', desc:'First to log workouts in 8 different weeks', reward:150, goal:8},
+  {id:'beyond_quota', name:'Beyond the Quota', icon:'🤝', type:'pack', desc:'Everyone logs 5 optional 5th day workouts', reward:80, goal:5}
+];
+const MILESTONES_DEF = [
+  {id:'m1', num:1, title:'The Pack Assembles', desc:'First trial logged by anyone'},
+  {id:'m2', num:2, title:'Steeds Activated', desc:'Every player has logged a Peloton ride'},
+  {id:'m3', num:3, title:'Born to Run', desc:'Every player has completed a run'},
+  {id:'m4', num:4, title:'Optional Warriors', desc:'Every player has used their optional 5th day'},
+  {id:'m5', num:5, title:'Four Weeks In', desc:'Combined active weeks across pack reaches 8'},
+  {id:'m6', num:6, title:'The First Long March', desc:'Any player runs 6+ miles in one session'},
+  {id:'m7', num:7, title:'Double Digit Miles', desc:'Any player runs 10+ miles in one session'},
+  {id:'m8', num:8, title:'100 Trials Combined', desc:'Pack logs 100 total workouts'},
+  {id:'m9', num:9, title:'Peak Week', desc:'Every player has completed a 12-mile run'},
+  {id:'m10', num:10, title:'Race Week', desc:'Jan 13–17, 2027 (auto-unlocks by date)'}
+];
+const DISPATCH_TYPES = [
+  {id:'standings', emoji:'📊', label:'Weekly Standings'},
+  {id:'primus', emoji:'😤', label:'The Primus Speaks'},
+  {id:'march', emoji:'🗺️', label:'The March Complete'},
+  {id:'unbroken', emoji:'🔥', label:'Unbroken Streak'},
+  {id:'howler', emoji:'🐺', label:'GO HOWLER GO'},
+  {id:'custom', emoji:'✍️', label:'Custom'}
+];
+const WORKOUT_NAMES = {
+  long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'Easy Run',
+  optional_run:'Optional 5th Day Run', optional_other:'Optional 5th Day Other',
+  walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
+  strength:'Iron Forged (Strength)', mobility:'Mind & Body (Mobility)'
+};
+
+let state = { players: [], workouts: [], challenges_won: {}, badges_awarded: {} };
+let currentDispatchType = 'standings';
+let refreshInterval = null;
+
+// ─── JSONBIN CONFIG ───────────────────────────────────────────────────────────
+let JSONBIN_BIN_ID = localStorage.getItem('howlers_bin_id') || '';
+let JSONBIN_API_KEY = localStorage.getItem('howlers_api_key') || '';
+
+function saveConfig(binId, apiKey) {
+  JSONBIN_BIN_ID = binId.trim();
+  JSONBIN_API_KEY = apiKey.trim();
+  localStorage.setItem('howlers_bin_id', JSONBIN_BIN_ID);
+  localStorage.setItem('howlers_api_key', JSONBIN_API_KEY);
+}
+function hasConfig() {
+  return JSONBIN_BIN_ID.length > 0 && JSONBIN_API_KEY.length > 0;
+}
+
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
+async function loadState() {
+  if (!hasConfig()) { showSetupScreen(); setSyncStatus('error'); return; }
+  setSyncStatus('loading');
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+      headers: { 'X-Master-Key': JSONBIN_API_KEY }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    const data = json.record;
+    if (data && typeof data === 'object') {
+      state = data;
+      if (!state.players) state.players = [];
+      if (!state.workouts) state.workouts = [];
+      if (!state.challenges_won) state.challenges_won = {};
+      if (!state.badges_awarded) state.badges_awarded = {};
+    }
+    setSyncStatus('live');
+  } catch(e) {
+    setSyncStatus('error');
+    console.error('Load error:', e);
+    showToast('⚠️ Sync error — tap Setup in header to check credentials.');
+  }
+  renderAll();
+}
+
+async function saveState() {
+  if (!hasConfig()) return;
+  setSyncStatus('loading');
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_API_KEY
+      },
+      body: JSON.stringify(state)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    setSyncStatus('live');
+  } catch(e) {
+    setSyncStatus('error');
+    console.error('Save error:', e);
+    showToast('⚠️ Save failed — tap Setup in header to check credentials.');
+  }
+}
+
+// ─── SETUP SCREEN ─────────────────────────────────────────────────────────────
+function showSetupScreen() {
+  document.getElementById('setup-overlay').style.display = 'flex';
+}
+function hideSetupScreen() {
+  document.getElementById('setup-overlay').style.display = 'none';
+}
+function submitSetup() {
+  const binId = document.getElementById('setup-bin-id').value.trim();
+  const apiKey = document.getElementById('setup-api-key').value.trim();
+  if (!binId || !apiKey) { alert('Both Bin ID and API Key are required.'); return; }
+  saveConfig(binId, apiKey);
+  hideSetupScreen();
+  loadState();
+}
+function openSetup() {
+  document.getElementById('setup-bin-id').value = JSONBIN_BIN_ID;
+  document.getElementById('setup-api-key').value = JSONBIN_API_KEY;
+  showSetupScreen();
+}
+
+function setSyncStatus(status) {
+  const dot = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + status;
+  if (status === 'live') label.textContent = 'LIVE';
+  else if (status === 'loading') label.textContent = 'SYNCING';
+  else label.textContent = 'ERROR';
+}
+
+function manualRefresh() { loadState(); }
+
+// ─── COUNTDOWN ───────────────────────────────────────────────────────────────
+function updateCountdown() {
+  const now = new Date();
+  const diff = RACE_DATE - now;
+  const days = Math.max(0, Math.ceil(diff / (1000*60*60*24)));
+  document.getElementById('countdown-days').innerHTML = `${days} <span>days</span>`;
+}
+
+// ─── PLAYER CALC ─────────────────────────────────────────────────────────────
+function calcPlayerStats(pid) {
+  const works = state.workouts.filter(w => w.player_id === pid);
+  let laurels = 0, miles = 0, trials = works.length;
+  let pelotons = 0, strength = 0, mobility = 0, optionals = 0;
+  let maxSingleRun = 0;
+  const weekSet = new Set();
+  const weekWorkouts = {};
+
+  works.forEach(w => {
+    laurels += w.laurels_base || 0;
+    miles += w.miles || 0;
+    if (w.workout === 'peloton') pelotons++;
+    if (w.workout === 'strength') strength++;
+    if (w.workout === 'mobility') mobility++;
+    if (w.workout === 'optional_run' || w.workout === 'optional_other') optionals++;
+    if (['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout) && w.miles) {
+      if (w.miles > maxSingleRun) maxSingleRun = w.miles;
+    }
+    const wk = getWeekKey(w.date);
+    weekSet.add(wk);
+    if (!weekWorkouts[wk]) weekWorkouts[wk] = 0;
+    weekWorkouts[wk]++;
+  });
+
+  // Perfect week bonuses
+  let perfWeeks = 0;
+  Object.values(weekWorkouts).forEach(cnt => { if (cnt >= 4) { laurels += 25; perfWeeks++; } });
+
+  // Streak bonus
+  const streak = weekSet.size;
+  if (streak >= 2) laurels += (streak - 1) * 10;
+
+  const rank = getRank(laurels);
+
+  // Badges
+  const badges = [];
+  if (trials >= 1) tryAwardBadge(pid, 'first_step', badges);
+  const maxWeekWork = Math.max(0, ...Object.values(weekWorkouts));
+  if (maxWeekWork >= 4) tryAwardBadge(pid, 'week_warrior', badges);
+  if (pelotons >= 5) tryAwardBadge(pid, 'steed_master', badges);
+  if (miles >= 25) tryAwardBadge(pid, 'the_runner', badges);
+  if (strength >= 5) tryAwardBadge(pid, 'iron_forged', badges);
+  if (mobility >= 3) tryAwardBadge(pid, 'mind_body', badges);
+  if (maxSingleRun >= 10) tryAwardBadge(pid, 'long_march', badges);
+  if (streak >= 3) tryAwardBadge(pid, 'unbroken', badges);
+  if (optionals >= 5) tryAwardBadge(pid, 'extra_mile', badges);
+  if (laurels >= 500) tryAwardBadge(pid, 'centurion', badges);
+  if (maxSingleRun >= 12) tryAwardBadge(pid, 'peerless', badges);
+  if (laurels >= 2000) tryAwardBadge(pid, 'the_reaper', badges);
+
+  const earnedBadges = (state.badges_awarded[pid] || []);
+
+  return { laurels, miles: +miles.toFixed(1), trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts };
+}
+
+function tryAwardBadge(pid, badgeId, newBadges) {
+  if (!state.badges_awarded[pid]) state.badges_awarded[pid] = [];
+  if (!state.badges_awarded[pid].includes(badgeId)) {
+    state.badges_awarded[pid].push(badgeId);
+    newBadges.push(badgeId);
+  }
+}
+
+function getRank(laurels) {
+  let rank = RANKS[0];
+  for (const r of RANKS) { if (laurels >= r.min) rank = r; }
+  return rank;
+}
+
+function getWeekKey(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const jan1 = new Date(d.getFullYear(), 0, 1);
+  const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${d.getFullYear()}-W${week}`;
+}
+
+function calcLaurels(workout, miles, minutes) {
+  miles = parseFloat(miles) || 0;
+  minutes = parseInt(minutes) || 0;
+  switch(workout) {
+    case 'long_run': return Math.round(miles * 12);
+    case 'tempo': return Math.round(miles * 10);
+    case 'easy_run': return Math.round(miles * 8);
+    case 'optional_run': return Math.round(miles * 8);
+    case 'optional_other': return 10;
+    case 'walk_run': return 15;
+    case 'peloton': return Math.round((minutes / 30) * 10);
+    case 'strength': return 12;
+    case 'mobility': return 8;
+    default: return 0;
+  }
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderPlayers();
+  renderLogDropdown();
+  renderChronicle();
+  renderChallenges();
+  renderTimeline();
+  renderDispatch();
+  renderCodex();
+}
+
+function renderPlayers() {
+  const grid = document.getElementById('player-grid');
+  const statsMap = {};
+  state.players.forEach(p => { statsMap[p.id] = calcPlayerStats(p.id); });
+  const sorted = [...state.players].sort((a,b) => (statsMap[b.id].laurels - statsMap[a.id].laurels));
+  const primusId = sorted.length > 0 ? sorted[0].id : null;
+
+  let html = '';
+  sorted.forEach((p, idx) => {
+    const s = statsMap[p.id];
+    const houseColor = HOUSES[p.house] || '#7a5006';
+    const isPrimus = p.id === primusId && s.laurels > 0;
+    const earnedBadges = s.earnedBadges.map(bid => {
+      const def = BADGES_DEF.find(b => b.id === bid);
+      return def ? `<span class="badge-pill" title="${def.name}">${def.icon}</span>` : '';
+    }).join('');
+    html += `
+      <div class="player-card ${isPrimus?'primus':''}" style="--house-color:${houseColor}">
+        <div class="player-house-label">House ${p.house}</div>
+        <div class="player-name">${escHtml(p.name)}</div>
+        ${p.subtitle ? `<div class="player-subtitle">${escHtml(p.subtitle)}</div>` : ''}
+        <div class="player-rank">${s.rank.name}</div>
+        <div class="player-stats">
+          <div class="stat-item"><span class="stat-val">${s.laurels}</span><span class="stat-label">Laurels</span></div>
+          <div class="stat-item"><span class="stat-val">${s.trials}</span><span class="stat-label">Trials</span></div>
+          <div class="stat-item"><span class="stat-val">${s.streak}</span><span class="stat-label">Wk Streak</span></div>
+          <div class="stat-item"><span class="stat-val">${s.miles}</span><span class="stat-label">Miles</span></div>
+        </div>
+        <div class="player-badges">${earnedBadges || '<span style="font-style:italic;font-size:0.75rem;color:var(--ink-light)">No badges yet</span>'}</div>
+      </div>`;
+  });
+  html += `<div class="induct-card" onclick="openInductModal()">
+    <div class="induct-icon">🐺</div>
+    <div class="induct-text">✦ Induct a Howler</div>
+    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">Join the Pack</div>
+  </div>`;
+  grid.innerHTML = html;
+}
+
+function renderLogDropdown() {
+  const sel = document.getElementById('log-player');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select Howler —</option>';
+  state.players.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = `${p.name} (House ${p.house})`;
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
+}
+
+function renderChronicle() {
+  const feed = document.getElementById('chronicle-feed');
+  if (state.workouts.length === 0) {
+    feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📜</span>No trials logged yet. The pack awaits its first march.</div>';
+    return;
+  }
+  const sorted = [...state.workouts].sort((a,b) => new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date));
+  feed.innerHTML = sorted.slice(0, 50).map(w => {
+    const player = state.players.find(p => p.id === w.player_id);
+    if (!player) return '';
+    const houseColor = HOUSES[player.house] || '#7a5006';
+    const badgeDef = w.badge_earned ? BADGES_DEF.find(b => b.id === w.badge_earned) : null;
+    const detail = w.miles ? `${w.miles} mi` : (w.minutes ? `${w.minutes} min` : '');
+    return `<div class="chronicle-entry" style="--house-color:${houseColor}">
+      <div class="chronicle-header">
+        <span class="chronicle-player">${escHtml(player.name)}</span>
+        <span class="chronicle-workout">${WORKOUT_NAMES[w.workout]||w.workout}</span>
+        ${detail ? `<span style="font-family:'Crimson Pro',serif;font-size:0.85rem;color:var(--ink-light)">${detail}</span>` : ''}
+        <span class="chronicle-meta">${formatDate(w.date)}</span>
+      </div>
+      <div class="chronicle-detail">+${w.laurels_base} Laurels earned</div>
+      ${w.notes ? `<div class="chronicle-detail" style="font-style:italic">"${escHtml(w.notes)}"</div>` : ''}
+      ${badgeDef ? `<div class="chronicle-badge">${badgeDef.icon} Badge Earned: ${badgeDef.name}</div>` : ''}
+      <div class="chronicle-quote">"${w.quote}"</div>
+    </div>`;
+  }).join('');
+}
+
+function renderChallenges() {
+  const grid = document.getElementById('challenges-grid');
+  const statsMap = {};
+  state.players.forEach(p => { statsMap[p.id] = calcPlayerStats(p.id); });
+
+  grid.innerHTML = CHALLENGES_DEF.map(ch => {
+    let progress = 0, progressMax = ch.goal, progressLabel = '', winner = null;
+    const won = state.challenges_won[ch.id];
+
+    if (ch.type === 'duel') {
+      if (ch.id === 'first_blood') {
+        const first = state.workouts.sort((a,b) => new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        if (first) { progress = 1; winner = state.players.find(p=>p.id===first.player_id)?.name; }
+      } else if (ch.id === 'century_laurels') {
+        let best = 0, bestP = null;
+        state.players.forEach(p => { const l = statsMap[p.id].laurels; if(l>best){best=l;bestP=p;} });
+        progress = Math.min(best, 100); progressMax = 100;
+        if (best >= 100 && bestP) winner = bestP.name;
+      } else if (ch.id === 'five_league') {
+        const big = state.workouts.filter(w => ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 5);
+        if (big.length > 0) { progress = 5; winner = state.players.find(p=>p.id===big[0].player_id)?.name; }
+        else { const best = Math.max(0, ...state.workouts.filter(w=>w.miles).map(w=>w.miles)); progress = Math.min(best, 5); }
+      } else if (ch.id === 'the_unbroken') {
+        let best = 0, bestP = null;
+        state.players.forEach(p => { const s = statsMap[p.id].streak; if(s>best){best=s;bestP=p;} });
+        progress = Math.min(best, 3); progressMax = 3;
+        if (best >= 3 && bestP) winner = bestP.name;
+      } else if (ch.id === 'grand_march') {
+        const big = state.workouts.filter(w => ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 10);
+        if (big.length > 0) { progress = 10; winner = state.players.find(p=>p.id===big[0].player_id)?.name; }
+        else { const best = Math.max(0, ...state.workouts.filter(w=>w.miles).map(w=>w.miles||0)); progress = Math.min(best, 10); }
+      } else if (ch.id === 'primus_pares') {
+        let best = 0, bestP = null;
+        state.players.forEach(p => { const wks = statsMap[p.id].weekSet.size; if(wks>best){best=wks;bestP=p;} });
+        progress = Math.min(best, 8); progressMax = 8;
+        if (best >= 8 && bestP) winner = bestP.name;
+      }
+    } else {
+      // Pack challenges
+      if (ch.id === 'pack_trains') {
+        if (state.players.length === 0) { progress = 0; progressMax = 10; }
+        else {
+          const minTrials = Math.min(...state.players.map(p => statsMap[p.id].trials));
+          progress = Math.min(minTrials, 10); progressMax = 10;
+          if (state.players.every(p => statsMap[p.id].trials >= 10)) winner = 'The Pack';
+        }
+      } else if (ch.id === 'society_rising') {
+        const total = state.players.reduce((s,p) => s + statsMap[p.id].laurels, 0);
+        progress = Math.min(total, 500); progressMax = 500;
+        if (total >= 500) winner = 'The Pack';
+      } else if (ch.id === 'beyond_quota') {
+        if (state.players.length === 0) { progress = 0; progressMax = 5; }
+        else {
+          const minOpt = Math.min(...state.players.map(p => statsMap[p.id].optionals));
+          progress = Math.min(minOpt, 5); progressMax = 5;
+          if (state.players.every(p => statsMap[p.id].optionals >= 5)) winner = 'The Pack';
+        }
+      }
+    }
+
+    const pct = progressMax > 0 ? Math.min(100, (progress/progressMax)*100) : 0;
+    const isComplete = winner !== null;
+    progressLabel = `${progress} / ${progressMax}`;
+
+    return `<div class="challenge-card ${isComplete?'completed':''}">
+      ${isComplete ? '<div class="conquered-stamp">✦ CONQUERED</div>' : ''}
+      <div class="challenge-top">
+        <div class="challenge-type-badge ${ch.type}">${ch.type === 'duel' ? '⚔️ DUEL' : '🤝 PACK'}</div>
+        <div class="challenge-name">${ch.icon} ${ch.name}</div>
+        <div class="challenge-reward">+${ch.reward}L</div>
+      </div>
+      <div class="challenge-desc">${ch.desc}</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="progress-label"><span>${progressLabel}</span><span>${Math.round(pct)}%</span></div>
+      ${winner ? `<div class="challenge-winner">★ Won by: ${winner}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderTimeline() {
+  const tl = document.getElementById('timeline');
+  const statsMap = {};
+  state.players.forEach(p => { statsMap[p.id] = calcPlayerStats(p.id); });
+  const now = new Date();
+  const raceWeekStart = new Date('2027-01-13T00:00:00');
+  const raceWeekEnd = new Date('2027-01-17T23:59:59');
+
+  const checkMilestone = (id) => {
+    if (id === 'm1') return state.workouts.length > 0;
+    if (id === 'm2') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && w.workout === 'peloton'));
+    if (id === 'm3') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout)));
+    if (id === 'm4') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && ['optional_run','optional_other'].includes(w.workout)));
+    if (id === 'm5') { const totalWeeks = state.players.reduce((s,p)=>s+statsMap[p.id].weekSet.size,0); return totalWeeks >= 8; }
+    if (id === 'm6') return state.workouts.some(w => ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 6);
+    if (id === 'm7') return state.workouts.some(w => ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 10);
+    if (id === 'm8') return state.workouts.length >= 100;
+    if (id === 'm9') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 12));
+    if (id === 'm10') return now >= raceWeekStart && now <= raceWeekEnd;
+    return false;
+  };
+
+  tl.innerHTML = MILESTONES_DEF.map(m => {
+    const done = checkMilestone(m.id);
+    return `<div class="timeline-item ${done?'done':''}">
+      <div class="timeline-dot">${done?'✦':'${m.num}'}</div>
+      <div class="timeline-card">
+        <div class="timeline-num">Milestone ${m.num}</div>
+        <div class="timeline-title">${m.title}</div>
+        <div class="timeline-desc">${m.desc}</div>
+        ${done ? '<div class="timeline-conquered">✦ CONQUERED</div>' : ''}
+      </div>
+    </div>`;
+  }).join('').replace(/\$\{m\.num\}/g, '');
+
+  // Fix dot numbers for non-done items
+  tl.querySelectorAll('.timeline-item:not(.done) .timeline-dot').forEach((dot, i) => {
+    dot.textContent = MILESTONES_DEF[i] ? MILESTONES_DEF[i].num : i+1;
+  });
+}
+
+function renderDispatch() {
+  const grid = document.getElementById('dispatch-grid');
+  grid.innerHTML = DISPATCH_TYPES.map(t =>
+    `<div class="dispatch-type-btn ${t.id===currentDispatchType?'selected':''}" onclick="selectDispatchType('${t.id}')">
+      <span class="dispatch-type-emoji">${t.emoji}</span>
+      <span class="dispatch-type-label">${t.label}</span>
+    </div>`
+  ).join('');
+  updateDispatchOutput();
+}
+
+function selectDispatchType(id) {
+  currentDispatchType = id;
+  const customBlock = document.getElementById('dispatch-custom-block');
+  customBlock.style.display = id === 'custom' ? 'block' : 'none';
+  renderDispatch();
+}
+
+function updateDispatchOutput() {
+  const out = document.getElementById('dispatch-output');
+  const statsMap = {};
+  state.players.forEach(p => { statsMap[p.id] = calcPlayerStats(p.id); });
+  const sorted = [...state.players].sort((a,b) => statsMap[b.id].laurels - statsMap[a.id].laurels);
+  const quote = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+
+  let msg = '';
+  const header = `🐺 THE HOWLERS — RNR ARIZONA HALF MARATHON 🐺\nJan 17, 2027 · Tempe Beach Park\n${'─'.repeat(36)}\n`;
+  const footer = `\n${'─'.repeat(36)}\n"${quote}"\n#GoHowlerGo #RNRArizona2027`;
+
+  if (currentDispatchType === 'standings') {
+    msg = header;
+    msg += `📊 WEEKLY STANDINGS\n\n`;
+    sorted.forEach((p,i) => {
+      const s = statsMap[p.id];
+      msg += `${i===0?'★':` ${i+1}`}. ${p.name} (House ${p.house})\n   ${s.laurels}L · ${s.trials} trials · ${s.miles}mi\n`;
+    });
+    msg += footer;
+  } else if (currentDispatchType === 'primus') {
+    const primus = sorted[0];
+    if (primus) {
+      const s = statsMap[primus.id];
+      msg = `😤 THE PRIMUS SPEAKS\n\n★ ${primus.name} leads the pack!\n${s.laurels} Laurels · ${s.miles} miles · ${s.rank.name}\n\nThink you can catch them? GET MOVING.\n${footer}`;
+    } else { msg = header + 'No players yet.\n' + footer; }
+  } else if (currentDispatchType === 'march') {
+    const longest = state.workouts.filter(w=>w.miles).sort((a,b)=>b.miles-a.miles)[0];
+    if (longest) {
+      const p = state.players.find(pl=>pl.id===longest.player_id);
+      msg = `🗺️ THE MARCH COMPLETE\n\n${p?.name||'A Howler'} of House ${p?.house||'?'} has completed the longest march so far: ${longest.miles} miles!\n\n${WORKOUT_NAMES[longest.workout]||longest.workout} · ${formatDate(longest.date)}\n${footer}`;
+    } else { msg = header + 'No long marches yet — get running!\n' + footer; }
+  } else if (currentDispatchType === 'unbroken') {
+    const streaker = sorted.reduce((best,p) => statsMap[p.id].streak > (best?statsMap[best.id].streak:0) ? p : best, null);
+    if (streaker && statsMap[streaker.id].streak >= 1) {
+      const s = statsMap[streaker.id];
+      msg = `🔥 UNBROKEN STREAK\n\n${streaker.name} has been UNBROKEN for ${s.streak} consecutive week${s.streak!==1?'s':''}!\n\nHouse ${streaker.house} · ${s.rank.name}\n${footer}`;
+    } else { msg = header + 'No streaks yet!\n' + footer; }
+  } else if (currentDispatchType === 'howler') {
+    msg = `🐺 GO HOWLER GO! 🐺\n\nThe pack is running. The pack is rising.\n\nCurrent standings:\n${sorted.map((p,i)=>`${i+1}. ${p.name} — ${statsMap[p.id].laurels}L`).join('\n')}\n\nEvery mile is a step toward the laurel.\n${footer}`;
+  } else if (currentDispatchType === 'custom') {
+    const custom = document.getElementById('dispatch-custom-input').value.trim();
+    msg = `🐺 THE HOWLERS\n\n${custom}\n${footer}`;
+  }
+
+  out.textContent = msg;
+}
+
+function copyDispatch() {
+  updateDispatchOutput();
+  const text = document.getElementById('dispatch-output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy to Clipboard'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function renderCodex() {
+  const ranksBody = document.getElementById('codex-ranks');
+  ranksBody.innerHTML = RANKS.map(r => `<tr><td>${r.min}+</td><td>${r.name}</td></tr>`).join('');
+  const badgesGrid = document.getElementById('codex-badges');
+  badgesGrid.innerHTML = BADGES_DEF.map(b =>
+    `<div class="badge-card">
+      <div class="badge-card-icon">${b.icon}</div>
+      <div><div class="badge-card-name">${b.name}</div><div class="badge-card-cond">${b.desc}</div></div>
+    </div>`
+  ).join('');
+}
+
+// ─── ACTIONS ─────────────────────────────────────────────────────────────────
+function openInductModal() {
+  document.getElementById('induct-modal').classList.add('open');
+  document.getElementById('induct-name').focus();
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+async function inductPlayer() {
+  const name = document.getElementById('induct-name').value.trim();
+  const house = document.getElementById('induct-house').value;
+  const subtitle = document.getElementById('induct-subtitle').value.trim();
+  if (!name) { showToast('Name is required, Howler.'); return; }
+  const id = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  state.players.push({ id, name, house, subtitle });
+  await saveState();
+  closeModal('induct-modal');
+  document.getElementById('induct-name').value = '';
+  document.getElementById('induct-subtitle').value = '';
+  showToast(`${name} has joined the pack! House ${house} welcomes a new Howler. 🐺`);
+  renderAll();
+}
+
+function updateLaurelPreview() {
+  const workout = document.getElementById('log-workout').value;
+  const miles = document.getElementById('log-miles').value;
+  const minutes = document.getElementById('log-minutes').value;
+  const milesGroup = document.getElementById('miles-group');
+  const minsGroup = document.getElementById('minutes-group');
+  const preview = document.getElementById('laurel-preview');
+  const previewVal = document.getElementById('laurel-preview-val');
+  const previewNote = document.getElementById('laurel-preview-note');
+
+  // Show/hide miles vs minutes
+  if (workout === 'peloton') {
+    milesGroup.style.display = 'none';
+    minsGroup.style.display = 'block';
+  } else if (['long_run','tempo','easy_run','optional_run'].includes(workout)) {
+    milesGroup.style.display = 'block';
+    minsGroup.style.display = 'none';
+  } else {
+    milesGroup.style.display = 'none';
+    minsGroup.style.display = 'none';
+  }
+
+  if (!workout) { preview.style.display = 'none'; return; }
+  const base = calcLaurels(workout, miles, minutes);
+  if (base > 0 || workout) {
+    preview.style.display = 'flex';
+    previewVal.textContent = `+${base}`;
+    previewNote.textContent = base === 0 ? 'Enter miles or minutes above' : 'Base laurels (bonuses calculated on save)';
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+async function submitTrial() {
+  const pid = document.getElementById('log-player').value;
+  const workout = document.getElementById('log-workout').value;
+  const date = document.getElementById('log-date').value;
+  const miles = parseFloat(document.getElementById('log-miles').value) || 0;
+  const minutes = parseInt(document.getElementById('log-minutes').value) || 0;
+  const notes = document.getElementById('log-notes').value.trim();
+
+  if (!pid) { showToast('Select a Howler first.'); return; }
+  if (!workout) { showToast('Select a workout type.'); return; }
+  if (!date) { showToast('Enter a date.'); return; }
+  if (['long_run','tempo','easy_run','optional_run'].includes(workout) && miles === 0) {
+    showToast('Enter miles for this workout.'); return;
+  }
+  if (workout === 'peloton' && minutes === 0) {
+    showToast('Enter minutes for Peloton ride.'); return;
+  }
+
+  const laurels_base = calcLaurels(workout, miles, minutes);
+  const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  const workoutId = 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+
+  // Check new badges before adding
+  const prevBadges = [...(state.badges_awarded[pid] || [])];
+
+  const entry = { id: workoutId, player_id: pid, workout, date, miles: miles||undefined, minutes: minutes||undefined, notes, laurels_base, quote, timestamp: new Date().toISOString() };
+  state.workouts.push(entry);
+
+  // Recalc to find new badges
+  calcPlayerStats(pid); // mutates state.badges_awarded
+  const newBadges = (state.badges_awarded[pid] || []).filter(b => !prevBadges.includes(b));
+  if (newBadges.length > 0) entry.badge_earned = newBadges[0];
+
+  await saveState();
+
+  // Reset form
+  document.getElementById('log-workout').value = '';
+  document.getElementById('log-miles').value = '';
+  document.getElementById('log-minutes').value = '';
+  document.getElementById('log-notes').value = '';
+  document.getElementById('laurel-preview').style.display = 'none';
+
+  const player = state.players.find(p => p.id === pid);
+  let toastMsg = `✦ Trial recorded! +${laurels_base} Laurels for ${player?.name||'the Howler'}.`;
+  if (newBadges.length > 0) {
+    const bd = BADGES_DEF.find(b => b.id === newBadges[0]);
+    if (bd) toastMsg += ` Badge unlocked: ${bd.icon} ${bd.name}!`;
+  }
+  showToast(toastMsg);
+  renderAll();
+  switchTab('chronicle');
+}
+
+// ─── TABS ────────────────────────────────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  const tabMap = { log:'log', chronicle:'chronicle', trials:'trials', conquests:'conquests', dispatch:'dispatch', codex:'codex' };
+  document.getElementById('tab-' + id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach((t, i) => {
+    const ids = ['log','chronicle','trials','conquests','dispatch','codex'];
+    if (ids[i] === id) t.classList.add('active');
+  });
+  if (id === 'dispatch') updateDispatchOutput();
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Set today as default date
+  document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+
+  // Close modal on overlay click
+  document.getElementById('induct-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('induct-modal');
+  });
+
+  // Dispatch custom input
+  document.getElementById('dispatch-custom-input').addEventListener('input', updateDispatchOutput);
+
+  // Workout change -> update preview
+  document.getElementById('log-workout').addEventListener('change', updateLaurelPreview);
+
+  loadState();
+  refreshInterval = setInterval(loadState, 30000);
+  renderCodex();
+});
+</script>
+</body>
+</html>
