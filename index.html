@@ -958,8 +958,7 @@
     <div class="nav-tab" onclick="switchTab('chronicle')">📜 Chronicle</div>
     <div class="nav-tab" onclick="switchTab('trials')">🏆 Trials</div>
     <div class="nav-tab" onclick="switchTab('conquests')">✦ Conquests</div>
-    <div class="nav-tab" onclick="switchTab('dispatch')">📣 Dispatch</div>
-    <div class="nav-tab" onclick="switchTab('books')">📚 Books</div>
+    <div class="nav-tab" onclick="switchTab('dispatch')">🐺 The Howl</div>
     <div class="nav-tab" onclick="switchTab('codex')">📖 Codex</div>
   </div>
 </nav>
@@ -1058,50 +1057,28 @@
 
   <!-- TAB: DISPATCH -->
   <div class="tab-content" id="tab-dispatch">
-    <div class="section-title">Dispatch — Share the Word</div>
-    <div class="dispatch-grid" id="dispatch-grid"></div>
-    <div id="dispatch-custom-block" style="display:none;margin-bottom:12px">
-      <label class="dispatch-custom-label">Custom Message</label>
-      <textarea class="dispatch-custom-area" id="dispatch-custom-input" placeholder="Write your dispatch..."></textarea>
-    </div>
-    <div class="dispatch-output" id="dispatch-output">Select a message type above to generate dispatch.</div>
-    <button class="copy-btn" id="copy-btn" onclick="copyDispatch()">Copy to Clipboard</button>
-  </div>
+    <div class="section-title">🐺 The Howl — Pack Messages</div>
+    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);margin-bottom:20px">Trash talk. Encouragement. Battle cries. Speak, Howler.</div>
 
-  <!-- TAB: BOOKS -->
-  <div class="tab-content" id="tab-books">
-    <div class="section-title">📚 The Reading Pack</div>
-    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:1rem;color:var(--ink-light);margin-bottom:20px">Log a book read during training. Each book earns +25 Laurels and counts toward your rank.</div>
-
-    <div class="log-form-card" style="max-width:480px;margin-bottom:28px">
+    <div class="log-form-card" style="max-width:560px;margin-bottom:28px">
       <div class="form-group">
         <label class="form-label">Howler</label>
-        <select class="form-select" id="book-player"></select>
+        <select class="form-select" id="howl-player"></select>
       </div>
       <div class="form-group">
-        <label class="form-label">Book</label>
-        <select class="form-select" id="book-title">
-          <option value="">— Select Book —</option>
-          <option value="red_rising">Red Rising</option>
-          <option value="golden_son">Golden Son</option>
-          <option value="morning_star">Morning Star</option>
-          <option value="iron_gold">Iron Gold</option>
-          <option value="dark_age">Dark Age</option>
-          <option value="light_bringer">Light Bringer</option>
-        </select>
+        <label class="form-label">Your Howl</label>
+        <textarea class="form-textarea" id="howl-message" placeholder="Say something to the pack..." style="min-height:90px"></textarea>
       </div>
-      <div class="laurel-preview" style="display:flex">
-        <div><div class="laurel-preview-label">Laurels for this book</div><div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.75rem;color:var(--amber)" id="book-already-note"></div></div>
-        <div class="laurel-preview-val">+25</div>
-      </div>
-      <button class="btn-primary" onclick="logBook()" style="margin-top:12px">✦ LOG BOOK READ ✦</button>
+      <button class="btn-primary" onclick="postHowl()" id="howl-submit-btn">🐺 SEND THE HOWL</button>
     </div>
 
-    <div class="section-title" style="font-size:1rem">Books Read by the Pack</div>
-    <div id="books-feed" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div class="section-title" style="font-size:1rem">Recent Howls</div>
+    <div class="chronicle-feed" id="howl-feed">
+      <div class="empty-state"><span class="empty-icon">🐺</span>The pack is silent. Be the first to howl.</div>
+    </div>
   </div>
 
-  <!-- TAB: CODEX -->
+    <!-- TAB: CODEX -->
   <div class="tab-content" id="tab-codex">
     <div class="section-title">Codex — Rules of the Pack</div>
     <div class="codex-section">
@@ -1310,6 +1287,18 @@
   </div>
 </div>
 
+<!-- BOOKS MODAL -->
+<div class="modal-overlay" id="books-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('books-modal')">✕</button>
+    <div class="modal-title" id="books-modal-title">📚 Books Read</div>
+    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;margin-bottom:16px">25 Laurels per book · counts toward rank</div>
+    <input type="hidden" id="books-modal-player-id">
+    <div style="display:flex;flex-direction:column;gap:10px" id="books-modal-list"></div>
+    <button class="btn-primary" onclick="saveBooksModal()" style="margin-top:16px">✦ SAVE BOOKS ✦</button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -1481,8 +1470,7 @@ const WORKOUT_NAMES = {
   strength:'Iron Forged (Strength)', mobility:'Mind & Body (Mobility)'
 };
 
-let state = { players: [], workouts: [], challenges_won: {}, badges_awarded: {} };
-let currentDispatchType = 'standings';
+let state = { players: [], workouts: [], howls: [], challenges_won: {}, badges_awarded: {} };
 let refreshInterval = null;
 
 // ─── JSONBIN CONFIG ───────────────────────────────────────────────────────────
@@ -1516,6 +1504,7 @@ async function loadState() {
       if (!state.workouts) state.workouts = [];
       if (!state.challenges_won) state.challenges_won = {};
       if (!state.badges_awarded) state.badges_awarded = {};
+        if (!state.howls) state.howls = [];
     }
     setSyncStatus('live');
   } catch(e) {
@@ -1689,7 +1678,6 @@ function renderAll() {
   renderChallenges();
   renderTimeline();
   renderDispatch();
-  renderBooks();
   renderDistanceRankings();
   renderCodex();
 }
@@ -1741,6 +1729,7 @@ function renderPlayers() {
         ${(p.books_read && p.books_read.length > 0) ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">📚 BOOKS</span> ${p.books_read.map(b=>({red_rising:'Red Rising',golden_son:'Golden Son',morning_star:'Morning Star',iron_gold:'Iron Gold',dark_age:'Dark Age',light_bringer:'Light Bringer'})[b]||b).join(' · ')}</div>` : ''}
         <div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
           <button onclick="openEditModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
+          <button onclick="openBooksModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">📚 Books</button>
           <button onclick="removePlayer('${p.id}','${p.name}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
         </div>
       </div>`;
@@ -1823,9 +1812,12 @@ function renderChronicle() {
         return bd ? `<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;box-shadow:0 0 8px ${TIER_COLORS[tier]||'var(--amber)'}44">${bd.icon}<sup style="font-size:0.6em;font-family:'Cinzel',serif">${TIER_ROMAN[tier]||''}</sup> Badge: ${bd.name}</div>` : '';
       })() : ''}
       <div class="chronicle-quote">"${w.quote}"</div>
-      <div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">
-        <button onclick="openEditWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
-        <button onclick="removeWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
+      <div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">
+        <button onclick="toggleLike('${w.id}')" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'" title="Like this trial">⚔️ <span style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--ink-light)">${(w.likes||[]).length||''}</span></button>
+        <button onclick="quickHowlAt('${w.id}','${escHtml(player.name)}')" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(122,80,6,0.08)'" onmouseout="this.style.background='transparent'" title="Send a Howl">🐺</button>
+        <div style="flex:1"></div>
+        <button onclick="openEditWorkout('${w.id}')" style="background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
+        <button onclick="removeWorkout('${w.id}')" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
       </div>
     </div>`;
   }).join('');
@@ -1954,78 +1946,129 @@ function renderTimeline() {
 }
 
 function renderDispatch() {
-  const grid = document.getElementById('dispatch-grid');
-  grid.innerHTML = DISPATCH_TYPES.map(t =>
-    `<div class="dispatch-type-btn ${t.id===currentDispatchType?'selected':''}" onclick="selectDispatchType('${t.id}')">
-      <span class="dispatch-type-emoji">${t.emoji}</span>
-      <span class="dispatch-type-label">${t.label}</span>
-    </div>`
-  ).join('');
-  updateDispatchOutput();
+  // Populate player dropdown
+  const sel = document.getElementById('howl-player');
+  if (sel) {
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">— Select Howler —</option>';
+    state.players.forEach(function(p) {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name + ' (House ' + p.house + ')';
+      sel.appendChild(opt);
+    });
+    if (prev) sel.value = prev;
+  }
+  renderHowlFeed();
 }
 
-function selectDispatchType(id) {
-  currentDispatchType = id;
-  const customBlock = document.getElementById('dispatch-custom-block');
-  customBlock.style.display = id === 'custom' ? 'block' : 'none';
+function renderHowlFeed() {
+  const feed = document.getElementById('howl-feed');
+  if (!feed) return;
+  const howls = (state.howls || []).slice().reverse();
+  if (howls.length === 0) {
+    feed.innerHTML = '<div class="empty-state"><span class="empty-icon">🐺</span>The pack is silent. Be the first to howl.</div>';
+    return;
+  }
+  feed.innerHTML = howls.map(function(h) {
+    const player = state.players.find(function(p) { return p.id === h.player_id; });
+    if (!player) return '';
+    const hc = (h.player_laurels >= 1200) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+    const likes = h.likes || [];
+    const replyTo = h.reply_to_name ? '<div style="font-family:Crimson Pro,serif;font-size:0.8rem;font-style:italic;color:var(--ink-light);margin-bottom:4px">↩ re: ' + escHtml(h.reply_to_name) + '</div>' : '';
+    return '<div class="chronicle-entry" style="--house-color:' + hc + ';background:linear-gradient(135deg,' + hc + '08,var(--parchment))">' +
+      '<div class="chronicle-header">' +
+      '<span class="chronicle-player">' + escHtml(player.name) + '</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-light)">House ' + player.house + '</span>' +
+      '<span class="chronicle-meta">' + formatDate(h.date) + '</span>' +
+      '</div>' +
+      replyTo +
+      '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic">"' + escHtml(h.message) + '"</div>' +
+      '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">' +
+      '<button onclick="toggleHowlLike(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer" title="Like">⚔️ <span style="font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">' + (likes.length || '') + '</span></button>' +
+      '<button onclick="copyHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">⎘ Copy</button>' +
+      '<div style="flex:1"></div>' +
+      '</div>' +
+      '</div>';
+  }).join('');
+}
+
+async function postHowl(replyToId, replyToName) {
+  const btn = document.getElementById('howl-submit-btn');
+  if (btn && btn.disabled) return;
+  const pid = document.getElementById('howl-player').value;
+  const msg = document.getElementById('howl-message').value.trim();
+  if (!pid) { showToast('Select a Howler first.'); return; }
+  if (!msg) { showToast('Say something, Howler.'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Howling…'; }
+  const player = state.players.find(function(p) { return p.id === pid; });
+  const stats = calcPlayerStats(pid);
+  const howl = {
+    id: 'h_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+    player_id: pid,
+    player_laurels: stats.laurels,
+    message: msg,
+    date: new Date().toISOString().split('T')[0],
+    timestamp: new Date().toISOString(),
+    likes: [],
+    reply_to_id: replyToId || null,
+    reply_to_name: replyToName || null
+  };
+  if (!state.howls) state.howls = [];
+  state.howls.push(howl);
+  await saveState();
+  document.getElementById('howl-message').value = '';
+  if (btn) { btn.disabled = false; btn.textContent = '🐺 SEND THE HOWL'; }
+  showToast('The pack heard you. 🐺');
   renderDispatch();
 }
 
-function updateDispatchOutput() {
-  const out = document.getElementById('dispatch-output');
-  const statsMap = {};
-  state.players.forEach(p => { statsMap[p.id] = calcPlayerStats(p.id); });
-  const sorted = [...state.players].sort((a,b) => statsMap[b.id].laurels - statsMap[a.id].laurels);
-  const quote = QUOTES[Math.floor(Math.random()*QUOTES.length)];
-
-  let msg = '';
-  const header = `🐺 THE HOWLERS — RNR ARIZONA HALF MARATHON 🐺\nJan 17, 2027 · Tempe Beach Park\n${'─'.repeat(36)}\n`;
-  const footer = `\n${'─'.repeat(36)}\n"${quote}"\n#GoHowlerGo #RNRArizona2027`;
-
-  if (currentDispatchType === 'standings') {
-    msg = header;
-    msg += `📊 WEEKLY STANDINGS\n\n`;
-    sorted.forEach((p,i) => {
-      const s = statsMap[p.id];
-      msg += `${i===0?'★':` ${i+1}`}. ${p.name} (House ${p.house})\n   ${s.laurels}L · ${s.trials} trials · ${s.miles}mi\n`;
+function quickHowlAt(workoutId, playerName) {
+  switchTab('dispatch');
+  document.getElementById('howl-message').value = '';
+  document.getElementById('howl-message').placeholder = 'Replying to ' + playerName + '...';
+  document.getElementById('howl-message').dataset.replyWorkout = workoutId;
+  document.getElementById('howl-message').dataset.replyName = playerName;
+  document.getElementById('howl-message').focus();
+  // Override post to include reply context
+  const btn = document.getElementById('howl-submit-btn');
+  btn.onclick = function() {
+    const msg = document.getElementById('howl-message');
+    postHowl(msg.dataset.replyWorkout, msg.dataset.replyName).then(function() {
+      msg.placeholder = 'Say something to the pack...';
+      delete msg.dataset.replyWorkout;
+      delete msg.dataset.replyName;
+      btn.onclick = postHowl;
     });
-    msg += footer;
-  } else if (currentDispatchType === 'primus') {
-    const primus = sorted[0];
-    if (primus) {
-      const s = statsMap[primus.id];
-      msg = `😤 THE PRIMUS SPEAKS\n\n★ ${primus.name} leads the pack!\n${s.laurels} Laurels · ${s.miles} miles · ${s.rank.name}\n\nThink you can catch them? GET MOVING.\n${footer}`;
-    } else { msg = header + 'No players yet.\n' + footer; }
-  } else if (currentDispatchType === 'march') {
-    const longest = state.workouts.filter(w=>w.miles).sort((a,b)=>b.miles-a.miles)[0];
-    if (longest) {
-      const p = state.players.find(pl=>pl.id===longest.player_id);
-      msg = `🗺️ THE MARCH COMPLETE\n\n${p?.name||'A Howler'} of House ${p?.house||'?'} has completed the longest march so far: ${longest.miles} miles!\n\n${WORKOUT_NAMES[longest.workout]||longest.workout} · ${formatDate(longest.date)}\n${footer}`;
-    } else { msg = header + 'No long marches yet — get running!\n' + footer; }
-  } else if (currentDispatchType === 'unbroken') {
-    const streaker = sorted.reduce((best,p) => statsMap[p.id].streak > (best?statsMap[best.id].streak:0) ? p : best, null);
-    if (streaker && statsMap[streaker.id].streak >= 1) {
-      const s = statsMap[streaker.id];
-      msg = `🔥 UNBROKEN STREAK\n\n${streaker.name} has been UNBROKEN for ${s.streak} consecutive week${s.streak!==1?'s':''}!\n\nHouse ${streaker.house} · ${s.rank.name}\n${footer}`;
-    } else { msg = header + 'No streaks yet!\n' + footer; }
-  } else if (currentDispatchType === 'howler') {
-    msg = `🐺 GO HOWLER GO! 🐺\n\nThe pack is running. The pack is rising.\n\nCurrent standings:\n${sorted.map((p,i)=>`${i+1}. ${p.name} — ${statsMap[p.id].laurels}L`).join('\n')}\n\nEvery mile is a step toward the laurel.\n${footer}`;
-  } else if (currentDispatchType === 'custom') {
-    const custom = document.getElementById('dispatch-custom-input').value.trim();
-    msg = `🐺 THE HOWLERS\n\n${custom}\n${footer}`;
-  }
-
-  out.textContent = msg;
+  };
 }
 
-function copyDispatch() {
-  updateDispatchOutput();
-  const text = document.getElementById('dispatch-output').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('copy-btn');
-    btn.textContent = '✓ Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy to Clipboard'; btn.classList.remove('copied'); }, 2000);
+async function toggleLike(workoutId) {
+  const w = state.workouts.find(function(x) { return x.id === workoutId; });
+  if (!w) return;
+  if (!w.likes) w.likes = [];
+  // Simple toggle by timestamp — no auth so just increment/decrement
+  w.likes.push(Date.now());
+  await saveState();
+  renderChronicle();
+}
+
+async function toggleHowlLike(howlId) {
+  const h = (state.howls || []).find(function(x) { return x.id === howlId; });
+  if (!h) return;
+  if (!h.likes) h.likes = [];
+  h.likes.push(Date.now());
+  await saveState();
+  renderHowlFeed();
+}
+
+function copyHowl(howlId) {
+  const h = (state.howls || []).find(function(x) { return x.id === howlId; });
+  if (!h) return;
+  const player = state.players.find(function(p) { return p.id === h.player_id; });
+  const text = '"' + h.message + '" — ' + (player ? player.name : 'A Howler') + ' · The Howlers · RNR Arizona 2027 🐺';
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Howl copied to clipboard. 🐺');
   });
 }
 
@@ -2080,6 +2123,51 @@ async function inductPlayer() {
   if (bookLaurels > 0) msg += ` +${bookLaurels} Laurels for ${booksRead.length} book${booksRead.length>1?'s':''} read!`;
   if (inductBtn) { inductBtn.disabled = false; inductBtn.textContent = 'Join the Pack ✦'; }
   showToast(msg);
+  renderAll();
+}
+
+function openBooksModal(pid) {
+  const player = state.players.find(p => p.id === pid);
+  if (!player) return;
+  document.getElementById('books-modal-player-id').value = pid;
+  document.getElementById('books-modal-title').textContent = '📚 ' + player.name + ' — Books Read';
+  const read = player.books_read || [];
+  const BOOK_LIST = [
+    {id:'red_rising', title:'Red Rising'},
+    {id:'golden_son', title:'Golden Son'},
+    {id:'morning_star', title:'Morning Star'},
+    {id:'iron_gold', title:'Iron Gold'},
+    {id:'dark_age', title:'Dark Age'},
+    {id:'light_bringer', title:'Light Bringer'}
+  ];
+  const list = document.getElementById('books-modal-list');
+  list.innerHTML = BOOK_LIST.map(b => {
+    const checked = read.includes(b.id);
+    return `<label style="display:flex;align-items:center;gap:10px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink-mid);cursor:pointer;padding:8px 12px;background:var(--parchment-dark);border-radius:var(--radius);border:1.5px solid ${checked ? 'var(--amber)' : 'var(--border)'}">
+      <input type="checkbox" value="${b.id}" ${checked ? 'checked' : ''} style="accent-color:var(--amber);width:16px;height:16px">
+      <span style="flex:1">${b.title}</span>
+      <span style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--amber)">+25L</span>
+    </label>`;
+  }).join('');
+  // Live border highlight on check
+  list.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', function() {
+      this.closest('label').style.borderColor = this.checked ? 'var(--amber)' : 'var(--border)';
+    });
+  });
+  document.getElementById('books-modal').classList.add('open');
+}
+
+async function saveBooksModal() {
+  const pid = document.getElementById('books-modal-player-id').value;
+  const player = state.players.find(p => p.id === pid);
+  if (!player) return;
+  const checked = [...document.querySelectorAll('#books-modal-list input:checked')].map(cb => cb.value);
+  player.books_read = checked;
+  player.book_laurels = checked.length * BOOK_LAURELS;
+  await saveState();
+  closeModal('books-modal');
+  showToast(`📚 ${player.name}'s books updated — ${checked.length} read, +${checked.length * BOOK_LAURELS} Laurels. ✦`);
   renderAll();
 }
 
@@ -2355,7 +2443,7 @@ function switchTab(id) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach((t, i) => {
-    const ids = ['leaderboard','log','chronicle','trials','conquests','dispatch','books','codex'];
+    const ids = ['leaderboard','log','chronicle','trials','conquests','dispatch','codex'];
     if (ids[i] === id) t.classList.add('active');
   });
   if (id === 'dispatch') updateDispatchOutput();
@@ -2396,9 +2484,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('edit-workout-modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal('edit-workout-modal');
   });
+  document.getElementById('books-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('books-modal');
+  });
 
   // Dispatch custom input
-  document.getElementById('dispatch-custom-input').addEventListener('input', updateDispatchOutput);
   document.getElementById('induct-books').addEventListener('change', () => {
     const n = document.querySelectorAll('#induct-books input:checked').length;
     document.getElementById('induct-book-preview').textContent = `+${n * BOOK_LAURELS} Laurels from books`;
