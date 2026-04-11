@@ -1723,7 +1723,7 @@ function renderPlayers() {
       const def = BADGES_DEF.find(b => b.id === baseId);
       const tier = BADGE_TIERS[tierIdx];
       const color = TIER_COLORS[tier];
-      return def ? `<span class="badge-pill" title="${def.name} — ${TIER_LABELS[tier]}" style="border:2px solid ${color};background:${color}15;color:${color};box-shadow:0 0 6px ${color}55;padding:2px 6px;font-size:0.8rem">${def.icon}<span style="font-size:0.6rem;margin-left:2px;font-family:'Cinzel',serif;font-weight:700;vertical-align:super">${TIER_ROMAN[tier]}</span></span>` : '';
+      return def ? `<span class="badge-pill" title="${def.name} — ${TIER_LABELS[tier]}" style="border:2px solid ${color};background:${color}15;color:${color};box-shadow:0 0 6px ${color}55;padding:2px 6px;font-size:0.8rem">${def.icon}<sup style="font-size:0.55rem;font-family:'Cinzel',serif;font-weight:700">${TIER_ROMAN[tier]}</sup></span>` : '';
     }).join('');
     html += `
       <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor}">
@@ -1738,6 +1738,7 @@ function renderPlayers() {
           <div class="stat-item"><span class="stat-val">${s.miles}mi</span><span class="stat-label">Distance</span></div>
         </div>
         <div class="player-badges">${earnedBadges || '<span style="font-style:italic;font-size:0.75rem;color:var(--ink-light)">No badges yet</span>'}</div>
+        ${(p.books_read && p.books_read.length > 0) ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">📚 BOOKS</span> ${p.books_read.map(b=>({red_rising:'Red Rising',golden_son:'Golden Son',morning_star:'Morning Star',iron_gold:'Iron Gold',dark_age:'Dark Age',light_bringer:'Light Bringer'})[b]||b).join(' · ')}</div>` : ''}
         <div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
           <button onclick="openEditModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
           <button onclick="removePlayer('${p.id}','${p.name}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
@@ -1819,7 +1820,7 @@ function renderChronicle() {
         const tier = BADGE_TIERS.find(t => w.badge_earned.endsWith('_'+t));
         const baseId = tier ? w.badge_earned.slice(0,-(tier.length+1)) : w.badge_earned;
         const bd = BADGES_DEF.find(b => b.id === baseId);
-        return bd ? `<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;box-shadow:0 0 8px ${TIER_COLORS[tier]||'var(--amber)'}44">${bd.icon} ${TIER_ROMAN[tier]||''} — ${TIER_LABELS[tier]||''} Badge: ${bd.name}</div>` : '';
+        return bd ? `<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;box-shadow:0 0 8px ${TIER_COLORS[tier]||'var(--amber)'}44">${bd.icon}<sup style="font-size:0.6em;font-family:'Cinzel',serif">${TIER_ROMAN[tier]||''}</sup> Badge: ${bd.name}</div>` : '';
       })() : ''}
       <div class="chronicle-quote">"${w.quote}"</div>
       <div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">
@@ -2040,7 +2041,7 @@ function renderCodex() {
       </div>
       <div style="display:flex;flex-direction:column;gap:3px;width:100%">
         ${b.tiers.map(t => `<div style="display:flex;align-items:center;gap:6px;font-family:'Crimson Pro',serif;font-size:0.8rem">
-          <span style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:700;color:${TIER_COLORS[t.tier]};min-width:56px">${TIER_ROMAN[t.tier]} — ${TIER_LABELS[t.tier]}</span>
+          <span style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:700;color:${TIER_COLORS[t.tier]};min-width:24px">${TIER_ROMAN[t.tier]}</span>
           <span style="color:var(--ink-light)">${t.desc}</span>
         </div>`).join('')}
       </div>
@@ -2058,6 +2059,9 @@ function closeModal(id) {
 }
 
 async function inductPlayer() {
+  const inductBtn = document.querySelector('#induct-modal .btn-primary');
+  if (inductBtn && inductBtn.disabled) return;
+  if (inductBtn) { inductBtn.disabled = true; inductBtn.textContent = '⏳ Joining…'; }
   const name = document.getElementById('induct-name').value.trim();
   const house = document.getElementById('induct-house').value;
   const subtitle = document.getElementById('induct-subtitle').value.trim();
@@ -2074,6 +2078,7 @@ async function inductPlayer() {
   document.getElementById('induct-book-preview').textContent = '+0 Laurels from books';
   let msg = `${name} has joined the pack! House ${house} welcomes a new Howler. 🐺`;
   if (bookLaurels > 0) msg += ` +${bookLaurels} Laurels for ${booksRead.length} book${booksRead.length>1?'s':''} read!`;
+  if (inductBtn) { inductBtn.disabled = false; inductBtn.textContent = 'Join the Pack ✦'; }
   showToast(msg);
   renderAll();
 }
@@ -2116,6 +2121,9 @@ async function removePlayer(pid, name) {
 }
 
 async function logBook() {
+  const bookBtn = document.querySelector('#tab-books .btn-primary');
+  if (bookBtn && bookBtn.disabled) return;
+  if (bookBtn) { bookBtn.disabled = true; bookBtn.textContent = '⏳ Logging…'; }
   const pid = document.getElementById('book-player').value;
   const bookId = document.getElementById('book-title').value;
   if (!pid) { showToast('Select a Howler first.'); return; }
@@ -2130,6 +2138,7 @@ async function logBook() {
   player.book_laurels = player.books_read.length * BOOK_LAURELS;
   await saveState();
   const bookName = BOOKS.find(b => b.id === bookId)?.title || bookId;
+  if (bookBtn) { bookBtn.disabled = false; bookBtn.textContent = '✦ LOG BOOK READ ✦'; }
   showToast(`+25 Laurels! ${player.name} has read ${bookName}. Per aspera ad astra. ✦`);
   renderAll();
   switchTab('books');
@@ -2280,6 +2289,8 @@ function updateLaurelPreview() {
 }
 
 async function submitTrial() {
+  const submitBtn = document.querySelector('#tab-log .btn-primary');
+  if (submitBtn && submitBtn.disabled) return; // prevent double-submit
   const pid = document.getElementById('log-player').value;
   const workout = document.getElementById('log-workout').value;
   const date = document.getElementById('log-date').value;
@@ -2296,6 +2307,7 @@ async function submitTrial() {
   if (workout === 'peloton' && minutes === 0) {
     showToast('Enter minutes for Peloton ride.'); return;
   }
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ RECORDING…'; }
 
   const laurels_base = calcLaurels(workout, miles, minutes);
   const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
@@ -2329,9 +2341,10 @@ async function submitTrial() {
     const tier = BADGE_TIERS.find(t => firstKey.endsWith('_'+t));
     const baseId = tier ? firstKey.slice(0,-(tier.length+1)) : firstKey;
     const bd = BADGES_DEF.find(b => b.id === baseId);
-    if (bd && tier) toastMsg += ` ${TIER_ROMAN[tier]} ${TIER_LABELS[tier]} Badge: ${bd.icon} ${bd.name}!`;
+    if (bd && tier) toastMsg += ` ${TIER_ROMAN[tier]} Badge: ${bd.icon} ${bd.name}!`;
   }
   showToast(toastMsg);
+  if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✦ RECORD TRIAL ✦'; }
   renderAll();
   switchTab('chronicle');
 }
