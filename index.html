@@ -245,14 +245,15 @@
     padding: 2px 6px;
     border-radius: 2px;
   }
-  .player-house-label {
+  .player-color-label {
     font-family: 'Cinzel', serif;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--house-color, var(--amber));
     margin-bottom: 4px;
+    opacity: 0.9;
   }
   .player-name {
     font-family: 'Cinzel', serif;
@@ -968,6 +969,7 @@
 
   <!-- TAB: LEADERBOARD -->
   <div class="tab-content active" id="tab-leaderboard">
+    <div id="pack-stats-dashboard" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px"></div>
     <div class="section-title">The Pack — Leaderboard</div>
     <div class="player-grid" id="player-grid">
       <div class="induct-card" onclick="openInductModal()">
@@ -1144,17 +1146,17 @@
       <input class="form-input" type="text" id="induct-name" placeholder="Full name">
     </div>
     <div class="form-group">
-      <label class="form-label">House</label>
+      <label class="form-label">Color</label>
       <select class="form-select" id="induct-house" onchange="updateHouseDesc('induct')">
-        <option value="Red">House Red — Manual laborers and miners</option>
-        <option value="Obsidian">House Obsidian — Elite soldiers and bodyguards</option>
-        <option value="Violet">House Violet — Artisans and other creatives</option>
-        <option value="Green">House Green — Programmers and technicians</option>
-        <option value="Copper">House Copper — Administrators, lawyers and bureaucrats</option>
-        <option value="Pink">House Pink — Pleasure slaves and social functionaries</option>
-        <option value="Yellow">House Yellow — Doctors and researchers</option>
-        <option value="Silver">House Silver — Financiers and businessmen</option>
-        <option value="Blue">House Blue — Bridge crew of starships and pilots</option>
+        <option value="Red">Red — Manual laborers and miners</option>
+        <option value="Obsidian">Obsidian — Elite soldiers and bodyguards</option>
+        <option value="Violet">Violet — Artisans and other creatives</option>
+        <option value="Green">Green — Programmers and technicians</option>
+        <option value="Copper">Copper — Administrators, lawyers and bureaucrats</option>
+        <option value="Pink">Pink — Pleasure slaves and social functionaries</option>
+        <option value="Yellow">Yellow — Doctors and researchers</option>
+        <option value="Silver">Silver — Financiers and businessmen</option>
+        <option value="Blue">Blue — Bridge crew of starships and pilots</option>
       </select>
     </div>
     <div class="form-group">
@@ -1267,17 +1269,17 @@
       <input class="form-input" type="text" id="edit-name" placeholder="Full name">
     </div>
     <div class="form-group">
-      <label class="form-label">House</label>
+      <label class="form-label">Color</label>
       <select class="form-select" id="edit-house">
-        <option value="Red">House Red — Manual laborers and miners</option>
-        <option value="Obsidian">House Obsidian — Elite soldiers and bodyguards</option>
-        <option value="Violet">House Violet — Artisans and other creatives</option>
-        <option value="Green">House Green — Programmers and technicians</option>
-        <option value="Copper">House Copper — Administrators, lawyers and bureaucrats</option>
-        <option value="Pink">House Pink — Pleasure slaves and social functionaries</option>
-        <option value="Yellow">House Yellow — Doctors and researchers</option>
-        <option value="Silver">House Silver — Financiers and businessmen</option>
-        <option value="Blue">House Blue — Bridge crew of starships and pilots</option>
+        <option value="Red">Red — Manual laborers and miners</option>
+        <option value="Obsidian">Obsidian — Elite soldiers and bodyguards</option>
+        <option value="Violet">Violet — Artisans and other creatives</option>
+        <option value="Green">Green — Programmers and technicians</option>
+        <option value="Copper">Copper — Administrators, lawyers and bureaucrats</option>
+        <option value="Pink">Pink — Pleasure slaves and social functionaries</option>
+        <option value="Yellow">Yellow — Doctors and researchers</option>
+        <option value="Silver">Silver — Financiers and businessmen</option>
+        <option value="Blue">Blue — Bridge crew of starships and pilots</option>
       </select>
     </div>
     <div class="form-group">
@@ -1508,6 +1510,7 @@ async function loadState() {
         if (!state.howls) state.howls = [];
     }
     setSyncStatus('live');
+  checkAndPostWeeklyRecap();
   } catch(e) {
     setSyncStatus('error');
     console.error('Load error:', e);
@@ -1530,6 +1533,7 @@ async function saveState() {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     setSyncStatus('live');
+  checkAndPostWeeklyRecap();
   } catch(e) {
     setSyncStatus('error');
     console.error('Save error:', e);
@@ -1630,7 +1634,11 @@ function calcPlayerStats(pid) {
   });
 
   const earnedBadges = (state.badges_awarded[pid] || []);
-  return { laurels, miles: +miles.toFixed(1), trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks };
+  // Personal bests
+  const runWorkouts = works.filter(w => ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout) && w.miles);
+  const longestRun = runWorkouts.length > 0 ? Math.max(...runWorkouts.map(w => w.miles)) : 0;
+  const totalRunMiles = +miles.toFixed(1);
+  return { laurels, miles: totalRunMiles, trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks, longestRun };
 }
 
 function tryAwardBadge(pid, badgeId, newBadges) {
@@ -1671,8 +1679,71 @@ function calcLaurels(workout, miles, minutes) {
   }
 }
 
+// ─── WEEKLY RECAP ────────────────────────────────────────────────────────────
+function checkAndPostWeeklyRecap() {
+  if (state.players.length === 0 || state.workouts.length === 0) return;
+  const lastRecapKey = 'howlers_last_recap_' + (localStorage.getItem('howlers_bin_id')||'');
+  const lastRecap = localStorage.getItem(lastRecapKey);
+  const now = new Date();
+  // Post recap on Mondays, max once per week
+  const isMonday = now.getDay() === 1;
+  if (!isMonday) return;
+  const thisWeekMonday = new Date(now);
+  thisWeekMonday.setHours(0,0,0,0);
+  const weekKey = thisWeekMonday.toISOString().split('T')[0];
+  if (lastRecap === weekKey) return;
+  // Build last week's stats
+  const lastMonday = new Date(thisWeekMonday);
+  lastMonday.setDate(lastMonday.getDate() - 7);
+  const lastSunday = new Date(thisWeekMonday);
+  lastSunday.setDate(lastSunday.getDate() - 1);
+  const lastWeekWorkouts = state.workouts.filter(function(w) {
+    const d = new Date(w.date + 'T12:00:00');
+    return d >= lastMonday && d <= lastSunday;
+  });
+  if (lastWeekWorkouts.length === 0) return;
+  // Who ran the most miles
+  const milesByPlayer = {};
+  lastWeekWorkouts.forEach(function(w) {
+    if (w.miles) milesByPlayer[w.player_id] = (milesByPlayer[w.player_id]||0) + w.miles;
+  });
+  const topRunnerId = Object.keys(milesByPlayer).sort(function(a,b){return milesByPlayer[b]-milesByPlayer[a];})[0];
+  const topRunner = state.players.find(function(p){return p.id===topRunnerId;});
+  // Who had a perfect week
+  const weekKey2 = getWeekKey(lastMonday.toISOString().split('T')[0]);
+  const perfectHowlers = state.players.filter(function(p) {
+    const pWorkouts = lastWeekWorkouts.filter(function(w){return w.player_id===p.id;});
+    return pWorkouts.length >= 4;
+  });
+  // Build message
+  let recap = '📊 WEEKLY RECAP\n\n';
+  recap += 'The pack logged ' + lastWeekWorkouts.length + ' trials last week. ';
+  if (topRunner && milesByPlayer[topRunnerId]) {
+    recap += topRunner.name + ' led the march with ' + milesByPlayer[topRunnerId].toFixed(1) + ' miles. ';
+  }
+  if (perfectHowlers.length > 0) {
+    recap += perfectHowlers.map(function(p){return p.name;}).join(' & ') + ' earned a Perfect Week bonus. ';
+  }
+  recap += 'Per aspera ad astra. 🐺';
+  // Post as a system howl
+  if (!state.howls) state.howls = [];
+  state.howls.push({
+    id: 'recap_' + weekKey,
+    player_id: 'system',
+    player_laurels: 9999,
+    message: recap,
+    date: now.toISOString().split('T')[0],
+    timestamp: now.toISOString(),
+    likes: [],
+    is_recap: true
+  });
+  saveState();
+  localStorage.setItem(lastRecapKey, weekKey);
+}
+
 // ─── RENDER ──────────────────────────────────────────────────────────────────
 function renderAll() {
+  renderPackStats();
   renderPlayers();
   renderLogDropdown();
   renderChronicle();
@@ -1716,7 +1787,7 @@ function renderPlayers() {
     }).join('');
     html += `
       <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor}">
-        <div class="player-house-label">${p.house}</div>
+        <div class="player-color-label">${p.house}</div>
         <div class="player-name">${escHtml(p.name)}</div>
         ${p.subtitle ? `<div class="player-subtitle">${escHtml(p.subtitle)}</div>` : ''}
         <div class="player-rank">${s.rank.name}</div>
@@ -1728,6 +1799,11 @@ function renderPlayers() {
         </div>
         <div class="player-badges">${earnedBadges || '<span style="font-style:italic;font-size:0.75rem;color:var(--ink-light)">No badges yet</span>'}</div>
         ${(p.books_read && p.books_read.length > 0) ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">📚 BOOKS</span> ${p.books_read.map(b=>({red_rising:'Red Rising',golden_son:'Golden Son',morning_star:'Morning Star',iron_gold:'Iron Gold',dark_age:'Dark Age',light_bringer:'Light Bringer'})[b]||b).join(' · ')}</div>` : ''}
+        ${s.longestRun > 0 || s.trials > 0 ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap">
+          ${s.longestRun > 0 ? `<div style="font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">🏅 LONGEST</span> ${s.longestRun} mi</div>` : ''}
+          ${s.perfectWeeks > 0 ? `<div style="font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">⭐ PERFECT WKS</span> ${s.perfectWeeks}</div>` : ''}
+          ${s.streak >= 2 ? `<div style="font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">🔥 STREAK</span> ${s.streak} wks</div>` : ''}
+        </div>` : ''}
         <div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
           <button onclick="openEditModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
           <button onclick="openBooksModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">📚 Books</button>
@@ -1741,6 +1817,40 @@ function renderPlayers() {
     <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">Join the Pack</div>
   </div>`;
   grid.innerHTML = html;
+}
+
+function renderPackStats() {
+  const el = document.getElementById('pack-stats-dashboard');
+  if (!el) return;
+  const totalWorkouts = state.workouts.length;
+  const totalMiles = state.players.reduce(function(s,p){ return s + calcPlayerStats(p.id).miles; }, 0);
+  const totalLaurels = state.players.reduce(function(s,p){ return s + calcPlayerStats(p.id).laurels; }, 0);
+  const totalHowls = (state.howls || []).length;
+  const totalLikes = state.workouts.reduce(function(s,w){ return s + (w.likes||[]).length; }, 0) +
+    (state.howls||[]).reduce(function(s,h){ return s + (h.likes||[]).length; }, 0);
+  // Most active week
+  const weekCounts = {};
+  state.workouts.forEach(function(w){
+    const wk = getWeekKey(w.date);
+    weekCounts[wk] = (weekCounts[wk]||0) + 1;
+  });
+  const peakWeekCount = Object.values(weekCounts).length > 0 ? Math.max(...Object.values(weekCounts)) : 0;
+  const stats = [
+    {icon:'🏃', label:'Total Miles', val: totalMiles.toFixed(1)},
+    {icon:'⚔️', label:'Trials Logged', val: totalWorkouts},
+    {icon:'🏅', label:'Total Laurels', val: totalLaurels},
+    {icon:'👥', label:'Howlers', val: state.players.length},
+    {icon:'🐺', label:'Howls Posted', val: totalHowls},
+    {icon:'❤️', label:'Likes Given', val: totalLikes},
+    {icon:'🔥', label:'Peak Week', val: peakWeekCount + ' trials'},
+  ];
+  el.innerHTML = stats.map(function(s) {
+    return '<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);text-align:center">' +
+      '<div style="font-size:1.4rem;margin-bottom:4px">' + s.icon + '</div>' +
+      '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink);line-height:1">' + s.val + '</div>' +
+      '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.1em;color:var(--ink-light);margin-top:3px;text-transform:uppercase">' + s.label + '</div>' +
+      '</div>';
+  }).join('');
 }
 
 function renderDistanceRankings() {
@@ -1987,6 +2097,22 @@ function renderHowlFeed() {
   }
   feed.innerHTML = howls.map(function(h) {
     const player = state.players.find(function(p) { return p.id === h.player_id; });
+    // System recap howls
+    if (h.is_recap || h.player_id === 'system') {
+      const likes = h.likes || [];
+      return '<div class="chronicle-entry" style="--house-color:var(--amber);background:linear-gradient(135deg,rgba(200,144,10,0.08),var(--parchment))">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+        '<span style="font-size:1.2rem">📊</span>' +
+        '<span style="font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--amber)">THE PACK REPORT</span>' +
+        '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
+        '</div>' +
+        '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);white-space:pre-line">' + escHtml(h.message) + '</div>' +
+        '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">' +
+        '<button onclick="toggleHowlLike(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer">⚔️ <span style="font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">' + (likes.length||'') + '</span></button>' +
+        '<div style="flex:1"></div>' +
+        '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
+        '</div></div>';
+    }
     if (!player) return '';
     const hc = (h.player_laurels >= 1200) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const likes = h.likes || [];
@@ -2191,7 +2317,7 @@ async function inductPlayer() {
   document.getElementById('induct-subtitle').value = '';
   document.querySelectorAll('#induct-books input').forEach(cb => cb.checked = false);
   document.getElementById('induct-book-preview').textContent = '+0 Laurels from books';
-  let msg = `${name} has joined the pack! House ${house} welcomes a new Howler. 🐺`;
+  let msg = `${name} has joined the pack! ${house} welcomes a new Howler. 🐺`;
   if (bookLaurels > 0) msg += ` +${bookLaurels} Laurels for ${booksRead.length} book${booksRead.length>1?'s':''} read!`;
   if (inductBtn) { inductBtn.disabled = false; inductBtn.textContent = 'Join the Pack ✦'; }
   showToast(msg);
