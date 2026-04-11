@@ -1065,6 +1065,7 @@
         <label class="form-label">Howler</label>
         <select class="form-select" id="howl-player"></select>
       </div>
+      <div id="howl-activity-preview" style="display:none;background:var(--parchment-dark);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:8px 12px;margin-bottom:10px;font-size:0.9rem"></div>
       <div class="form-group">
         <label class="form-label">Your Howl</label>
         <textarea class="form-textarea" id="howl-message" placeholder="Say something to the pack..." style="min-height:90px"></textarea>
@@ -1975,7 +1976,19 @@ function renderHowlFeed() {
     if (!player) return '';
     const hc = (h.player_laurels >= 1200) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const likes = h.likes || [];
-    const replyTo = h.reply_to_name ? '<div style="font-family:Crimson Pro,serif;font-size:0.8rem;font-style:italic;color:var(--ink-light);margin-bottom:4px">↩ re: ' + escHtml(h.reply_to_name) + '</div>' : '';
+    let replyTo = '';
+    if (h.activity_ref) {
+      const ref = h.activity_ref;
+      replyTo = '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:7px 10px;margin-bottom:8px">' +
+        '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:2px">↩ REPLYING TO</div>' +
+        '<div style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);font-style:italic">' +
+        escHtml(ref.player) + ' · ' + escHtml(ref.workout) +
+        (ref.detail ? ' · ' + ref.detail : '') +
+        ' · ' + formatDate(ref.date) +
+        '</div></div>';
+    } else if (h.reply_to_name) {
+      replyTo = '<div style="font-family:Crimson Pro,serif;font-size:0.8rem;font-style:italic;color:var(--ink-light);margin-bottom:4px">↩ re: ' + escHtml(h.reply_to_name) + '</div>';
+    }
     return '<div class="chronicle-entry" style="--house-color:' + hc + ';background:linear-gradient(135deg,' + hc + '08,var(--parchment))">' +
       '<div class="chronicle-header">' +
       '<span class="chronicle-player">' + escHtml(player.name) + '</span>' +
@@ -1988,12 +2001,13 @@ function renderHowlFeed() {
       '<button onclick="toggleHowlLike(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer" title="Like">⚔️ <span style="font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">' + (likes.length || '') + '</span></button>' +
       '<button onclick="copyHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">⎘ Copy</button>' +
       '<div style="flex:1"></div>' +
+      '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
       '</div>' +
       '</div>';
   }).join('');
 }
 
-async function postHowl(replyToId, replyToName) {
+async function postHowl(replyToId, replyToName, activityRef) {
   const btn = document.getElementById('howl-submit-btn');
   if (btn && btn.disabled) return;
   const pid = document.getElementById('howl-player').value;
@@ -2012,7 +2026,8 @@ async function postHowl(replyToId, replyToName) {
     timestamp: new Date().toISOString(),
     likes: [],
     reply_to_id: replyToId || null,
-    reply_to_name: replyToName || null
+    reply_to_name: replyToName || null,
+    activity_ref: activityRef || null
   };
   if (!state.howls) state.howls = [];
   state.howls.push(howl);
@@ -2024,23 +2039,57 @@ async function postHowl(replyToId, replyToName) {
 }
 
 function quickHowlAt(workoutId, playerName) {
+  // Build activity summary for reference
+  const w = state.workouts.find(function(x) { return x.id === workoutId; });
+  let activityRef = null;
+  if (w) {
+    const wname = WORKOUT_NAMES[w.workout] || w.workout;
+    const detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
+    activityRef = {
+      id: workoutId,
+      player: playerName,
+      workout: wname,
+      detail: detail,
+      date: w.date
+    };
+  }
   switchTab('dispatch');
-  document.getElementById('howl-message').value = '';
-  document.getElementById('howl-message').placeholder = 'Replying to ' + playerName + '...';
-  document.getElementById('howl-message').dataset.replyWorkout = workoutId;
-  document.getElementById('howl-message').dataset.replyName = playerName;
-  document.getElementById('howl-message').focus();
-  // Override post to include reply context
+  const msg = document.getElementById('howl-message');
+  msg.value = '';
+  msg.placeholder = 'Howling at ' + playerName + '...';
+  msg.dataset.replyWorkout = workoutId;
+  msg.dataset.replyName = playerName;
+  msg.dataset.activityRef = JSON.stringify(activityRef);
+  msg.focus();
+  // Show activity preview above the textarea
+  const preview = document.getElementById('howl-activity-preview');
+  if (preview && activityRef) {
+    preview.style.display = 'block';
+    preview.innerHTML = '<span style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--amber)">↩ REPLYING TO</span><br>' +
+      '<span style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);font-style:italic">' +
+      escHtml(playerName) + ' · ' + escHtml(activityRef.workout) +
+      (activityRef.detail ? ' · ' + activityRef.detail : '') +
+      ' · ' + formatDate(activityRef.date) + '</span>' +
+      '<span onclick="clearHowlReply()" style="float:right;cursor:pointer;font-size:0.8rem;color:var(--ink-light);padding:2px 4px">✕</span>';
+  }
   const btn = document.getElementById('howl-submit-btn');
   btn.onclick = function() {
-    const msg = document.getElementById('howl-message');
-    postHowl(msg.dataset.replyWorkout, msg.dataset.replyName).then(function() {
-      msg.placeholder = 'Say something to the pack...';
-      delete msg.dataset.replyWorkout;
-      delete msg.dataset.replyName;
+    postHowl(msg.dataset.replyWorkout, msg.dataset.replyName, msg.dataset.activityRef ? JSON.parse(msg.dataset.activityRef) : null).then(function() {
+      clearHowlReply();
       btn.onclick = postHowl;
     });
   };
+}
+
+function clearHowlReply() {
+  const msg = document.getElementById('howl-message');
+  msg.placeholder = 'Say something to the pack...';
+  delete msg.dataset.replyWorkout;
+  delete msg.dataset.replyName;
+  delete msg.dataset.activityRef;
+  const preview = document.getElementById('howl-activity-preview');
+  if (preview) preview.style.display = 'none';
+  document.getElementById('howl-submit-btn').onclick = postHowl;
 }
 
 async function toggleLike(workoutId) {
@@ -2059,6 +2108,14 @@ async function toggleHowlLike(howlId) {
   if (!h.likes) h.likes = [];
   h.likes.push(Date.now());
   await saveState();
+  renderHowlFeed();
+}
+
+async function removeHowl(howlId) {
+  if (!confirm('Delete this Howl from the pack?')) return;
+  state.howls = (state.howls || []).filter(function(h) { return h.id !== howlId; });
+  await saveState();
+  showToast('Howl silenced.');
   renderHowlFeed();
 }
 
