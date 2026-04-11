@@ -1716,7 +1716,7 @@ function renderPlayers() {
     }).join('');
     html += `
       <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor}">
-        <div class="player-house-label">House ${p.house}</div>
+        <div class="player-house-label">${p.house}</div>
         <div class="player-name">${escHtml(p.name)}</div>
         ${p.subtitle ? `<div class="player-subtitle">${escHtml(p.subtitle)}</div>` : ''}
         <div class="player-rank">${s.rank.name}</div>
@@ -1796,7 +1796,21 @@ function renderChronicle() {
     const playerStats = calcPlayerStats(player.id);
     const houseColor = playerStats.laurels >= 1200 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const badgeDef = w.badge_earned ? BADGES_DEF.find(b => b.id === w.badge_earned) : null;
-    const detail = w.miles ? `${w.miles} mi` : (w.minutes ? `${w.minutes} min` : '');
+    // Build meaningful detail string per workout type
+    let detail = '';
+    if (['long_run','tempo','easy_run','optional_run','walk_run'].includes(w.workout)) {
+      detail = w.miles ? w.miles + ' mi' : '';
+    } else if (w.workout === 'peloton') {
+      detail = w.minutes ? w.minutes + ' min' : '';
+    } else if (w.workout === 'strength') {
+      detail = 'Strength session';
+    } else if (w.workout === 'mobility') {
+      detail = 'Mobility session';
+    } else if (w.workout === 'optional_other') {
+      detail = 'Cross-train';
+    } else {
+      detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
+    }
     return `<div class="chronicle-entry" style="--house-color:${houseColor}">
       <div class="chronicle-header">
         <span class="chronicle-player">${escHtml(player.name)}</span>
@@ -1979,24 +1993,25 @@ function renderHowlFeed() {
     let replyTo = '';
     if (h.activity_ref) {
       const ref = h.activity_ref;
-      replyTo = '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:7px 10px;margin-bottom:8px">' +
-        '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:2px">↩ REPLYING TO</div>' +
-        '<div style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);font-style:italic">' +
-        escHtml(ref.player) + ' · ' + escHtml(ref.workout) +
-        (ref.detail ? ' · ' + ref.detail : '') +
-        ' · ' + formatDate(ref.date) +
+      replyTo = '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:8px 12px;margin-bottom:10px">' +
+        '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:4px">↩ IN RESPONSE TO</div>' +
+        '<div style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:var(--ink);margin-bottom:1px">' + escHtml(ref.player) + '</div>' +
+        '<div style="font-family:Crimson Pro,serif;font-size:0.88rem;color:var(--ink-mid)">' +
+        escHtml(ref.workout) + (ref.detail ? ' &middot; ' + ref.detail : '') + ' &middot; ' + formatDate(ref.date) +
         '</div></div>';
     } else if (h.reply_to_name) {
       replyTo = '<div style="font-family:Crimson Pro,serif;font-size:0.8rem;font-style:italic;color:var(--ink-light);margin-bottom:4px">↩ re: ' + escHtml(h.reply_to_name) + '</div>';
     }
+    const rank = (function(l){ var r=RANKS[0]; RANKS.forEach(function(rk){if(l>=rk.min)r=rk;}); return r; })(h.player_laurels||0);
     return '<div class="chronicle-entry" style="--house-color:' + hc + ';background:linear-gradient(135deg,' + hc + '08,var(--parchment))">' +
-      '<div class="chronicle-header">' +
-      '<span class="chronicle-player">' + escHtml(player.name) + '</span>' +
-      '<span style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-light)">House ' + player.house + '</span>' +
-      '<span class="chronicle-meta">' + formatDate(h.date) + '</span>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">' +
+      '<span style="font-family:Cinzel,serif;font-size:0.95rem;font-weight:700;color:' + hc + '">' + escHtml(player.name) + '</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light);background:var(--parchment-dark);border:1px solid var(--border);padding:1px 6px;border-radius:2px">' + player.house + '</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">' + rank.name + '</span>' +
+      '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
       '</div>' +
       replyTo +
-      '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic">"' + escHtml(h.message) + '"</div>' +
+      '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message) + '&rdquo;</div>' +
       '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">' +
       '<button onclick="toggleHowlLike(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer" title="Like">⚔️ <span style="font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">' + (likes.length || '') + '</span></button>' +
       '<button onclick="copyHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">⎘ Copy</button>' +
@@ -2503,7 +2518,7 @@ function switchTab(id) {
     const ids = ['leaderboard','log','chronicle','trials','conquests','dispatch','codex'];
     if (ids[i] === id) t.classList.add('active');
   });
-  if (id === 'dispatch') updateDispatchOutput();
+  if (id === 'dispatch') renderDispatch();
 }
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
