@@ -20,11 +20,16 @@
     --amber-pale: #f0d080;
     --amber-glow: #fae8a0;
     --gold: #c8900a;
-    --house-gold: #7a5006;
     --house-red: #9a1010;
     --house-obsidian: #1e3858;
     --house-violet: #4a1878;
     --house-green: #1a4818;
+    --house-copper: #8b4513;
+    --house-pink: #9c2d6e;
+    --house-yellow: #8a7000;
+    --house-silver: #4a5568;
+    --house-blue: #1a4a7a;
+    --peerless-gold: #c8900a;
     --border: rgba(122,80,6,0.25);
     --border-strong: rgba(122,80,6,0.5);
     --shadow: 0 2px 12px rgba(122,80,6,0.15);
@@ -223,6 +228,8 @@
     background: var(--house-color, var(--amber));
   }
   .player-card:hover { box-shadow: var(--shadow-strong); transform: translateY(-2px); }
+  .player-card.peerless-gold { border-color: var(--peerless-gold); box-shadow: 0 0 16px rgba(200,144,10,0.25), var(--shadow); }
+  .player-card.peerless-gold::after { content: '★ PEERLESS'; position: absolute; bottom: 8px; right: 8px; font-family: 'Cinzel', serif; font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--peerless-gold); background: rgba(200,144,10,0.1); border: 1px solid rgba(200,144,10,0.4); padding: 2px 6px; border-radius: 2px; }
   .player-card.primus { border-color: var(--gold); }
   .player-card.primus::after {
     content: '★ PRIMUS';
@@ -946,11 +953,13 @@
 <!-- NAV -->
 <nav class="nav-strip">
   <div class="nav-inner">
-    <div class="nav-tab active" onclick="switchTab('log')">⚔ Log Trial</div>
+    <div class="nav-tab active" onclick="switchTab('leaderboard')">🏅 Leaderboard</div>
+    <div class="nav-tab" onclick="switchTab('log')">⚔ Log Trial</div>
     <div class="nav-tab" onclick="switchTab('chronicle')">📜 Chronicle</div>
     <div class="nav-tab" onclick="switchTab('trials')">🏆 Trials</div>
     <div class="nav-tab" onclick="switchTab('conquests')">✦ Conquests</div>
     <div class="nav-tab" onclick="switchTab('dispatch')">📣 Dispatch</div>
+    <div class="nav-tab" onclick="switchTab('books')">📚 Books</div>
     <div class="nav-tab" onclick="switchTab('codex')">📖 Codex</div>
   </div>
 </nav>
@@ -958,8 +967,8 @@
 <!-- MAIN -->
 <main class="main-content">
 
-  <!-- LEADERBOARD always visible -->
-  <div id="leaderboard-section" style="margin-bottom:28px">
+  <!-- TAB: LEADERBOARD -->
+  <div class="tab-content active" id="tab-leaderboard">
     <div class="section-title">The Pack — Leaderboard</div>
     <div class="player-grid" id="player-grid">
       <div class="induct-card" onclick="openInductModal()">
@@ -968,10 +977,13 @@
         <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">Join the Pack</div>
       </div>
     </div>
+
+    <div class="section-title" style="margin-top:28px;font-size:1rem">🏃 Distance Rankings</div>
+    <div id="distance-rankings" style="display:flex;flex-direction:column;gap:8px;max-width:560px"></div>
   </div>
 
   <!-- TAB: LOG TRIAL -->
-  <div class="tab-content active" id="tab-log">
+  <div class="tab-content" id="tab-log">
     <div class="section-title">Log Trial</div>
     <div class="log-form-card">
       <div class="form-group">
@@ -995,7 +1007,7 @@
       </div>
       <div class="form-row">
         <div class="form-group" id="miles-group">
-          <label class="form-label">Miles</label>
+          <label class="form-label">Distance (mi)</label>
           <input class="form-input" type="number" id="log-miles" min="0" step="0.1" placeholder="e.g. 6.2" oninput="updateLaurelPreview()">
         </div>
         <div class="form-group" id="minutes-group" style="display:none">
@@ -1056,10 +1068,60 @@
     <button class="copy-btn" id="copy-btn" onclick="copyDispatch()">Copy to Clipboard</button>
   </div>
 
+  <!-- TAB: BOOKS -->
+  <div class="tab-content" id="tab-books">
+    <div class="section-title">📚 The Reading Pack</div>
+    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:1rem;color:var(--ink-light);margin-bottom:20px">Log a book read during training. Each book earns +25 Laurels and counts toward your rank.</div>
+
+    <div class="log-form-card" style="max-width:480px;margin-bottom:28px">
+      <div class="form-group">
+        <label class="form-label">Howler</label>
+        <select class="form-select" id="book-player"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Book</label>
+        <select class="form-select" id="book-title">
+          <option value="">— Select Book —</option>
+          <option value="red_rising">Red Rising</option>
+          <option value="golden_son">Golden Son</option>
+          <option value="morning_star">Morning Star</option>
+          <option value="iron_gold">Iron Gold</option>
+          <option value="dark_age">Dark Age</option>
+          <option value="light_bringer">Light Bringer</option>
+        </select>
+      </div>
+      <div class="laurel-preview" style="display:flex">
+        <div><div class="laurel-preview-label">Laurels for this book</div><div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.75rem;color:var(--amber)" id="book-already-note"></div></div>
+        <div class="laurel-preview-val">+25</div>
+      </div>
+      <button class="btn-primary" onclick="logBook()" style="margin-top:12px">✦ LOG BOOK READ ✦</button>
+    </div>
+
+    <div class="section-title" style="font-size:1rem">Books Read by the Pack</div>
+    <div id="books-feed" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
   <!-- TAB: CODEX -->
   <div class="tab-content" id="tab-codex">
     <div class="section-title">Codex — Rules of the Pack</div>
     <div class="codex-section">
+      <div class="codex-section">
+      <div class="section-title" style="font-size:0.95rem">Pack Rules</div>
+      <table class="codex-table">
+        <tbody>
+          <tr><td><strong>Training Start</strong></td><td>Monday, April 13, 2026</td></tr>
+          <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
+          <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
+          <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum</td></tr>
+          <tr><td><strong>Optional 5th Day</strong></td><td>Any workout counts — run or cross-train</td></tr>
+          <tr><td><strong>Perfect Week Bonus</strong></td><td>Complete all 4 core days → +25 Laurels</td></tr>
+          <tr><td><strong>Streak Bonus</strong></td><td>+10 Laurels per consecutive week after week 1</td></tr>
+          <tr><td><strong>Book Bonus</strong></td><td>+25 Laurels per Red Rising book read (max 150)</td></tr>
+          <tr><td><strong>Primus</strong></td><td>Player with most Laurels leads the pack ★</td></tr>
+          <tr><td><strong>Peerless Gold</strong></td><td>Reach Peerless Scarred (1200L) and your card turns gold — earned, not chosen ✦</td></tr>
+        </tbody>
+      </table>
+    </div>
       <div class="section-title" style="font-size:0.95rem">Ranks by Laurels</div>
       <table class="codex-table">
         <thead><tr><th>Laurels</th><th>Rank</th></tr></thead>
@@ -1082,6 +1144,7 @@
           <tr><td>Mind & Body — Mobility/Yoga</td><td>8 flat</td></tr>
           <tr><td>Perfect Week Bonus (all 4 core days)</td><td>+25</td></tr>
           <tr><td>Consecutive Week Streak Bonus</td><td>+10 per week</td></tr>
+          <tr><td>📚 Book Read (each of 6)</td><td>+25 flat (150 max)</td></tr>
         </tbody>
       </table>
     </div>
@@ -1104,17 +1167,33 @@
     </div>
     <div class="form-group">
       <label class="form-label">House</label>
-      <select class="form-select" id="induct-house">
-        <option value="Gold">House Gold</option>
-        <option value="Red">House Red</option>
-        <option value="Obsidian">House Obsidian</option>
-        <option value="Violet">House Violet</option>
-        <option value="Green">House Green</option>
+      <select class="form-select" id="induct-house" onchange="updateHouseDesc('induct')">
+        <option value="Red">House Red — Manual laborers and miners</option>
+        <option value="Obsidian">House Obsidian — Elite soldiers and bodyguards</option>
+        <option value="Violet">House Violet — Artisans and other creatives</option>
+        <option value="Green">House Green — Programmers and technicians</option>
+        <option value="Copper">House Copper — Administrators, lawyers and bureaucrats</option>
+        <option value="Pink">House Pink — Pleasure slaves and social functionaries</option>
+        <option value="Yellow">House Yellow — Doctors and researchers</option>
+        <option value="Silver">House Silver — Financiers and businessmen</option>
+        <option value="Blue">House Blue — Bridge crew of starships and pilots</option>
       </select>
     </div>
     <div class="form-group">
       <label class="form-label">Subtitle (e.g. city, tagline)</label>
       <input class="form-input" type="text" id="induct-subtitle" placeholder="e.g. Chandler, AZ">
+    </div>
+    <div class="form-group">
+      <label class="form-label">📚 Books Read (25 Laurels each)</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px" id="induct-books">
+        <label style="display:flex;align-items:center;gap:7px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);cursor:pointer"><input type="checkbox" value="red_rising" style="accent-color:var(--amber)"> Red Rising</label>
+        <label style="display:flex;align-items:center;gap:7px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);cursor:pointer"><input type="checkbox" value="golden_son" style="accent-color:var(--amber)"> Golden Son</label>
+        <label style="display:flex;align-items:center;gap:7px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);cursor:pointer"><input type="checkbox" value="morning_star" style="accent-color:var(--amber)"> Morning Star</label>
+        <label style="display:flex;align-items:center;gap:7px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);cursor:pointer"><input type="checkbox" value="iron_gold" style="accent-color:var(--amber)"> Iron Gold</label>
+        <label style="display:flex;align-items:center;gap:7px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);cursor:pointer"><input type="checkbox" value="dark_age" style="accent-color:var(--amber)"> Dark Age</label>
+        <label style="display:flex;align-items:center;gap:7px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);cursor:pointer"><input type="checkbox" value="light_bringer" style="accent-color:var(--amber)"> Light Bringer</label>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.08em;color:var(--amber);margin-top:6px" id="induct-book-preview">+0 Laurels from books</div>
     </div>
     <button class="btn-primary" onclick="inductPlayer()">Join the Pack ✦</button>
   </div>
@@ -1153,6 +1232,52 @@
   </div>
 </div>
 
+<!-- EDIT WORKOUT MODAL -->
+<div class="modal-overlay" id="edit-workout-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('edit-workout-modal')">✕</button>
+    <div class="modal-title">Edit Trial</div>
+    <input type="hidden" id="edit-workout-id">
+    <div class="form-group">
+      <label class="form-label">Workout Type</label>
+      <select class="form-select" id="edit-workout-type" onchange="updateEditLaurelPreview()">
+        <option value="long_run">The March — Long Run (12L/mile)</option>
+        <option value="tempo">The Charge — Tempo / Race Pace (10L/mile)</option>
+        <option value="easy_run">Easy Run (8L/mile)</option>
+        <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
+        <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
+        <option value="walk_run">Walk/Run Intervals (15L flat)</option>
+        <option value="peloton">The Steed — Peloton Ride (10L per 30 min)</option>
+        <option value="strength">Iron Forged — Strength (12L flat)</option>
+        <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Miles</label>
+        <input class="form-input" type="number" id="edit-workout-miles" min="0" step="0.1" oninput="updateEditLaurelPreview()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Minutes</label>
+        <input class="form-input" type="number" id="edit-workout-minutes" min="0" step="1" oninput="updateEditLaurelPreview()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input class="form-input" type="date" id="edit-workout-date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <textarea class="form-textarea" id="edit-workout-notes" placeholder="Optional notes"></textarea>
+    </div>
+    <div class="laurel-preview" id="edit-laurel-preview">
+      <div><div class="laurel-preview-label">Laurels</div></div>
+      <div class="laurel-preview-val" id="edit-laurel-preview-val">+0</div>
+    </div>
+    <button class="btn-primary" onclick="saveEditWorkout()">✦ SAVE CHANGES ✦</button>
+  </div>
+</div>
+
 <!-- EDIT PLAYER MODAL -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
@@ -1166,11 +1291,15 @@
     <div class="form-group">
       <label class="form-label">House</label>
       <select class="form-select" id="edit-house">
-        <option value="Gold">House Gold</option>
-        <option value="Red">House Red</option>
-        <option value="Obsidian">House Obsidian</option>
-        <option value="Violet">House Violet</option>
-        <option value="Green">House Green</option>
+        <option value="Red">House Red — Manual laborers and miners</option>
+        <option value="Obsidian">House Obsidian — Elite soldiers and bodyguards</option>
+        <option value="Violet">House Violet — Artisans and other creatives</option>
+        <option value="Green">House Green — Programmers and technicians</option>
+        <option value="Copper">House Copper — Administrators, lawyers and bureaucrats</option>
+        <option value="Pink">House Pink — Pleasure slaves and social functionaries</option>
+        <option value="Yellow">House Yellow — Doctors and researchers</option>
+        <option value="Silver">House Silver — Financiers and businessmen</option>
+        <option value="Blue">House Blue — Bridge crew of starships and pilots</option>
       </select>
     </div>
     <div class="form-group">
@@ -1204,26 +1333,105 @@ const QUOTES = [
   "Break the chains and run. 🏃"
 ];
 const HOUSES = {
-  Gold: '#7a5006', Red: '#9a1010', Obsidian: '#1e3858', Violet: '#4a1878', Green: '#1a4818'
+  Red: '#9a1010', Obsidian: '#1e3858', Violet: '#4a1878', Green: '#1a4818',
+  Copper: '#8b4513', Pink: '#9c2d6e', Yellow: '#8a7000', Silver: '#4a5568', Blue: '#1a4a7a'
 };
+const HOUSE_DESC = {
+  Red:      'Manual laborers and miners',
+  Obsidian: 'Elite soldiers and bodyguards',
+  Violet:   'Artisans and other creatives',
+  Green:    'Programmers and technicians',
+  Copper:   'Administrators, lawyers and bureaucrats',
+  Pink:     'Pleasure slaves and social functionaries',
+  Yellow:   'Doctors and researchers',
+  Silver:   'Financiers and businessmen',
+  Blue:     'Bridge crew of starships and pilots'
+};
+const PEERLESS_GOLD = '#c8900a';
 const RANKS = [
-  {min:0, name:'Lowborn'}, {min:50, name:'Drafted'}, {min:150, name:'Lancer'},
-  {min:300, name:'Legate'}, {min:600, name:'Imperator'},
-  {min:1000, name:'Peerless Scarred'}, {min:2000, name:'The Reaper ☀️'}
+  {min:0, name:'Lowborn'}, {min:150, name:'Drafted'}, {min:300, name:'Lancer'},
+  {min:500, name:'Legate'}, {min:800, name:'Imperator'},
+  {min:1200, name:'Peerless Scarred'}, {min:2200, name:'The Reaper ☀️'}
 ];
+// Each badge has 3 tiers: bronze, silver, gold
+// badges_awarded stores e.g. 'first_step_bronze', 'first_step_silver', 'first_step_gold'
+const BADGE_TIERS = ['bronze','silver','gold'];
+const TIER_COLORS = {bronze:'#b87333', silver:'#a0a0b0', gold:'#c8900a'};
+const TIER_LABELS = {bronze:'Bronze', silver:'Silver', gold:'Gold'};
+const TIER_ROMAN = {bronze:'I', silver:'II', gold:'III'};
 const BADGES_DEF = [
-  {id:'first_step', icon:'👟', name:'First Step', desc:'Log first workout'},
-  {id:'week_warrior', icon:'⚔️', name:'Week Warrior', desc:'4 workouts in one week'},
-  {id:'steed_master', icon:'🚴', name:'Steed Master', desc:'5 Peloton rides'},
-  {id:'the_runner', icon:'🏃', name:'The Runner', desc:'25 total miles'},
-  {id:'iron_forged', icon:'🦵', name:'Iron Forged', desc:'5 strength sessions'},
-  {id:'mind_body', icon:'🧘', name:'Mind & Body', desc:'3 mobility sessions'},
-  {id:'long_march', icon:'🗺️', name:'The Long March', desc:'Complete a 10-mile run'},
-  {id:'unbroken', icon:'🔥', name:'Unbroken', desc:'3-week streak'},
-  {id:'extra_mile', icon:'⭐', name:'Extra Mile', desc:'5 optional 5th day workouts'},
-  {id:'centurion', icon:'💯', name:'Centurion', desc:'500 Laurels'},
-  {id:'peerless', icon:'🌟', name:'Peerless', desc:'Complete a 12-mile run'},
-  {id:'the_reaper', icon:'☀️', name:'The Reaper', desc:'2000 Laurels'}
+  {id:'first_step', icon:'👟', name:'First Step',
+    tiers:[
+      {tier:'bronze', desc:'Log 1 workout', check:(s)=>s.trials>=1},
+      {tier:'silver', desc:'Log 25 workouts', check:(s)=>s.trials>=25},
+      {tier:'gold',   desc:'Log 50 workouts', check:(s)=>s.trials>=50}
+    ]},
+  {id:'week_warrior', icon:'⚔️', name:'Week Warrior',
+    tiers:[
+      {tier:'bronze', desc:'1 perfect week (4 core days)', check:(s)=>s.perfectWeeks>=1},
+      {tier:'silver', desc:'4 perfect weeks', check:(s)=>s.perfectWeeks>=4},
+      {tier:'gold',   desc:'8 perfect weeks', check:(s)=>s.perfectWeeks>=8}
+    ]},
+  {id:'steed_master', icon:'🚴', name:'Steed Master',
+    tiers:[
+      {tier:'bronze', desc:'5 Peloton rides', check:(s)=>s.pelotons>=5},
+      {tier:'silver', desc:'15 Peloton rides', check:(s)=>s.pelotons>=15},
+      {tier:'gold',   desc:'30 Peloton rides', check:(s)=>s.pelotons>=30}
+    ]},
+  {id:'the_runner', icon:'🏃', name:'The Runner',
+    tiers:[
+      {tier:'bronze', desc:'25 total miles', check:(s)=>s.miles>=25},
+      {tier:'silver', desc:'50 total miles', check:(s)=>s.miles>=50},
+      {tier:'gold',   desc:'100 total miles', check:(s)=>s.miles>=100}
+    ]},
+  {id:'iron_forged', icon:'🦵', name:'Iron Forged',
+    tiers:[
+      {tier:'bronze', desc:'5 strength sessions', check:(s)=>s.strength>=5},
+      {tier:'silver', desc:'15 strength sessions', check:(s)=>s.strength>=15},
+      {tier:'gold',   desc:'30 strength sessions', check:(s)=>s.strength>=30}
+    ]},
+  {id:'mind_body', icon:'🧘', name:'Mind & Body',
+    tiers:[
+      {tier:'bronze', desc:'3 mobility sessions', check:(s)=>s.mobility>=3},
+      {tier:'silver', desc:'10 mobility sessions', check:(s)=>s.mobility>=10},
+      {tier:'gold',   desc:'20 mobility sessions', check:(s)=>s.mobility>=20}
+    ]},
+  {id:'long_march', icon:'🗺️', name:'The Long March',
+    tiers:[
+      {tier:'bronze', desc:'Run 6 miles in one session', check:(s)=>s.maxSingleRun>=6},
+      {tier:'silver', desc:'Run 10 miles in one session', check:(s)=>s.maxSingleRun>=10},
+      {tier:'gold',   desc:'Run 13.1 miles in one session', check:(s)=>s.maxSingleRun>=13.1}
+    ]},
+  {id:'unbroken', icon:'🔥', name:'Unbroken',
+    tiers:[
+      {tier:'bronze', desc:'3-week streak', check:(s)=>s.streak>=3},
+      {tier:'silver', desc:'6-week streak', check:(s)=>s.streak>=6},
+      {tier:'gold',   desc:'12-week streak', check:(s)=>s.streak>=12}
+    ]},
+  {id:'extra_mile', icon:'⭐', name:'Extra Mile',
+    tiers:[
+      {tier:'bronze', desc:'5 optional 5th day workouts', check:(s)=>s.optionals>=5},
+      {tier:'silver', desc:'15 optional 5th day workouts', check:(s)=>s.optionals>=15},
+      {tier:'gold',   desc:'30 optional 5th day workouts', check:(s)=>s.optionals>=30}
+    ]},
+  {id:'centurion', icon:'💯', name:'Centurion',
+    tiers:[
+      {tier:'bronze', desc:'500 Laurels', check:(s)=>s.laurels>=500},
+      {tier:'silver', desc:'1000 Laurels', check:(s)=>s.laurels>=1000},
+      {tier:'gold',   desc:'2000 Laurels', check:(s)=>s.laurels>=2000}
+    ]},
+  {id:'peerless', icon:'🌟', name:'Peerless',
+    tiers:[
+      {tier:'bronze', desc:'Run 10 miles in one session', check:(s)=>s.maxSingleRun>=10},
+      {tier:'silver', desc:'Run 12 miles in one session', check:(s)=>s.maxSingleRun>=12},
+      {tier:'gold',   desc:'Run 13.1 miles — the full half!', check:(s)=>s.maxSingleRun>=13.1}
+    ]},
+  {id:'the_reaper', icon:'☀️', name:'The Reaper',
+    tiers:[
+      {tier:'bronze', desc:'2000 Laurels', check:(s)=>s.laurels>=2000},
+      {tier:'silver', desc:'3000 Laurels', check:(s)=>s.laurels>=3000},
+      {tier:'gold',   desc:'5000 Laurels', check:(s)=>s.laurels>=5000}
+    ]}
 ];
 const CHALLENGES_DEF = [
   {id:'first_blood', name:'First Blood', icon:'⚔️', type:'duel', desc:'First to log any trial', reward:50, goal:1},
@@ -1256,6 +1464,16 @@ const DISPATCH_TYPES = [
   {id:'howler', emoji:'🐺', label:'GO HOWLER GO'},
   {id:'custom', emoji:'✍️', label:'Custom'}
 ];
+const BOOKS = [
+  {id:'red_rising', title:'Red Rising'},
+  {id:'golden_son', title:'Golden Son'},
+  {id:'morning_star', title:'Morning Star'},
+  {id:'iron_gold', title:'Iron Gold'},
+  {id:'dark_age', title:'Dark Age'},
+  {id:'light_bringer', title:'Light Bringer'}
+];
+const BOOK_LAURELS = 25;
+
 const WORKOUT_NAMES = {
   long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'Easy Run',
   optional_run:'Optional 5th Day Run', optional_other:'Optional 5th Day Other',
@@ -1372,7 +1590,9 @@ function updateCountdown() {
 // ─── PLAYER CALC ─────────────────────────────────────────────────────────────
 function calcPlayerStats(pid) {
   const works = state.workouts.filter(w => w.player_id === pid);
-  let laurels = 0, miles = 0, trials = works.length;
+  const player = state.players.find(p => p.id === pid);
+  let laurels = (player && player.book_laurels) ? player.book_laurels : 0;
+  let miles = 0, trials = works.length;
   let pelotons = 0, strength = 0, mobility = 0, optionals = 0;
   let maxSingleRun = 0;
   const weekSet = new Set();
@@ -1395,8 +1615,7 @@ function calcPlayerStats(pid) {
   });
 
   // Perfect week bonuses
-  let perfWeeks = 0;
-  Object.values(weekWorkouts).forEach(cnt => { if (cnt >= 4) { laurels += 25; perfWeeks++; } });
+  Object.values(weekWorkouts).forEach(cnt => { if (cnt >= 4) laurels += 25; });
 
   // Streak bonus
   const streak = weekSet.size;
@@ -1404,25 +1623,24 @@ function calcPlayerStats(pid) {
 
   const rank = getRank(laurels);
 
-  // Badges
-  const badges = [];
-  if (trials >= 1) tryAwardBadge(pid, 'first_step', badges);
-  const maxWeekWork = Math.max(0, ...Object.values(weekWorkouts));
-  if (maxWeekWork >= 4) tryAwardBadge(pid, 'week_warrior', badges);
-  if (pelotons >= 5) tryAwardBadge(pid, 'steed_master', badges);
-  if (miles >= 25) tryAwardBadge(pid, 'the_runner', badges);
-  if (strength >= 5) tryAwardBadge(pid, 'iron_forged', badges);
-  if (mobility >= 3) tryAwardBadge(pid, 'mind_body', badges);
-  if (maxSingleRun >= 10) tryAwardBadge(pid, 'long_march', badges);
-  if (streak >= 3) tryAwardBadge(pid, 'unbroken', badges);
-  if (optionals >= 5) tryAwardBadge(pid, 'extra_mile', badges);
-  if (laurels >= 500) tryAwardBadge(pid, 'centurion', badges);
-  if (maxSingleRun >= 12) tryAwardBadge(pid, 'peerless', badges);
-  if (laurels >= 2000) tryAwardBadge(pid, 'the_reaper', badges);
+  // Perfect weeks count
+  let perfectWeeks = 0;
+  Object.values(weekWorkouts).forEach(cnt => { if (cnt >= 4) perfectWeeks++; });
+
+  // Build stats object for badge checks
+  const statsObj = { laurels, miles: +miles.toFixed(1), trials, streak, pelotons, strength, mobility, optionals, maxSingleRun, perfectWeeks };
+
+  // Tiered badges
+  const newBadges = [];
+  BADGES_DEF.forEach(badge => {
+    badge.tiers.forEach(t => {
+      const key = badge.id + '_' + t.tier;
+      if (t.check(statsObj)) tryAwardBadge(pid, key, newBadges);
+    });
+  });
 
   const earnedBadges = (state.badges_awarded[pid] || []);
-
-  return { laurels, miles: +miles.toFixed(1), trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts };
+  return { laurels, miles: +miles.toFixed(1), trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks };
 }
 
 function tryAwardBadge(pid, badgeId, newBadges) {
@@ -1471,6 +1689,8 @@ function renderAll() {
   renderChallenges();
   renderTimeline();
   renderDispatch();
+  renderBooks();
+  renderDistanceRankings();
   renderCodex();
 }
 
@@ -1484,14 +1704,29 @@ function renderPlayers() {
   let html = '';
   sorted.forEach((p, idx) => {
     const s = statsMap[p.id];
-    const houseColor = HOUSES[p.house] || '#7a5006';
+    const stats_for_color = statsMap[p.id];
+    const isPeerless = stats_for_color.laurels >= 1200;
+    const houseColor = isPeerless ? PEERLESS_GOLD : (HOUSES[p.house] || '#7a5006');
     const isPrimus = p.id === primusId && s.laurels > 0;
-    const earnedBadges = s.earnedBadges.map(bid => {
-      const def = BADGES_DEF.find(b => b.id === bid);
-      return def ? `<span class="badge-pill" title="${def.name}">${def.icon}</span>` : '';
+    // Build tiered badge pills — show highest tier earned per badge
+    const badgeMap = {};
+    s.earnedBadges.forEach(key => {
+      BADGE_TIERS.forEach(tier => {
+        if (key.endsWith('_' + tier)) {
+          const baseId = key.slice(0, -(tier.length+1));
+          const tierIdx = BADGE_TIERS.indexOf(tier);
+          if (badgeMap[baseId] === undefined || tierIdx > badgeMap[baseId]) badgeMap[baseId] = tierIdx;
+        }
+      });
+    });
+    const earnedBadges = Object.entries(badgeMap).map(([baseId, tierIdx]) => {
+      const def = BADGES_DEF.find(b => b.id === baseId);
+      const tier = BADGE_TIERS[tierIdx];
+      const color = TIER_COLORS[tier];
+      return def ? `<span class="badge-pill" title="${def.name} — ${TIER_LABELS[tier]}" style="border:2px solid ${color};background:${color}15;color:${color};box-shadow:0 0 6px ${color}55;padding:2px 6px;font-size:0.8rem">${def.icon}<span style="font-size:0.6rem;margin-left:2px;font-family:'Cinzel',serif;font-weight:700;vertical-align:super">${TIER_ROMAN[tier]}</span></span>` : '';
     }).join('');
     html += `
-      <div class="player-card ${isPrimus?'primus':''}" style="--house-color:${houseColor}">
+      <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor}">
         <div class="player-house-label">House ${p.house}</div>
         <div class="player-name">${escHtml(p.name)}</div>
         ${p.subtitle ? `<div class="player-subtitle">${escHtml(p.subtitle)}</div>` : ''}
@@ -1500,7 +1735,7 @@ function renderPlayers() {
           <div class="stat-item"><span class="stat-val">${s.laurels}</span><span class="stat-label">Laurels</span></div>
           <div class="stat-item"><span class="stat-val">${s.trials}</span><span class="stat-label">Trials</span></div>
           <div class="stat-item"><span class="stat-val">${s.streak}</span><span class="stat-label">Wk Streak</span></div>
-          <div class="stat-item"><span class="stat-val">${s.miles}</span><span class="stat-label">Miles</span></div>
+          <div class="stat-item"><span class="stat-val">${s.miles}mi</span><span class="stat-label">Distance</span></div>
         </div>
         <div class="player-badges">${earnedBadges || '<span style="font-style:italic;font-size:0.75rem;color:var(--ink-light)">No badges yet</span>'}</div>
         <div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
@@ -1515,6 +1750,37 @@ function renderPlayers() {
     <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">Join the Pack</div>
   </div>`;
   grid.innerHTML = html;
+}
+
+function renderDistanceRankings() {
+  const el = document.getElementById('distance-rankings');
+  if (!el) return;
+  if (state.players.length === 0) { el.innerHTML = '<div class="empty-state" style="padding:20px">No runners yet.</div>'; return; }
+  const ranked = [...state.players].map(p => {
+    const s = calcPlayerStats(p.id);
+    return { p, miles: s.miles, laurels: s.laurels };
+  }).sort((a,b) => b.miles - a.miles);
+  const maxMiles = ranked[0]?.miles || 1;
+  const totalMiles = ranked.reduce((s,r) => s + r.miles, 0);
+  el.innerHTML = `
+    <div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.08em;color:var(--amber);margin-bottom:4px">
+      PACK TOTAL: <strong>${totalMiles.toFixed(1)} mi</strong> combined distance
+    </div>
+    ${ranked.map((r,i) => {
+      const pct = maxMiles > 0 ? (r.miles / maxMiles) * 100 : 0;
+      const isGold = r.laurels >= 1200;
+      const hc = isGold ? PEERLESS_GOLD : (HOUSES[r.p.house] || '#7a5006');
+      return \`<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span style="font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;color:var(--ink-light);width:20px">${i+1}.</span>
+          <span style="font-family:'Cinzel',serif;font-size:0.9rem;font-weight:700;color:\${hc};flex:1">\${r.p.name}</span>
+          <span style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;color:var(--ink)">\${r.miles} mi</span>
+        </div>
+        <div style="background:var(--parchment-mid);border-radius:3px;height:6px;overflow:hidden">
+          <div style="height:100%;width:\${pct}%;background:\${hc};border-radius:3px;transition:width 0.6s"></div>
+        </div>
+      </div>\`;
+    }).join('')}`;
 }
 
 function renderLogDropdown() {
@@ -1540,7 +1806,8 @@ function renderChronicle() {
   feed.innerHTML = sorted.slice(0, 50).map(w => {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
-    const houseColor = HOUSES[player.house] || '#7a5006';
+    const playerStats = calcPlayerStats(player.id);
+    const houseColor = playerStats.laurels >= 1200 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const badgeDef = w.badge_earned ? BADGES_DEF.find(b => b.id === w.badge_earned) : null;
     const detail = w.miles ? `${w.miles} mi` : (w.minutes ? `${w.minutes} min` : '');
     return `<div class="chronicle-entry" style="--house-color:${houseColor}">
@@ -1552,8 +1819,17 @@ function renderChronicle() {
       </div>
       <div class="chronicle-detail">+${w.laurels_base} Laurels earned</div>
       ${w.notes ? `<div class="chronicle-detail" style="font-style:italic">"${escHtml(w.notes)}"</div>` : ''}
-      ${badgeDef ? `<div class="chronicle-badge">${badgeDef.icon} Badge Earned: ${badgeDef.name}</div>` : ''}
+      ${w.badge_earned ? (() => {
+        const tier = BADGE_TIERS.find(t => w.badge_earned.endsWith('_'+t));
+        const baseId = tier ? w.badge_earned.slice(0,-(tier.length+1)) : w.badge_earned;
+        const bd = BADGES_DEF.find(b => b.id === baseId);
+        return bd ? `<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;box-shadow:0 0 8px ${TIER_COLORS[tier]||'var(--amber)'}44">${bd.icon} ${TIER_ROMAN[tier]||''} — ${TIER_LABELS[tier]||''} Badge: ${bd.name}</div>` : '';
+      })() : ''}
       <div class="chronicle-quote">"${w.quote}"</div>
+      <div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">
+        <button onclick="openEditWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
+        <button onclick="removeWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1761,9 +2037,17 @@ function renderCodex() {
   ranksBody.innerHTML = RANKS.map(r => `<tr><td>${r.min}+</td><td>${r.name}</td></tr>`).join('');
   const badgesGrid = document.getElementById('codex-badges');
   badgesGrid.innerHTML = BADGES_DEF.map(b =>
-    `<div class="badge-card">
-      <div class="badge-card-icon">${b.icon}</div>
-      <div><div class="badge-card-name">${b.name}</div><div class="badge-card-cond">${b.desc}</div></div>
+    `<div class="badge-card" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="badge-card-icon">${b.icon}</div>
+        <div class="badge-card-name">${b.name}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px;width:100%">
+        ${b.tiers.map(t => `<div style="display:flex;align-items:center;gap:6px;font-family:'Crimson Pro',serif;font-size:0.8rem">
+          <span style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:700;color:${TIER_COLORS[t.tier]};min-width:56px">${TIER_ROMAN[t.tier]} — ${TIER_LABELS[t.tier]}</span>
+          <span style="color:var(--ink-light)">${t.desc}</span>
+        </div>`).join('')}
+      </div>
     </div>`
   ).join('');
 }
@@ -1782,13 +2066,19 @@ async function inductPlayer() {
   const house = document.getElementById('induct-house').value;
   const subtitle = document.getElementById('induct-subtitle').value.trim();
   if (!name) { showToast('Name is required, Howler.'); return; }
+  const booksRead = [...document.querySelectorAll('#induct-books input:checked')].map(cb => cb.value);
+  const bookLaurels = booksRead.length * BOOK_LAURELS;
   const id = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
-  state.players.push({ id, name, house, subtitle });
+  state.players.push({ id, name, house, subtitle, books_read: booksRead, book_laurels: bookLaurels });
   await saveState();
   closeModal('induct-modal');
   document.getElementById('induct-name').value = '';
   document.getElementById('induct-subtitle').value = '';
-  showToast(`${name} has joined the pack! House ${house} welcomes a new Howler. 🐺`);
+  document.querySelectorAll('#induct-books input').forEach(cb => cb.checked = false);
+  document.getElementById('induct-book-preview').textContent = '+0 Laurels from books';
+  let msg = `${name} has joined the pack! House ${house} welcomes a new Howler. 🐺`;
+  if (bookLaurels > 0) msg += ` +${bookLaurels} Laurels for ${booksRead.length} book${booksRead.length>1?'s':''} read!`;
+  showToast(msg);
   renderAll();
 }
 
@@ -1826,6 +2116,137 @@ async function removePlayer(pid, name) {
   delete state.badges_awarded[pid];
   await saveState();
   showToast(`${name} has been removed from the pack.`);
+  renderAll();
+}
+
+async function logBook() {
+  const pid = document.getElementById('book-player').value;
+  const bookId = document.getElementById('book-title').value;
+  if (!pid) { showToast('Select a Howler first.'); return; }
+  if (!bookId) { showToast('Select a book.'); return; }
+  const player = state.players.find(p => p.id === pid);
+  if (!player) return;
+  if (!player.books_read) player.books_read = [];
+  if (player.books_read.includes(bookId)) {
+    showToast('This Howler has already logged that book!'); return;
+  }
+  player.books_read.push(bookId);
+  player.book_laurels = player.books_read.length * BOOK_LAURELS;
+  await saveState();
+  const bookName = BOOKS.find(b => b.id === bookId)?.title || bookId;
+  showToast(`+25 Laurels! ${player.name} has read ${bookName}. Per aspera ad astra. ✦`);
+  renderAll();
+  switchTab('books');
+}
+
+function renderBooks() {
+  // Populate player dropdown
+  const sel = document.getElementById('book-player');
+  if (sel) {
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">— Select Howler —</option>';
+    state.players.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name + ' (House ' + p.house + ')';
+      sel.appendChild(opt);
+    });
+    if (prev) sel.value = prev;
+  }
+
+  // Already-read note
+  const bookTitleSel = document.getElementById('book-title');
+  const alreadyNote = document.getElementById('book-already-note');
+  if (bookTitleSel && alreadyNote) {
+    bookTitleSel.onchange = () => {
+      const pid = document.getElementById('book-player').value;
+      const bid = bookTitleSel.value;
+      const player = state.players.find(p => p.id === pid);
+      if (player && bid && player.books_read && player.books_read.includes(bid)) {
+        alreadyNote.textContent = 'Already logged by this Howler';
+      } else { alreadyNote.textContent = ''; }
+    };
+  }
+
+  // Books feed
+  const feed = document.getElementById('books-feed');
+  if (!feed) return;
+  if (state.players.length === 0) {
+    feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📚</span>No Howlers inducted yet.</div>';
+    return;
+  }
+  const BOOK_TITLES = {red_rising:'Red Rising', golden_son:'Golden Son', morning_star:'Morning Star', iron_gold:'Iron Gold', dark_age:'Dark Age', light_bringer:'Light Bringer'};
+  const ORDER = ['red_rising','golden_son','morning_star','iron_gold','dark_age','light_bringer'];
+  let html = '';
+  state.players.forEach(p => {
+    const stats_for_color = statsMap[p.id];
+    const isPeerless = stats_for_color.laurels >= 1200;
+    const houseColor = isPeerless ? PEERLESS_GOLD : (HOUSES[p.house] || '#7a5006');
+    const read = p.books_read || [];
+    const laurels = read.length * BOOK_LAURELS;
+    html += `<div style="background:var(--parchment);border:1.5px solid var(--border);border-left:4px solid ${houseColor};border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-family:'Cinzel',serif;font-size:0.9rem;font-weight:700;color:${houseColor}">${escHtml(p.name)}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--ink-light)">House ${p.house}</span>
+        <span style="margin-left:auto;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--amber)">+${laurels}L</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        ${ORDER.map(bid => {
+          const done = read.includes(bid);
+          return `<div style="display:flex;align-items:center;gap:5px;font-family:'Crimson Pro',serif;font-size:0.85rem;color:${done?'var(--amber)':'var(--ink-light)'};opacity:${done?1:0.5}">
+            <span>${done?'✦':'○'}</span><span>${BOOK_TITLES[bid]}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+  feed.innerHTML = html;
+}
+
+function openEditWorkout(wid) {
+  const w = state.workouts.find(x => x.id === wid);
+  if (!w) return;
+  document.getElementById('edit-workout-id').value = wid;
+  document.getElementById('edit-workout-type').value = w.workout;
+  document.getElementById('edit-workout-miles').value = w.miles || '';
+  document.getElementById('edit-workout-minutes').value = w.minutes || '';
+  document.getElementById('edit-workout-date').value = w.date;
+  document.getElementById('edit-workout-notes').value = w.notes || '';
+  updateEditLaurelPreview();
+  document.getElementById('edit-workout-modal').classList.add('open');
+}
+
+function updateEditLaurelPreview() {
+  const workout = document.getElementById('edit-workout-type').value;
+  const miles = document.getElementById('edit-workout-miles').value;
+  const minutes = document.getElementById('edit-workout-minutes').value;
+  const base = calcLaurels(workout, miles, minutes);
+  document.getElementById('edit-laurel-preview-val').textContent = '+' + base;
+}
+
+async function saveEditWorkout() {
+  const wid = document.getElementById('edit-workout-id').value;
+  const w = state.workouts.find(x => x.id === wid);
+  if (!w) return;
+  w.workout = document.getElementById('edit-workout-type').value;
+  w.miles = parseFloat(document.getElementById('edit-workout-miles').value) || undefined;
+  w.minutes = parseInt(document.getElementById('edit-workout-minutes').value) || undefined;
+  w.date = document.getElementById('edit-workout-date').value;
+  w.notes = document.getElementById('edit-workout-notes').value.trim();
+  w.laurels_base = calcLaurels(w.workout, w.miles, w.minutes);
+  await saveState();
+  closeModal('edit-workout-modal');
+  showToast('Trial updated. The chronicle stands corrected. ✦');
+  renderAll();
+}
+
+async function removeWorkout(wid) {
+  const w = state.workouts.find(x => x.id === wid);
+  if (!w) return;
+  if (!confirm('Remove this trial from the chronicle?')) return;
+  state.workouts = state.workouts.filter(x => x.id !== wid);
+  await saveState();
+  showToast('Trial removed from the chronicle.');
   renderAll();
 }
 
@@ -1892,8 +2313,9 @@ async function submitTrial() {
 
   // Recalc to find new badges
   calcPlayerStats(pid); // mutates state.badges_awarded
-  const newBadges = (state.badges_awarded[pid] || []).filter(b => !prevBadges.includes(b));
-  if (newBadges.length > 0) entry.badge_earned = newBadges[0];
+  const allNewBadges = (state.badges_awarded[pid] || []).filter(b => !prevBadges.includes(b));
+  if (allNewBadges.length > 0) entry.badge_earned = allNewBadges[0];
+  const newBadges = allNewBadges;
 
   await saveState();
 
@@ -1907,8 +2329,11 @@ async function submitTrial() {
   const player = state.players.find(p => p.id === pid);
   let toastMsg = `✦ Trial recorded! +${laurels_base} Laurels for ${player?.name||'the Howler'}.`;
   if (newBadges.length > 0) {
-    const bd = BADGES_DEF.find(b => b.id === newBadges[0]);
-    if (bd) toastMsg += ` Badge unlocked: ${bd.icon} ${bd.name}!`;
+    const firstKey = newBadges[0];
+    const tier = BADGE_TIERS.find(t => firstKey.endsWith('_'+t));
+    const baseId = tier ? firstKey.slice(0,-(tier.length+1)) : firstKey;
+    const bd = BADGES_DEF.find(b => b.id === baseId);
+    if (bd && tier) toastMsg += ` ${TIER_ROMAN[tier]} ${TIER_LABELS[tier]} Badge: ${bd.icon} ${bd.name}!`;
   }
   showToast(toastMsg);
   renderAll();
@@ -1919,10 +2344,9 @@ async function submitTrial() {
 function switchTab(id) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  const tabMap = { log:'log', chronicle:'chronicle', trials:'trials', conquests:'conquests', dispatch:'dispatch', codex:'codex' };
   document.getElementById('tab-' + id).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach((t, i) => {
-    const ids = ['log','chronicle','trials','conquests','dispatch','codex'];
+    const ids = ['leaderboard','log','chronicle','trials','conquests','dispatch','books','codex'];
     if (ids[i] === id) t.classList.add('active');
   });
   if (id === 'dispatch') updateDispatchOutput();
@@ -1960,13 +2384,21 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('edit-modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal('edit-modal');
   });
+  document.getElementById('edit-workout-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('edit-workout-modal');
+  });
 
   // Dispatch custom input
   document.getElementById('dispatch-custom-input').addEventListener('input', updateDispatchOutput);
+  document.getElementById('induct-books').addEventListener('change', () => {
+    const n = document.querySelectorAll('#induct-books input:checked').length;
+    document.getElementById('induct-book-preview').textContent = `+${n * BOOK_LAURELS} Laurels from books`;
+  });
 
   // Workout change -> update preview
   document.getElementById('log-workout').addEventListener('change', updateLaurelPreview);
 
+  switchTab('leaderboard');
   loadState();
   refreshInterval = setInterval(loadState, 30000);
   renderCodex();
