@@ -1756,33 +1756,29 @@ function renderDistanceRankings() {
   const el = document.getElementById('distance-rankings');
   if (!el) return;
   if (state.players.length === 0) { el.innerHTML = '<div class="empty-state" style="padding:20px">No runners yet.</div>'; return; }
-  const ranked = [...state.players].map(p => {
+  const ranked = [...state.players].map(function(p) {
     const s = calcPlayerStats(p.id);
-    return { p, miles: s.miles, laurels: s.laurels };
-  }).sort((a,b) => b.miles - a.miles);
-  const maxMiles = ranked[0]?.miles || 1;
-  const totalMiles = ranked.reduce((s,r) => s + r.miles, 0);
-  el.innerHTML = `
-    <div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.08em;color:var(--amber);margin-bottom:4px">
-      PACK TOTAL: <strong>${totalMiles.toFixed(1)} mi</strong> combined distance
-    </div>
-    ${ranked.map((r,i) => {
-      const pct = maxMiles > 0 ? (r.miles / maxMiles) * 100 : 0;
-      const isGold = r.laurels >= 1200;
-      const hc = isGold ? PEERLESS_GOLD : (HOUSES[r.p.house] || '#7a5006');
-      return \`<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-          <span style="font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;color:var(--ink-light);width:20px">${i+1}.</span>
-          <span style="font-family:'Cinzel',serif;font-size:0.9rem;font-weight:700;color:\${hc};flex:1">\${r.p.name}</span>
-          <span style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;color:var(--ink)">\${r.miles} mi</span>
-        </div>
-        <div style="background:var(--parchment-mid);border-radius:3px;height:6px;overflow:hidden">
-          <div style="height:100%;width:\${pct}%;background:\${hc};border-radius:3px;transition:width 0.6s"></div>
-        </div>
-      </div>\`;
-    }).join('')}`;
+    return { p: p, miles: s.miles, laurels: s.laurels };
+  }).sort(function(a,b) { return b.miles - a.miles; });
+  const maxMiles = (ranked[0] && ranked[0].miles) ? ranked[0].miles : 1;
+  const totalMiles = ranked.reduce(function(s,r) { return s + r.miles; }, 0);
+  let html = "<div style='background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-family:Cinzel,serif;font-size:0.75rem;letter-spacing:0.08em;color:var(--amber);margin-bottom:8px'>";
+  html += "PACK TOTAL: <strong>" + totalMiles.toFixed(1) + " mi</strong> combined distance</div>";
+  ranked.forEach(function(r, i) {
+    const pct = maxMiles > 0 ? (r.miles / maxMiles) * 100 : 0;
+    const hc = r.laurels >= 1200 ? PEERLESS_GOLD : (HOUSES[r.p.house] || "#7a5006");
+    html += "<div style='background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:6px'>";
+    html += "<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px'>";
+    html += "<span style='font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;color:var(--ink-light);width:20px'>" + (i+1) + ".</span>";
+    html += "<span style='font-family:Cinzel,serif;font-size:0.9rem;font-weight:700;color:" + hc + ";flex:1'>" + escHtml(r.p.name) + "</span>";
+    html += "<span style='font-family:Cinzel,serif;font-size:0.85rem;font-weight:700;color:var(--ink)'>" + r.miles + " mi</span>";
+    html += '</div>';
+    html += '<div style="background:var(--parchment-mid);border-radius:3px;height:6px;overflow:hidden">';
+    html += '<div style="height:100%;width:' + pct.toFixed(1) + '%;background:' + hc + ';border-radius:3px;transition:width 0.6s"></div>';
+    html += '</div></div>';
+  });
+  el.innerHTML = html;
 }
-
 function renderLogDropdown() {
   const sel = document.getElementById('log-player');
   const prev = sel.value;
