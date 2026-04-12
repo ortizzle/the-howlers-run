@@ -1037,9 +1037,9 @@
     <div class="nav-tab active" onclick="switchTab('leaderboard')">🏅 Leaderboard</div>
     <div class="nav-tab" onclick="switchTab('log')">⚔ Log Trial</div>
     <div class="nav-tab" onclick="switchTab('chronicle')">📜 Chronicle</div>
+    <div class="nav-tab" onclick="switchTab('dispatch')" id="howl-nav-tab">🐺 The Howl<span class="nav-badge" id="howl-badge" style="display:none">0</span></div>
     <div class="nav-tab" onclick="switchTab('trials')">🏆 Trials</div>
     <div class="nav-tab" onclick="switchTab('conquests')">✦ Conquests</div>
-    <div class="nav-tab" onclick="switchTab('dispatch')" id="howl-nav-tab">🐺 The Howl<span class="nav-badge" id="howl-badge" style="display:none">0</span></div>
     <div class="nav-tab" onclick="switchTab('codex')">📖 Codex</div>
   </div>
 </nav>
@@ -3655,7 +3655,7 @@ function switchTab(id) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach((t, i) => {
-    const ids = ['leaderboard','log','chronicle','trials','conquests','dispatch','codex'];
+    const ids = ['leaderboard','log','chronicle','dispatch','trials','conquests','codex'];
     if (ids[i] === id) t.classList.add('active');
   });
   if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
