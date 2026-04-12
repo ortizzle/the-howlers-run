@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root {
     --parchment: #f5efe4;
@@ -260,7 +261,7 @@
     background: var(--parchment);
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
-    padding: 14px 14px 14px 20px;
+    padding: 14px;
     position: relative;
     transition: all 0.2s;
     box-shadow: var(--shadow);
@@ -269,19 +270,10 @@
   .player-card::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; bottom: 0;
-    width: 6px;
-    background: var(--house-color, var(--amber));
-    border-radius: 4px 0 0 4px;
-  }
-  .player-card::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 40px;
-    background: linear-gradient(135deg, var(--house-color, var(--amber))22, transparent 60%);
+    inset: 0;
+    background: linear-gradient(135deg, var(--house-color, var(--amber))18 0%, transparent 55%);
+    border-radius: var(--radius);
     pointer-events: none;
-    border-radius: var(--radius) var(--radius) 0 0;
     z-index: 0;
   }
   .player-card.primus::after {
@@ -304,8 +296,7 @@
   .player-card.peerless-gold { border-color: var(--peerless-gold); box-shadow: 0 0 16px rgba(200,144,10,0.25), var(--shadow); }
   .player-card.peerless-gold:not(.primus)::after { content: '✦ PEERLESS'; position: absolute; bottom: 8px; right: 8px; font-family: 'Cinzel', serif; font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--peerless-gold); background: rgba(200,144,10,0.1); border: 1px solid rgba(200,144,10,0.4); padding: 2px 6px; border-radius: 2px; }
   .player-card.primus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 2px var(--gold), 0 0 20px rgba(200,144,10,0.35), var(--shadow);
+    border-color: var(--border);
   }
   .player-card.primus::after {
     content: '★ ARCHPRIMUS';
@@ -1164,6 +1155,15 @@
     <div class="chronicle-feed" id="howl-feed">
       <div class="empty-state"><span class="empty-icon">🐺</span>The pack is silent. Be the first to howl.</div>
     </div>
+
+    <div style="margin-top:28px;padding-top:20px;border-top:2px solid var(--border)">
+      <div class="section-title" style="font-size:1rem">📸 Export Leaderboard</div>
+      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.9rem;color:var(--ink-light);margin-bottom:14px">Generate a shareable image of current standings for social media.</div>
+      <button class="btn-primary" onclick="exportLeaderboardImage()" id="export-btn" style="max-width:280px">📸 CAPTURE LEADERBOARD</button>
+    </div>
+
+    <!-- Hidden snapshot canvas target -->
+    <div id="leaderboard-snapshot" style="display:none;position:fixed;top:-9999px;left:-9999px;width:600px;background:#f5efe4;padding:28px;font-family:Cinzel,serif"></div>
   </div>
 
     <!-- TAB: CODEX -->
@@ -1961,7 +1961,7 @@ function openProfile(pid) {
 
   const el = document.getElementById('profile-modal-content');
   el.innerHTML =
-    '<div style="border-top:4px solid ' + hc + ';margin:-28px -28px 16px;border-radius:4px 4px 0 0"></div>' +
+    '<div style="margin:-28px -28px 16px;border-radius:var(--radius) var(--radius) 0 0;height:6px;background:linear-gradient(to right,' + hc + ',' + hc + '88)"></div>' +
     (pid !== currentHowlerId ? '<button onclick="openDuelModal("' + pid + '")" style="display:block;margin-top:6px;background:var(--ink);color:var(--amber-pale);border:1px solid var(--amber);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;cursor:pointer">⚔ CHALLENGE</button>' : '') +
     '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap">' +
     '<div style="flex:1">' +
@@ -2628,7 +2628,7 @@ function renderPlayers() {
     }).join('');
     html += `
       <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor};cursor:pointer" onclick="openProfile('${p.id}')">
-        <div style="display:flex;align-items:center">
+        <div style="display:flex;align-items:center;position:relative;z-index:1">
           ${hasNewActivity ? '<span class="new-activity-dot" title="New activity since your last visit"></span>' : ''}
           <div class="player-color-label">${p.house}</div>
         </div>
@@ -3144,21 +3144,21 @@ async function toggleHowlReaction(howlId, emoji) {
 
 function reactionBarHTML(obj, idVal, fnPrefix) {
   var reactions = (obj && obj.reactions) ? obj.reactions : {};
-  var bar = '<div style="display:flex;gap:4px;align-items:center">';
+  var bar = '<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">';
   [['🔥','Hype'],['😴','Trash talk']].forEach(function(r) {
     var emoji = r[0], label = r[1];
     var count = reactions[emoji] || 0;
     var hasCount = count > 0;
     var safeId = idVal.replace(/"/g,'');
-    bar += '<button data-id="' + safeId + '" data-emoji="' + emoji + '" data-fn="' + fnPrefix + '" onclick="handleReaction(this)" title="' + label + '" ';
-    bar += 'style="background:' + (hasCount ? 'rgba(122,80,6,0.12)' : 'transparent') + ';border:1.5px solid ' + (hasCount ? 'var(--amber)' : 'var(--border)') + ';border-radius:4px;padding:3px 8px;font-size:0.85rem;cursor:pointer;line-height:1;-webkit-tap-highlight-color:transparent">';
-    bar += emoji;
-    if (hasCount) bar += '<span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--ink-light);margin-left:2px">' + count + '</span>';
+    bar += '<button data-id="' + safeId + '" data-emoji="' + emoji + '" data-fn="' + fnPrefix + '" onclick="handleReaction(this)" ';
+    bar += 'style="background:' + (hasCount ? 'rgba(122,80,6,0.1)' : 'transparent') + ';border:1.5px solid ' + (hasCount ? 'var(--amber)' : 'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
+    bar += emoji + ' ' + label;
+    if (hasCount) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + count + '</span>';
     bar += '</button>';
   });
   if (fnPrefix === 'toggleReaction') {
-    bar += '<button data-id="' + idVal + '" onclick="replyToWorkout(this.dataset.id)" title="Reply with a Howl" ';
-    bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 8px;font-size:0.85rem;cursor:pointer;line-height:1;-webkit-tap-highlight-color:transparent">🐺</button>';
+    bar += '<button data-id="' + idVal + '" onclick="replyToWorkout(this.dataset.id)" ';
+    bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">🐺 Reply</button>';
   }
   bar += '</div>';
   return bar;
@@ -3195,6 +3195,80 @@ function copyHowl(howlId) {
   const text = '"' + h.message + '" — ' + (player ? player.name : 'A Howler') + ' · The Howlers · RNR Arizona 2027 🐺';
   navigator.clipboard.writeText(text).then(function() {
     showToast('Howl copied to clipboard. 🐺');
+  });
+}
+
+function exportLeaderboardImage() {
+  const btn = document.getElementById('export-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating…'; }
+
+  // Build the snapshot HTML
+  const snap = document.getElementById('leaderboard-snapshot');
+  const statsMap = {};
+  state.players.forEach(function(p) { statsMap[p.id] = getStats(p.id); });
+  const sorted = [...state.players].sort(function(a,b){ return statsMap[b.id].laurels - statsMap[a.id].laurels; });
+  const raceDate = new Date('2027-01-17');
+  const daysLeft = Math.max(0, Math.ceil((raceDate - new Date()) / 86400000));
+  const totalMiles = sorted.reduce(function(s,p){ return s + statsMap[p.id].miles; }, 0);
+
+  var rows = sorted.map(function(p, i) {
+    const s = statsMap[p.id];
+    const hc = s.laurels >= 1200 ? '#c8900a' : (HOUSES[p.house] || '#7a5006');
+    const isArch = i === 0 && s.laurels > 0;
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:' + (isArch ? 'rgba(200,144,10,0.08)' : (i%2===0?'#ede3d0':'#f5efe4')) + ';border-left:5px solid ' + hc + ';margin-bottom:3px;border-radius:3px">' +
+      '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:#6b5040;width:22px">' + (i+1) + '.</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.95rem;font-weight:700;color:' + hc + ';flex:1">' + escHtml(p.name) + (isArch ? ' ★' : '') + '</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.8rem;color:#3d2e1e;margin-right:10px">' + s.miles + ' mi</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:' + hc + '">' + s.laurels + 'L</span>' +
+      '</div>';
+  }).join('');
+
+  snap.style.display = 'block';
+  snap.innerHTML =
+    '<div style="background:#1a1410;color:#f0d080;padding:16px 20px;margin:-28px -28px 20px;border-radius:4px 4px 0 0;display:flex;align-items:center;justify-content:space-between">' +
+      '<div>' +
+        '<div style="font-family:Cinzel,serif;font-size:1.4rem;font-weight:900;letter-spacing:0.08em">THE <span style="color:#b87a1a">HOWLERS</span></div>' +
+        '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.75rem;color:rgba(240,208,128,0.6);margin-top:2px">Rock n Roll Arizona · Half Marathon · Tempe, AZ</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.15em;color:rgba(240,208,128,0.5)">DAYS TO THE LAUREL</div>' +
+        '<div style="font-family:Cinzel,serif;font-size:1.3rem;font-weight:700">' + daysLeft + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.15em;color:#6b5040;margin-bottom:10px;text-transform:uppercase">Leaderboard · ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</div>' +
+    rows +
+    '<div style="display:flex;justify-content:space-between;margin-top:14px;padding-top:10px;border-top:1px solid rgba(122,80,6,0.25)">' +
+      '<div style="font-family:Crimson Pro,serif;font-size:0.78rem;color:#6b5040;font-style:italic">Pack total: ' + totalMiles.toFixed(1) + ' miles · ' + state.workouts.length + ' trials logged</div>' +
+      '<div style="font-family:Cinzel,serif;font-size:0.65rem;color:#b87a1a">🐺 Go Howler, Go!</div>' +
+    '</div>';
+
+  // Use html2canvas to capture
+  if (typeof html2canvas === 'undefined') {
+    snap.style.display = 'none';
+    if (btn) { btn.disabled = false; btn.textContent = '📸 CAPTURE LEADERBOARD'; }
+    showToast('Image export not available. Try refreshing the page.');
+    return;
+  }
+
+  html2canvas(snap, {
+    backgroundColor: '#f5efe4',
+    scale: 2,
+    useCORS: true,
+    logging: false
+  }).then(function(canvas) {
+    snap.style.display = 'none';
+    if (btn) { btn.disabled = false; btn.textContent = '📸 CAPTURE LEADERBOARD'; }
+    // Download
+    var link = document.createElement('a');
+    link.download = 'howlers-leaderboard-' + new Date().toISOString().split('T')[0] + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('Leaderboard image saved! Share it with the pack. 🐺');
+  }).catch(function(err) {
+    snap.style.display = 'none';
+    if (btn) { btn.disabled = false; btn.textContent = '📸 CAPTURE LEADERBOARD'; }
+    console.error(err);
+    showToast('Could not generate image. Try on desktop.');
   });
 }
 
