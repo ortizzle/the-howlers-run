@@ -302,21 +302,25 @@
   }
   .player-card:hover { box-shadow: var(--shadow-strong), 0 0 0 1px var(--house-color, var(--amber))44; transform: translateY(-2px); }
   .player-card.peerless-gold { border-color: var(--peerless-gold); box-shadow: 0 0 16px rgba(200,144,10,0.25), var(--shadow); }
-  .player-card.peerless-gold::after { content: '★ PEERLESS'; position: absolute; bottom: 8px; right: 8px; font-family: 'Cinzel', serif; font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--peerless-gold); background: rgba(200,144,10,0.1); border: 1px solid rgba(200,144,10,0.4); padding: 2px 6px; border-radius: 2px; }
-  .player-card.primus { border-color: var(--gold); }
+  .player-card.peerless-gold:not(.primus)::after { content: '✦ PEERLESS'; position: absolute; bottom: 8px; right: 8px; font-family: 'Cinzel', serif; font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--peerless-gold); background: rgba(200,144,10,0.1); border: 1px solid rgba(200,144,10,0.4); padding: 2px 6px; border-radius: 2px; }
+  .player-card.primus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px var(--gold), 0 0 20px rgba(200,144,10,0.35), var(--shadow);
+  }
   .player-card.primus::after {
-    content: '★ PRIMUS';
+    content: '★ ARCHPRIMUS';
     position: absolute;
     top: 8px; right: 8px;
     font-family: 'Cinzel', serif;
-    font-size: 0.55rem;
+    font-size: 0.52rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
-    color: var(--amber);
-    background: var(--amber-glow);
+    letter-spacing: 0.1em;
+    color: var(--parchment);
+    background: var(--gold);
     border: 1px solid var(--amber-light);
     padding: 2px 6px;
     border-radius: 2px;
+    z-index: 2;
   }
   .player-color-label {
     font-family: 'Cinzel', serif;
@@ -1957,12 +1961,12 @@ function openProfile(pid) {
 
   const el = document.getElementById('profile-modal-content');
   el.innerHTML =
-    '<div style="border-top:4px solid ' + hc + ';margin:-28px -28px 20px;border-radius:4px 4px 0 0"></div>' +
-    (pid !== currentHowlerId ? '<button onclick="openDuelModal("' + pid + '")" style="position:absolute;top:36px;right:28px;background:var(--ink);color:var(--amber-pale);border:1px solid var(--amber);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;cursor:pointer">⚔ CHALLENGE</button>' : '') +
+    '<div style="border-top:4px solid ' + hc + ';margin:-28px -28px 16px;border-radius:4px 4px 0 0"></div>' +
+    (pid !== currentHowlerId ? '<button onclick="openDuelModal("' + pid + '")" style="display:block;margin-top:6px;background:var(--ink);color:var(--amber-pale);border:1px solid var(--amber);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;cursor:pointer">⚔ CHALLENGE</button>' : '') +
     '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap">' +
     '<div style="flex:1">' +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:900;letter-spacing:0.2em;color:' + hc + ';text-transform:uppercase;margin-bottom:2px">' + escHtml(player.house) + '</div>' +
-    '<div style="font-family:Cinzel,serif;font-size:1.4rem;font-weight:700;color:var(--ink);line-height:1.1">' + escHtml(player.name) + '</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:1.3rem;font-weight:700;color:var(--ink);line-height:1.1;padding-right:24px">' + escHtml(player.name) + '</div>' +
     (player.subtitle ? '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);margin-top:2px">' + escHtml(player.subtitle) + '</div>' : '') +
     '</div>' +
     '<div style="text-align:right">' +
@@ -3140,32 +3144,21 @@ async function toggleHowlReaction(howlId, emoji) {
 
 function reactionBarHTML(obj, idVal, fnPrefix) {
   var reactions = (obj && obj.reactions) ? obj.reactions : {};
-  var bar = '<div style="display:flex;gap:5px;align-items:center">';
-  [['🔥','Fire'],['😴','Trash talk']].forEach(function(r) {
+  var bar = '<div style="display:flex;gap:4px;align-items:center">';
+  [['🔥','Hype'],['😴','Trash talk']].forEach(function(r) {
     var emoji = r[0], label = r[1];
     var count = reactions[emoji] || 0;
     var hasCount = count > 0;
-var safeId = idVal.replace(/"/g,'');
-    bar += '<button ';
-    bar += 'data-id="' + safeId + '" ';
-    bar += 'data-emoji="' + emoji + '" ';
-    bar += 'data-fn="' + fnPrefix + '" ';
-    bar += 'onclick="handleReaction(this)" ';
-    bar += 'title="' + label + '" ';
-    bar += 'style="background:' + (hasCount ? 'rgba(122,80,6,0.12)' : 'transparent') + ';';
-    bar += 'border:1.5px solid ' + (hasCount ? 'var(--amber)' : 'var(--border)') + ';';
-    bar += 'border-radius:4px;padding:4px 9px;font-size:0.9rem;cursor:pointer;line-height:1;transition:all 0.15s">';
+    var safeId = idVal.replace(/"/g,'');
+    bar += '<button data-id="' + safeId + '" data-emoji="' + emoji + '" data-fn="' + fnPrefix + '" onclick="handleReaction(this)" title="' + label + '" ';
+    bar += 'style="background:' + (hasCount ? 'rgba(122,80,6,0.12)' : 'transparent') + ';border:1.5px solid ' + (hasCount ? 'var(--amber)' : 'var(--border)') + ';border-radius:4px;padding:3px 8px;font-size:0.85rem;cursor:pointer;line-height:1;-webkit-tap-highlight-color:transparent">';
     bar += emoji;
-    if (hasCount) bar += '<span style="font-family:Cinzel,serif;font-size:0.58rem;color:var(--ink-light);margin-left:3px">' + count + '</span>';
+    if (hasCount) bar += '<span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--ink-light);margin-left:2px">' + count + '</span>';
     bar += '</button>';
   });
-  // Reply/Howl button — navigates to Howl tab
   if (fnPrefix === 'toggleReaction') {
-    bar += '<button ';
-    bar += 'data-id="' + idVal + '" ';
-    bar += 'onclick="replyToWorkout(this.dataset.id)" ';
-    bar += 'title="Reply with a Howl" ';
-    bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:4px 9px;font-size:0.9rem;cursor:pointer;line-height:1;transition:all 0.15s">↩</button>';
+    bar += '<button data-id="' + idVal + '" onclick="replyToWorkout(this.dataset.id)" title="Reply with a Howl" ';
+    bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 8px;font-size:0.85rem;cursor:pointer;line-height:1;-webkit-tap-highlight-color:transparent">🐺</button>';
   }
   bar += '</div>';
   return bar;
