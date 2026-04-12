@@ -946,6 +946,9 @@
         </div>
         <button class="refresh-btn" onclick="manualRefresh()">↻ Refresh</button>
         <button class="refresh-btn" onclick="openSetup()" style="border-color:rgba(240,208,128,0.5);color:rgba(240,208,128,0.8)">⚙ Setup</button>
+        <select id="current-howler-select" onchange="setCurrentHowler(this.value)" style="background:rgba(255,255,255,0.08);border:1px solid rgba(240,208,128,0.4);color:rgba(240,208,128,0.9);font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:4px 8px;border-radius:3px;cursor:pointer;max-width:130px">
+          <option value="">🐺 I am...</option>
+        </select>
       </div>
     </div>
   </div>
@@ -1310,6 +1313,7 @@
 <script>
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const RACE_DATE = new Date('2027-01-17T07:00:00');
+const TRAINING_START = new Date('2026-04-13T00:00:00');
 const QUOTES = [
   "Go Howler, Go! 🐺",
   "Hic sunt leones. Here there be lions. ⚔️",
@@ -1488,13 +1492,47 @@ function saveConfig(binId, apiKey) {
   localStorage.setItem('howlers_bin_id', JSONBIN_BIN_ID);
   localStorage.setItem('howlers_api_key', JSONBIN_API_KEY);
 }
+let currentHowlerId = localStorage.getItem('howlers_current_player') || '';
+
+function setCurrentHowler(pid) {
+  currentHowlerId = pid;
+  localStorage.setItem('howlers_current_player', pid);
+  autoFillHowlerDropdowns();
+}
+
+function getCurrentHowler() {
+  return currentHowlerId;
+}
+
+function autoFillHowlerDropdowns() {
+  // Auto-select current howler in all dropdowns
+  ['log-player', 'howl-player'].forEach(function(id) {
+    const sel = document.getElementById(id);
+    if (sel && currentHowlerId) sel.value = currentHowlerId;
+  });
+}
+
+function updateCurrentHowlerSelect() {
+  const sel = document.getElementById('current-howler-select');
+  if (!sel) return;
+  const prev = sel.value || currentHowlerId;
+  sel.innerHTML = '<option value="">🐺 I am...</option>';
+  state.players.forEach(function(p) {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name;
+    sel.appendChild(opt);
+  });
+  if (prev) { sel.value = prev; currentHowlerId = prev; }
+}
+
 function hasConfig() {
   return JSONBIN_BIN_ID.length > 0 && JSONBIN_API_KEY.length > 0;
 }
 
 // ─── STORAGE ─────────────────────────────────────────────────────────────────
 async function loadState() {
-  if (!hasConfig()) { showSetupScreen(); setSyncStatus('error'); return; }
+  if (!hasConfig()) { showSetupScreen(); setSyncStatus('error'); return Promise.resolve(); }
   setSyncStatus('loading');
   try {
     const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
@@ -1643,6 +1681,14 @@ function calcPlayerStats(pid) {
   return { laurels, miles: totalRunMiles, trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks, longestRun };
 }
 
+function recalcAllBadges() {
+  // Wipe all badges and recompute from scratch based on current workouts
+  state.badges_awarded = {};
+  state.players.forEach(function(p) {
+    calcPlayerStats(p.id); // mutates state.badges_awarded as a side effect
+  });
+}
+
 function tryAwardBadge(pid, badgeId, newBadges) {
   if (!state.badges_awarded[pid]) state.badges_awarded[pid] = [];
   if (!state.badges_awarded[pid].includes(badgeId)) {
@@ -1747,6 +1793,7 @@ function checkAndPostWeeklyRecap() {
 function renderAll() {
   renderPackStats();
   renderPlayers();
+  updateCurrentHowlerSelect();
   renderLogDropdown();
   renderChronicle();
   renderChallenges();
@@ -1893,6 +1940,7 @@ function renderLogDropdown() {
     sel.appendChild(opt);
   });
   if (prev) sel.value = prev;
+  autoFillHowlerDropdowns();
 }
 
 function renderChronicle() {
@@ -2085,6 +2133,7 @@ function renderDispatch() {
       sel.appendChild(opt);
     });
     if (prev) sel.value = prev;
+    autoFillHowlerDropdowns();
   }
   renderHowlFeed();
 }
@@ -2203,6 +2252,9 @@ function quickHowlAt(workoutId, playerName) {
   msg.dataset.replyWorkout = workoutId;
   msg.dataset.replyName = playerName;
   msg.dataset.activityRef = JSON.stringify(activityRef);
+  // Auto-select current howler
+  const howlSel = document.getElementById('howl-player');
+  if (howlSel && currentHowlerId) howlSel.value = currentHowlerId;
   msg.focus();
   // Show activity preview above the textarea
   const preview = document.getElementById('howl-activity-preview');
@@ -2403,6 +2455,7 @@ async function removePlayer(pid, name) {
   state.players = state.players.filter(p => p.id !== pid);
   state.workouts = state.workouts.filter(w => w.player_id !== pid);
   delete state.badges_awarded[pid];
+  recalcAllBadges();
   await saveState();
   showToast(`${name} has been removed from the pack.`);
   renderAll();
@@ -2503,7 +2556,10 @@ function openEditWorkout(wid) {
   document.getElementById('edit-workout-type').value = w.workout;
   document.getElementById('edit-workout-miles').value = w.miles || '';
   document.getElementById('edit-workout-minutes').value = w.minutes || '';
-  document.getElementById('edit-workout-date').value = w.date;
+  const editDateEl = document.getElementById('edit-workout-date');
+  editDateEl.value = w.date;
+  editDateEl.min = '2026-04-13';
+  editDateEl.max = new Date().toISOString().split('T')[0];
   document.getElementById('edit-workout-notes').value = w.notes || '';
   updateEditLaurelPreview();
   document.getElementById('edit-workout-modal').classList.add('open');
@@ -2521,12 +2577,21 @@ async function saveEditWorkout() {
   const wid = document.getElementById('edit-workout-id').value;
   const w = state.workouts.find(x => x.id === wid);
   if (!w) return;
+  const editDate = document.getElementById('edit-workout-date').value;
+  const editDateObj = new Date(editDate + 'T12:00:00');
+  if (editDateObj < TRAINING_START) {
+    showToast('⚔️ Cannot set a date before April 13, 2026.'); return;
+  }
+  if (editDateObj > new Date()) {
+    showToast('⚔️ Cannot set a future date.'); return;
+  }
   w.workout = document.getElementById('edit-workout-type').value;
   w.miles = parseFloat(document.getElementById('edit-workout-miles').value) || undefined;
   w.minutes = parseInt(document.getElementById('edit-workout-minutes').value) || undefined;
-  w.date = document.getElementById('edit-workout-date').value;
+  w.date = editDate;
   w.notes = document.getElementById('edit-workout-notes').value.trim();
   w.laurels_base = calcLaurels(w.workout, w.miles, w.minutes);
+  recalcAllBadges();
   await saveState();
   closeModal('edit-workout-modal');
   showToast('Trial updated. The chronicle stands corrected. ✦');
@@ -2538,6 +2603,7 @@ async function removeWorkout(wid) {
   if (!w) return;
   if (!confirm('Remove this trial from the chronicle?')) return;
   state.workouts = state.workouts.filter(x => x.id !== wid);
+  recalcAllBadges();
   await saveState();
   showToast('Trial removed from the chronicle.');
   renderAll();
@@ -2589,6 +2655,13 @@ async function submitTrial() {
   if (!pid) { showToast('Select a Howler first.'); return; }
   if (!workout) { showToast('Select a workout type.'); return; }
   if (!date) { showToast('Enter a date.'); return; }
+  const entryDate = new Date(date + 'T12:00:00');
+  if (entryDate < TRAINING_START) {
+    showToast('⚔️ The march has not yet begun. No trials before April 13, 2026.'); return;
+  }
+  if (entryDate > new Date()) {
+    showToast('⚔️ You cannot log a trial in the future.'); return;
+  }
   if (['long_run','tempo','easy_run','optional_run'].includes(workout) && miles === 0) {
     showToast('Enter miles for this workout.'); return;
   }
@@ -2670,7 +2743,11 @@ function formatDate(dateStr) {
 // ─── INIT ────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   // Set today as default date
-  document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+  const todayStr = new Date().toISOString().split('T')[0];
+  const logDateEl = document.getElementById('log-date');
+  logDateEl.value = todayStr;
+  logDateEl.min = '2026-04-13';
+  logDateEl.max = todayStr;
   updateCountdown();
   setInterval(updateCountdown, 60000);
 
@@ -2698,7 +2775,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('log-workout').addEventListener('change', updateLaurelPreview);
 
   switchTab('leaderboard');
-  loadState();
+  loadState().then(function() { autoFillHowlerDropdowns(); });
   refreshInterval = setInterval(loadState, 30000);
   renderCodex();
 });
