@@ -260,7 +260,7 @@
     background: var(--parchment);
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
-    padding: 16px;
+    padding: 14px 14px 14px 20px;
     position: relative;
     transition: all 0.2s;
     box-shadow: var(--shadow);
@@ -269,11 +269,38 @@
   .player-card::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
+    top: 0; left: 0; bottom: 0;
+    width: 6px;
     background: var(--house-color, var(--amber));
+    border-radius: 4px 0 0 4px;
   }
-  .player-card:hover { box-shadow: var(--shadow-strong); transform: translateY(-2px); }
+  .player-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(135deg, var(--house-color, var(--amber))22, transparent 60%);
+    pointer-events: none;
+    border-radius: var(--radius) var(--radius) 0 0;
+    z-index: 0;
+  }
+  .player-card.primus::after {
+    content: '★ PRIMUS';
+    position: absolute;
+    top: 8px; right: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--amber);
+    background: var(--amber-glow);
+    border: 1px solid var(--amber-light);
+    padding: 2px 6px;
+    border-radius: 2px;
+    height: auto; width: auto; left: auto; bottom: auto;
+    background: var(--amber-glow);
+  }
+  .player-card:hover { box-shadow: var(--shadow-strong), 0 0 0 1px var(--house-color, var(--amber))44; transform: translateY(-2px); }
   .player-card.peerless-gold { border-color: var(--peerless-gold); box-shadow: 0 0 16px rgba(200,144,10,0.25), var(--shadow); }
   .player-card.peerless-gold::after { content: '★ PEERLESS'; position: absolute; bottom: 8px; right: 8px; font-family: 'Cinzel', serif; font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--peerless-gold); background: rgba(200,144,10,0.1); border: 1px solid rgba(200,144,10,0.4); padding: 2px 6px; border-radius: 2px; }
   .player-card.primus { border-color: var(--gold); }
@@ -2783,25 +2810,52 @@ async function toggleHowlReaction(howlId, emoji) {
 
 function reactionBarHTML(obj, idVal, fnPrefix) {
   var reactions = (obj && obj.reactions) ? obj.reactions : {};
-  var bar = '<div style="display:flex;gap:4px;align-items:center">';
-  var opts = [['fire','Fire'],['wolf','Howl'],['sleep','Trash talk']];
-  var emojis = {'fire':'🔥','wolf':'🐺','sleep':'😴'};
-  [['🔥','Fire'],['🐺','Howl'],['😴','Trash talk']].forEach(function(r) {
+  var bar = '<div style="display:flex;gap:5px;align-items:center">';
+  [['🔥','Fire'],['😴','Trash talk']].forEach(function(r) {
     var emoji = r[0], label = r[1];
     var count = reactions[emoji] || 0;
     var hasCount = count > 0;
-    bar += '<button onclick="' + fnPrefix + '(\"' + idVal + '\",\"' + emoji + '\")" ';
+    var safeId = idVal.replace(/"/g,'');
+    bar += '<button ';
+    bar += 'data-id="' + safeId + '" ';
+    bar += 'data-emoji="' + emoji + '" ';
+    bar += 'data-fn="' + fnPrefix + '" ';
+    bar += 'onclick="handleReaction(this)" ';
     bar += 'title="' + label + '" ';
-    bar += 'style="background:' + (hasCount ? 'rgba(122,80,6,0.1)' : 'transparent') + ';';
-    bar += 'border:1px solid ' + (hasCount ? 'var(--amber)' : 'var(--border)') + ';';
-    bar += 'border-radius:3px;padding:3px 8px;font-size:0.85rem;cursor:pointer;line-height:1">';
+    bar += 'style="background:' + (hasCount ? 'rgba(122,80,6,0.12)' : 'transparent') + ';';
+    bar += 'border:1.5px solid ' + (hasCount ? 'var(--amber)' : 'var(--border)') + ';';
+    bar += 'border-radius:4px;padding:4px 9px;font-size:0.9rem;cursor:pointer;line-height:1;transition:all 0.15s">';
     bar += emoji;
-    if (hasCount) bar += ' <span style="font-family:Cinzel,serif;font-size:0.58rem;color:var(--ink-light)">' + count + '</span>';
+    if (hasCount) bar += '<span style="font-family:Cinzel,serif;font-size:0.58rem;color:var(--ink-light);margin-left:3px">' + count + '</span>';
     bar += '</button>';
   });
+  // Reply/Howl button — navigates to Howl tab
+  if (fnPrefix === 'toggleReaction') {
+    bar += '<button ';
+    bar += 'data-id="' + idVal + '" ';
+    bar += 'onclick="replyToWorkout(this.dataset.id)" ';
+    bar += 'title="Reply with a Howl" ';
+    bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:4px 9px;font-size:0.9rem;cursor:pointer;line-height:1;transition:all 0.15s">↩</button>';
+  }
   bar += '</div>';
   return bar;
 }
+
+function replyToWorkout(workoutId) {
+  var w = state.workouts.find(function(x){ return x.id === workoutId; });
+  if (!w) return;
+  var player = state.players.find(function(p){ return p.id === w.player_id; });
+  quickHowlAt(workoutId, player ? player.name : 'someone');
+}
+
+function handleReaction(btn) {
+  var id = btn.dataset.id;
+  var emoji = btn.dataset.emoji;
+  var fn = btn.dataset.fn;
+  if (fn === 'toggleReaction') toggleReaction(id, emoji);
+  else if (fn === 'toggleHowlReaction') toggleHowlReaction(id, emoji);
+}
+
 
 async function removeHowl(howlId) {
   if (!confirm('Delete this Howl from the pack?')) return;
