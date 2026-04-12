@@ -306,6 +306,10 @@
   .player-card.peerless-gold:not(.primus)::after { content: '✦ PEERLESS'; position: absolute; bottom: 8px; right: 8px; font-family: 'Cinzel', serif; font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--peerless-gold); background: rgba(200,144,10,0.1); border: 1px solid rgba(200,144,10,0.4); padding: 2px 6px; border-radius: 2px; }
   .player-card.primus {
     border-color: var(--border);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='90' viewBox='0 0 80 90'%3E%3Cpath d='M40 8 C28 16 14 28 14 45 C14 62 22 74 40 82' stroke='%23c8900a' stroke-width='2.5' fill='none' opacity='0.18'/%3E%3Cpath d='M40 8 C52 16 66 28 66 45 C66 62 58 74 40 82' stroke='%23c8900a' stroke-width='2.5' fill='none' opacity='0.18'/%3E%3Cellipse cx='16' cy='24' rx='6' ry='3.5' fill='%23c8900a' opacity='0.13' transform='rotate(-40 16 24)'/%3E%3Cellipse cx='12' cy='36' rx='6' ry='3.5' fill='%23c8900a' opacity='0.13' transform='rotate(-15 12 36)'/%3E%3Cellipse cx='13' cy='48' rx='6' ry='3.5' fill='%23c8900a' opacity='0.13' transform='rotate(15 13 48)'/%3E%3Cellipse cx='17' cy='59' rx='6' ry='3.5' fill='%23c8900a' opacity='0.13' transform='rotate(35 17 59)'/%3E%3Cellipse cx='64' cy='24' rx='6' ry='3.5' fill='%23c8900a' opacity='0.13' transform='rotate(40 64 24)'/%3E%3Cellipse cx='68' cy='36' rx='6' ry='3.5' fill='%23c8900a' opacity='0.13' transform='rotate(15 68 36)'/%3E%3Cellipse cx='67' cy='48' rx='6' ry='3.5' fill='%23c8900a' opacity='0.13' transform='rotate(-15 67 48)'/%3E%3Cellipse cx='63' cy='59' rx='6' ry='3.5' fill='%23c8900a' opacity='0.13' transform='rotate(-35 63 59)'/%3E%3Ccircle cx='40' cy='85' r='3' fill='%23c8900a' opacity='0.2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 120px 140px;
   }
   .player-card.primus::after {
     content: '★ ARCHPRIMUS';
@@ -1036,11 +1040,11 @@
   <div class="nav-inner">
     <div class="nav-tab active" onclick="switchTab('leaderboard')">🏅 Leaderboard</div>
     <div class="nav-tab" onclick="switchTab('log')">⚔ Log Trial</div>
-    <div class="nav-tab" onclick="switchTab('chronicle')">📜 Chronicle</div>
+    <div class="nav-tab" onclick="switchTab('chronicle')">📜 The Annals</div>
     <div class="nav-tab" onclick="switchTab('dispatch')" id="howl-nav-tab">🐺 The Howl<span class="nav-badge" id="howl-badge" style="display:none">0</span></div>
     <div class="nav-tab" onclick="switchTab('trials')">🏆 Trials</div>
     <div class="nav-tab" onclick="switchTab('conquests')">✦ Conquests</div>
-    <div class="nav-tab" onclick="switchTab('codex')">📖 Codex</div>
+    <div class="nav-tab" onclick="switchTab('codex')">📜 The Scrolls</div>
   </div>
 </nav>
 
@@ -1082,12 +1086,12 @@
           <option value="">— Select Workout —</option>
           <option value="long_run">The March — Long Run · min 6 mi (12L/mile)</option>
           <option value="tempo">The Charge — Tempo / Race Pace (10L/mile)</option>
-          <option value="easy_run">Easy Run (8L/mile)</option>
+          <option value="easy_run">The Patrol — Easy Run (8L/mile)</option>
           <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
           <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
           <option value="walk_run">Walk/Run Intervals (15L flat)</option>
           <option value="peloton">The Steed — Peloton Ride (10L per 30 min)</option>
-          <option value="strength">Iron Forged — Strength (12L flat)</option>
+          <option value="strength">The Forge — Strength (12L flat)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
         </select>
       </div>
@@ -1177,7 +1181,7 @@
 
     <!-- TAB: CODEX -->
   <div class="tab-content" id="tab-codex">
-    <div class="section-title">Codex — Rules of the Pack</div>
+    <div class="section-title">The Scrolls — Rules of the Pack</div>
     <div class="codex-section">
       <div class="codex-section">
       <div class="section-title" style="font-size:0.95rem">Pack Rules</div>
@@ -1209,12 +1213,12 @@
         <tbody>
           <tr><td>The March — Long Run</td><td>12 per mile</td></tr>
           <tr><td>The Charge — Tempo / Race Pace</td><td>10 per mile</td></tr>
-          <tr><td>Easy Run</td><td>8 per mile</td></tr>
+          <tr><td>The Patrol — Easy Run</td><td>8 per mile</td></tr>
           <tr><td>Optional 5th Day Run</td><td>8 per mile</td></tr>
           <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
           <tr><td>Walk/Run Intervals</td><td>15 flat</td></tr>
           <tr><td>The Steed — Peloton Ride</td><td>10 per 30 min</td></tr>
-          <tr><td>Iron Forged — Strength</td><td>12 flat</td></tr>
+          <tr><td>The Forge — Strength</td><td>12 flat</td></tr>
           <tr><td>Mind & Body — Mobility/Yoga</td><td>8 flat</td></tr>
           <tr><td>Perfect Week Bonus (all 4 core days)</td><td>+25</td></tr>
           <tr><td>Consecutive Week Streak Bonus</td><td>+10 per week</td></tr>
@@ -1319,12 +1323,12 @@
       <select class="form-select" id="edit-workout-type" onchange="updateEditLaurelPreview()">
         <option value="long_run">The March — Long Run · min 6 mi (12L/mile)</option>
         <option value="tempo">The Charge — Tempo / Race Pace (10L/mile)</option>
-        <option value="easy_run">Easy Run (8L/mile)</option>
+        <option value="easy_run">The Patrol — Easy Run (8L/mile)</option>
         <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
         <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
         <option value="walk_run">Walk/Run Intervals (15L flat)</option>
         <option value="peloton">The Steed — Peloton Ride (10L per 30 min)</option>
-        <option value="strength">Iron Forged — Strength (12L flat)</option>
+        <option value="strength">The Forge — Strength (12L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
       </select>
     </div>
@@ -1496,10 +1500,29 @@ const HOUSE_DESC = {
 };
 const PEERLESS_GOLD = '#c8900a';
 const RANKS = [
-  {min:0, name:'Lowborn'}, {min:150, name:'Drafted'}, {min:300, name:'Lancer'},
-  {min:500, name:'Legate'}, {min:800, name:'Imperator'},
-  {min:1200, name:'Peerless Scarred'}, {min:2200, name:'The Reaper ☀️'}
+  {min:0,    name:'Lowborn'},
+  {min:150,  name:'Tiro'},
+  {min:300,  name:'Decurion'},
+  {min:500,  name:'Centurion'},
+  {min:800,  name:'Legate'},
+  {min:1200, name:'Praetor'},
+  {min:1800, name:'Imperator'},
+  {min:2400, name:'Peerless Scarred'},
+  {min:3500, name:'ArchImperator'},
+  {min:5000, name:'The Reaper ☀️'}
 ];
+const RANK_MOTTOS = {
+  'Lowborn':         'The chains are not yet broken.',
+  'Tiro':            'Begin the ascent.',
+  'Decurion':        'Ten follow where you lead.',
+  'Centurion':       'A century answers your call.',
+  'Legate':          'The legion marches at your word.',
+  'Praetor':         'The fleet bends to your strategy.',
+  'Imperator':       'Worlds tremble at your name.',
+  'Peerless Scarred':'They broke you. You became something greater.',
+  'ArchImperator':   'The Society watches. And fears.',
+  'The Reaper ☀️':   'I am the Reaper and death needs no armor.'
+};
 // Each badge has 3 tiers: bronze, silver, gold
 // badges_awarded stores e.g. 'first_step_bronze', 'first_step_silver', 'first_step_gold'
 const BADGE_TIERS = ['bronze','silver','gold'];
@@ -1625,10 +1648,10 @@ const RED_GOD_LAURELS = 200;
 
 const WORKOUT_NAMES = {
   duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
-  long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'Easy Run',
+  long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
   optional_run:'Optional 5th Day Run', optional_other:'Optional 5th Day Other',
   walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
-  strength:'Iron Forged (Strength)', mobility:'Mind & Body (Mobility)'
+  strength:'The Forge (Strength)', mobility:'Mind & Body (Mobility)'
 };
 
 let state = { players: [], workouts: [], howls: [], duels: [], challenges_won: {}, badges_awarded: {} };
@@ -1877,7 +1900,7 @@ function openProfile(pid) {
   const player = state.players.find(function(p) { return p.id === pid; });
   if (!player) return;
   const s = calcPlayerStats(pid);
-  const hc = s.laurels >= 1200 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+  const hc = s.laurels >= 2400 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
   const works = state.workouts.filter(function(w) { return w.player_id === pid; })
     .sort(function(a,b) { return new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date); });
 
@@ -2031,6 +2054,10 @@ function buildHeatmap(pid) {
     });
     html += '</div>';
   });
+  var trainingStart2 = new Date('2026-04-13T00:00:00');
+  var nowW = new Date();
+  var weekNum2 = Math.max(1, Math.ceil((nowW - trainingStart2) / (7*24*60*60*1000)));
+  html += '<div style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">TRAINING · WEEK ' + toRoman(weekNum2) + '</div>';
   html += '</div><div style="display:flex;gap:6px;align-items:center;margin-top:4px;font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light)"><span>Less</span>';
   colors.forEach(function(c){ html += '<div style="width:10px;height:10px;border-radius:2px;background:' + c + '"></div>'; });
   html += '<span>More</span></div></div>';
@@ -2134,6 +2161,16 @@ function getRank(laurels) {
   let rank = RANKS[0];
   for (const r of RANKS) { if (laurels >= r.min) rank = r; }
   return rank;
+}
+
+function toRoman(n) {
+  var val = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+  var sym = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
+  var result = '';
+  for (var i = 0; i < val.length; i++) {
+    while (n >= val[i]) { result += sym[i]; n -= val[i]; }
+  }
+  return result;
 }
 
 function getWeekKey(dateStr) {
@@ -2346,7 +2383,7 @@ var QUICK_WORKOUTS = [
   {label:'Easy Run 5mi', workout:'easy_run', icon:'🏃', miles:5, desc:'+40 Laurels'},
   {label:'The March 6mi', workout:'long_run', icon:'🗺️', miles:6, desc:'+72 Laurels'},
   {label:'The March 8mi', workout:'long_run', icon:'🗺️', miles:8, desc:'+96 Laurels'},
-  {label:'Iron Forged', workout:'strength', icon:'🦵', miles:0, desc:'+12 Laurels'},
+  {label:'The Forge', workout:'strength', icon:'🦵', miles:0, desc:'+12 Laurels'},
   {label:'Mind & Body', workout:'mobility', icon:'🧘', miles:0, desc:'+8 Laurels'},
   {label:'The Steed 30min', workout:'peloton', icon:'🚴', minutes:30, desc:'+10 Laurels'},
   {label:'The Steed 45min', workout:'peloton', icon:'🚴', minutes:45, desc:'+15 Laurels'},
@@ -2609,7 +2646,7 @@ function renderPlayers() {
   sorted.forEach((p, idx) => {
     const s = statsMap[p.id];
     const stats_for_color = statsMap[p.id];
-    const isPeerless = stats_for_color.laurels >= 1200;
+    const isPeerless = stats_for_color.laurels >= 2400;
     const houseColor = isPeerless ? PEERLESS_GOLD : (HOUSES[p.house] || '#7a5006');
     const isPrimus = p.id === primusId && s.laurels > 0;
     const lastSeenKey = 'howlers_seen_' + p.id + '_' + (localStorage.getItem('howlers_bin_id')||'');
@@ -2730,7 +2767,7 @@ function renderDistanceRankings() {
     var nextM = runnerMilestones.find(function(m){ return !earnedKeys2.includes('the_runner_'+m.tier); });
     var goalMiles = nextM ? nextM.miles : 100;
     const pct = goalMiles > 0 ? Math.min(100, (r.miles / goalMiles) * 100) : 100;
-    const hc = r.laurels >= 1200 ? PEERLESS_GOLD : (HOUSES[r.p.house] || "#7a5006");
+    const hc = r.laurels >= 2400 ? PEERLESS_GOLD : (HOUSES[r.p.house] || "#7a5006");
     html += "<div style='background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:6px'>";
     html += "<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px'>";
     html += "<span style='font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;color:var(--ink-light);width:20px'>" + (i+1) + ".</span>";
@@ -2796,7 +2833,7 @@ function renderChronicle() {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
     const playerStats = getStats(player.id);
-    const houseColor = playerStats.laurels >= 1200 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+    const houseColor = playerStats.laurels >= 2400 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const badgeDef = w.badge_earned ? BADGES_DEF.find(b => b.id === w.badge_earned) : null;
     // Build meaningful detail string per workout type
     let detail = '';
@@ -3007,7 +3044,7 @@ function renderHowlFeed() {
         '</div></div>';
     }
     if (!player) return '';
-    const hc = (h.player_laurels >= 1200) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+    const hc = (h.player_laurels >= 2400) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const likes = h.likes || [];
     let replyTo = '';
     if (h.activity_ref) {
@@ -3335,7 +3372,7 @@ function exportLeaderboardImage() {
 
 function renderCodex() {
   const ranksBody = document.getElementById('codex-ranks');
-  ranksBody.innerHTML = RANKS.map(r => `<tr><td>${r.min}+</td><td>${r.name}</td></tr>`).join('');
+  ranksBody.innerHTML = RANKS.map(r => `<tr><td>${r.min}+</td><td><strong>${r.name}</strong><br><span style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--ink-light)">${RANK_MOTTOS[r.name]||''}</span></td></tr>`).join('');
   const badgesGrid = document.getElementById('codex-badges');
   badgesGrid.innerHTML = BADGES_DEF.map(b =>
     `<div class="badge-card" style="flex-direction:column;align-items:flex-start;gap:8px">
