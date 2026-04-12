@@ -63,12 +63,23 @@
   .header-inner {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 8px 16px;
+    padding: 10px 16px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .header-row1 {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    flex-wrap: nowrap;
+  }
+  .header-row2 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(240,208,128,0.1);
   }
   .header-title-block { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
   .header-title {
@@ -91,12 +102,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .countdown-block {
-    text-align: center;
+    text-align: right;
     font-family: 'Cinzel', serif;
-    border-left: 1px solid rgba(240,208,128,0.2);
-    padding-left: 10px;
+    flex-shrink: 0;
   }
   .countdown-label {
     font-size: 0.45rem;
@@ -106,7 +115,7 @@
     display: block;
   }
   .countdown-days {
-    font-size: clamp(0.85rem, 2vw, 1.1rem);
+    font-size: clamp(0.9rem, 2vw, 1.15rem);
     font-weight: 700;
     color: var(--amber-pale);
     letter-spacing: 0.04em;
@@ -183,6 +192,36 @@
     color: var(--amber);
     border-bottom-color: var(--amber);
     background: var(--parchment);
+  }
+  .nav-tab { position: relative; }
+  .nav-badge {
+    position: absolute;
+    top: 6px; right: 4px;
+    background: #e53935;
+    color: #fff;
+    font-family: 'Cinzel', serif;
+    font-size: 0.5rem;
+    font-weight: 700;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    padding: 0 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    animation: badge-pulse 2s infinite;
+  }
+  @keyframes badge-pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .new-activity-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4caf50;
+    box-shadow: 0 0 6px #4caf50;
+    margin-right: 6px;
+    animation: pulse-green 1.5s infinite;
+    flex-shrink: 0;
   }
 
   /* MAIN */
@@ -935,24 +974,28 @@
 <!-- SITE HEADER -->
 <header class="site-header">
   <div class="header-inner">
-    <div class="header-title-block">
-      <div class="header-title">THE <span>HOWLERS</span></div>
-      <div class="header-subtitle">Rock 'n' Roll Arizona · Half Marathon · Tempe, AZ</div>
-    </div>
-    <div class="header-right">
-      <select id="current-howler-select" onchange="setCurrentHowler(this.value)" style="background:rgba(255,255,255,0.08);border:1px solid rgba(240,208,128,0.3);color:rgba(240,208,128,0.85);font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.06em;padding:4px 6px;border-radius:3px;cursor:pointer;max-width:100px">
-        <option value="">🐺 I am...</option>
-      </select>
-      <div class="sync-bar" onclick="manualRefresh()" title="Refresh">
-        <div class="sync-dot loading" id="sync-dot"></div>
-        <span id="sync-label" style="display:none"></span>
+    <div class="header-row1">
+      <div class="header-title-block">
+        <div class="header-title">THE <span>HOWLERS</span></div>
+        <div class="header-subtitle">Rock 'n' Roll Arizona · Half Marathon · Tempe, AZ</div>
       </div>
-      <button class="refresh-btn" onclick="manualRefresh()" style="padding:4px 7px;font-size:0.58rem">↻</button>
-      <button class="refresh-btn" onclick="openSetup()" style="border-color:rgba(240,208,128,0.4);color:rgba(240,208,128,0.75);padding:4px 7px;font-size:0.58rem">⚙</button>
       <div class="countdown-block">
         <span class="countdown-label">To the Laurel</span>
         <div class="countdown-days" id="countdown-days">— <span>days</span></div>
       </div>
+    </div>
+    <div class="header-row2">
+      <select id="current-howler-select" onchange="setCurrentHowler(this.value)" style="background:rgba(255,255,255,0.08);border:1px solid rgba(240,208,128,0.35);color:rgba(240,208,128,0.9);font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.06em;padding:5px 8px;border-radius:3px;cursor:pointer;flex:1;max-width:180px">
+        <option value="">🐺 I am...</option>
+      </select>
+      <div style="flex:1"></div>
+      <div class="sync-bar" onclick="manualRefresh()" title="Refresh" style="gap:5px">
+        <div class="sync-dot loading" id="sync-dot"></div>
+        <span id="sync-label" style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.08em;color:rgba(240,208,128,0.5)">SYNC</span>
+      </div>
+      <button class="refresh-btn" onclick="manualRefresh()" style="padding:4px 9px;font-size:0.6rem">↻ Refresh</button>
+      <button class="refresh-btn" onclick="openSetup()" style="border-color:rgba(240,208,128,0.4);color:rgba(240,208,128,0.75);padding:4px 9px;font-size:0.6rem">⚙ Setup</button>
+      <button class="refresh-btn" id="notif-btn" onclick="requestNotifications()" title="Enable notifications" style="border-color:rgba(240,208,128,0.4);color:rgba(240,208,128,0.75);padding:4px 9px;font-size:0.6rem">🔔</button>
     </div>
   </div>
 </header>
@@ -965,7 +1008,7 @@
     <div class="nav-tab" onclick="switchTab('chronicle')">📜 Chronicle</div>
     <div class="nav-tab" onclick="switchTab('trials')">🏆 Trials</div>
     <div class="nav-tab" onclick="switchTab('conquests')">✦ Conquests</div>
-    <div class="nav-tab" onclick="switchTab('dispatch')">🐺 The Howl</div>
+    <div class="nav-tab" onclick="switchTab('dispatch')" id="howl-nav-tab">🐺 The Howl<span class="nav-badge" id="howl-badge" style="display:none">0</span></div>
     <div class="nav-tab" onclick="switchTab('codex')">📖 Codex</div>
   </div>
 </nav>
@@ -1156,7 +1199,7 @@
     </div>
     <div class="form-group">
       <label class="form-label">Color</label>
-      <select class="form-select" id="induct-house" onchange="updateHouseDesc('induct')">
+      <select class="form-select" id="induct-house">
         <option value="Red">Red — Manual laborers and miners</option>
         <option value="Obsidian">Obsidian — Elite soldiers and bodyguards</option>
         <option value="Violet">Violet — Artisans and other creatives</option>
@@ -1317,6 +1360,17 @@
   <div class="modal-box" style="max-width:540px;max-height:88vh">
     <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
     <div id="profile-modal-content"></div>
+  </div>
+</div>
+
+<!-- QUICK LOG -->
+<div onclick="openQuickLog()" style="position:fixed;bottom:24px;right:24px;z-index:150;background:var(--ink);color:var(--amber-pale);border:2px solid var(--amber);border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.35)" title="Quick Log">⚔</div>
+<div class="modal-overlay" id="quick-log-modal">
+  <div class="modal-box" style="max-width:400px">
+    <button class="modal-close" onclick="closeModal('quick-log-modal')">✕</button>
+    <div class="modal-title">⚔ Quick Log</div>
+    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;margin-bottom:16px">Tap to log your most common workouts instantly</div>
+    <div id="quick-log-options" style="display:flex;flex-direction:column;gap:8px"></div>
   </div>
 </div>
 
@@ -1509,15 +1563,44 @@ function saveConfig(binId, apiKey) {
 }
 let currentHowlerId = localStorage.getItem('howlers_current_player') || '';
 
+// ─── NOTIFICATION TRACKING ───────────────────────────────────────────────────
+function getLastHowlSeen() {
+  return localStorage.getItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_bin_id')||'')) || '0';
+}
+function markHowlsSeen() {
+  localStorage.setItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_bin_id')||''), new Date().toISOString());
+  updateHowlBadge(0);
+}
+function updateHowlBadge(count) {
+  const badge = document.getElementById('howl-badge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+function checkUnreadHowls() {
+  const lastSeen = getLastHowlSeen();
+  const myId = currentHowlerId;
+  const unread = (state.howls||[]).filter(function(h) {
+    return (h.timestamp||h.date) > lastSeen && h.player_id !== myId && h.player_id !== 'system';
+  }).length;
+  // Also count system recaps
+  const recapUnread = (state.howls||[]).filter(function(h) {
+    return (h.timestamp||h.date) > lastSeen && h.is_recap;
+  }).length;
+  updateHowlBadge(unread + recapUnread);
+  return unread + recapUnread;
+}
+
 function setCurrentHowler(pid) {
   currentHowlerId = pid;
   localStorage.setItem('howlers_current_player', pid);
   autoFillHowlerDropdowns();
 }
 
-function getCurrentHowler() {
-  return currentHowlerId;
-}
 
 function autoFillHowlerDropdowns() {
   // Auto-select current howler in all dropdowns
@@ -1556,6 +1639,7 @@ async function loadState() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
     const data = json.record;
+    const prevState = JSON.parse(JSON.stringify(state)); // snapshot before update
     if (data && typeof data === 'object') {
       state = data;
       if (!state.players) state.players = [];
@@ -1565,6 +1649,8 @@ async function loadState() {
         if (!state.howls) state.howls = [];
     }
     setSyncStatus('live');
+  checkForNewActivityNotifications(prevState);
+  checkAndPostChallengeHowls();
   checkAndPostWeeklyRecap();
   } catch(e) {
     setSyncStatus('error');
@@ -1697,6 +1783,9 @@ function calcPlayerStats(pid) {
 }
 
 function openProfile(pid) {
+  // Mark this player's activity as seen
+  const seenKey = 'howlers_seen_' + pid + '_' + (localStorage.getItem('howlers_bin_id')||'');
+  localStorage.setItem(seenKey, new Date().toISOString());
   const player = state.players.find(function(p) { return p.id === pid; });
   if (!player) return;
   const s = calcPlayerStats(pid);
@@ -1814,10 +1903,48 @@ function openProfile(pid) {
     '</div>' +
     (badgePills ? '<div style="margin-bottom:16px"><div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:6px">BADGES</div><div style="display:flex;flex-wrap:wrap;gap:5px">' + badgePills + '</div></div>' : '') +
     booksHTML +
-    '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:8px">⚔️ TRIAL CHRONICLE</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:8px">📅 ACTIVITY HEATMAP</div>' +
+    buildHeatmap(pid) +
+    '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin:16px 0 8px">⚔️ TRIAL CHRONICLE</div>' +
     '<div style="max-height:320px;overflow-y:auto;padding-right:4px">' + timelineHTML + '</div>';
 
   document.getElementById('profile-modal').classList.add('open');
+}
+
+function buildHeatmap(pid) {
+  var works = state.workouts.filter(function(w){ return w.player_id === pid; });
+  var dateCounts = {};
+  works.forEach(function(w){ dateCounts[w.date] = (dateCounts[w.date]||0)+1; });
+  var today = new Date();
+  var days = [];
+  for (var i = 125; i >= 0; i--) {
+    var d = new Date(today); d.setDate(d.getDate() - i);
+    var key = d.toISOString().split('T')[0];
+    days.push({ key: key, count: dateCounts[key]||0, dow: d.getDay() });
+  }
+  var weeks = []; var week = [];
+  var firstDow = days[0].dow;
+  for (var p2 = 0; p2 < firstDow; p2++) week.push(null);
+  days.forEach(function(d) {
+    week.push(d);
+    if (week.length === 7) { weeks.push(week); week = []; }
+  });
+  if (week.length > 0) weeks.push(week);
+  var colors = ['var(--parchment-mid)','rgba(122,80,6,0.25)','rgba(122,80,6,0.5)','rgba(122,80,6,0.85)'];
+  var html = '<div style="overflow-x:auto;margin-bottom:4px"><div style="display:flex;gap:2px">';
+  weeks.forEach(function(wk) {
+    html += '<div style="display:flex;flex-direction:column;gap:2px">';
+    wk.forEach(function(d) {
+      if (!d) { html += '<div style="width:10px;height:10px"></div>'; return; }
+      var c = d.count===0?colors[0]:d.count===1?colors[1]:d.count===2?colors[2]:colors[3];
+      html += '<div title="' + d.key + (d.count?' · '+d.count+' trial'+(d.count>1?'s':''):'') + '" style="width:10px;height:10px;border-radius:2px;background:' + c + '"></div>';
+    });
+    html += '</div>';
+  });
+  html += '</div><div style="display:flex;gap:6px;align-items:center;margin-top:4px;font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light)"><span>Less</span>';
+  colors.forEach(function(c){ html += '<div style="width:10px;height:10px;border-radius:2px;background:' + c + '"></div>'; });
+  html += '<span>More</span></div></div>';
+  return html;
 }
 
 function recalcAllBadges() {
@@ -1866,7 +1993,161 @@ function calcLaurels(workout, miles, minutes) {
   }
 }
 
+// ─── QUICK LOG ───────────────────────────────────────────────────────────────
+var QUICK_WORKOUTS = [
+  {label:'Easy Run 3mi', workout:'easy_run', icon:'🏃', miles:3, desc:'+24 Laurels'},
+  {label:'Easy Run 5mi', workout:'easy_run', icon:'🏃', miles:5, desc:'+40 Laurels'},
+  {label:'The March 6mi', workout:'long_run', icon:'🗺️', miles:6, desc:'+72 Laurels'},
+  {label:'The March 8mi', workout:'long_run', icon:'🗺️', miles:8, desc:'+96 Laurels'},
+  {label:'Iron Forged', workout:'strength', icon:'🦵', miles:0, desc:'+12 Laurels'},
+  {label:'Mind & Body', workout:'mobility', icon:'🧘', miles:0, desc:'+8 Laurels'},
+  {label:'The Steed 30min', workout:'peloton', icon:'🚴', minutes:30, desc:'+10 Laurels'},
+  {label:'The Steed 45min', workout:'peloton', icon:'🚴', minutes:45, desc:'+15 Laurels'},
+];
+function openQuickLog() {
+  var el = document.getElementById('quick-log-options');
+  var pid = currentHowlerId;
+  var warning = pid ? '' : '<div style="background:var(--amber-glow);border:1px solid var(--amber);border-radius:4px;padding:8px 12px;font-family:Crimson Pro,serif;font-size:0.85rem;color:var(--amber);margin-bottom:10px">Select yourself in the header (🐺 I am...) first</div>';
+  el.innerHTML = warning + QUICK_WORKOUTS.map(function(q,i) {
+    var l = calcLaurels(q.workout, q.miles||0, q.minutes||0);
+    return '<button onclick="quickLogSubmit(' + i + ')" style="display:flex;align-items:center;gap:12px;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;text-align:left;width:100%">' +
+      '<span style="font-size:1.2rem">' + q.icon + '</span><span style="flex:1">' +
+      '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:var(--ink);display:block">' + q.label + '</span>' +
+      '<span style="font-family:Crimson Pro,serif;font-size:0.82rem;color:var(--ink-light)">+' + l + ' Laurels</span></span></button>';
+  }).join('');
+  document.getElementById('quick-log-modal').classList.add('open');
+}
+async function quickLogSubmit(idx) {
+  var q = QUICK_WORKOUTS[idx];
+  var pid = currentHowlerId;
+  if (!pid) { showToast('Select yourself in the header first.'); return; }
+  var today = new Date().toISOString().split('T')[0];
+  if (new Date(today) < TRAINING_START) { showToast('Training has not begun yet!'); return; }
+  var laurels = calcLaurels(q.workout, q.miles||0, q.minutes||0);
+  var prevBadges = (state.badges_awarded[pid]||[]).slice();
+  var entry = { id:'w_'+Date.now()+'_'+Math.random().toString(36).slice(2,5), player_id:pid, workout:q.workout, date:today, miles:q.miles||undefined, minutes:q.minutes||undefined, laurels_base:laurels, quote:QUOTES[Math.floor(Math.random()*QUOTES.length)], timestamp:new Date().toISOString() };
+  state.workouts.push(entry);
+  calcPlayerStats(pid);
+  var newBadges = (state.badges_awarded[pid]||[]).filter(function(b){ return !prevBadges.includes(b); });
+  if (newBadges.length > 0) entry.badge_earned = newBadges[0];
+  await saveState();
+  closeModal('quick-log-modal');
+  var player = state.players.find(function(p){ return p.id===pid; });
+  var msg = 'Logged! +' + laurels + 'L for ' + (player?player.name:'you') + '. ✦';
+  if (newBadges.length > 0) {
+    var tiers = ['bronze','silver','gold'];
+    var tier = tiers.find(function(t){ return newBadges[0].endsWith('_'+t); });
+    var baseId = tier ? newBadges[0].slice(0,-(tier.length+1)) : newBadges[0];
+    var bd = BADGES_DEF.find(function(b){ return b.id===baseId; });
+    if (bd && tier) msg += ' ' + {bronze:'I',silver:'II',gold:'III'}[tier] + ' Badge: ' + bd.icon + ' ' + bd.name + '!';
+  }
+  showToast(msg);
+  renderAll();
+  switchTab('chronicle');
+}
+
+// ─── BROWSER NOTIFICATIONS ───────────────────────────────────────────────────
+function requestNotifications() {
+  if (!('Notification' in window)) {
+    showToast('Your browser does not support notifications.');
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    showToast('Notifications are already enabled. 🔔');
+    updateNotifBtn();
+    return;
+  }
+  Notification.requestPermission().then(function(result) {
+    if (result === 'granted') {
+      showToast('Notifications enabled! The pack will alert you. 🐺');
+      new Notification('The Howlers', { body: 'You will now be notified of pack activity. 🐺', icon: '' });
+    } else {
+      showToast('Notifications blocked. Enable them in browser settings.');
+    }
+    updateNotifBtn();
+  });
+}
+function updateNotifBtn() {
+  const btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  if (!('Notification' in window)) { btn.style.display='none'; return; }
+  if (Notification.permission === 'granted') {
+    btn.textContent = '🔔';
+    btn.title = 'Notifications enabled';
+    btn.style.opacity = '1';
+    btn.style.borderColor = 'rgba(76,175,80,0.6)';
+  } else if (Notification.permission === 'denied') {
+    btn.textContent = '🔕';
+    btn.title = 'Notifications blocked — enable in browser settings';
+    btn.style.opacity = '0.5';
+  } else {
+    btn.textContent = '🔔';
+    btn.title = 'Tap to enable notifications';
+    btn.style.opacity = '0.7';
+  }
+}
+function fireNotification(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (document.visibilityState === 'visible') return; // don't notify if app is in focus
+  try { new Notification(title, { body: body, icon: '' }); } catch(e) {}
+}
+function checkForNewActivityNotifications(prevState) {
+  if (!prevState) return;
+  // New workouts
+  const prevWorkoutIds = new Set((prevState.workouts||[]).map(function(w){return w.id;}));
+  const newWorkouts = (state.workouts||[]).filter(function(w){ return !prevWorkoutIds.has(w.id); });
+  newWorkouts.forEach(function(w) {
+    const player = state.players.find(function(p){return p.id===w.player_id;});
+    if (!player || player.id === currentHowlerId) return;
+    const wname = WORKOUT_NAMES[w.workout]||w.workout;
+    const detail = w.miles ? w.miles+' mi' : (w.minutes ? w.minutes+' min' : '');
+    fireNotification('🐺 The Howlers', player.name + ' logged ' + wname + (detail?' · '+detail:'') + ' · +' + w.laurels_base + 'L');
+  });
+  // New howls
+  const prevHowlIds = new Set((prevState.howls||[]).map(function(h){return h.id;}));
+  const newHowls = (state.howls||[]).filter(function(h){ return !prevHowlIds.has(h.id) && h.player_id !== currentHowlerId && h.player_id !== 'system'; });
+  newHowls.forEach(function(h) {
+    const player = state.players.find(function(p){return p.id===h.player_id;});
+    if (!player) return;
+    fireNotification('🐺 The Howlers', player.name + ' howled: "' + h.message.slice(0,60) + (h.message.length>60?'...':'"'));
+  });
+}
+
 // ─── WEEKLY RECAP ────────────────────────────────────────────────────────────
+function checkAndPostChallengeHowls() {
+  if (!state.players||state.players.length===0) return;
+  if (!state.howls) state.howls = [];
+  var announcedKey = 'howlers_announced_' + (localStorage.getItem('howlers_bin_id')||'');
+  var announced = JSON.parse(localStorage.getItem(announcedKey)||'{}');
+  buildStatsCache();
+  var sm = _statsCache;
+  CHALLENGES_DEF.forEach(function(ch) {
+    if (announced[ch.id]) return;
+    var winner = null;
+    if (ch.type==='duel') {
+      if (ch.id==='first_blood') { var fw=state.workouts.slice().sort(function(a,b){return new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date);})[0]; if(fw) winner=state.players.find(function(p){return p.id===fw.player_id;}); }
+      else if (ch.id==='century_laurels') { winner=state.players.find(function(p){return (sm[p.id]||{}).laurels>=100;}); }
+      else if (ch.id==='five_league') { var bw=state.workouts.find(function(w){return ['long_run','easy_run','tempo','optional_run'].includes(w.workout)&&(w.miles||0)>=5;}); if(bw) winner=state.players.find(function(p){return p.id===bw.player_id;}); }
+      else if (ch.id==='the_unbroken') { winner=state.players.find(function(p){return (sm[p.id]||{}).streak>=3;}); }
+      else if (ch.id==='grand_march') { var gw=state.workouts.find(function(w){return ['long_run','easy_run','tempo','optional_run'].includes(w.workout)&&(w.miles||0)>=10;}); if(gw) winner=state.players.find(function(p){return p.id===gw.player_id;}); }
+      else if (ch.id==='primus_pares') { winner=state.players.find(function(p){return (sm[p.id]||{}).weekSet&&sm[p.id].weekSet.size>=8;}); }
+    } else {
+      if (ch.id==='pack_trains'&&state.players.every(function(p){return (sm[p.id]||{}).trials>=10;})) winner={name:'The Pack'};
+      if (ch.id==='society_rising'&&state.players.reduce(function(s,p){return s+((sm[p.id]||{}).laurels||0);},0)>=500) winner={name:'The Pack'};
+      if (ch.id==='beyond_quota'&&state.players.length>0&&state.players.every(function(p){return (sm[p.id]||{}).optionals>=5;})) winner={name:'The Pack'};
+    }
+    if (winner) {
+      announced[ch.id] = true;
+      var isPack = winner.name==='The Pack';
+      var msg = isPack
+        ? '🏆 CHALLENGE CONQUERED: ' + ch.name + '! The entire pack rises together. +' + ch.reward + ' Laurels flow to all. Per aspera ad astra. ✦'
+        : '🏆 CHALLENGE CONQUERED: ' + ch.name + '! ' + winner.name + ' strikes first and claims victory. +' + ch.reward + ' Laurels. Go Howler, Go! 🐺';
+      state.howls.push({ id:'challenge_'+ch.id+'_'+Date.now(), player_id:'system', player_laurels:9999, message:msg, date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+    }
+  });
+  localStorage.setItem(announcedKey, JSON.stringify(announced));
+}
+
 function checkAndPostWeeklyRecap() {
   if (state.players.length === 0 || state.workouts.length === 0) return;
   const lastRecapKey = 'howlers_last_recap_' + (localStorage.getItem('howlers_bin_id')||'');
@@ -1929,7 +2210,20 @@ function checkAndPostWeeklyRecap() {
 }
 
 // ─── RENDER ──────────────────────────────────────────────────────────────────
+// Stats cache — computed once per render cycle, shared by all render fns
+let _statsCache = {};
+function buildStatsCache() {
+  _statsCache = {};
+  state.players.forEach(function(p) {
+    _statsCache[p.id] = calcPlayerStats(p.id);
+  });
+}
+function getStats(pid) {
+  return _statsCache[pid] || calcPlayerStats(pid);
+}
+
 function renderAll() {
+  buildStatsCache();
   renderPackStats();
   renderPlayers();
   updateCurrentHowlerSelect();
@@ -1940,12 +2234,13 @@ function renderAll() {
   renderDispatch();
   renderDistanceRankings();
   renderCodex();
+  checkUnreadHowls();
 }
 
 function renderPlayers() {
   const grid = document.getElementById('player-grid');
   const statsMap = {};
-  state.players.forEach(p => { statsMap[p.id] = calcPlayerStats(p.id); });
+  state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
   const sorted = [...state.players].sort((a,b) => (statsMap[b.id].laurels - statsMap[a.id].laurels));
   const primusId = sorted.length > 0 ? sorted[0].id : null;
 
@@ -1956,6 +2251,11 @@ function renderPlayers() {
     const isPeerless = stats_for_color.laurels >= 1200;
     const houseColor = isPeerless ? PEERLESS_GOLD : (HOUSES[p.house] || '#7a5006');
     const isPrimus = p.id === primusId && s.laurels > 0;
+    const lastSeenKey = 'howlers_seen_' + p.id + '_' + (localStorage.getItem('howlers_bin_id')||'');
+    const lastSeen = localStorage.getItem(lastSeenKey) || '0';
+    const hasNewActivity = state.workouts.some(function(w) {
+      return w.player_id === p.id && (w.timestamp||w.date) > lastSeen;
+    });
     // Build tiered badge pills — show highest tier earned per badge
     const badgeMap = {};
     s.earnedBadges.forEach(key => {
@@ -1975,7 +2275,10 @@ function renderPlayers() {
     }).join('');
     html += `
       <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor};cursor:pointer" onclick="openProfile('${p.id}')">
-        <div class="player-color-label">${p.house}</div>
+        <div style="display:flex;align-items:center">
+          ${hasNewActivity ? '<span class="new-activity-dot" title="New activity since your last visit"></span>' : ''}
+          <div class="player-color-label">${p.house}</div>
+        </div>
         <div class="player-name">${escHtml(p.name)}</div>
         ${p.subtitle ? `<div class="player-subtitle">${escHtml(p.subtitle)}</div>` : ''}
         <div class="player-rank">${s.rank.name}</div>
@@ -2011,11 +2314,14 @@ function renderPackStats() {
   const el = document.getElementById('pack-stats-dashboard');
   if (!el) return;
   const totalWorkouts = state.workouts.length;
-  const totalMiles = state.players.reduce(function(s,p){ return s + calcPlayerStats(p.id).miles; }, 0);
-  const totalLaurels = state.players.reduce(function(s,p){ return s + calcPlayerStats(p.id).laurels; }, 0);
+  const totalMiles = state.players.reduce(function(s,p){ return s + getStats(p.id).miles; }, 0);
+  const totalLaurels = state.players.reduce(function(s,p){ return s + getStats(p.id).laurels; }, 0);
   const totalHowls = (state.howls || []).length;
-  const totalLikes = state.workouts.reduce(function(s,w){ return s + (w.likes||[]).length; }, 0) +
-    (state.howls||[]).reduce(function(s,h){ return s + (h.likes||[]).length; }, 0);
+  const totalLikes = state.workouts.reduce(function(s,w){
+    var r = w.reactions || {}; return s + Object.values(r).reduce(function(a,b){return a+b;},0);
+  }, 0) + (state.howls||[]).reduce(function(s,h){
+    var r = h.reactions || {}; return s + Object.values(r).reduce(function(a,b){return a+b;},0);
+  }, 0);
   // Most active week
   const weekCounts = {};
   state.workouts.forEach(function(w){
@@ -2046,7 +2352,7 @@ function renderDistanceRankings() {
   if (!el) return;
   if (state.players.length === 0) { el.innerHTML = '<div class="empty-state" style="padding:20px">No runners yet.</div>'; return; }
   const ranked = [...state.players].map(function(p) {
-    const s = calcPlayerStats(p.id);
+    const s = getStats(p.id);
     return { p: p, miles: s.miles, laurels: s.laurels };
   }).sort(function(a,b) { return b.miles - a.miles; });
   const maxMiles = (ranked[0] && ranked[0].miles) ? ranked[0].miles : 1;
@@ -2120,7 +2426,7 @@ function renderChronicle() {
   feed.innerHTML = sorted.slice(0, 50).map(w => {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
-    const playerStats = calcPlayerStats(player.id);
+    const playerStats = getStats(player.id);
     const houseColor = playerStats.laurels >= 1200 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const badgeDef = w.badge_earned ? BADGES_DEF.find(b => b.id === w.badge_earned) : null;
     // Build meaningful detail string per workout type
@@ -2155,7 +2461,7 @@ function renderChronicle() {
       })() : ''}
       <div class="chronicle-quote">"${w.quote}"</div>
       <div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">
-        <button onclick="toggleLike('${w.id}')" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'" title="Like this trial">⚔️ <span style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--ink-light)">${(w.likes||[]).length||''}</span></button>
+        ${reactionBarHTML(w, w.id, 'toggleReaction')}
         <button onclick="quickHowlAt('${w.id}','${escHtml(player.name)}')" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(122,80,6,0.08)'" onmouseout="this.style.background='transparent'" title="Send a Howl">🐺</button>
         <div style="flex:1"></div>
         <button onclick="openEditWorkout('${w.id}')" style="background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
@@ -2168,7 +2474,7 @@ function renderChronicle() {
 function renderChallenges() {
   const grid = document.getElementById('challenges-grid');
   const statsMap = {};
-  state.players.forEach(p => { statsMap[p.id] = calcPlayerStats(p.id); });
+  state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
 
   grid.innerHTML = CHALLENGES_DEF.map(ch => {
     let progress = 0, progressMax = ch.goal, progressLabel = '', winner = null;
@@ -2249,7 +2555,7 @@ function renderChallenges() {
 function renderTimeline() {
   const tl = document.getElementById('timeline');
   const statsMap = {};
-  state.players.forEach(p => { statsMap[p.id] = calcPlayerStats(p.id); });
+  state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
   const now = new Date();
   const raceWeekStart = new Date('2027-01-13T00:00:00');
   const raceWeekEnd = new Date('2027-01-17T23:59:59');
@@ -2326,7 +2632,7 @@ function renderHowlFeed() {
         '</div>' +
         '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);white-space:pre-line">' + escHtml(h.message) + '</div>' +
         '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">' +
-        '<button onclick="toggleHowlLike(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer">⚔️ <span style="font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">' + (likes.length||'') + '</span></button>' +
+        reactionBarHTML(h, h.id, 'toggleHowlReaction') +
         '<div style="flex:1"></div>' +
         '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
         '</div></div>';
@@ -2357,7 +2663,7 @@ function renderHowlFeed() {
       replyTo +
       '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message) + '&rdquo;</div>' +
       '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">' +
-      '<button onclick="toggleHowlLike(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer" title="Like">⚔️ <span style="font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">' + (likes.length || '') + '</span></button>' +
+      reactionBarHTML(h, h.id, 'toggleHowlReaction') +
       '<button onclick="copyHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">⎘ Copy</button>' +
       '<div style="flex:1"></div>' +
       '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
@@ -2454,23 +2760,47 @@ function clearHowlReply() {
   document.getElementById('howl-submit-btn').onclick = postHowl;
 }
 
-async function toggleLike(workoutId) {
+async function toggleReaction(workoutId, emoji) {
   const w = state.workouts.find(function(x) { return x.id === workoutId; });
   if (!w) return;
-  if (!w.likes) w.likes = [];
-  // Simple toggle by timestamp — no auth so just increment/decrement
-  w.likes.push(Date.now());
+  if (!w.reactions) w.reactions = {};
+  if (!w.reactions[emoji]) w.reactions[emoji] = 0;
+  w.reactions[emoji]++;
   await saveState();
   renderChronicle();
 }
-
-async function toggleHowlLike(howlId) {
+async function toggleHowlReaction(howlId, emoji) {
   const h = (state.howls || []).find(function(x) { return x.id === howlId; });
   if (!h) return;
-  if (!h.likes) h.likes = [];
-  h.likes.push(Date.now());
+  if (!h.reactions) h.reactions = {};
+  if (!h.reactions[emoji]) h.reactions[emoji] = 0;
+  h.reactions[emoji]++;
   await saveState();
   renderHowlFeed();
+}
+
+
+
+function reactionBarHTML(obj, idVal, fnPrefix) {
+  var reactions = (obj && obj.reactions) ? obj.reactions : {};
+  var bar = '<div style="display:flex;gap:4px;align-items:center">';
+  var opts = [['fire','Fire'],['wolf','Howl'],['sleep','Trash talk']];
+  var emojis = {'fire':'🔥','wolf':'🐺','sleep':'😴'};
+  [['🔥','Fire'],['🐺','Howl'],['😴','Trash talk']].forEach(function(r) {
+    var emoji = r[0], label = r[1];
+    var count = reactions[emoji] || 0;
+    var hasCount = count > 0;
+    bar += '<button onclick="' + fnPrefix + '(\"' + idVal + '\",\"' + emoji + '\")" ';
+    bar += 'title="' + label + '" ';
+    bar += 'style="background:' + (hasCount ? 'rgba(122,80,6,0.1)' : 'transparent') + ';';
+    bar += 'border:1px solid ' + (hasCount ? 'var(--amber)' : 'var(--border)') + ';';
+    bar += 'border-radius:3px;padding:3px 8px;font-size:0.85rem;cursor:pointer;line-height:1">';
+    bar += emoji;
+    if (hasCount) bar += ' <span style="font-family:Cinzel,serif;font-size:0.58rem;color:var(--ink-light)">' + count + '</span>';
+    bar += '</button>';
+  });
+  bar += '</div>';
+  return bar;
 }
 
 async function removeHowl(howlId) {
@@ -2632,94 +2962,6 @@ async function removePlayer(pid, name) {
   await saveState();
   showToast(`${name} has been removed from the pack.`);
   renderAll();
-}
-
-async function logBook() {
-  const bookBtn = document.querySelector('#tab-books .btn-primary');
-  if (bookBtn && bookBtn.disabled) return;
-  if (bookBtn) { bookBtn.disabled = true; bookBtn.textContent = '⏳ Logging…'; }
-  const pid = document.getElementById('book-player').value;
-  const bookId = document.getElementById('book-title').value;
-  if (!pid) { showToast('Select a Howler first.'); return; }
-  if (!bookId) { showToast('Select a book.'); return; }
-  const player = state.players.find(p => p.id === pid);
-  if (!player) return;
-  if (!player.books_read) player.books_read = [];
-  if (player.books_read.includes(bookId)) {
-    showToast('This Howler has already logged that book!'); return;
-  }
-  player.books_read.push(bookId);
-  player.book_laurels = player.books_read.length * BOOK_LAURELS;
-  await saveState();
-  const bookName = BOOKS.find(b => b.id === bookId)?.title || bookId;
-  if (bookBtn) { bookBtn.disabled = false; bookBtn.textContent = '✦ LOG BOOK READ ✦'; }
-  showToast(`+25 Laurels! ${player.name} has read ${bookName}. Per aspera ad astra. ✦`);
-  renderAll();
-  switchTab('books');
-}
-
-function renderBooks() {
-  // Populate player dropdown
-  const sel = document.getElementById('book-player');
-  if (sel) {
-    const prev = sel.value;
-    sel.innerHTML = '<option value="">— Select Howler —</option>';
-    state.players.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.id;
-      opt.textContent = p.name + ' (House ' + p.house + ')';
-      sel.appendChild(opt);
-    });
-    if (prev) sel.value = prev;
-  }
-
-  // Already-read note
-  const bookTitleSel = document.getElementById('book-title');
-  const alreadyNote = document.getElementById('book-already-note');
-  if (bookTitleSel && alreadyNote) {
-    bookTitleSel.onchange = () => {
-      const pid = document.getElementById('book-player').value;
-      const bid = bookTitleSel.value;
-      const player = state.players.find(p => p.id === pid);
-      if (player && bid && player.books_read && player.books_read.includes(bid)) {
-        alreadyNote.textContent = 'Already logged by this Howler';
-      } else { alreadyNote.textContent = ''; }
-    };
-  }
-
-  // Books feed
-  const feed = document.getElementById('books-feed');
-  if (!feed) return;
-  if (state.players.length === 0) {
-    feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📚</span>No Howlers inducted yet.</div>';
-    return;
-  }
-  const BOOK_TITLES = {red_rising:'Red Rising', golden_son:'Golden Son', morning_star:'Morning Star', iron_gold:'Iron Gold', dark_age:'Dark Age', light_bringer:'Light Bringer'};
-  const ORDER = ['red_rising','golden_son','morning_star','iron_gold','dark_age','light_bringer'];
-  let html = '';
-  state.players.forEach(p => {
-    const stats_for_color = statsMap[p.id];
-    const isPeerless = stats_for_color.laurels >= 1200;
-    const houseColor = isPeerless ? PEERLESS_GOLD : (HOUSES[p.house] || '#7a5006');
-    const read = p.books_read || [];
-    const laurels = read.length * BOOK_LAURELS;
-    html += `<div style="background:var(--parchment);border:1.5px solid var(--border);border-left:4px solid ${houseColor};border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
-        <span style="font-family:'Cinzel',serif;font-size:0.9rem;font-weight:700;color:${houseColor}">${escHtml(p.name)}</span>
-        <span style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--ink-light)">House ${p.house}</span>
-        <span style="margin-left:auto;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--amber)">+${laurels}L</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-        ${ORDER.map(bid => {
-          const done = read.includes(bid);
-          return `<div style="display:flex;align-items:center;gap:5px;font-family:'Crimson Pro',serif;font-size:0.85rem;color:${done?'var(--amber)':'var(--ink-light)'};opacity:${done?1:0.5}">
-            <span>${done?'✦':'○'}</span><span>${BOOK_TITLES[bid]}</span>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-  });
-  feed.innerHTML = html;
 }
 
 function openEditWorkout(wid) {
@@ -2892,7 +3134,7 @@ function switchTab(id) {
     const ids = ['leaderboard','log','chronicle','trials','conquests','dispatch','codex'];
     if (ids[i] === id) t.classList.add('active');
   });
-  if (id === 'dispatch') renderDispatch();
+  if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
 }
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -2940,6 +3182,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('profile-modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal('profile-modal');
   });
+  document.getElementById('quick-log-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('quick-log-modal');
+  });
 
   // Dispatch custom input
   document.getElementById('induct-books').addEventListener('change', () => {
@@ -2951,6 +3196,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Workout change -> update preview
   document.getElementById('log-workout').addEventListener('change', updateLaurelPreview);
 
+  updateNotifBtn();
   switchTab('leaderboard');
   loadState().then(function() { autoFillHowlerDropdowns(); });
   refreshInterval = setInterval(loadState, 30000);
