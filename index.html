@@ -261,7 +261,7 @@
     background: var(--parchment);
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
-    padding: 14px;
+    padding: 14px 14px 14px 18px;
     position: relative;
     transition: all 0.2s;
     box-shadow: var(--shadow);
@@ -270,8 +270,17 @@
   .player-card::before {
     content: '';
     position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, var(--house-color, var(--amber))18 0%, transparent 55%);
+    top: 0; left: 0; bottom: 0;
+    width: 5px;
+    background: var(--house-color, var(--amber));
+    border-radius: 4px 0 0 4px;
+    z-index: 1;
+  }
+  .player-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to right, var(--house-color, var(--amber))14 0%, transparent 40%);
     border-radius: var(--radius);
     pointer-events: none;
     z-index: 0;
@@ -1962,7 +1971,7 @@ function openProfile(pid) {
   const el = document.getElementById('profile-modal-content');
   el.innerHTML =
     '<div style="margin:-28px -28px 16px;border-radius:var(--radius) var(--radius) 0 0;height:6px;background:linear-gradient(to right,' + hc + ',' + hc + '88)"></div>' +
-    (pid !== currentHowlerId ? '<button onclick="openDuelModal("' + pid + '")" style="display:block;margin-top:6px;background:var(--ink);color:var(--amber-pale);border:1px solid var(--amber);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;cursor:pointer">⚔ CHALLENGE</button>' : '') +
+
     '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap">' +
     '<div style="flex:1">' +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:900;letter-spacing:0.2em;color:' + hc + ';text-transform:uppercase;margin-bottom:2px">' + escHtml(player.house) + '</div>' +
@@ -1985,8 +1994,7 @@ function openProfile(pid) {
     booksHTML +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:8px">📅 ACTIVITY HEATMAP</div>' +
     buildHeatmap(pid) +
-    '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin:16px 0 8px">📈 WEEKLY ACTIVITY</div>' +
-    buildWeeklyChart(pid) +
+
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin:16px 0 8px">⚔️ TRIAL CHRONICLE</div>' +
     '<div style="max-height:320px;overflow-y:auto;padding-right:4px">' + timelineHTML + '</div>';
 
