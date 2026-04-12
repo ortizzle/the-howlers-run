@@ -1600,10 +1600,10 @@ const RED_GOD_LAURELS = 200;
 
 const WORKOUT_NAMES = {
   duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
-  long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol',
-  optional_run:'Optional Run', optional_other:'Optional 5th Day Other',
-  walk_run:'Walk/Run', peloton:'The Steed (Peloton)',
-  strength:'The Forge', mobility:'Mind & Body (Mobility)'
+  long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
+  optional_run:'Optional 5th Day Run', optional_other:'Optional 5th Day Other',
+  walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
+  strength:'The Forge (Strength)', mobility:'Mind & Body (Mobility)'
 };
 
 let state = { players: [], workouts: [], howls: [], duels: [], challenges_won: {}, badges_awarded: {} };
@@ -2765,14 +2765,11 @@ function renderChronicle() {
       detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
     }
     return `<div class="chronicle-entry" style="--house-color:${houseColor}">
-      <div class="chronicle-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px">
         <span class="chronicle-player">${escHtml(player.name)}</span>
-        <span class="chronicle-workout">${WORKOUT_NAMES[w.workout]||w.workout}</span>
-        ${(w.miles||w.minutes) ? `<span style="font-family:'Cinzel',serif;font-size:0.72rem;font-weight:600;color:var(--ink-light)">${w.miles ? w.miles+' mi' : w.minutes+' min'}</span>` : ''}
-        ${detail ? `<span style="font-family:'Crimson Pro',serif;font-size:0.85rem;color:var(--ink-light)">${detail}</span>` : ''}
-        <span class="chronicle-meta">${formatDate(w.date)}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">+${w.laurels_base}L</span>
       </div>
-      <div class="chronicle-detail" style="margin-top:2px">+${w.laurels_base} Laurels earned</div>
+      <div style="font-family:'Cinzel',serif;font-size:0.72rem;color:var(--ink-light);margin-bottom:4px;letter-spacing:0.03em">${WORKOUT_NAMES[w.workout]||w.workout}${w.miles ? ' · '+w.miles+' mi' : ''}${w.minutes ? ' · '+w.minutes+' min' : ''} · ${formatDate(w.date)}</div>>+${w.laurels_base} Laurels earned</div>
       ${w.notes ? `<div class="chronicle-detail" style="font-style:italic">"${escHtml(w.notes)}"</div>` : ''}
       ${w.badge_earned ? (() => {
         const tier = BADGE_TIERS.find(t => w.badge_earned.endsWith('_'+t));
