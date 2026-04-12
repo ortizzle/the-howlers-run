@@ -588,12 +588,12 @@
     border: 1.5px solid var(--border);
     border-left: 4px solid var(--house-color, var(--amber));
     border-radius: var(--radius);
-    padding: 14px 16px;
+    padding: 10px 12px;
     box-shadow: var(--shadow);
     animation: fadeSlideIn 0.3s ease;
   }
   @keyframes fadeSlideIn { from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none} }
-  .chronicle-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .chronicle-header { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-bottom: 3px; row-gap: 1px; }
   .chronicle-player {
     font-family: 'Cinzel', serif;
     font-size: 0.85rem;
@@ -614,17 +614,17 @@
   }
   .chronicle-detail {
     font-family: 'Crimson Pro', serif;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--ink-mid);
-    margin: 2px 0;
+    margin: 1px 0;
   }
   .chronicle-quote {
     font-family: 'Crimson Pro', serif;
     font-style: italic;
-    font-size: 0.85rem;
+    font-size: 0.83rem;
     color: var(--amber);
-    margin-top: 6px;
-    padding-top: 6px;
+    margin-top: 4px;
+    padding-top: 4px;
     border-top: 1px solid var(--border);
   }
   .chronicle-badge {
@@ -1600,10 +1600,10 @@ const RED_GOD_LAURELS = 200;
 
 const WORKOUT_NAMES = {
   duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
-  long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
-  optional_run:'Optional 5th Day Run', optional_other:'Optional 5th Day Other',
-  walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
-  strength:'The Forge (Strength)', mobility:'Mind & Body (Mobility)'
+  long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol',
+  optional_run:'Optional Run', optional_other:'Optional 5th Day Other',
+  walk_run:'Walk/Run', peloton:'The Steed (Peloton)',
+  strength:'The Forge', mobility:'Mind & Body (Mobility)'
 };
 
 let state = { players: [], workouts: [], howls: [], duels: [], challenges_won: {}, badges_awarded: {} };
@@ -1786,7 +1786,8 @@ function calcPlayerStats(pid) {
   const works = state.workouts.filter(w => w.player_id === pid);
   const player = state.players.find(p => p.id === pid);
   let laurels = (player && player.book_laurels) ? player.book_laurels : 0;
-  let miles = 0, trials = works.length;
+  const SYSTEM_WORKOUTS = ['milestone_bonus','duel_win','duel_loss'];
+  let miles = 0, trials = works.filter(w => !SYSTEM_WORKOUTS.includes(w.workout)).length;
   let pelotons = 0, strength = 0, mobility = 0, optionals = 0;
   let maxSingleRun = 0;
   const weekSet = new Set();
@@ -2767,10 +2768,11 @@ function renderChronicle() {
       <div class="chronicle-header">
         <span class="chronicle-player">${escHtml(player.name)}</span>
         <span class="chronicle-workout">${WORKOUT_NAMES[w.workout]||w.workout}</span>
+        ${(w.miles||w.minutes) ? `<span style="font-family:'Cinzel',serif;font-size:0.72rem;font-weight:600;color:var(--ink-light)">${w.miles ? w.miles+' mi' : w.minutes+' min'}</span>` : ''}
         ${detail ? `<span style="font-family:'Crimson Pro',serif;font-size:0.85rem;color:var(--ink-light)">${detail}</span>` : ''}
         <span class="chronicle-meta">${formatDate(w.date)}</span>
       </div>
-      <div class="chronicle-detail">+${w.laurels_base} Laurels earned</div>
+      <div class="chronicle-detail" style="margin-top:2px">+${w.laurels_base} Laurels earned</div>
       ${w.notes ? `<div class="chronicle-detail" style="font-style:italic">"${escHtml(w.notes)}"</div>` : ''}
       ${w.badge_earned ? (() => {
         const tier = BADGE_TIERS.find(t => w.badge_earned.endsWith('_'+t));
@@ -2779,7 +2781,7 @@ function renderChronicle() {
         return bd ? `<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;box-shadow:0 0 8px ${TIER_COLORS[tier]||'var(--amber)'}44">${bd.icon}<sup style="font-size:0.6em;font-family:'Cinzel',serif">${TIER_ROMAN[tier]||''}</sup> Badge: ${bd.name}</div>` : '';
       })() : ''}
       <div class="chronicle-quote">"${w.quote}"</div>
-      <div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">
+      <div style="display:flex;gap:5px;margin-top:5px;padding-top:5px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">
         ${reactionBarHTML(w, w.id, 'toggleReaction')}
 
         <div style="flex:1"></div>
@@ -2979,7 +2981,7 @@ function renderHowlFeed() {
       '</div>' +
       replyTo +
       '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message) + '&rdquo;</div>' +
-      '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">' +
+      '<div style="display:flex;gap:5px;margin-top:5px;padding-top:5px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">' +
       reactionBarHTML(h, h.id, 'toggleHowlReaction') +
       '<button onclick="copyHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">⎘ Copy</button>' +
       '<div style="flex:1"></div>' +
