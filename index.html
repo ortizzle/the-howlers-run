@@ -1307,6 +1307,14 @@
   </div>
 </div>
 
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal-box" style="max-width:540px;max-height:88vh">
+    <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
+    <div id="profile-modal-content"></div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -1681,6 +1689,109 @@ function calcPlayerStats(pid) {
   return { laurels, miles: totalRunMiles, trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks, longestRun };
 }
 
+function openProfile(pid) {
+  const player = state.players.find(function(p) { return p.id === pid; });
+  if (!player) return;
+  const s = calcPlayerStats(pid);
+  const hc = s.laurels >= 1200 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+  const works = state.workouts.filter(function(w) { return w.player_id === pid; })
+    .sort(function(a,b) { return new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date); });
+
+  // Build earned badges display
+  const badgeMap = {};
+  s.earnedBadges.forEach(function(key) {
+    BADGE_TIERS.forEach(function(tier) {
+      if (key.endsWith('_' + tier)) {
+        const baseId = key.slice(0, -(tier.length+1));
+        const tierIdx = BADGE_TIERS.indexOf(tier);
+        if (badgeMap[baseId] === undefined || tierIdx > badgeMap[baseId]) badgeMap[baseId] = tierIdx;
+      }
+    });
+  });
+  const badgePills = Object.entries(badgeMap).map(function(entry) {
+    const baseId = entry[0], tierIdx = entry[1];
+    const def = BADGES_DEF.find(function(b) { return b.id === baseId; });
+    const tier = BADGE_TIERS[tierIdx];
+    const color = TIER_COLORS[tier];
+    return def ? '<span class="badge-pill" title="' + def.name + ' — ' + TIER_LABELS[tier] + '" style="border:2px solid ' + color + ';background:' + color + '15;color:' + color + ';box-shadow:0 0 6px ' + color + '55;padding:2px 6px;font-size:0.8rem">' + def.icon + '<sup style="font-size:0.55rem;font-family:Cinzel,serif;font-weight:700">' + TIER_ROMAN[tier] + '</sup></span>' : '';
+  }).join('');
+
+  // Running laurel total for timeline
+  let runningTotal = (player.book_laurels || 0);
+
+  // Build timeline entries
+  const timelineHTML = works.length === 0 ? '<div class="empty-state" style="padding:20px"><span class="empty-icon">⚔️</span>No trials logged yet.</div>' :
+    works.slice().reverse().map(function(w, idx) {
+      runningTotal += (w.laurels_base || 0);
+      const wname = WORKOUT_NAMES[w.workout] || w.workout;
+      let detail = '';
+      if (['long_run','tempo','easy_run','optional_run','walk_run'].includes(w.workout)) detail = w.miles ? w.miles + ' mi' : '';
+      else if (w.workout === 'peloton') detail = w.minutes ? w.minutes + ' min' : '';
+      else if (w.workout === 'strength') detail = 'Strength session';
+      else if (w.workout === 'mobility') detail = 'Mobility session';
+      else if (w.workout === 'optional_other') detail = 'Cross-train';
+      const badgeKey = w.badge_earned;
+      let badgeHTML = '';
+      if (badgeKey) {
+        const tier = BADGE_TIERS.find(function(t) { return badgeKey.endsWith('_'+t); });
+        const baseId = tier ? badgeKey.slice(0,-(tier.length+1)) : badgeKey;
+        const bd = BADGES_DEF.find(function(b) { return b.id === baseId; });
+        if (bd && tier) badgeHTML = '<div style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:' + TIER_COLORS[tier] + ';margin-top:3px">' + bd.icon + ' ' + TIER_ROMAN[tier] + ' ' + bd.name + '</div>';
+      }
+      return '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">' +
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:36px">' +
+        '<div style="width:10px;height:10px;border-radius:50%;background:' + hc + ';flex-shrink:0;margin-top:4px"></div>' +
+        '<div style="flex:1;width:2px;background:var(--border)"></div>' +
+        '</div>' +
+        '<div style="flex:1">' +
+        '<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">' +
+        '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:var(--ink)">' + wname + '</span>' +
+        (detail ? '<span style="font-family:Crimson Pro,serif;font-size:0.85rem;color:var(--ink-light)">' + detail + '</span>' : '') +
+        '<span style="margin-left:auto;font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:' + hc + '">+' + (w.laurels_base||0) + 'L</span>' +
+        '</div>' +
+        '<div style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink-light);margin-top:1px">' + formatDate(w.date) + ' · Running total: <strong>' + runningTotal + 'L</strong></div>' +
+        (w.notes ? '<div style="font-family:Crimson Pro,serif;font-size:0.82rem;color:var(--ink-mid);font-style:italic;margin-top:2px">"' + escHtml(w.notes) + '"</div>' : '') +
+        badgeHTML +
+        '</div></div>';
+    }).reverse().join('');
+
+  // Books read
+  const booksHTML = (player.books_read && player.books_read.length > 0) ?
+    '<div style="margin-bottom:16px"><div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:6px">📚 BOOKS READ</div>' +
+    player.books_read.map(function(b) {
+      return ({red_rising:'Red Rising',golden_son:'Golden Son',morning_star:'Morning Star',iron_gold:'Iron Gold',dark_age:'Dark Age',light_bringer:'Light Bringer'})[b]||b;
+    }).map(function(t) { return '<span style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);margin-right:8px">✦ ' + t + '</span>'; }).join('') +
+    '</div>' : '';
+
+  const el = document.getElementById('profile-modal-content');
+  el.innerHTML =
+    '<div style="border-top:4px solid ' + hc + ';margin:-28px -28px 20px;border-radius:4px 4px 0 0"></div>' +
+    '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap">' +
+    '<div style="flex:1">' +
+    '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:900;letter-spacing:0.2em;color:' + hc + ';text-transform:uppercase;margin-bottom:2px">' + escHtml(player.house) + '</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:1.4rem;font-weight:700;color:var(--ink);line-height:1.1">' + escHtml(player.name) + '</div>' +
+    (player.subtitle ? '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);margin-top:2px">' + escHtml(player.subtitle) + '</div>' : '') +
+    '</div>' +
+    '<div style="text-align:right">' +
+    '<div style="font-family:Cinzel,serif;font-size:1.6rem;font-weight:700;color:' + hc + ';line-height:1">' + s.laurels + '</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--ink-light)">LAURELS</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:0.7rem;color:var(--amber);margin-top:4px">' + s.rank.name + '</div>' +
+    '</div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">' +
+    '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.trials + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">TRIALS</div></div>' +
+    '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.miles + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">MILES</div></div>' +
+    '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.streak + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">WK STREAK</div></div>' +
+    '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.longestRun + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">LONGEST MI</div></div>' +
+    '</div>' +
+    (badgePills ? '<div style="margin-bottom:16px"><div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:6px">BADGES</div><div style="display:flex;flex-wrap:wrap;gap:5px">' + badgePills + '</div></div>' : '') +
+    booksHTML +
+    '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:8px">⚔️ TRIAL CHRONICLE</div>' +
+    '<div style="max-height:320px;overflow-y:auto;padding-right:4px">' + timelineHTML + '</div>';
+
+  document.getElementById('profile-modal').classList.add('open');
+}
+
 function recalcAllBadges() {
   // Wipe all badges and recompute from scratch based on current workouts
   state.badges_awarded = {};
@@ -1835,7 +1946,7 @@ function renderPlayers() {
       return def ? `<span class="badge-pill" title="${def.name} — ${TIER_LABELS[tier]}" style="border:2px solid ${color};background:${color}15;color:${color};box-shadow:0 0 6px ${color}55;padding:2px 6px;font-size:0.8rem">${def.icon}<sup style="font-size:0.55rem;font-family:'Cinzel',serif;font-weight:700">${TIER_ROMAN[tier]}</sup></span>` : '';
     }).join('');
     html += `
-      <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor}">
+      <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor};cursor:pointer" onclick="openProfile('${p.id}')">
         <div class="player-color-label">${p.house}</div>
         <div class="player-name">${escHtml(p.name)}</div>
         ${p.subtitle ? `<div class="player-subtitle">${escHtml(p.subtitle)}</div>` : ''}
@@ -1854,9 +1965,9 @@ function renderPlayers() {
           ${s.streak >= 2 ? `<div style="font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">🔥 STREAK</span> ${s.streak} wks</div>` : ''}
         </div>` : ''}
         <div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
-          <button onclick="openEditModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
-          <button onclick="openBooksModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">📚 Books</button>
-          <button onclick="removePlayer('${p.id}','${p.name}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
+          <button onclick="event.stopPropagation();openEditModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
+          <button onclick="event.stopPropagation();openBooksModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">📚 Books</button>
+          <button onclick="event.stopPropagation();removePlayer('${p.id}','${p.name}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
         </div>
       </div>`;
   });
@@ -2763,6 +2874,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('books-modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal('books-modal');
+  });
+  document.getElementById('profile-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('profile-modal');
   });
 
   // Dispatch custom input
