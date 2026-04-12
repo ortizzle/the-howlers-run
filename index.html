@@ -1090,7 +1090,7 @@
           <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
           <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
           <option value="walk_run">Walk/Run Intervals (15L flat)</option>
-          <option value="peloton">The Steed — Peloton Ride (10L per 30 min)</option>
+          <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
           <option value="strength">The Forge — Strength (12L flat)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
         </select>
@@ -1194,9 +1194,10 @@
           <tr><td><strong>Optional 5th Day</strong></td><td>Any workout counts — run or cross-train</td></tr>
           <tr><td><strong>Perfect Week Bonus</strong></td><td>Complete all 4 core days → +25 Laurels</td></tr>
           <tr><td><strong>Streak Bonus</strong></td><td>+10 Laurels per consecutive active week (from week 2 onward)</td></tr>
-          <tr><td><strong>Book Bonus</strong></td><td>+25 Laurels per book (books 1–6, max 150) · Red God ✦ +200L when released</td></tr>
-          <tr><td><strong>ArchPrimus</strong></td><td>Player with most Laurels leads the pack ★ — earns a laurel wreath on their card</td></tr>
-          <tr><td><strong>Underdog Bonus</strong></td><td>200+ Laurels behind the leader → earn +20% on every workout</td></tr>
+          <tr><td><strong>Weekly Mile Bonus</strong></td><td>First time hitting 10/15/20/25/30 miles in a week: +30/50/75/100/150L. After Oct 1 (Race Phase): +45/75/110/150/225L</td></tr>
+          <tr><td><strong>Book Bonus</strong></td><td>+25 Laurels per book (books 1-6, max 150). Red God +200L when released</td></tr>
+          <tr><td><strong>ArchPrimus</strong></td><td>Player with most Laurels leads the pack ★</td></tr>
+          <tr><td><strong>Underdog Bonus</strong></td><td>200+ Laurels behind leader earns +20% on every workout</td></tr>
           <tr><td><strong>Peerless Gold</strong></td><td>Reach Peerless Scarred (2400L) and your card turns gold — earned, not chosen ✦</td></tr>
         </tbody>
       </table>
@@ -1218,7 +1219,7 @@
           <tr><td>Optional 5th Day Run</td><td>8 per mile</td></tr>
           <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
           <tr><td>Walk/Run Intervals</td><td>15 flat</td></tr>
-          <tr><td>The Steed — Peloton Ride</td><td>10 per 30 min</td></tr>
+          <tr><td>The Steed — Peloton Ride</td><td>8 per 10 min (24L / 30 min)</td></tr>
           <tr><td>The Forge — Strength</td><td>12 flat</td></tr>
           <tr><td>Mind & Body — Mobility/Yoga</td><td>8 flat</td></tr>
           <tr><td>Perfect Week Bonus (all 4 core days)</td><td>+25</td></tr>
@@ -1328,7 +1329,7 @@
         <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
         <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
         <option value="walk_run">Walk/Run Intervals (15L flat)</option>
-        <option value="peloton">The Steed — Peloton Ride (10L per 30 min)</option>
+        <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
         <option value="strength">The Forge — Strength (12L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
       </select>
@@ -1469,26 +1470,16 @@
 const RACE_DATE = new Date('2027-01-17T07:00:00');
 const TRAINING_START = new Date('2026-04-13T00:00:00');
 const HYPE_REACTIONS = [
-  "Per aspera ad astra.",
-  "Eo, Eo, Eo!",
-  "Go Howler, Go!",
-  "The laurel belongs to those who refuse to stop.",
-  "Rise.",
-  "Hic sunt leones.",
+  "Per aspera ad astra.", "Eo, Eo, Eo!", "Go Howler, Go!",
+  "The laurel belongs to those who refuse to stop.", "Rise.", "Hic sunt leones.",
   "You do not follow me because I am strong. You follow me because you are.",
-  "Break the chains and run.",
-  "I would have lived in peace but my enemies brought me war.",
-  "The Howlers don't fall. They rise."
+  "Break the chains and run.", "The Howlers do not fall. They rise."
 ];
 const TRASH_REACTIONS = [
-  "Is that all, Pixie?",
-  "Weakness is a choice.",
-  "The Reaper does not wait for stragglers.",
-  "Even the Obsidians would be embarrassed.",
-  "Rage, rage, rage or don't bother.",
-  "Hic sunt leones. You are not one of them.",
-  "Break the chains if you can find the energy.",
-  "The pack is waiting. Are you?",
+  "Is that all, Pixie?", "Weakness is a choice.",
+  "The Reaper does not wait for stragglers.", "Even the Obsidians would be embarrassed.",
+  "Rage, rage, rage or do not bother.", "Hic sunt leones. You are not one of them.",
+  "Break the chains if you can find the energy.", "The pack is waiting. Are you?",
   "Lowborn effort."
 ];
 
@@ -1555,80 +1546,19 @@ const TIER_COLORS = {bronze:'#b87333', silver:'#a0a0b0', gold:'#c8900a'};
 const TIER_LABELS = {bronze:'Bronze', silver:'Silver', gold:'Gold'};
 const TIER_ROMAN = {bronze:'I', silver:'II', gold:'III'};
 const BADGES_DEF = [
-  {id:'first_step', icon:'👟', name:'First Step',
-    tiers:[
-      {tier:'bronze', desc:'Log 1 workout', check:(s)=>s.trials>=1},
-      {tier:'silver', desc:'Log 25 workouts', check:(s)=>s.trials>=25},
-      {tier:'gold',   desc:'Log 50 workouts', check:(s)=>s.trials>=50}
-    ]},
-  {id:'week_warrior', icon:'⚔️', name:'Week Warrior',
-    tiers:[
-      {tier:'bronze', desc:'1 perfect week (4 core days)', check:(s)=>s.perfectWeeks>=1},
-      {tier:'silver', desc:'4 perfect weeks', check:(s)=>s.perfectWeeks>=4},
-      {tier:'gold',   desc:'8 perfect weeks', check:(s)=>s.perfectWeeks>=8}
-    ]},
-  {id:'steed_master', icon:'🚴', name:'Steed Master',
-    tiers:[
-      {tier:'bronze', desc:'5 Peloton rides', check:(s)=>s.pelotons>=5},
-      {tier:'silver', desc:'15 Peloton rides', check:(s)=>s.pelotons>=15},
-      {tier:'gold',   desc:'30 Peloton rides', check:(s)=>s.pelotons>=30}
-    ]},
-  {id:'the_runner', icon:'🏃', name:'The Runner',
-    tiers:[
-      {tier:'bronze', desc:'25 total miles', check:(s)=>s.miles>=25},
-      {tier:'silver', desc:'50 total miles', check:(s)=>s.miles>=50},
-      {tier:'gold',   desc:'100 total miles', check:(s)=>s.miles>=100}
-    ]},
-  {id:'iron_forged', icon:'🦵', name:'Iron Forged',
-    tiers:[
-      {tier:'bronze', desc:'5 strength sessions', check:(s)=>s.strength>=5},
-      {tier:'silver', desc:'15 strength sessions', check:(s)=>s.strength>=15},
-      {tier:'gold',   desc:'30 strength sessions', check:(s)=>s.strength>=30}
-    ]},
-  {id:'mind_body', icon:'🧘', name:'Mind & Body',
-    tiers:[
-      {tier:'bronze', desc:'3 mobility sessions', check:(s)=>s.mobility>=3},
-      {tier:'silver', desc:'10 mobility sessions', check:(s)=>s.mobility>=10},
-      {tier:'gold',   desc:'20 mobility sessions', check:(s)=>s.mobility>=20}
-    ]},
-  {id:'long_march', icon:'🗺️', name:'The Long March',
-    tiers:[
-      {tier:'bronze', desc:'Run 6 miles in one session', check:(s)=>s.maxSingleRun>=6},
-      {tier:'silver', desc:'Run 10 miles in one session', check:(s)=>s.maxSingleRun>=10},
-      {tier:'gold',   desc:'Run 13.1 miles in one session', check:(s)=>s.maxSingleRun>=13.1}
-    ]},
-  {id:'unbroken', icon:'🔥', name:'Unbroken',
-    tiers:[
-      {tier:'bronze', desc:'3-week streak', check:(s)=>s.streak>=3},
-      {tier:'silver', desc:'6-week streak', check:(s)=>s.streak>=6},
-      {tier:'gold',   desc:'12-week streak', check:(s)=>s.streak>=12}
-    ]},
-  {id:'extra_mile', icon:'⭐', name:'Extra Mile',
-    tiers:[
-      {tier:'bronze', desc:'5 optional 5th day workouts', check:(s)=>s.optionals>=5},
-      {tier:'silver', desc:'15 optional 5th day workouts', check:(s)=>s.optionals>=15},
-      {tier:'gold',   desc:'30 optional 5th day workouts', check:(s)=>s.optionals>=30}
-    ]},
-  {id:'centurion', icon:'💯', name:'Centurion',
-    tiers:[
-      {tier:'bronze', desc:'500 Laurels', check:(s)=>s.laurels>=500},
-      {tier:'silver', desc:'1000 Laurels', check:(s)=>s.laurels>=1000},
-      {tier:'gold',   desc:'2000 Laurels', check:(s)=>s.laurels>=2000}
-    ]},
-  {id:'peerless', icon:'🌟', name:'Peerless',
-    tiers:[
-      {tier:'bronze', desc:'Run 10 miles in one session', check:(s)=>s.maxSingleRun>=10},
-      {tier:'silver', desc:'Run 12 miles in one session', check:(s)=>s.maxSingleRun>=12},
-      {tier:'gold',   desc:'Run 13.1 miles — the full half!', check:(s)=>s.maxSingleRun>=13.1}
-    ]},
-  {id:'the_reaper', icon:'☀️', name:'The Reaper',
-    tiers:[
-      {tier:'bronze', desc:'2000 Laurels', check:(s)=>s.laurels>=2000},
-      {tier:'silver', desc:'3000 Laurels', check:(s)=>s.laurels>=3000},
-      {tier:'gold',   desc:'5000 Laurels', check:(s)=>s.laurels>=5000}
-    ]}
-];
-const CHALLENGES_DEF = [
+  {id:'first_step',   icon:'👟', name:'First Step',     tiers:[{tier:'bronze',desc:'Log 1 workout',check:(s)=>s.trials>=1},{tier:'silver',desc:'Log 20 workouts',check:(s)=>s.trials>=20},{tier:'gold',desc:'Log 40 workouts',check:(s)=>s.trials>=40}]},
+  {id:'week_warrior', icon:'⚔️', name:'Week Warrior',   tiers:[{tier:'bronze',desc:'1 perfect week',check:(s)=>s.perfectWeeks>=1},{tier:'silver',desc:'4 perfect weeks',check:(s)=>s.perfectWeeks>=4},{tier:'gold',desc:'8 perfect weeks',check:(s)=>s.perfectWeeks>=8}]},
+  {id:'steed_master', icon:'🚴', name:'Steed Master',   tiers:[{tier:'bronze',desc:'3 Peloton rides',check:(s)=>s.pelotons>=3},{tier:'silver',desc:'10 Peloton rides',check:(s)=>s.pelotons>=10},{tier:'gold',desc:'20 Peloton rides',check:(s)=>s.pelotons>=20}]},
+  {id:'the_runner',   icon:'🏃', name:'The Runner',     tiers:[{tier:'bronze',desc:'25 total miles',check:(s)=>s.miles>=25},{tier:'silver',desc:'60 total miles',check:(s)=>s.miles>=60},{tier:'gold',desc:'100 total miles',check:(s)=>s.miles>=100}]},
+  {id:'iron_forged',  icon:'🦵', name:'Iron Forged',    tiers:[{tier:'bronze',desc:'5 strength sessions',check:(s)=>s.strength>=5},{tier:'silver',desc:'12 strength sessions',check:(s)=>s.strength>=12},{tier:'gold',desc:'20 strength sessions',check:(s)=>s.strength>=20}]},
+  {id:'mind_body',    icon:'🧘', name:'Mind & Body',    tiers:[{tier:'bronze',desc:'3 mobility sessions',check:(s)=>s.mobility>=3},{tier:'silver',desc:'10 mobility sessions',check:(s)=>s.mobility>=10},{tier:'gold',desc:'18 mobility sessions',check:(s)=>s.mobility>=18}]},
+  {id:'long_march',   icon:'🗺️', name:'The Long March', tiers:[{tier:'bronze',desc:'Run 6 miles in one session',check:(s)=>s.maxSingleRun>=6},{tier:'silver',desc:'Run 10 miles in one session',check:(s)=>s.maxSingleRun>=10},{tier:'gold',desc:'Run 13.1 miles in one session',check:(s)=>s.maxSingleRun>=13.1}]},
+  {id:'unbroken',     icon:'🔥', name:'Unbroken',       tiers:[{tier:'bronze',desc:'3-week streak',check:(s)=>s.streak>=3},{tier:'silver',desc:'8-week streak',check:(s)=>s.streak>=8},{tier:'gold',desc:'16-week streak',check:(s)=>s.streak>=16}]},
+  {id:'extra_mile',   icon:'⭐', name:'Extra Mile',     tiers:[{tier:'bronze',desc:'5 optional workouts',check:(s)=>s.optionals>=5},{tier:'silver',desc:'12 optional workouts',check:(s)=>s.optionals>=12},{tier:'gold',desc:'22 optional workouts',check:(s)=>s.optionals>=22}]},
+  {id:'centurion',    icon:'💯', name:'Centurion',      tiers:[{tier:'bronze',desc:'500 Laurels',check:(s)=>s.laurels>=500},{tier:'silver',desc:'1500 Laurels',check:(s)=>s.laurels>=1500},{tier:'gold',desc:'3000 Laurels',check:(s)=>s.laurels>=3000}]},
+  {id:'peerless',     icon:'🌟', name:'Peerless',       tiers:[{tier:'bronze',desc:'Run 10 miles in one session',check:(s)=>s.maxSingleRun>=10},{tier:'silver',desc:'Run 12 miles in one session',check:(s)=>s.maxSingleRun>=12},{tier:'gold',desc:'Run 13.1 miles the full half!',check:(s)=>s.maxSingleRun>=13.1}]},
+  {id:'the_reaper',   icon:'☀️', name:'The Reaper',     tiers:[{tier:'bronze',desc:'2000 Laurels',check:(s)=>s.laurels>=2000},{tier:'silver',desc:'3500 Laurels',check:(s)=>s.laurels>=3500},{tier:'gold',desc:'5000 Laurels',check:(s)=>s.laurels>=5000}]}
+];const CHALLENGES_DEF = [
   {id:'first_blood', name:'First Blood', icon:'⚔️', type:'duel', desc:'First to log any trial', reward:50, goal:1},
   {id:'century_laurels', name:'Century Laurels', icon:'💰', type:'duel', desc:'First to reach 100 Laurels', reward:75, goal:100},
   {id:'pack_trains', name:'The Pack Trains', icon:'🤝', type:'pack', desc:'Everyone logs 10+ trials', reward:60, goal:10},
@@ -1669,10 +1599,18 @@ const BOOKS = [
   {id:'red_god', title:'Red God ✦', laurels:200, unreleased:true}
 ];
 const BOOK_LAURELS = 25;
+const RACE_PHASE_DATE = new Date('2026-10-01T00:00:00');
+const WEEKLY_MILE_MILESTONES = [
+  {miles:10, bonus:30,  bonusRace:45,  key:'wk10'},
+  {miles:15, bonus:50,  bonusRace:75,  key:'wk15'},
+  {miles:20, bonus:75,  bonusRace:110, key:'wk20'},
+  {miles:25, bonus:100, bonusRace:150, key:'wk25'},
+  {miles:30, bonus:150, bonusRace:225, key:'wk30'}
+];
 const RED_GOD_LAURELS = 200;
 
 const WORKOUT_NAMES = {
-  duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
+  duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat', milestone_bonus:'🏅 Weekly Mileage Milestone',
   long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
   optional_run:'Optional 5th Day Run', optional_other:'Optional 5th Day Other',
   walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
@@ -2166,6 +2104,40 @@ function renderMarsBar() {
     '</div>';
 }
 
+function checkWeeklyMilestoneBonuses(pid) {
+  var player = state.players.find(function(p){ return p.id === pid; });
+  if (!player) return [];
+  if (!player.mile_milestones) player.mile_milestones = {};
+  var thisWeek = getThisWeekKey();
+  var weekStart = new Date(thisWeek + 'T00:00:00');
+  var weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 7);
+  var weekMiles = state.workouts.filter(function(w) {
+    var d = new Date(w.date + 'T12:00:00');
+    return w.player_id === pid &&
+      ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout) &&
+      d >= weekStart && d < weekEnd;
+  }).reduce(function(s,w){ return s + (w.miles||0); }, 0);
+  var isRacePhase = new Date() >= RACE_PHASE_DATE;
+  var bonusEntries = [];
+  WEEKLY_MILE_MILESTONES.forEach(function(m) {
+    if (weekMiles >= m.miles && !player.mile_milestones[m.key]) {
+      player.mile_milestones[m.key] = true;
+      var bonus = isRacePhase ? m.bonusRace : m.bonus;
+      bonusEntries.push({
+        id: 'ms_' + m.key + '_' + Date.now(),
+        player_id: pid, workout: 'milestone_bonus',
+        date: new Date().toISOString().split('T')[0],
+        laurels_base: bonus,
+        quote: 'Per aspera ad astra. The march grows stronger.',
+        timestamp: new Date().toISOString(),
+        milestone_label: m.miles + ' mile week' + (isRacePhase ? ' (Race Phase)' : ''),
+        milestone_bonus: bonus
+      });
+    }
+  });
+  return bonusEntries;
+}
+
 function recalcAllBadges() {
   // Wipe all badges and recompute from scratch based on current workouts
   state.badges_awarded = {};
@@ -2215,7 +2187,7 @@ function calcLaurels(workout, miles, minutes) {
     case 'optional_run': return Math.round(miles * 8);
     case 'optional_other': return 10;
     case 'walk_run': return 15;
-    case 'peloton': return Math.round((minutes / 30) * 10);
+    case 'peloton': return Math.round((minutes / 10) * 8);
     case 'strength': return 12;
     case 'mobility': return 8;
     default: return 0;
@@ -2410,8 +2382,8 @@ var QUICK_WORKOUTS = [
   {label:'The March 8mi', workout:'long_run', icon:'🗺️', miles:8, desc:'+96 Laurels'},
   {label:'The Forge', workout:'strength', icon:'🦵', miles:0, desc:'+12 Laurels'},
   {label:'Mind & Body', workout:'mobility', icon:'🧘', miles:0, desc:'+8 Laurels'},
-  {label:'The Steed 30min', workout:'peloton', icon:'🚴', minutes:30, desc:'+10 Laurels'},
-  {label:'The Steed 45min', workout:'peloton', icon:'🚴', minutes:45, desc:'+15 Laurels'},
+  {label:'The Steed 30min', workout:'peloton', icon:'🚴', minutes:30, desc:'+24 Laurels'},
+  {label:'The Steed 45min', workout:'peloton', icon:'🚴', minutes:45, desc:'+36 Laurels'},
 ];
 function openQuickLog() {
   var el = document.getElementById('quick-log-options');
@@ -3197,24 +3169,19 @@ async function toggleReaction(workoutId, emoji) {
   if (!w.reactions) w.reactions = {};
   if (!w.reactions[emoji]) w.reactions[emoji] = 0;
   w.reactions[emoji]++;
-  // Auto-post themed Howl
   const pid = currentHowlerId;
   if (pid && pid !== w.player_id) {
     const target = state.players.find(function(p){ return p.id === w.player_id; });
     const quotes = emoji === '🔥' ? HYPE_REACTIONS : TRASH_REACTIONS;
     const quote = quotes[Math.floor(Math.random() * quotes.length)];
-    const wname = WORKOUT_NAMES[w.workout] || w.workout;
-    const detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
     if (!state.howls) state.howls = [];
     state.howls.push({
       id: 'rxn_' + workoutId + '_' + Date.now(),
-      player_id: pid,
-      player_laurels: (getStats(pid)||{}).laurels || 0,
+      player_id: pid, player_laurels: (getStats(pid)||{}).laurels||0,
       message: quote,
       date: new Date().toISOString().split('T')[0],
-      timestamp: new Date().toISOString(),
-      reactions: {},
-      activity_ref: { id: workoutId, player: target ? target.name : 'someone', workout: wname, detail: detail, date: w.date },
+      timestamp: new Date().toISOString(), reactions: {},
+      activity_ref: {player: target?target.name:'someone', workout: WORKOUT_NAMES[w.workout]||w.workout, detail: w.miles?w.miles+' mi':(w.minutes?w.minutes+' min':''), date: w.date},
       reaction_emoji: emoji
     });
   }
@@ -3228,7 +3195,6 @@ async function toggleHowlReaction(howlId, emoji) {
   if (!h.reactions) h.reactions = {};
   if (!h.reactions[emoji]) h.reactions[emoji] = 0;
   h.reactions[emoji]++;
-  // Auto-post themed Howl reply
   const pid = currentHowlerId;
   if (pid && pid !== h.player_id) {
     const target = state.players.find(function(p){ return p.id === h.player_id; });
@@ -3236,13 +3202,11 @@ async function toggleHowlReaction(howlId, emoji) {
     const quote = quotes[Math.floor(Math.random() * quotes.length)];
     state.howls.push({
       id: 'rxn_h_' + howlId + '_' + Date.now(),
-      player_id: pid,
-      player_laurels: (getStats(pid)||{}).laurels || 0,
+      player_id: pid, player_laurels: (getStats(pid)||{}).laurels||0,
       message: quote,
       date: new Date().toISOString().split('T')[0],
-      timestamp: new Date().toISOString(),
-      reactions: {},
-      reply_to_name: target ? target.name : null,
+      timestamp: new Date().toISOString(), reactions: {},
+      reply_to_name: target?target.name:null,
       reaction_emoji: emoji
     });
   }
@@ -3726,6 +3690,10 @@ async function submitTrial() {
   if (allNewBadges.length > 0) entry.badge_earned = allNewBadges[0];
   const newBadges = allNewBadges;
 
+  // Check weekly mileage milestones
+  var milestoneEntries = checkWeeklyMilestoneBonuses(pid);
+  milestoneEntries.forEach(function(e){ state.workouts.push(e); });
+
   await saveState();
 
   // Reset form
@@ -3746,6 +3714,11 @@ async function submitTrial() {
     if (bd && tier) toastMsg += ` ${TIER_ROMAN[tier]} Badge: ${bd.icon} ${bd.name}!`;
   }
   showToast(toastMsg);
+  if (milestoneEntries && milestoneEntries.length > 0) {
+    milestoneEntries.forEach(function(e) {
+      setTimeout(function(){ showToast('🏅 Milestone: ' + e.milestone_label + ' — +' + e.milestone_bonus + 'L!'); }, 2500);
+    });
+  }
   if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✦ RECORD TRIAL ✦'; }
   renderAll();
   switchTab('chronicle');
