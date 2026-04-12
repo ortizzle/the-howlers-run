@@ -1045,6 +1045,7 @@
 
   <!-- TAB: LEADERBOARD -->
   <div class="tab-content active" id="tab-leaderboard">
+    <div id="active-duels-section"></div>
     <div class="section-title">The Pack — Leaderboard</div>
     <div class="player-grid" id="player-grid">
       <div class="induct-card" onclick="openInductModal()">
@@ -1057,6 +1058,8 @@
     <div class="section-title" style="margin-top:28px;font-size:1rem">🏃 Distance Rankings</div>
     <div id="distance-rankings" style="display:flex;flex-direction:column;gap:8px;max-width:560px"></div>
 
+    <div class="section-title" style="margin-top:28px;font-size:1rem">🔴 Mission to Mars</div>
+    <div id="mars-bar-section" style="margin-bottom:28px"></div>
     <div class="section-title" style="margin-top:28px;font-size:1rem">📊 Pack Stats</div>
     <div id="pack-stats-dashboard" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px"></div>
   </div>
@@ -1073,7 +1076,7 @@
         <label class="form-label">Workout Type</label>
         <select class="form-select" id="log-workout" onchange="updateLaurelPreview()">
           <option value="">— Select Workout —</option>
-          <option value="long_run">The March — Long Run (12L/mile)</option>
+          <option value="long_run">The March — Long Run · min 6 mi (12L/mile)</option>
           <option value="tempo">The Charge — Tempo / Race Pace (10L/mile)</option>
           <option value="easy_run">Easy Run (8L/mile)</option>
           <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
@@ -1301,7 +1304,7 @@
     <div class="form-group">
       <label class="form-label">Workout Type</label>
       <select class="form-select" id="edit-workout-type" onchange="updateEditLaurelPreview()">
-        <option value="long_run">The March — Long Run (12L/mile)</option>
+        <option value="long_run">The March — Long Run · min 6 mi (12L/mile)</option>
         <option value="tempo">The Charge — Tempo / Race Pace (10L/mile)</option>
         <option value="easy_run">Easy Run (8L/mile)</option>
         <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
@@ -1387,6 +1390,45 @@
   <div class="modal-box" style="max-width:540px;max-height:88vh">
     <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
     <div id="profile-modal-content"></div>
+  </div>
+</div>
+
+<!-- DUEL MODAL -->
+<div class="modal-overlay" id="duel-modal">
+  <div class="modal-box" style="max-width:420px">
+    <button class="modal-close" onclick="closeModal('duel-modal')">✕</button>
+    <div class="modal-title">⚔ Challenge to a Duel</div>
+    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;margin-bottom:18px">This week's battle. Laurels on the line.</div>
+    <input type="hidden" id="duel-opponent-id">
+    <div class="form-group">
+      <label class="form-label">Challenger (You)</label>
+      <select class="form-select" id="duel-challenger"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Opponent</label>
+      <div id="duel-opponent-name" style="font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--ink);padding:8px 0"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Metric</label>
+      <select class="form-select" id="duel-metric">
+        <option value="miles">Miles Run</option>
+        <option value="minutes">Peloton Minutes</option>
+        <option value="laurels">Laurels Earned</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Wager (Laurels)</label>
+      <select class="form-select" id="duel-wager">
+        <option value="10">10 Laurels</option>
+        <option value="25">25 Laurels</option>
+        <option value="50">50 Laurels</option>
+        <option value="100">100 Laurels</option>
+      </select>
+    </div>
+    <div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-family:'Crimson Pro',serif;font-size:0.85rem;color:var(--ink-light);margin-bottom:16px">
+      The duel runs for the current week (Mon–Sun). The opponent must accept. Winner's Laurels are adjusted at week end.
+    </div>
+    <button class="btn-primary" onclick="sendDuelChallenge()">⚔ SEND CHALLENGE ✦</button>
   </div>
 </div>
 
@@ -1569,13 +1611,14 @@ const BOOK_LAURELS = 25;
 const RED_GOD_LAURELS = 200;
 
 const WORKOUT_NAMES = {
+  duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
   long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'Easy Run',
   optional_run:'Optional 5th Day Run', optional_other:'Optional 5th Day Other',
   walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
   strength:'Iron Forged (Strength)', mobility:'Mind & Body (Mobility)'
 };
 
-let state = { players: [], workouts: [], howls: [], challenges_won: {}, badges_awarded: {} };
+let state = { players: [], workouts: [], howls: [], duels: [], challenges_won: {}, badges_awarded: {} };
 let refreshInterval = null;
 
 // ─── JSONBIN CONFIG ───────────────────────────────────────────────────────────
@@ -1674,6 +1717,7 @@ async function loadState() {
       if (!state.challenges_won) state.challenges_won = {};
       if (!state.badges_awarded) state.badges_awarded = {};
         if (!state.howls) state.howls = [];
+        if (!state.duels) state.duels = [];
     }
     setSyncStatus('live');
   checkForNewActivityNotifications(prevState);
@@ -1785,6 +1829,9 @@ function calcPlayerStats(pid) {
 
   const rank = getRank(laurels);
 
+  // Underdog bonus — if 200+ Laurels behind leader, mark for UI
+  // (actual bonus applied at point of logging, tracked here for display)
+
   // Perfect weeks count
   let perfectWeeks = 0;
   Object.values(weekWorkouts).forEach(cnt => { if (cnt >= 4) perfectWeeks++; });
@@ -1806,11 +1853,12 @@ function calcPlayerStats(pid) {
   const runWorkouts = works.filter(w => ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout) && w.miles);
   const longestRun = runWorkouts.length > 0 ? Math.max(...runWorkouts.map(w => w.miles)) : 0;
   const totalRunMiles = +miles.toFixed(1);
-  return { laurels, miles: totalRunMiles, trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks, longestRun };
+  // Underdog check (based on stored data — compare against other players later in render)
+  return { laurels, miles: totalRunMiles, trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks, longestRun, isUnderdog: false };
 }
 
 function openProfile(pid) {
-  // Mark this player's activity as seen
+// Mark this player's activity as seen
   const seenKey = 'howlers_seen_' + pid + '_' + (localStorage.getItem('howlers_bin_id')||'');
   localStorage.setItem(seenKey, new Date().toISOString());
   const player = state.players.find(function(p) { return p.id === pid; });
@@ -1910,6 +1958,7 @@ function openProfile(pid) {
   const el = document.getElementById('profile-modal-content');
   el.innerHTML =
     '<div style="border-top:4px solid ' + hc + ';margin:-28px -28px 20px;border-radius:4px 4px 0 0"></div>' +
+    (pid !== currentHowlerId ? '<button onclick="openDuelModal("' + pid + '")" style="position:absolute;top:36px;right:28px;background:var(--ink);color:var(--amber-pale);border:1px solid var(--amber);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;cursor:pointer">⚔ CHALLENGE</button>' : '') +
     '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap">' +
     '<div style="flex:1">' +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:900;letter-spacing:0.2em;color:' + hc + ';text-transform:uppercase;margin-bottom:2px">' + escHtml(player.house) + '</div>' +
@@ -1932,6 +1981,8 @@ function openProfile(pid) {
     booksHTML +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:8px">📅 ACTIVITY HEATMAP</div>' +
     buildHeatmap(pid) +
+    '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin:16px 0 8px">📈 WEEKLY ACTIVITY</div>' +
+    buildWeeklyChart(pid) +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin:16px 0 8px">⚔️ TRIAL CHRONICLE</div>' +
     '<div style="max-height:320px;overflow-y:auto;padding-right:4px">' + timelineHTML + '</div>';
 
@@ -1972,6 +2023,83 @@ function buildHeatmap(pid) {
   colors.forEach(function(c){ html += '<div style="width:10px;height:10px;border-radius:2px;background:' + c + '"></div>'; });
   html += '<span>More</span></div></div>';
   return html;
+}
+
+function buildWeeklyChart(pid) {
+  var works = state.workouts.filter(function(w){ return w.player_id === pid; });
+  if (works.length === 0) return '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.8rem;color:var(--ink-light);margin-bottom:8px">No activity yet.</div>';
+
+  // Build weeks map
+  var weekData = {};
+  works.forEach(function(w) {
+    var wk = getWeekKey(w.date);
+    if (!weekData[wk]) weekData[wk] = { miles:0, minutes:0, trials:0, label:'' };
+    weekData[wk].miles += (w.miles||0);
+    weekData[wk].minutes += (w.minutes||0);
+    weekData[wk].trials++;
+    if (!weekData[wk].label) weekData[wk].label = formatDate(w.date).replace(/,?\s*\d{4}$/,'');
+  });
+
+  var weeks = Object.keys(weekData).sort();
+  if (weeks.length === 0) return '';
+  var maxMiles = Math.max(...weeks.map(function(wk){ return weekData[wk].miles; }), 1);
+  var maxMins = Math.max(...weeks.map(function(wk){ return weekData[wk].minutes; }), 1);
+
+  var html = '<div style="overflow-x:auto;margin-bottom:8px"><div style="display:flex;align-items:flex-end;gap:4px;min-width:0;height:80px;padding-bottom:2px">';
+  weeks.forEach(function(wk) {
+    var d = weekData[wk];
+    var milePct = maxMiles > 0 ? (d.miles/maxMiles)*100 : 0;
+    var minPct = maxMins > 0 ? (d.minutes/maxMins)*100 : 0;
+    var tip = 'Wk: ' + (d.label||wk) + ' · ' + d.miles.toFixed(1) + ' mi' + (d.minutes?' · '+d.minutes+'min':'') + ' · ' + d.trials + ' trials';
+    html += '<div title="' + tip + '" style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;min-width:18px">';
+    if (d.miles > 0) html += '<div style="width:100%;background:var(--amber);border-radius:2px 2px 0 0;height:' + Math.max(milePct*0.7,4).toFixed(0) + 'px;transition:height 0.4s;opacity:0.85"></div>';
+    if (d.minutes > 0) html += '<div style="width:100%;background:var(--house-obsidian,#1e3858);border-radius:2px 2px 0 0;height:' + Math.max(minPct*0.7,4).toFixed(0) + 'px;transition:height 0.4s;opacity:0.7"></div>';
+    if (d.miles === 0 && d.minutes === 0) html += '<div style="width:100%;background:var(--border);border-radius:2px;height:4px"></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div style="display:flex;gap:12px;margin-top:4px;font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light)">';
+  html += '<span><span style="display:inline-block;width:8px;height:8px;background:var(--amber);border-radius:1px;margin-right:3px"></span>Miles</span>';
+  html += '<span><span style="display:inline-block;width:8px;height:8px;background:#1e3858;border-radius:1px;margin-right:3px;opacity:0.7"></span>Peloton min</span>';
+  html += '</div></div>';
+  return html;
+}
+
+function renderMarsBar() {
+  var el = document.getElementById('mars-bar-section');
+  if (!el) return;
+  // Each real pack mile = 1 million miles toward Mars (140M miles total)
+  var totalMiles = state.players.reduce(function(s,p){ return s + getStats(p.id).miles; }, 0);
+  var MARS_MILES = 140; // real miles needed (represents 140M miles)
+  var pct = Math.min(100, (totalMiles / MARS_MILES) * 100);
+  var milesLeft = Math.max(0, MARS_MILES - totalMiles).toFixed(1);
+  var mMilesLeft = Math.max(0, 140 - totalMiles).toFixed(0);
+
+  el.innerHTML = '<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)">' +
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px">' +
+    '<div>' +
+    '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber)">PACK MILES LOGGED</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:1.4rem;font-weight:700;color:var(--ink)">' + totalMiles.toFixed(1) + ' <span style="font-size:0.7em;color:var(--ink-light)">real miles</span></div>' +
+    '<div style="font-family:Crimson Pro,serif;font-size:0.82rem;font-style:italic;color:var(--ink-light)">= ' + (totalMiles * 1000000).toLocaleString() + ' miles through space</div>' +
+    '</div>' +
+    '<div style="text-align:right">' +
+    '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--ink-light)">TO MARS</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:#c62828">' + mMilesLeft + 'M mi left</div>' +
+    '</div>' +
+    '</div>' +
+    '<div style="position:relative;height:28px;background:linear-gradient(to right,#1a1040,#0d0d30);border-radius:14px;overflow:hidden;margin-bottom:8px">' +
+    '<div style="position:absolute;top:4px;left:15%;width:3px;height:3px;background:white;border-radius:50%;opacity:0.6"></div><div style="position:absolute;top:12px;left:35%;width:2px;height:2px;background:white;border-radius:50%;opacity:0.4"></div><div style="position:absolute;top:6px;left:55%;width:4px;height:4px;background:white;border-radius:50%;opacity:0.5"></div><div style="position:absolute;top:16px;left:72%;width:2px;height:2px;background:white;border-radius:50%;opacity:0.7"></div>' +
+    '<div style="position:absolute;top:0;left:0;height:100%;width:' + pct.toFixed(2) + '%;background:linear-gradient(to right,#ff6f00,#ff8f00,#ffa000);border-radius:14px;transition:width 1s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:flex-end;padding-right:8px">' +
+    (totalMiles > 3 ? '<span style="font-size:0.9rem">🚀</span>' : '') +
+    '</div>' +
+    (pct >= 95 ? '<div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:1rem">🔴</div>' : '<div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:1rem;opacity:0.6">🔴</div>') +
+    '</div>' +
+    '<div style="display:flex;justify-content:space-between;font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light)">' +
+    '<span>🌍 Earth</span>' +
+    '<span>' + pct.toFixed(1) + '% of the journey</span>' +
+    '<span>Mars 🔴</span>' +
+    '</div>' +
+    '</div>';
 }
 
 function recalcAllBadges() {
@@ -2020,6 +2148,186 @@ function calcLaurels(workout, miles, minutes) {
   }
 }
 
+// ─── DUELS ───────────────────────────────────────────────────────────────────
+function getThisWeekKey() {
+  var now = new Date();
+  var monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay()+6)%7));
+  monday.setHours(0,0,0,0);
+  return monday.toISOString().split('T')[0];
+}
+
+function openDuelModal(opponentId) {
+  closeModal('profile-modal');
+  var opponent = state.players.find(function(p){ return p.id === opponentId; });
+  if (!opponent) return;
+  document.getElementById('duel-opponent-id').value = opponentId;
+  document.getElementById('duel-opponent-name').textContent = opponent.name + ' (' + opponent.house + ')';
+  var sel = document.getElementById('duel-challenger');
+  sel.innerHTML = '';
+  state.players.filter(function(p){ return p.id !== opponentId; }).forEach(function(p) {
+    var opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name;
+    if (p.id === currentHowlerId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  document.getElementById('duel-modal').classList.add('open');
+}
+
+async function sendDuelChallenge() {
+  var challengerId = document.getElementById('duel-challenger').value;
+  var opponentId = document.getElementById('duel-opponent-id').value;
+  var metric = document.getElementById('duel-metric').value;
+  var wager = parseInt(document.getElementById('duel-wager').value);
+  if (!challengerId || !opponentId) { showToast('Select both players.'); return; }
+  var challenger = state.players.find(function(p){ return p.id===challengerId; });
+  var opponent = state.players.find(function(p){ return p.id===opponentId; });
+  var weekKey = getThisWeekKey();
+  // Check no existing duel between these two this week
+  var existing = (state.duels||[]).find(function(d){
+    return d.week === weekKey && ((d.challenger_id===challengerId&&d.opponent_id===opponentId)||(d.challenger_id===opponentId&&d.opponent_id===challengerId));
+  });
+  if (existing) { showToast('A duel between these Howlers already exists this week.'); return; }
+  var metricLabels = {miles:'Miles Run', minutes:'Peloton Minutes', laurels:'Laurels Earned'};
+  var duel = {
+    id: 'd_' + Date.now(),
+    challenger_id: challengerId,
+    opponent_id: opponentId,
+    metric: metric,
+    wager: wager,
+    week: weekKey,
+    status: 'pending', // pending, active, complete
+    created: new Date().toISOString()
+  };
+  if (!state.duels) state.duels = [];
+  state.duels.push(duel);
+  // Announce in howl
+  state.howls.push({
+    id: 'duel_challenge_' + duel.id,
+    player_id: 'system',
+    player_laurels: 9999,
+    message: '⚔ DUEL ISSUED! ' + challenger.name + ' challenges ' + opponent.name + ' to a battle of ' + metricLabels[metric] + ' this week! Wager: ' + wager + ' Laurels. ' + opponent.name + ' - do you accept?',
+    date: new Date().toISOString().split('T')[0],
+    timestamp: new Date().toISOString(),
+    reactions: {},
+    is_recap: true,
+    duel_id: duel.id
+  });
+  await saveState();
+  closeModal('duel-modal');
+  showToast('⚔ Challenge sent to ' + opponent.name + '! Watch The Howl.');
+  renderAll();
+  switchTab('dispatch');
+}
+
+async function respondToDuel(duelId, accept) {
+  var duel = (state.duels||[]).find(function(d){ return d.id===duelId; });
+  if (!duel) return;
+  var challenger = state.players.find(function(p){ return p.id===duel.challenger_id; });
+  var opponent = state.players.find(function(p){ return p.id===duel.opponent_id; });
+  var metricLabels = {miles:'Miles Run', minutes:'Peloton Minutes', laurels:'Laurels Earned'};
+  if (accept) {
+    duel.status = 'active';
+    state.howls.push({ id:'duel_accept_'+duelId, player_id:'system', player_laurels:9999, message:'⚔ DUEL ACCEPTED! ' + opponent.name + ' accepts the challenge from ' + challenger.name + '! Metric: ' + metricLabels[duel.metric] + ' Wager: ' + duel.wager + 'L. Let the battle begin. 🐺', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+  } else {
+    duel.status = 'declined';
+    state.howls.push({ id:'duel_decline_'+duelId, player_id:'system', player_laurels:9999, message:'😴 ' + opponent.name + ' declined the duel from ' + challenger.name + '.', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+  }
+  await saveState();
+  renderAll();
+}
+
+function getDuelStats(duel) {
+  var weekStart = new Date(duel.week + 'T00:00:00');
+  var weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+7);
+  function playerWeekVal(pid) {
+    var works = state.workouts.filter(function(w){
+      var d = new Date(w.date+'T12:00:00');
+      return w.player_id===pid && d>=weekStart && d<weekEnd;
+    });
+    if (duel.metric==='miles') return works.reduce(function(s,w){return s+(w.miles||0);},0);
+    if (duel.metric==='minutes') return works.reduce(function(s,w){return s+(w.minutes||0);},0);
+    if (duel.metric==='laurels') return works.reduce(function(s,w){return s+(w.laurels_base||0);},0);
+    return 0;
+  }
+  return { challenger: playerWeekVal(duel.challenger_id), opponent: playerWeekVal(duel.opponent_id) };
+}
+
+function checkAndResolveDuels() {
+  if (!state.duels) return;
+  var thisWeek = getThisWeekKey();
+  var changed = false;
+  state.duels.forEach(function(duel) {
+    if (duel.status !== 'active') return;
+    if (duel.week >= thisWeek) return;
+    var stats = getDuelStats(duel);
+    var challenger = state.players.find(function(p){return p.id===duel.challenger_id;});
+    var opponent = state.players.find(function(p){return p.id===duel.opponent_id;});
+    var metricLabels = {miles:'miles',minutes:'minutes',laurels:'Laurels'};
+    var winnerId, loserId, winnerName, loserName, winVal, loseVal;
+    if (stats.challenger > stats.opponent) {
+      winnerId=duel.challenger_id; loserId=duel.opponent_id;
+      winnerName=challenger?challenger.name:'?'; loserName=opponent?opponent.name:'?';
+      winVal=stats.challenger; loseVal=stats.opponent;
+    } else if (stats.opponent > stats.challenger) {
+      winnerId=duel.opponent_id; loserId=duel.challenger_id;
+      winnerName=opponent?opponent.name:'?'; loserName=challenger?challenger.name:'?';
+      winVal=stats.opponent; loseVal=stats.challenger;
+    } else {
+      duel.status='tied';
+      state.howls.push({ id:'duel_tie_'+duel.id, player_id:'system', player_laurels:9999, message:'⚔ DUEL TIE! ' + (challenger?challenger.name:'?') + ' vs ' + (opponent?opponent.name:'?') + ' - both scored ' + stats.challenger + ' ' + metricLabels[duel.metric] + '. Honor is equal.', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+      changed=true; return;
+    }
+    duel.status='complete'; duel.winner_id=winnerId;
+    state.workouts.push({ id:'duel_win_'+duel.id, player_id:winnerId, workout:'duel_win', date:new Date().toISOString().split('T')[0], laurels_base:duel.wager, quote:'Victory tastes of iron. ⚔️', timestamp:new Date().toISOString(), duel_win:true });
+    state.workouts.push({ id:'duel_loss_'+duel.id, player_id:loserId, workout:'duel_loss', date:new Date().toISOString().split('T')[0], laurels_base:-duel.wager, quote:'Even in defeat, the Howler rises. 🐺', timestamp:new Date().toISOString(), duel_loss:true });
+    state.howls.push({ id:'duel_result_'+duel.id, player_id:'system', player_laurels:9999, message:'⚔ DUEL RESULT! ' + winnerName + ' defeats ' + loserName + '! ' + winVal.toFixed(1) + ' vs ' + loseVal.toFixed(1) + ' ' + metricLabels[duel.metric] + '. ' + winnerName + ' claims ' + duel.wager + ' Laurels. Per aspera ad astra. 🐺', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+    changed=true;
+  });
+  if (changed) saveState();
+}
+
+function renderActiveDuels() {
+  if (!state.duels || state.duels.length === 0) return '';
+  var thisWeek = getThisWeekKey();
+  var active = state.duels.filter(function(d){ return (d.status==='active'||d.status==='pending') && d.week===thisWeek; });
+  if (active.length === 0) return '';
+  var metricLabels = {miles:'Miles',minutes:'Peloton Min',laurels:'Laurels'};
+  var html = '<div style="margin-bottom:24px"><div class="section-title" style="font-size:1rem">⚔ Active Duels</div>';
+  active.forEach(function(duel) {
+    var challenger = state.players.find(function(p){return p.id===duel.challenger_id;});
+    var opponent = state.players.find(function(p){return p.id===duel.opponent_id;});
+    var stats = getDuelStats(duel);
+    var isPending = duel.status==='pending';
+    var cName = challenger?challenger.name:'?', oName = opponent?opponent.name:'?';
+    var cHc = (challenger&&HOUSES[challenger.house])||'#7a5006';
+    var oHc = (opponent&&HOUSES[opponent.house])||'#7a5006';
+    var unit = metricLabels[duel.metric];
+    html += '<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow)">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+    html += '<span style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.1em;color:var(--amber)">' + unit + ' · ' + duel.wager + 'L wager</span>';
+    html += isPending ? '<span style="font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light);background:var(--parchment-dark);border:1px solid var(--border);padding:2px 7px;border-radius:2px">PENDING</span>' : '<span style="font-family:Cinzel,serif;font-size:0.6rem;color:#2e7d32;background:rgba(46,125,50,0.1);border:1px solid rgba(46,125,50,0.3);padding:2px 7px;border-radius:2px">ACTIVE</span>';
+    html += '</div>';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<div style="flex:1;text-align:center"><div style="font-family:Cinzel,serif;font-size:0.9rem;font-weight:700;color:' + cHc + '">' + cName + '</div>';
+    html += '<div style="font-family:Cinzel,serif;font-size:1.2rem;font-weight:700;color:var(--ink)">' + stats.challenger.toFixed(1) + '</div></div>';
+    html += '<div style="font-family:Cinzel,serif;font-size:1rem;color:var(--ink-light)">⚔</div>';
+    html += '<div style="flex:1;text-align:center"><div style="font-family:Cinzel,serif;font-size:0.9rem;font-weight:700;color:' + oHc + '">' + oName + '</div>';
+    html += '<div style="font-family:Cinzel,serif;font-size:1.2rem;font-weight:700;color:var(--ink)">' + stats.opponent.toFixed(1) + '</div></div>';
+    html += '</div>';
+    if (isPending && opponent && opponent.id === currentHowlerId) {
+      html += '<div style="display:flex;gap:8px;margin-top:10px">';
+      html += '<button onclick="respondToDuel("' + duel.id + '",true)" style="flex:1;background:var(--ink);color:var(--amber-pale);border:none;border-radius:var(--radius);padding:8px;font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.1em;cursor:pointer">✦ ACCEPT</button>';
+      html += '<button onclick="respondToDuel("' + duel.id + '",false)" style="flex:1;background:transparent;color:var(--house-red);border:1px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:8px;font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.1em;cursor:pointer">✕ DECLINE</button>';
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
 // ─── QUICK LOG ───────────────────────────────────────────────────────────────
 var QUICK_WORKOUTS = [
   {label:'Easy Run 3mi', workout:'easy_run', icon:'🏃', miles:3, desc:'+24 Laurels'},
@@ -2050,6 +2358,7 @@ async function quickLogSubmit(idx) {
   if (!pid) { showToast('Select yourself in the header first.'); return; }
   var today = new Date().toISOString().split('T')[0];
   if (new Date(today) < TRAINING_START) { showToast('Training has not begun yet!'); return; }
+  if (q.workout === 'long_run' && (q.miles||0) < 6) { showToast('The March requires 6+ miles.'); return; }
   var laurels = calcLaurels(q.workout, q.miles||0, q.minutes||0);
   var prevBadges = (state.badges_awarded[pid]||[]).slice();
   var entry = { id:'w_'+Date.now()+'_'+Math.random().toString(36).slice(2,5), player_id:pid, workout:q.workout, date:today, miles:q.miles||undefined, minutes:q.minutes||undefined, laurels_base:laurels, quote:QUOTES[Math.floor(Math.random()*QUOTES.length)], timestamp:new Date().toISOString() };
@@ -2187,7 +2496,7 @@ function checkAndPostWeeklyRecap() {
   thisWeekMonday.setHours(0,0,0,0);
   const weekKey = thisWeekMonday.toISOString().split('T')[0];
   if (lastRecap === weekKey) return;
-  // Build last week's stats
+  // Build last week stats
   const lastMonday = new Date(thisWeekMonday);
   lastMonday.setDate(lastMonday.getDate() - 7);
   const lastSunday = new Date(thisWeekMonday);
@@ -2211,15 +2520,22 @@ function checkAndPostWeeklyRecap() {
     return pWorkouts.length >= 4;
   });
   // Build message
+  // Weekly Primus — who had most laurels gained last week
+  var laurelsByPlayer = {};
+  lastWeekWorkouts.forEach(function(w) { laurelsByPlayer[w.player_id] = (laurelsByPlayer[w.player_id]||0) + (w.laurels_base||0); });
+  var weekPrimusId = Object.keys(laurelsByPlayer).sort(function(a,b){return laurelsByPlayer[b]-laurelsByPlayer[a];})[0];
+  var weekPrimus = weekPrimusId ? state.players.find(function(p){return p.id===weekPrimusId;}) : null;
+
   let recap = '📊 WEEKLY RECAP\n\n';
-  recap += 'The pack logged ' + lastWeekWorkouts.length + ' trials last week. ';
+  recap += 'The pack logged ' + lastWeekWorkouts.length + ' trial' + (lastWeekWorkouts.length!==1?'s':'') + ' last week. ';
+  if (weekPrimus) recap += '\n🏅 Weekly Primus: ' + weekPrimus.name + ' — +' + (laurelsByPlayer[weekPrimusId]||0) + ' Laurels earned. ';
   if (topRunner && milesByPlayer[topRunnerId]) {
-    recap += topRunner.name + ' led the march with ' + milesByPlayer[topRunnerId].toFixed(1) + ' miles. ';
+    recap += '\n🏃 Longest march: ' + topRunner.name + ' · ' + milesByPlayer[topRunnerId].toFixed(1) + ' miles. ';
   }
   if (perfectHowlers.length > 0) {
-    recap += perfectHowlers.map(function(p){return p.name;}).join(' & ') + ' earned a Perfect Week bonus. ';
+    recap += '\n⭐ Perfect Week: ' + perfectHowlers.map(function(p){return p.name;}).join(' & ') + '. ';
   }
-  recap += 'Per aspera ad astra. 🐺';
+  recap += '\nPer aspera ad astra. 🐺';
   // Post as a system howl
   if (!state.howls) state.howls = [];
   state.howls.push({
@@ -2252,6 +2568,9 @@ function getStats(pid) {
 function renderAll() {
   buildStatsCache();
   renderPackStats();
+  var duelSection = document.getElementById('active-duels-section');
+  if (duelSection) duelSection.innerHTML = renderActiveDuels();
+  checkAndResolveDuels();
   renderPlayers();
   updateCurrentHowlerSelect();
   renderLogDropdown();
@@ -2260,6 +2579,7 @@ function renderAll() {
   renderTimeline();
   renderDispatch();
   renderDistanceRankings();
+  renderMarsBar();
   renderCodex();
   checkUnreadHowls();
 }
@@ -2270,6 +2590,8 @@ function renderPlayers() {
   state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
   const sorted = [...state.players].sort((a,b) => (statsMap[b.id].laurels - statsMap[a.id].laurels));
   const primusId = sorted.length > 0 ? sorted[0].id : null;
+  const leaderScore = sorted.length > 0 ? statsMap[sorted[0].id].laurels : 0;
+  sorted.forEach(function(p) { statsMap[p.id].isUnderdog = leaderScore - statsMap[p.id].laurels >= 200 && statsMap[p.id].laurels > 0; });
 
   let html = '';
   sorted.forEach((p, idx) => {
@@ -2308,7 +2630,10 @@ function renderPlayers() {
         </div>
         <div class="player-name">${escHtml(p.name)}</div>
         ${p.subtitle ? `<div class="player-subtitle">${escHtml(p.subtitle)}</div>` : ''}
-        <div class="player-rank">${s.rank.name}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+          <div class="player-rank" style="margin-bottom:0">${s.rank.name}</div>
+          ${s.isUnderdog ? '<span style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.08em;color:#e65100;background:rgba(230,81,0,0.1);border:1px solid rgba(230,81,0,0.3);padding:1px 6px;border-radius:2px">🐺 UNDERDOG +20%</span>' : ''}
+        </div>
         <div class="player-stats">
           <div class="stat-item"><span class="stat-val">${s.laurels}</span><span class="stat-label">Laurels</span></div>
           <div class="stat-item"><span class="stat-val">${s.trials}</span><span class="stat-label">Trials</span></div>
@@ -2387,7 +2712,12 @@ function renderDistanceRankings() {
   let html = "<div style='background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-family:Cinzel,serif;font-size:0.75rem;letter-spacing:0.08em;color:var(--amber);margin-bottom:8px'>";
   html += "PACK TOTAL: <strong>" + totalMiles.toFixed(1) + " mi</strong> combined distance</div>";
   ranked.forEach(function(r, i) {
-    const pct = maxMiles > 0 ? (r.miles / maxMiles) * 100 : 0;
+    // Progress toward next Runner badge goal (not relative to leader)
+    var runnerMilestones = [{tier:'bronze',miles:25},{tier:'silver',miles:50},{tier:'gold',miles:100}];
+    var earnedKeys2 = state.badges_awarded[r.p.id] || [];
+    var nextM = runnerMilestones.find(function(m){ return !earnedKeys2.includes('the_runner_'+m.tier); });
+    var goalMiles = nextM ? nextM.miles : 100;
+    const pct = goalMiles > 0 ? Math.min(100, (r.miles / goalMiles) * 100) : 100;
     const hc = r.laurels >= 1200 ? PEERLESS_GOLD : (HOUSES[r.p.house] || "#7a5006");
     html += "<div style='background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:6px'>";
     html += "<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px'>";
@@ -2395,7 +2725,7 @@ function renderDistanceRankings() {
     html += "<span style='font-family:Cinzel,serif;font-size:0.9rem;font-weight:700;color:" + hc + ";flex:1'>" + escHtml(r.p.name) + "</span>";
     html += "<span style='font-family:Cinzel,serif;font-size:0.85rem;font-weight:700;color:var(--ink)'>" + r.miles + " mi</span>";
     html += '</div>';
-    html += '<div style="background:var(--parchment-mid);border-radius:3px;height:6px;overflow:hidden">';
+    html += '<div style="background:var(--parchment-mid);border-radius:3px;height:6px;overflow:hidden" title="' + pct.toFixed(0) + '% toward ' + goalMiles + ' mi ' + (nextM ? nextM.tier : 'gold') + ' badge">';
     html += '<div style="height:100%;width:' + pct.toFixed(1) + '%;background:' + hc + ';border-radius:3px;transition:width 0.6s"></div>';
     html += '</div>';
     // Next Runner badge hint
@@ -2815,7 +3145,7 @@ function reactionBarHTML(obj, idVal, fnPrefix) {
     var emoji = r[0], label = r[1];
     var count = reactions[emoji] || 0;
     var hasCount = count > 0;
-    var safeId = idVal.replace(/"/g,'');
+var safeId = idVal.replace(/"/g,'');
     bar += '<button ';
     bar += 'data-id="' + safeId + '" ';
     bar += 'data-emoji="' + emoji + '" ';
@@ -3134,19 +3464,30 @@ async function submitTrial() {
   if (['long_run','tempo','easy_run','optional_run'].includes(workout) && miles === 0) {
     showToast('Enter miles for this workout.'); return;
   }
+  if (workout === 'long_run' && miles < 6) {
+    showToast('⚔️ The March requires at least 6 miles. Log it as an Easy Run instead?'); return;
+  }
   if (workout === 'peloton' && minutes === 0) {
     showToast('Enter minutes for Peloton ride.'); return;
   }
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ RECORDING…'; }
 
   const laurels_base = calcLaurels(workout, miles, minutes);
+  // Underdog bonus — if 200+ Laurels behind the current leader, earn 20% extra
+  buildStatsCache();
+  const allLaurels = state.players.map(function(p){ return (_statsCache[p.id]||{}).laurels||0; });
+  const leaderLaurels = allLaurels.length > 0 ? Math.max(...allLaurels) : 0;
+  const myCurrentLaurels = (_statsCache[pid]||{}).laurels||0;
+  const isUnderdog = leaderLaurels - myCurrentLaurels >= 200;
+  const underdogBonus = isUnderdog ? Math.round(laurels_base * 0.2) : 0;
+  const laurels_total = laurels_base + underdogBonus;
   const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
   const workoutId = 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
 
   // Check new badges before adding
   const prevBadges = [...(state.badges_awarded[pid] || [])];
 
-  const entry = { id: workoutId, player_id: pid, workout, date, miles: miles||undefined, minutes: minutes||undefined, notes, laurels_base, quote, timestamp: new Date().toISOString() };
+  const entry = { id: workoutId, player_id: pid, workout, date, miles: miles||undefined, minutes: minutes||undefined, notes, laurels_base: laurels_total, laurels_earned: laurels_base, underdog_bonus: underdogBonus, quote, timestamp: new Date().toISOString() };
   state.workouts.push(entry);
 
   // Recalc to find new badges
@@ -3165,7 +3506,8 @@ async function submitTrial() {
   document.getElementById('laurel-preview').style.display = 'none';
 
   const player = state.players.find(p => p.id === pid);
-  let toastMsg = `✦ Trial recorded! +${laurels_base} Laurels for ${player?.name||'the Howler'}.`;
+  let toastMsg = `✦ Trial recorded! +${laurels_total} Laurels for ${player?.name||'the Howler'}.`;
+  if (underdogBonus > 0) toastMsg += ` (includes +${underdogBonus} Underdog bonus 🐺)`;
   if (newBadges.length > 0) {
     const firstKey = newBadges[0];
     const tier = BADGE_TIERS.find(t => firstKey.endsWith('_'+t));
@@ -3238,6 +3580,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('quick-log-modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal('quick-log-modal');
+  });
+  document.getElementById('duel-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('duel-modal');
   });
 
   // Dispatch custom input
