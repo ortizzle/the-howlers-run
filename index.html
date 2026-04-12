@@ -3164,8 +3164,14 @@ function reactionBarHTML(obj, idVal, fnPrefix) {
     if (hasCount) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + count + '</span>';
     bar += '</button>';
   });
+  // Reply button on workout entries
   if (fnPrefix === 'toggleReaction') {
     bar += '<button data-id="' + idVal + '" onclick="replyToWorkout(this.dataset.id)" ';
+    bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">🐺 Reply</button>';
+  }
+  // Reply button on howl entries
+  if (fnPrefix === 'toggleHowlReaction') {
+    bar += '<button data-id="' + idVal + '" onclick="replyToHowl(this.dataset.id)" ';
     bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">🐺 Reply</button>';
   }
   bar += '</div>';
@@ -3177,6 +3183,35 @@ function replyToWorkout(workoutId) {
   if (!w) return;
   var player = state.players.find(function(p){ return p.id === w.player_id; });
   quickHowlAt(workoutId, player ? player.name : 'someone');
+}
+
+function replyToHowl(howlId) {
+  var h = (state.howls||[]).find(function(x){ return x.id === howlId; });
+  if (!h) return;
+  var player = state.players.find(function(p){ return p.id === h.player_id; });
+  var playerName = player ? player.name : 'the pack';
+  switchTab('dispatch');
+  var msg = document.getElementById('howl-message');
+  msg.value = '';
+  msg.placeholder = 'Replying to ' + playerName + '...';
+  var preview = document.getElementById('howl-activity-preview');
+  if (preview) {
+    preview.style.display = 'block';
+    preview.innerHTML = '<span style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--amber)">↩ REPLYING TO</span><br>' +
+      '<span style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);font-style:italic">' +
+      escHtml(playerName) + ' · "' + escHtml((h.message||'').slice(0,60)) + (h.message&&h.message.length>60?'…':'"') + '</span>' +
+      '<span onclick="clearHowlReply()" style="float:right;cursor:pointer;font-size:0.8rem;color:var(--ink-light);padding:2px 4px">✕</span>';
+  }
+  msg.dataset.replyHowl = howlId;
+  msg.dataset.replyName = playerName;
+  var btn = document.getElementById('howl-submit-btn');
+  btn.onclick = function() {
+    postHowl(msg.dataset.replyHowl, msg.dataset.replyName, null).then(function() {
+      clearHowlReply();
+      btn.onclick = postHowl;
+    });
+  };
+  msg.focus();
 }
 
 function handleReaction(btn) {
