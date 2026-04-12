@@ -582,18 +582,18 @@
   @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
 
   /* CHRONICLE */
-  .chronicle-feed { display: flex; flex-direction: column; gap: 10px; }
+  .chronicle-feed { display: flex; flex-direction: column; gap: 14px; }
   .chronicle-entry {
     background: var(--parchment);
     border: 1.5px solid var(--border);
     border-left: 4px solid var(--house-color, var(--amber));
     border-radius: var(--radius);
-    padding: 10px 12px;
+    padding: 14px 16px;
     box-shadow: var(--shadow);
     animation: fadeSlideIn 0.3s ease;
   }
   @keyframes fadeSlideIn { from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none} }
-  .chronicle-header { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-bottom: 3px; row-gap: 1px; }
+  .chronicle-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
   .chronicle-player {
     font-family: 'Cinzel', serif;
     font-size: 0.85rem;
@@ -614,16 +614,18 @@
   }
   .chronicle-detail {
     font-family: 'Crimson Pro', serif;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--ink-mid);
-    margin: 1px 0;
+    margin: 2px 0;
   }
   .chronicle-quote {
     font-family: 'Crimson Pro', serif;
     font-style: italic;
-    font-size: 0.83rem;
+    font-size: 0.85rem;
     color: var(--amber);
-    margin: 3px 0 0;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
   }
   .chronicle-badge {
     display: inline-block;
@@ -1085,6 +1087,8 @@
           <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
           <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
           <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
+          <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
+          <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
           <option value="walk_run">Walk/Run Intervals (15L flat)</option>
           <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
           <option value="strength">The Forge — Strength (15L flat)</option>
@@ -1187,7 +1191,7 @@
           <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
           <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
           <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum</td></tr>
-          <tr><td><strong>5th Day</strong></td><td>Walk/Run Intervals count as your optional training day</td></tr>
+          <tr><td><strong>Optional 5th Day</strong></td><td>Any workout counts — run or cross-train</td></tr>
           <tr><td><strong>Perfect Week Bonus</strong></td><td>Complete all 4 core days → +25 Laurels</td></tr>
           <tr><td><strong>Streak Bonus</strong></td><td>+10 Laurels per consecutive week after week 1</td></tr>
           <tr><td><strong>Book Bonus</strong></td><td>+25 Laurels per Red Rising book read (max 150)</td></tr>
@@ -1207,14 +1211,15 @@
       <table class="codex-table">
         <thead><tr><th>Workout</th><th>Laurels</th></tr></thead>
         <tbody>
-          <tr><td>The March — Long Run</td><td>15 per mile</td></tr>
+          <tr><td>The March — Long Run</td><td>12 per mile</td></tr>
           <tr><td>The Charge — Tempo / Race Pace</td><td>10 per mile</td></tr>
-          <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
-                    <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
+          <tr><td>The Patrol — Easy Run</td><td>8 per mile</td></tr>
+          <tr><td>Optional 5th Day Run</td><td>8 per mile</td></tr>
+          <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
           <tr><td>Walk/Run Intervals</td><td>15 flat</td></tr>
-          <tr><td>The Steed — Peloton Ride</td><td>10 per 30 min</td></tr>
-          <tr><td>The Forge — Strength</td><td>15 flat</td></tr>
-          <tr><td>Mind & Body — Mobility/Yoga</td><td>10 flat</td></tr>
+          <tr><td>The Steed — Peloton Ride</td><td>8 per 10 min (24L / 30 min)</td></tr>
+          <tr><td>The Forge — Strength</td><td>12 flat</td></tr>
+          <tr><td>Mind & Body — Mobility/Yoga</td><td>8 flat</td></tr>
           <tr><td>Perfect Week Bonus (all 4 core days)</td><td>+25</td></tr>
           <tr><td>Consecutive Week Streak Bonus</td><td>+10 per week</td></tr>
           <tr><td>📚 Book Read (books 1–6)</td><td>+25 flat each (150 max)</td></tr>
@@ -1319,6 +1324,8 @@
         <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
         <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
         <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
+        <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
+        <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
         <option value="walk_run">Walk/Run Intervals (15L flat)</option>
         <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
         <option value="strength">The Forge — Strength (15L flat)</option>
@@ -1523,30 +1530,78 @@ const TIER_COLORS = {bronze:'#b87333', silver:'#a0a0b0', gold:'#c8900a'};
 const TIER_LABELS = {bronze:'Bronze', silver:'Silver', gold:'Gold'};
 const TIER_ROMAN = {bronze:'I', silver:'II', gold:'III'};
 const BADGES_DEF = [
-  {id:'first_step',   icon:'👟', name:'First Step',
-    tiers:[{tier:'bronze',desc:'Log 1 workout',check:(s)=>s.trials>=1},{tier:'silver',desc:'Log 30 workouts',check:(s)=>s.trials>=30},{tier:'gold',desc:'Log 75 workouts',check:(s)=>s.trials>=75}]},
+  {id:'first_step', icon:'👟', name:'First Step',
+    tiers:[
+      {tier:'bronze', desc:'Log 1 workout', check:(s)=>s.trials>=1},
+      {tier:'silver', desc:'Log 25 workouts', check:(s)=>s.trials>=25},
+      {tier:'gold',   desc:'Log 50 workouts', check:(s)=>s.trials>=50}
+    ]},
   {id:'week_warrior', icon:'⚔️', name:'Week Warrior',
-    tiers:[{tier:'bronze',desc:'1 perfect week',check:(s)=>s.perfectWeeks>=1},{tier:'silver',desc:'6 perfect weeks',check:(s)=>s.perfectWeeks>=6},{tier:'gold',desc:'16 perfect weeks',check:(s)=>s.perfectWeeks>=16}]},
+    tiers:[
+      {tier:'bronze', desc:'1 perfect week (4 core days)', check:(s)=>s.perfectWeeks>=1},
+      {tier:'silver', desc:'4 perfect weeks', check:(s)=>s.perfectWeeks>=4},
+      {tier:'gold',   desc:'8 perfect weeks', check:(s)=>s.perfectWeeks>=8}
+    ]},
   {id:'steed_master', icon:'🚴', name:'Steed Master',
-    tiers:[{tier:'bronze',desc:'5 Peloton rides',check:(s)=>s.pelotons>=5},{tier:'silver',desc:'20 Peloton rides',check:(s)=>s.pelotons>=20},{tier:'gold',desc:'50 Peloton rides',check:(s)=>s.pelotons>=50}]},
-  {id:'the_runner',   icon:'🏃', name:'The Runner',
-    tiers:[{tier:'bronze',desc:'25 total miles',check:(s)=>s.miles>=25},{tier:'silver',desc:'100 total miles',check:(s)=>s.miles>=100},{tier:'gold',desc:'250 total miles',check:(s)=>s.miles>=250}]},
-  {id:'iron_forged',  icon:'🦵', name:'Iron Forged',
-    tiers:[{tier:'bronze',desc:'5 strength sessions',check:(s)=>s.strength>=5},{tier:'silver',desc:'20 strength sessions',check:(s)=>s.strength>=20},{tier:'gold',desc:'50 strength sessions',check:(s)=>s.strength>=50}]},
-  {id:'mind_body',    icon:'🧘', name:'Mind & Body',
-    tiers:[{tier:'bronze',desc:'3 mobility sessions',check:(s)=>s.mobility>=3},{tier:'silver',desc:'15 mobility sessions',check:(s)=>s.mobility>=15},{tier:'gold',desc:'40 mobility sessions',check:(s)=>s.mobility>=40}]},
-  {id:'long_march',   icon:'🗺️', name:'The Long March',
-    tiers:[{tier:'bronze',desc:'Run 6 miles in one session',check:(s)=>s.maxSingleRun>=6},{tier:'silver',desc:'Run 10 miles in one session',check:(s)=>s.maxSingleRun>=10},{tier:'gold',desc:'Run 13.1 miles in one session',check:(s)=>s.maxSingleRun>=13.1}]},
-  {id:'unbroken',     icon:'🔥', name:'Unbroken',
-    tiers:[{tier:'bronze',desc:'3-week streak',check:(s)=>s.streak>=3},{tier:'silver',desc:'10-week streak',check:(s)=>s.streak>=10},{tier:'gold',desc:'20-week streak',check:(s)=>s.streak>=20}]},
-  {id:'extra_mile',   icon:'⭐', name:'Extra Mile',
-    tiers:[{tier:'bronze',desc:'5 walk/run or 5th day workouts',check:(s)=>s.optionals>=5},{tier:'silver',desc:'15 optional workouts',check:(s)=>s.optionals>=15},{tier:'gold',desc:'30 optional workouts',check:(s)=>s.optionals>=30}]},
-  {id:'centurion',    icon:'💯', name:'Centurion',
-    tiers:[{tier:'bronze',desc:'500 Laurels',check:(s)=>s.laurels>=500},{tier:'silver',desc:'2000 Laurels',check:(s)=>s.laurels>=2000},{tier:'gold',desc:'4500 Laurels',check:(s)=>s.laurels>=4500}]},
-  {id:'peerless',     icon:'🌟', name:'Peerless',
-    tiers:[{tier:'bronze',desc:'Run 10 miles in one session',check:(s)=>s.maxSingleRun>=10},{tier:'silver',desc:'Run 12 miles in one session',check:(s)=>s.maxSingleRun>=12},{tier:'gold',desc:'Run 13.1 miles the full half!',check:(s)=>s.maxSingleRun>=13.1}]},
-  {id:'the_reaper',   icon:'☀️', name:'The Reaper',
-    tiers:[{tier:'bronze',desc:'2000 Laurels',check:(s)=>s.laurels>=2000},{tier:'silver',desc:'4000 Laurels',check:(s)=>s.laurels>=4000},{tier:'gold',desc:'6000 Laurels',check:(s)=>s.laurels>=6000}]}
+    tiers:[
+      {tier:'bronze', desc:'5 Peloton rides', check:(s)=>s.pelotons>=5},
+      {tier:'silver', desc:'15 Peloton rides', check:(s)=>s.pelotons>=15},
+      {tier:'gold',   desc:'30 Peloton rides', check:(s)=>s.pelotons>=30}
+    ]},
+  {id:'the_runner', icon:'🏃', name:'The Runner',
+    tiers:[
+      {tier:'bronze', desc:'25 total miles', check:(s)=>s.miles>=25},
+      {tier:'silver', desc:'50 total miles', check:(s)=>s.miles>=50},
+      {tier:'gold',   desc:'100 total miles', check:(s)=>s.miles>=100}
+    ]},
+  {id:'iron_forged', icon:'🦵', name:'Iron Forged',
+    tiers:[
+      {tier:'bronze', desc:'5 strength sessions', check:(s)=>s.strength>=5},
+      {tier:'silver', desc:'15 strength sessions', check:(s)=>s.strength>=15},
+      {tier:'gold',   desc:'30 strength sessions', check:(s)=>s.strength>=30}
+    ]},
+  {id:'mind_body', icon:'🧘', name:'Mind & Body',
+    tiers:[
+      {tier:'bronze', desc:'3 mobility sessions', check:(s)=>s.mobility>=3},
+      {tier:'silver', desc:'10 mobility sessions', check:(s)=>s.mobility>=10},
+      {tier:'gold',   desc:'20 mobility sessions', check:(s)=>s.mobility>=20}
+    ]},
+  {id:'long_march', icon:'🗺️', name:'The Long March',
+    tiers:[
+      {tier:'bronze', desc:'Run 6 miles in one session', check:(s)=>s.maxSingleRun>=6},
+      {tier:'silver', desc:'Run 10 miles in one session', check:(s)=>s.maxSingleRun>=10},
+      {tier:'gold',   desc:'Run 13.1 miles in one session', check:(s)=>s.maxSingleRun>=13.1}
+    ]},
+  {id:'unbroken', icon:'🔥', name:'Unbroken',
+    tiers:[
+      {tier:'bronze', desc:'3-week streak', check:(s)=>s.streak>=3},
+      {tier:'silver', desc:'6-week streak', check:(s)=>s.streak>=6},
+      {tier:'gold',   desc:'12-week streak', check:(s)=>s.streak>=12}
+    ]},
+  {id:'extra_mile', icon:'⭐', name:'Extra Mile',
+    tiers:[
+      {tier:'bronze', desc:'5 optional 5th day workouts', check:(s)=>s.optionals>=5},
+      {tier:'silver', desc:'15 optional 5th day workouts', check:(s)=>s.optionals>=15},
+      {tier:'gold',   desc:'30 optional 5th day workouts', check:(s)=>s.optionals>=30}
+    ]},
+  {id:'centurion', icon:'💯', name:'Centurion',
+    tiers:[
+      {tier:'bronze', desc:'500 Laurels', check:(s)=>s.laurels>=500},
+      {tier:'silver', desc:'1000 Laurels', check:(s)=>s.laurels>=1000},
+      {tier:'gold',   desc:'2000 Laurels', check:(s)=>s.laurels>=2000}
+    ]},
+  {id:'peerless', icon:'🌟', name:'Peerless',
+    tiers:[
+      {tier:'bronze', desc:'Run 10 miles in one session', check:(s)=>s.maxSingleRun>=10},
+      {tier:'silver', desc:'Run 12 miles in one session', check:(s)=>s.maxSingleRun>=12},
+      {tier:'gold',   desc:'Run 13.1 miles — the full half!', check:(s)=>s.maxSingleRun>=13.1}
+    ]},
+  {id:'the_reaper', icon:'☀️', name:'The Reaper',
+    tiers:[
+      {tier:'bronze', desc:'2000 Laurels', check:(s)=>s.laurels>=2000},
+      {tier:'silver', desc:'3000 Laurels', check:(s)=>s.laurels>=3000},
+      {tier:'gold',   desc:'5000 Laurels', check:(s)=>s.laurels>=5000}
+    ]}
 ];
 const CHALLENGES_DEF = [
   {id:'first_blood', name:'First Blood', icon:'⚔️', type:'duel', desc:'First to log any trial', reward:50, goal:1},
@@ -1779,8 +1834,7 @@ function calcPlayerStats(pid) {
   const works = state.workouts.filter(w => w.player_id === pid);
   const player = state.players.find(p => p.id === pid);
   let laurels = (player && player.book_laurels) ? player.book_laurels : 0;
-  const SYSTEM_WORKOUTS = ['milestone_bonus','duel_win','duel_loss'];
-  let miles = 0, trials = works.filter(w => !SYSTEM_WORKOUTS.includes(w.workout)).length;
+  let miles = 0, trials = works.length;
   let pelotons = 0, strength = 0, mobility = 0, optionals = 0;
   let maxSingleRun = 0;
   const weekSet = new Set();
@@ -2010,6 +2064,45 @@ function buildHeatmap(pid) {
   return html;
 }
 
+function buildWeeklyChart(pid) {
+  var works = state.workouts.filter(function(w){ return w.player_id === pid; });
+  if (works.length === 0) return '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.8rem;color:var(--ink-light);margin-bottom:8px">No activity yet.</div>';
+
+  // Build weeks map
+  var weekData = {};
+  works.forEach(function(w) {
+    var wk = getWeekKey(w.date);
+    if (!weekData[wk]) weekData[wk] = { miles:0, minutes:0, trials:0, label:'' };
+    weekData[wk].miles += (w.miles||0);
+    weekData[wk].minutes += (w.minutes||0);
+    weekData[wk].trials++;
+    if (!weekData[wk].label) weekData[wk].label = formatDate(w.date).replace(/,?\s*\d{4}$/,'');
+  });
+
+  var weeks = Object.keys(weekData).sort();
+  if (weeks.length === 0) return '';
+  var maxMiles = Math.max(...weeks.map(function(wk){ return weekData[wk].miles; }), 1);
+  var maxMins = Math.max(...weeks.map(function(wk){ return weekData[wk].minutes; }), 1);
+
+  var html = '<div style="overflow-x:auto;margin-bottom:8px"><div style="display:flex;align-items:flex-end;gap:4px;min-width:0;height:80px;padding-bottom:2px">';
+  weeks.forEach(function(wk) {
+    var d = weekData[wk];
+    var milePct = maxMiles > 0 ? (d.miles/maxMiles)*100 : 0;
+    var minPct = maxMins > 0 ? (d.minutes/maxMins)*100 : 0;
+    var tip = 'Wk: ' + (d.label||wk) + ' · ' + d.miles.toFixed(1) + ' mi' + (d.minutes?' · '+d.minutes+'min':'') + ' · ' + d.trials + ' trials';
+    html += '<div title="' + tip + '" style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;min-width:18px">';
+    if (d.miles > 0) html += '<div style="width:100%;background:var(--amber);border-radius:2px 2px 0 0;height:' + Math.max(milePct*0.7,4).toFixed(0) + 'px;transition:height 0.4s;opacity:0.85"></div>';
+    if (d.minutes > 0) html += '<div style="width:100%;background:var(--house-obsidian,#1e3858);border-radius:2px 2px 0 0;height:' + Math.max(minPct*0.7,4).toFixed(0) + 'px;transition:height 0.4s;opacity:0.7"></div>';
+    if (d.miles === 0 && d.minutes === 0) html += '<div style="width:100%;background:var(--border);border-radius:2px;height:4px"></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div style="display:flex;gap:12px;margin-top:4px;font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light)">';
+  html += '<span><span style="display:inline-block;width:8px;height:8px;background:var(--amber);border-radius:1px;margin-right:3px"></span>Miles</span>';
+  html += '<span><span style="display:inline-block;width:8px;height:8px;background:#1e3858;border-radius:1px;margin-right:3px;opacity:0.7"></span>Peloton min</span>';
+  html += '</div></div>';
+  return html;
+}
 
 function renderMarsBar() {
   var el = document.getElementById('mars-bar-section');
@@ -2094,8 +2187,10 @@ function calcLaurels(workout, miles, minutes) {
     case 'long_run': return Math.round(miles * 15);
     case 'tempo': return Math.round(miles * 12);
     case 'easy_run': return Math.round(miles * 10);
+    case 'optional_run': return Math.round(miles * 8);
+    case 'optional_other': return 10;
     case 'walk_run': return 15;
-    case 'peloton': return Math.round((minutes / 30) * 10);
+    case 'peloton': return Math.round((minutes / 10) * 8);
     case 'strength': return 15;
     case 'mobility': return 10;
     default: return 0;
@@ -2284,12 +2379,12 @@ function renderActiveDuels() {
 
 // ─── QUICK LOG ───────────────────────────────────────────────────────────────
 var QUICK_WORKOUTS = [
-  {label:'Easy Run 3mi', workout:'easy_run', icon:'🏃', miles:3, desc:'+30 Laurels'},
-  {label:'Easy Run 5mi', workout:'easy_run', icon:'🏃', miles:5, desc:'+50 Laurels'},
-  {label:'The March 6mi', workout:'long_run', icon:'🗺️', miles:6, desc:'+90 Laurels'},
-  {label:'The March 8mi', workout:'long_run', icon:'🗺️', miles:8, desc:'+120 Laurels'},
-  {label:'The Forge', workout:'strength', icon:'🦵', miles:0, desc:'+15 Laurels'},
-  {label:'Mind & Body', workout:'mobility', icon:'🧘', miles:0, desc:'+10 Laurels'},
+  {label:'Easy Run 3mi', workout:'easy_run', icon:'🏃', miles:3, desc:'+24 Laurels'},
+  {label:'Easy Run 5mi', workout:'easy_run', icon:'🏃', miles:5, desc:'+40 Laurels'},
+  {label:'The March 6mi', workout:'long_run', icon:'🗺️', miles:6, desc:'+72 Laurels'},
+  {label:'The March 8mi', workout:'long_run', icon:'🗺️', miles:8, desc:'+96 Laurels'},
+  {label:'The Forge', workout:'strength', icon:'🦵', miles:0, desc:'+12 Laurels'},
+  {label:'Mind & Body', workout:'mobility', icon:'🧘', miles:0, desc:'+8 Laurels'},
   {label:'The Steed 30min', workout:'peloton', icon:'🚴', minutes:30, desc:'+24 Laurels'},
   {label:'The Steed 45min', workout:'peloton', icon:'🚴', minutes:45, desc:'+36 Laurels'},
 ];
@@ -2302,7 +2397,7 @@ function openQuickLog() {
     return '<button onclick="quickLogSubmit(' + i + ')" style="display:flex;align-items:center;gap:12px;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;text-align:left;width:100%">' +
       '<span style="font-size:1.2rem">' + q.icon + '</span><span style="flex:1">' +
       '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:var(--ink);display:block">' + q.label + '</span>' +
-      '<span style="font-family:Crimson Pro,serif;font-size:0.82rem;color:var(--ink-light)">+' + l + ' Laurels</span></span></button>';
+      '<span style="font-family:Crimson Pro,serif;font-size:0.82rem;color:var(--ink-light)">+' + calcLaurels(q.workout, q.miles||0, q.minutes||0) + ' Laurels</span></span></button>';
   }).join('');
   document.getElementById('quick-log-modal').classList.add('open');
 }
@@ -2720,7 +2815,7 @@ function renderLogDropdown() {
   state.players.forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
-    opt.textContent = `${p.name} (House ${p.house})`;
+    opt.textContent = `${p.name} · ${p.house}`;
     sel.appendChild(opt);
   });
   if (prev) sel.value = prev;
@@ -2756,21 +2851,24 @@ function renderChronicle() {
       detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
     }
     return `<div class="chronicle-entry" style="--house-color:${houseColor}">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:2px">
+      <div class="chronicle-header">
         <span class="chronicle-player">${escHtml(player.name)}</span>
-        <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">+${w.laurels_base}L</span>
+        <span class="chronicle-workout">${WORKOUT_NAMES[w.workout]||w.workout}</span>
+        ${detail ? `<span style="font-family:'Crimson Pro',serif;font-size:0.85rem;color:var(--ink-light)">${detail}</span>` : ''}
+        <span class="chronicle-meta">${formatDate(w.date)}</span>
       </div>
-      <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);margin-bottom:6px;letter-spacing:0.02em">${WORKOUT_NAMES[w.workout]||w.workout}${w.miles ? ' · '+w.miles+' mi' : ''}${w.minutes ? ' · '+w.minutes+' min' : ''} · ${formatDate(w.date)}</div>
-      ${w.notes ? `<div style="font-family:'Crimson Pro',serif;font-size:0.88rem;font-style:italic;color:var(--ink-mid);margin-bottom:4px">"${escHtml(w.notes)}"</div>` : ''}
+      <div class="chronicle-detail">+${w.laurels_base} Laurels earned</div>
+      ${w.notes ? `<div class="chronicle-detail" style="font-style:italic">"${escHtml(w.notes)}"</div>` : ''}
       ${w.badge_earned ? (() => {
         const tier = BADGE_TIERS.find(t => w.badge_earned.endsWith('_'+t));
         const baseId = tier ? w.badge_earned.slice(0,-(tier.length+1)) : w.badge_earned;
         const bd = BADGES_DEF.find(b => b.id === baseId);
-        return bd ? `<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;margin-bottom:4px">${bd.icon}<sup style="font-size:0.6em;font-family:'Cinzel',serif">${TIER_ROMAN[tier]||''}</sup> Badge: ${bd.name}</div>` : '';
+        return bd ? `<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;box-shadow:0 0 8px ${TIER_COLORS[tier]||'var(--amber)'}44">${bd.icon}<sup style="font-size:0.6em;font-family:'Cinzel',serif">${TIER_ROMAN[tier]||''}</sup> Badge: ${bd.name}</div>` : '';
       })() : ''}
-      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--amber);opacity:0.85;margin-bottom:6px">"${w.quote}"</div>
-      <div style="display:flex;gap:5px;padding-top:6px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">
+      <div class="chronicle-quote">"${w.quote}"</div>
+      <div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">
         ${reactionBarHTML(w, w.id, 'toggleReaction')}
+        <button onclick="quickHowlAt('${w.id}','${escHtml(player.name)}')" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(122,80,6,0.08)'" onmouseout="this.style.background='transparent'" title="Send a Howl">🐺</button>
         <div style="flex:1"></div>
         <button onclick="openEditWorkout('${w.id}')" style="background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
         <button onclick="removeWorkout('${w.id}')" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
@@ -2910,7 +3008,7 @@ function renderDispatch() {
     state.players.forEach(function(p) {
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = p.name + ' (House ' + p.house + ')';
+      opt.textContent = p.name + ' · ' + p.house;
       sel.appendChild(opt);
     });
     if (prev) sel.value = prev;
@@ -2931,7 +3029,8 @@ function renderHowlFeed() {
     const player = state.players.find(function(p) { return p.id === h.player_id; });
     // System recap howls
     if (h.is_recap || h.player_id === 'system') {
-            return '<div class="chronicle-entry" style="--house-color:var(--amber);background:linear-gradient(135deg,rgba(200,144,10,0.08),var(--parchment))">' +
+      const likes = h.likes || [];
+      return '<div class="chronicle-entry" style="--house-color:var(--amber);background:linear-gradient(135deg,rgba(200,144,10,0.08),var(--parchment))">' +
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
         '<span style="font-size:1.2rem">📊</span>' +
         '<span style="font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--amber)">THE PACK REPORT</span>' +
@@ -2946,7 +3045,8 @@ function renderHowlFeed() {
     }
     if (!player) return '';
     const hc = (h.player_laurels >= 2400) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
-        let replyTo = '';
+    const likes = h.likes || [];
+    let replyTo = '';
     if (h.activity_ref) {
       const ref = h.activity_ref;
       replyTo = '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:8px 12px;margin-bottom:10px">' +
@@ -2968,7 +3068,7 @@ function renderHowlFeed() {
       '</div>' +
       replyTo +
       '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message) + '&rdquo;</div>' +
-      '<div style="display:flex;gap:5px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">' +
+      '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">' +
       reactionBarHTML(h, h.id, 'toggleHowlReaction') +
       '<button onclick="copyHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">⎘ Copy</button>' +
       '<div style="flex:1"></div>' +
