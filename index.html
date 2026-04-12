@@ -63,48 +63,55 @@
   .header-inner {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 12px 20px;
+    padding: 8px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
+    gap: 10px;
+    flex-wrap: nowrap;
   }
-  .header-title-block { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .header-title-block { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
   .header-title {
     font-family: 'Cinzel', serif;
-    font-size: clamp(1.3rem, 3vw, 2rem);
+    font-size: clamp(1rem, 4vw, 1.4rem);
     font-weight: 900;
     letter-spacing: 0.08em;
     color: var(--amber-pale);
     text-shadow: 0 0 20px rgba(200,144,10,0.5);
+    white-space: nowrap;
   }
   .header-title span { color: var(--amber-light); }
   .header-subtitle {
     font-family: 'Crimson Pro', serif;
     font-style: italic;
-    font-size: 0.85rem;
-    color: rgba(240,208,128,0.65);
-    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    color: rgba(240,208,128,0.55);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .countdown-block {
-    text-align: right;
+    text-align: center;
     font-family: 'Cinzel', serif;
+    border-left: 1px solid rgba(240,208,128,0.2);
+    padding-left: 10px;
   }
   .countdown-label {
-    font-size: 0.55rem;
-    letter-spacing: 0.15em;
+    font-size: 0.45rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(240,208,128,0.5);
+    color: rgba(240,208,128,0.45);
+    display: block;
   }
   .countdown-days {
-    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    font-size: clamp(0.85rem, 2vw, 1.1rem);
     font-weight: 700;
     color: var(--amber-pale);
     letter-spacing: 0.04em;
   }
-  .countdown-days span { color: var(--amber-light); font-size: 0.7em; margin-left: 4px; }
+  .countdown-days span { color: var(--amber-light); font-size: 0.7em; margin-left: 3px; }
   .sync-bar {
     display: flex;
     align-items: center;
@@ -929,26 +936,22 @@
 <header class="site-header">
   <div class="header-inner">
     <div class="header-title-block">
-      <div>
-        <div class="header-title">THE <span>HOWLERS</span></div>
-        <div class="header-subtitle">Rock 'n' Roll Arizona · Half Marathon · Tempe, AZ</div>
-      </div>
+      <div class="header-title">THE <span>HOWLERS</span></div>
+      <div class="header-subtitle">Rock 'n' Roll Arizona · Half Marathon · Tempe, AZ</div>
     </div>
     <div class="header-right">
-      <div class="countdown-block">
-        <div class="countdown-label">Days to the Laurel</div>
-        <div class="countdown-days" id="countdown-days">— <span>days</span></div>
+      <select id="current-howler-select" onchange="setCurrentHowler(this.value)" style="background:rgba(255,255,255,0.08);border:1px solid rgba(240,208,128,0.3);color:rgba(240,208,128,0.85);font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.06em;padding:4px 6px;border-radius:3px;cursor:pointer;max-width:100px">
+        <option value="">🐺 I am...</option>
+      </select>
+      <div class="sync-bar" onclick="manualRefresh()" title="Refresh">
+        <div class="sync-dot loading" id="sync-dot"></div>
+        <span id="sync-label" style="display:none"></span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-        <div class="sync-bar" onclick="manualRefresh()">
-          <div class="sync-dot loading" id="sync-dot"></div>
-          <span id="sync-label">LOADING</span>
-        </div>
-        <button class="refresh-btn" onclick="manualRefresh()">↻ Refresh</button>
-        <button class="refresh-btn" onclick="openSetup()" style="border-color:rgba(240,208,128,0.5);color:rgba(240,208,128,0.8)">⚙ Setup</button>
-        <select id="current-howler-select" onchange="setCurrentHowler(this.value)" style="background:rgba(255,255,255,0.08);border:1px solid rgba(240,208,128,0.4);color:rgba(240,208,128,0.9);font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;padding:4px 8px;border-radius:3px;cursor:pointer;max-width:130px">
-          <option value="">🐺 I am...</option>
-        </select>
+      <button class="refresh-btn" onclick="manualRefresh()" style="padding:4px 7px;font-size:0.58rem">↻</button>
+      <button class="refresh-btn" onclick="openSetup()" style="border-color:rgba(240,208,128,0.4);color:rgba(240,208,128,0.75);padding:4px 7px;font-size:0.58rem">⚙</button>
+      <div class="countdown-block">
+        <span class="countdown-label">To the Laurel</span>
+        <div class="countdown-days" id="countdown-days">— <span>days</span></div>
       </div>
     </div>
   </div>
@@ -1717,11 +1720,32 @@ function openProfile(pid) {
   }).join('');
 
   // Running laurel total for timeline
-  let runningTotal = (player.book_laurels || 0);
+  const bookLaurels = player.book_laurels || 0;
+  let runningTotal = 0;
 
   // Build timeline entries
-  const timelineHTML = works.length === 0 ? '<div class="empty-state" style="padding:20px"><span class="empty-icon">⚔️</span>No trials logged yet.</div>' :
-    works.slice().reverse().map(function(w, idx) {
+  // Book laurels entry at start of timeline
+  let bookEntry = '';
+  if (bookLaurels > 0) {
+    const bookNames = (player.books_read||[]).map(function(b){
+      return ({red_rising:'Red Rising',golden_son:'Golden Son',morning_star:'Morning Star',iron_gold:'Iron Gold',dark_age:'Dark Age',light_bringer:'Light Bringer'})[b]||b;
+    }).join(', ');
+    runningTotal = bookLaurels;
+    bookEntry = '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">' +
+      '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:36px">' +
+      '<div style="width:10px;height:10px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:4px"></div>' +
+      '<div style="flex:1;width:2px;background:var(--border)"></div></div>' +
+      '<div style="flex:1">' +
+      '<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">' +
+      '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:var(--ink)">📚 Books Read</span>' +
+      '<span style="margin-left:auto;font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--amber)">+' + bookLaurels + 'L</span>' +
+      '</div>' +
+      '<div style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink-light);margin-top:1px">' + bookNames + ' · Running total: <strong>' + runningTotal + 'L</strong></div>' +
+      '</div></div>';
+  }
+
+  const timelineHTML = (works.length === 0 && bookLaurels === 0) ? '<div class="empty-state" style="padding:20px"><span class="empty-icon">⚔️</span>No trials logged yet.</div>' :
+    bookEntry + works.slice().reverse().map(function(w, idx) {
       runningTotal += (w.laurels_base || 0);
       const wname = WORKOUT_NAMES[w.workout] || w.workout;
       let detail = '';
