@@ -1082,13 +1082,11 @@
         <label class="form-label">Workout Type</label>
         <select class="form-select" id="log-workout" onchange="updateLaurelPreview()">
           <option value="">— Select Workout —</option>
-          <option value="long_run">The March — Long Run · min 6 mi (12L/mile)</option>
-          <option value="tempo">The Charge — Tempo / Race Pace (10L/mile)</option>
-          <option value="easy_run">The Patrol — Easy Run (8L/mile)</option>
-          <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
-          <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
+          <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
+          <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
+          <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
           <option value="walk_run">Walk/Run Intervals (15L flat)</option>
-          <option value="peloton">The Steed — Peloton Ride (10L per 30 min)</option>
+          <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
           <option value="strength">The Forge — Strength (12L flat)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
         </select>
@@ -1189,7 +1187,7 @@
           <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
           <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
           <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum</td></tr>
-          <tr><td><strong>Optional 5th Day</strong></td><td>Any workout counts — run or cross-train</td></tr>
+          <tr><td><strong>5th Day</strong></td><td>Walk/Run Intervals count as your optional training day</td></tr>
           <tr><td><strong>Perfect Week Bonus</strong></td><td>Complete all 4 core days → +25 Laurels</td></tr>
           <tr><td><strong>Streak Bonus</strong></td><td>+10 Laurels per consecutive week after week 1</td></tr>
           <tr><td><strong>Book Bonus</strong></td><td>+25 Laurels per Red Rising book read (max 150)</td></tr>
@@ -1209,11 +1207,10 @@
       <table class="codex-table">
         <thead><tr><th>Workout</th><th>Laurels</th></tr></thead>
         <tbody>
-          <tr><td>The March — Long Run</td><td>12 per mile</td></tr>
+          <tr><td>The March — Long Run</td><td>15 per mile</td></tr>
           <tr><td>The Charge — Tempo / Race Pace</td><td>10 per mile</td></tr>
-          <tr><td>The Patrol — Easy Run</td><td>8 per mile</td></tr>
-          <tr><td>Optional 5th Day Run</td><td>8 per mile</td></tr>
-          <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
+          <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
+                    <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
           <tr><td>Walk/Run Intervals</td><td>15 flat</td></tr>
           <tr><td>The Steed — Peloton Ride</td><td>10 per 30 min</td></tr>
           <tr><td>The Forge — Strength</td><td>12 flat</td></tr>
@@ -1319,13 +1316,11 @@
     <div class="form-group">
       <label class="form-label">Workout Type</label>
       <select class="form-select" id="edit-workout-type" onchange="updateEditLaurelPreview()">
-        <option value="long_run">The March — Long Run · min 6 mi (12L/mile)</option>
-        <option value="tempo">The Charge — Tempo / Race Pace (10L/mile)</option>
-        <option value="easy_run">The Patrol — Easy Run (8L/mile)</option>
-        <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
-        <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
+        <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
+        <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
+        <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
         <option value="walk_run">Walk/Run Intervals (15L flat)</option>
-        <option value="peloton">The Steed — Peloton Ride (10L per 30 min)</option>
+        <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
         <option value="strength">The Forge — Strength (12L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
       </select>
@@ -1545,7 +1540,7 @@ const BADGES_DEF = [
   {id:'unbroken',     icon:'🔥', name:'Unbroken',
     tiers:[{tier:'bronze',desc:'3-week streak',check:(s)=>s.streak>=3},{tier:'silver',desc:'10-week streak',check:(s)=>s.streak>=10},{tier:'gold',desc:'20-week streak',check:(s)=>s.streak>=20}]},
   {id:'extra_mile',   icon:'⭐', name:'Extra Mile',
-    tiers:[{tier:'bronze',desc:'5 optional workouts',check:(s)=>s.optionals>=5},{tier:'silver',desc:'15 optional workouts',check:(s)=>s.optionals>=15},{tier:'gold',desc:'30 optional workouts',check:(s)=>s.optionals>=30}]},
+    tiers:[{tier:'bronze',desc:'5 walk/run or 5th day workouts',check:(s)=>s.optionals>=5},{tier:'silver',desc:'15 optional workouts',check:(s)=>s.optionals>=15},{tier:'gold',desc:'30 optional workouts',check:(s)=>s.optionals>=30}]},
   {id:'centurion',    icon:'💯', name:'Centurion',
     tiers:[{tier:'bronze',desc:'500 Laurels',check:(s)=>s.laurels>=500},{tier:'silver',desc:'2000 Laurels',check:(s)=>s.laurels>=2000},{tier:'gold',desc:'4500 Laurels',check:(s)=>s.laurels>=4500}]},
   {id:'peerless',     icon:'🌟', name:'Peerless',
@@ -2096,11 +2091,9 @@ function calcLaurels(workout, miles, minutes) {
   miles = parseFloat(miles) || 0;
   minutes = parseInt(minutes) || 0;
   switch(workout) {
-    case 'long_run': return Math.round(miles * 12);
-    case 'tempo': return Math.round(miles * 10);
-    case 'easy_run': return Math.round(miles * 8);
-    case 'optional_run': return Math.round(miles * 8);
-    case 'optional_other': return 10;
+    case 'long_run': return Math.round(miles * 15);
+    case 'tempo': return Math.round(miles * 12);
+    case 'easy_run': return Math.round(miles * 10);
     case 'walk_run': return 15;
     case 'peloton': return Math.round((minutes / 30) * 10);
     case 'strength': return 12;
@@ -2291,10 +2284,10 @@ function renderActiveDuels() {
 
 // ─── QUICK LOG ───────────────────────────────────────────────────────────────
 var QUICK_WORKOUTS = [
-  {label:'Easy Run 3mi', workout:'easy_run', icon:'🏃', miles:3, desc:'+24 Laurels'},
-  {label:'Easy Run 5mi', workout:'easy_run', icon:'🏃', miles:5, desc:'+40 Laurels'},
-  {label:'The March 6mi', workout:'long_run', icon:'🗺️', miles:6, desc:'+72 Laurels'},
-  {label:'The March 8mi', workout:'long_run', icon:'🗺️', miles:8, desc:'+96 Laurels'},
+  {label:'Easy Run 3mi', workout:'easy_run', icon:'🏃', miles:3, desc:'+30 Laurels'},
+  {label:'Easy Run 5mi', workout:'easy_run', icon:'🏃', miles:5, desc:'+50 Laurels'},
+  {label:'The March 6mi', workout:'long_run', icon:'🗺️', miles:6, desc:'+90 Laurels'},
+  {label:'The March 8mi', workout:'long_run', icon:'🗺️', miles:8, desc:'+120 Laurels'},
   {label:'The Forge', workout:'strength', icon:'🦵', miles:0, desc:'+12 Laurels'},
   {label:'Mind & Body', workout:'mobility', icon:'🧘', miles:0, desc:'+8 Laurels'},
   {label:'The Steed 30min', workout:'peloton', icon:'🚴', minutes:30, desc:'+10 Laurels'},
