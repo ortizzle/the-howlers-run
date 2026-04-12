@@ -1087,8 +1087,8 @@
           <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
           <option value="walk_run">Walk/Run Intervals (15L flat)</option>
           <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
-          <option value="strength">The Forge — Strength (12L flat)</option>
-          <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
+          <option value="strength">The Forge — Strength (15L flat)</option>
+          <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
         </select>
       </div>
       <div class="form-row">
@@ -1213,8 +1213,8 @@
                     <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
           <tr><td>Walk/Run Intervals</td><td>15 flat</td></tr>
           <tr><td>The Steed — Peloton Ride</td><td>10 per 30 min</td></tr>
-          <tr><td>The Forge — Strength</td><td>12 flat</td></tr>
-          <tr><td>Mind & Body — Mobility/Yoga</td><td>8 flat</td></tr>
+          <tr><td>The Forge — Strength</td><td>15 flat</td></tr>
+          <tr><td>Mind & Body — Mobility/Yoga</td><td>10 flat</td></tr>
           <tr><td>Perfect Week Bonus (all 4 core days)</td><td>+25</td></tr>
           <tr><td>Consecutive Week Streak Bonus</td><td>+10 per week</td></tr>
           <tr><td>📚 Book Read (books 1–6)</td><td>+25 flat each (150 max)</td></tr>
@@ -1321,8 +1321,8 @@
         <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
         <option value="walk_run">Walk/Run Intervals (15L flat)</option>
         <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
-        <option value="strength">The Forge — Strength (12L flat)</option>
-        <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
+        <option value="strength">The Forge — Strength (15L flat)</option>
+        <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
       </select>
     </div>
     <div class="form-row">
@@ -2096,8 +2096,8 @@ function calcLaurels(workout, miles, minutes) {
     case 'easy_run': return Math.round(miles * 10);
     case 'walk_run': return 15;
     case 'peloton': return Math.round((minutes / 30) * 10);
-    case 'strength': return 12;
-    case 'mobility': return 8;
+    case 'strength': return 15;
+    case 'mobility': return 10;
     default: return 0;
   }
 }
@@ -2288,8 +2288,8 @@ var QUICK_WORKOUTS = [
   {label:'Easy Run 5mi', workout:'easy_run', icon:'🏃', miles:5, desc:'+50 Laurels'},
   {label:'The March 6mi', workout:'long_run', icon:'🗺️', miles:6, desc:'+90 Laurels'},
   {label:'The March 8mi', workout:'long_run', icon:'🗺️', miles:8, desc:'+120 Laurels'},
-  {label:'The Forge', workout:'strength', icon:'🦵', miles:0, desc:'+12 Laurels'},
-  {label:'Mind & Body', workout:'mobility', icon:'🧘', miles:0, desc:'+8 Laurels'},
+  {label:'The Forge', workout:'strength', icon:'🦵', miles:0, desc:'+15 Laurels'},
+  {label:'Mind & Body', workout:'mobility', icon:'🧘', miles:0, desc:'+10 Laurels'},
   {label:'The Steed 30min', workout:'peloton', icon:'🚴', minutes:30, desc:'+10 Laurels'},
   {label:'The Steed 45min', workout:'peloton', icon:'🚴', minutes:45, desc:'+15 Laurels'},
 ];
@@ -2756,22 +2756,21 @@ function renderChronicle() {
       detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
     }
     return `<div class="chronicle-entry" style="--house-color:${houseColor}">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:2px">
         <span class="chronicle-player">${escHtml(player.name)}</span>
         <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">+${w.laurels_base}L</span>
       </div>
-      <div style="font-family:'Cinzel',serif;font-size:0.72rem;color:var(--ink-light);margin-bottom:4px;letter-spacing:0.03em">${WORKOUT_NAMES[w.workout]||w.workout}${w.miles ? ' · '+w.miles+' mi' : ''}${w.minutes ? ' · '+w.minutes+' min' : ''} · ${formatDate(w.date)}</div>>+${w.laurels_base} Laurels earned</div>
-      ${w.notes ? `<div style="font-family:'Crimson Pro',serif;font-size:0.85rem;font-style:italic;color:var(--ink-light);margin:2px 0">"${escHtml(w.notes)}"</div>` : ''}
+      <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);margin-bottom:6px;letter-spacing:0.02em">${WORKOUT_NAMES[w.workout]||w.workout}${w.miles ? ' · '+w.miles+' mi' : ''}${w.minutes ? ' · '+w.minutes+' min' : ''} · ${formatDate(w.date)}</div>
+      ${w.notes ? `<div style="font-family:'Crimson Pro',serif;font-size:0.88rem;font-style:italic;color:var(--ink-mid);margin-bottom:4px">"${escHtml(w.notes)}"</div>` : ''}
       ${w.badge_earned ? (() => {
         const tier = BADGE_TIERS.find(t => w.badge_earned.endsWith('_'+t));
         const baseId = tier ? w.badge_earned.slice(0,-(tier.length+1)) : w.badge_earned;
         const bd = BADGES_DEF.find(b => b.id === baseId);
-        return bd ? `<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;box-shadow:0 0 8px ${TIER_COLORS[tier]||'var(--amber)'}44">${bd.icon}<sup style="font-size:0.6em;font-family:'Cinzel',serif">${TIER_ROMAN[tier]||''}</sup> Badge: ${bd.name}</div>` : '';
+        return bd ? `<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;margin-bottom:4px">${bd.icon}<sup style="font-size:0.6em;font-family:'Cinzel',serif">${TIER_ROMAN[tier]||''}</sup> Badge: ${bd.name}</div>` : '';
       })() : ''}
-      <div class="chronicle-quote">"${w.quote}"</div>
-      <div style="display:flex;gap:5px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">
+      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--amber);opacity:0.85;margin-bottom:6px">"${w.quote}"</div>
+      <div style="display:flex;gap:5px;padding-top:6px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">
         ${reactionBarHTML(w, w.id, 'toggleReaction')}
-
         <div style="flex:1"></div>
         <button onclick="openEditWorkout('${w.id}')" style="background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
         <button onclick="removeWorkout('${w.id}')" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
