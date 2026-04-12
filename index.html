@@ -1467,6 +1467,30 @@
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const RACE_DATE = new Date('2027-01-17T07:00:00');
 const TRAINING_START = new Date('2026-04-13T00:00:00');
+const HYPE_REACTIONS = [
+  "Per aspera ad astra.",
+  "Eo, Eo, Eo!",
+  "Go Howler, Go!",
+  "The laurel belongs to those who refuse to stop.",
+  "Rise.",
+  "Hic sunt leones.",
+  "You do not follow me because I am strong. You follow me because you are.",
+  "Break the chains and run.",
+  "I would have lived in peace but my enemies brought me war.",
+  "The Howlers don't fall. They rise."
+];
+const TRASH_REACTIONS = [
+  "Is that all, Pixie?",
+  "Weakness is a choice.",
+  "The Reaper does not wait for stragglers.",
+  "Even the Obsidians would be embarrassed.",
+  "Rage, rage, rage or don't bother.",
+  "Hic sunt leones. You are not one of them.",
+  "Break the chains if you can find the energy.",
+  "The pack is waiting. Are you?",
+  "Lowborn effort."
+];
+
 const QUOTES = [
   "Go Howler, Go! 🐺",
   "Hic sunt leones. Here there be lions. ⚔️",
@@ -3172,8 +3196,30 @@ async function toggleReaction(workoutId, emoji) {
   if (!w.reactions) w.reactions = {};
   if (!w.reactions[emoji]) w.reactions[emoji] = 0;
   w.reactions[emoji]++;
+  // Auto-post themed Howl
+  const pid = currentHowlerId;
+  if (pid && pid !== w.player_id) {
+    const target = state.players.find(function(p){ return p.id === w.player_id; });
+    const quotes = emoji === '🔥' ? HYPE_REACTIONS : TRASH_REACTIONS;
+    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+    const wname = WORKOUT_NAMES[w.workout] || w.workout;
+    const detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
+    if (!state.howls) state.howls = [];
+    state.howls.push({
+      id: 'rxn_' + workoutId + '_' + Date.now(),
+      player_id: pid,
+      player_laurels: (getStats(pid)||{}).laurels || 0,
+      message: quote,
+      date: new Date().toISOString().split('T')[0],
+      timestamp: new Date().toISOString(),
+      reactions: {},
+      activity_ref: { id: workoutId, player: target ? target.name : 'someone', workout: wname, detail: detail, date: w.date },
+      reaction_emoji: emoji
+    });
+  }
   await saveState();
   renderChronicle();
+  if (pid && pid !== w.player_id) renderDispatch();
 }
 async function toggleHowlReaction(howlId, emoji) {
   const h = (state.howls || []).find(function(x) { return x.id === howlId; });
@@ -3181,6 +3227,24 @@ async function toggleHowlReaction(howlId, emoji) {
   if (!h.reactions) h.reactions = {};
   if (!h.reactions[emoji]) h.reactions[emoji] = 0;
   h.reactions[emoji]++;
+  // Auto-post themed Howl reply
+  const pid = currentHowlerId;
+  if (pid && pid !== h.player_id) {
+    const target = state.players.find(function(p){ return p.id === h.player_id; });
+    const quotes = emoji === '🔥' ? HYPE_REACTIONS : TRASH_REACTIONS;
+    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+    state.howls.push({
+      id: 'rxn_h_' + howlId + '_' + Date.now(),
+      player_id: pid,
+      player_laurels: (getStats(pid)||{}).laurels || 0,
+      message: quote,
+      date: new Date().toISOString().split('T')[0],
+      timestamp: new Date().toISOString(),
+      reactions: {},
+      reply_to_name: target ? target.name : null,
+      reaction_emoji: emoji
+    });
+  }
   await saveState();
   renderHowlFeed();
 }
