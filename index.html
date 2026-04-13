@@ -1329,11 +1329,11 @@
       </select>
     </div>
     <div class="form-row">
-      <div class="form-group">
+      <div class="form-group" id="edit-miles-group">
         <label class="form-label">Miles</label>
         <input class="form-input" type="number" id="edit-workout-miles" min="0" step="0.1" oninput="updateEditLaurelPreview()">
       </div>
-      <div class="form-group">
+      <div class="form-group" id="edit-minutes-group">
         <label class="form-label">Minutes</label>
         <input class="form-input" type="number" id="edit-workout-minutes" min="0" step="1" oninput="updateEditLaurelPreview()">
       </div>
@@ -1830,7 +1830,8 @@ function calcPlayerStats(pid) {
   const works = state.workouts.filter(w => w.player_id === pid);
   const player = state.players.find(p => p.id === pid);
   let laurels = (player && player.book_laurels) ? player.book_laurels : 0;
-  let miles = 0, trials = works.length;
+  const SYSTEM_WORKOUTS = ['milestone_bonus','duel_win','duel_loss'];
+  let miles = 0, pelotonMiles = 0, trials = works.filter(w => !SYSTEM_WORKOUTS.includes(w.workout)).length;
   let pelotons = 0, strength = 0, mobility = 0, optionals = 0;
   let maxSingleRun = 0;
   const weekSet = new Set();
@@ -1838,7 +1839,11 @@ function calcPlayerStats(pid) {
 
   works.forEach(w => {
     laurels += w.laurels_base || 0;
-    miles += w.miles || 0;
+    if (w.workout === 'peloton') {
+      pelotonMiles += w.miles || 0;
+    } else {
+      miles += w.miles || 0;
+    }
     if (w.workout === 'peloton') pelotons++;
     if (w.workout === 'strength') strength++;
     if (w.workout === 'mobility') mobility++;
@@ -1886,7 +1891,7 @@ function calcPlayerStats(pid) {
   const longestRun = runWorkouts.length > 0 ? Math.max(...runWorkouts.map(w => w.miles)) : 0;
   const totalRunMiles = +miles.toFixed(1);
   // Underdog check (based on stored data — compare against other players later in render)
-  return { laurels, miles: totalRunMiles, trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks, longestRun, isUnderdog: false };
+  return { laurels, miles: totalRunMiles, pelotonMiles: +pelotonMiles.toFixed(1), trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks, longestRun, isUnderdog: false };
 }
 
 function openProfile(pid) {
@@ -2003,9 +2008,10 @@ function openProfile(pid) {
     '<div style="font-family:Cinzel,serif;font-size:0.7rem;color:var(--amber);margin-top:4px">' + s.rank.name + '</div>' +
     '</div>' +
     '</div>' +
-    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">' +
+    '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px">' +
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.trials + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">TRIALS</div></div>' +
-    '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.miles + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">MILES</div></div>' +
+    '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.miles + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">RUN MI</div></div>' +
+    '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + (s.pelotonMiles||0) + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">PELO MI</div></div>' +
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.streak + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">WK STREAK</div></div>' +
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.longestRun + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">LONGEST MI</div></div>' +
     '</div>' +
@@ -2104,7 +2110,10 @@ function renderMarsBar() {
   var el = document.getElementById('mars-bar-section');
   if (!el) return;
   // Each real pack mile = 1 million miles toward Mars (140M miles total)
-  var totalMiles = state.players.reduce(function(s,p){ return s + getStats(p.id).miles; }, 0);
+  var totalMiles = state.players.reduce(function(s,p){
+    var st = getStats(p.id);
+    return s + st.miles + (st.pelotonMiles||0);
+  }, 0);
   var MARS_MILES = 140; // real miles needed (represents 140M miles)
   var pct = Math.min(100, (totalMiles / MARS_MILES) * 100);
   var milesLeft = Math.max(0, MARS_MILES - totalMiles).toFixed(1);
@@ -3521,15 +3530,37 @@ function openEditWorkout(wid) {
   if (!w) return;
   document.getElementById('edit-workout-id').value = wid;
   document.getElementById('edit-workout-type').value = w.workout;
+  document.getElementById('edit-workout-type').onchange = function() { updateEditFieldVisibility(this.value); };
   document.getElementById('edit-workout-miles').value = w.miles || '';
   document.getElementById('edit-workout-minutes').value = w.minutes || '';
   const editDateEl = document.getElementById('edit-workout-date');
   editDateEl.value = w.date;
   editDateEl.min = '2026-04-13';
   editDateEl.max = new Date().toISOString().split('T')[0];
+  // Show/hide miles vs minutes based on workout type
+  const editMilesGroup = document.getElementById('edit-miles-group');
+  const editMinsGroup = document.getElementById('edit-minutes-group');
+  if (editMilesGroup && editMinsGroup) {
+    const showMiles = ['long_run','tempo','easy_run','walk_run'].includes(w.workout);
+    const showMins = w.workout === 'peloton';
+    editMilesGroup.style.display = showMiles ? 'block' : 'none';
+    editMinsGroup.style.display = showMins ? 'block' : 'none';
+  }
   document.getElementById('edit-workout-notes').value = w.notes || '';
   updateEditLaurelPreview();
   document.getElementById('edit-workout-modal').classList.add('open');
+}
+
+function updateEditFieldVisibility(workout) {
+  const mg = document.getElementById('edit-miles-group');
+  const ng = document.getElementById('edit-minutes-group');
+  if (!mg || !ng) return;
+  mg.style.display = ['long_run','tempo','easy_run','walk_run','peloton'].includes(workout) ? 'block' : 'none';
+  ng.style.display = workout === 'peloton' ? 'block' : 'none';
+  // Update miles label
+  const milesLabel = mg ? mg.querySelector('label') : null;
+  if (milesLabel) milesLabel.textContent = workout === 'peloton' ? 'Peloton Miles (optional)' : 'Miles';
+  updateEditLaurelPreview();
 }
 
 function updateEditLaurelPreview() {
@@ -3549,7 +3580,8 @@ async function saveEditWorkout() {
   if (editDate < '2026-04-13') {
     showToast('⚔️ Cannot set a date before April 13, 2026.'); return;
   }
-  if (editDateObj > new Date()) {
+  const todayStr2 = new Date().toISOString().split('T')[0];
+  if (editDate > todayStr2) {
     showToast('⚔️ Cannot set a future date.'); return;
   }
   w.workout = document.getElementById('edit-workout-type').value;
@@ -3588,7 +3620,8 @@ function updateLaurelPreview() {
 
   // Show/hide miles vs minutes
   if (workout === 'peloton') {
-    milesGroup.style.display = 'none';
+    milesGroup.style.display = 'block';
+    milesGroup.querySelector('label').textContent = 'Peloton Miles (optional)';
     minsGroup.style.display = 'block';
   } else if (['long_run','tempo','easy_run','optional_run'].includes(workout)) {
     milesGroup.style.display = 'block';
