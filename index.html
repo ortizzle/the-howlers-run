@@ -1777,12 +1777,25 @@ async function loadState() {
       if (!res.ok) throw new Error('Gist HTTP ' + res.status);
       const json = await res.json();
       // Try howlers-data.json first, then first .json file in gist
-      let fc = json.files && json.files['howlers-data.json'] && json.files['howlers-data.json'].content;
-      if (!fc && json.files) {
+      let fileObj = json.files && json.files['howlers-data.json'];
+      if (!fileObj && json.files) {
         const firstJson = Object.keys(json.files).find(k => k.endsWith('.json'));
-        if (firstJson) fc = json.files[firstJson].content;
+        if (firstJson) fileObj = json.files[firstJson];
       }
-      _stateData = fc ? JSON.parse(fc) : {};
+      let fc = fileObj && fileObj.content;
+      // If content is truncated, fetch raw_url instead
+      if (fileObj && fileObj.truncated && fileObj.raw_url) {
+        const rawRes = await fetch(fileObj.raw_url, {
+          headers: { 'Authorization': 'token ' + token }
+        });
+        fc = await rawRes.text();
+      }
+      try {
+        _stateData = fc ? JSON.parse(fc) : {};
+      } catch(parseErr) {
+        console.error('JSON parse error:', parseErr, 'Content:', fc && fc.substring(0,200));
+        throw new Error('Failed to parse Gist data: ' + parseErr.message);
+      }
     } else {
       const res = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID + '/latest', {
         headers: { 'X-Master-Key': JSONBIN_API_KEY }
@@ -1811,7 +1824,7 @@ async function loadState() {
   } catch(e) {
     setSyncStatus('error');
     console.error('Load error:', e);
-    showToast('⚠️ Sync error — tap Setup in header to check credentials.');
+    showToast('⚠️ Sync error: ' + e.message);
   }
   renderAll();
 }
