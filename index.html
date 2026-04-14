@@ -1426,8 +1426,8 @@
 
 <!-- PROFILE MODAL -->
 <div class="modal-overlay" id="profile-modal">
-  <div class="modal-box" style="max-width:540px;max-height:88vh">
-    
+  <div class="modal-box" style="max-width:540px;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
     <div id="profile-modal-content"></div>
   </div>
 </div>
@@ -2159,12 +2159,15 @@ function openProfile(pid) {
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.longestRun + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">LONGEST MI</div></div>' +
     '</div>' +
     (badgePills ? '<div style="margin-bottom:16px"><div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:6px">BADGES</div><div style="display:flex;flex-wrap:wrap;gap:5px">' + badgePills + '</div></div>' : '') +
+    '<div style="display:flex;gap:8px;margin-bottom:16px">' +
+    (currentHowlerId && currentHowlerId !== pid ? '<button onclick="giftPoints(\"' + pid + '\")" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--amber);border-radius:var(--radius);padding:8px;font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--amber);cursor:pointer;letter-spacing:0.08em">🎁 Gift Laurels</button>' : '') +
+    '</div>' +
     booksHTML +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:8px">📅 ACTIVITY HEATMAP</div>' +
     buildHeatmap(pid) +
 
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin:16px 0 8px">⚔️ TRIAL CHRONICLE</div>' +
-    '<div style="max-height:320px;overflow-y:auto;padding-right:4px">' + timelineHTML + '</div>';
+    '<div style="max-height:45vh;overflow-y:auto;padding-right:4px;-webkit-overflow-scrolling:touch">' + timelineHTML + '</div>';
 
   document.getElementById('profile-modal').classList.add('open');
 }
@@ -3897,6 +3900,42 @@ async function saveEditWorkout() {
   closeModal('edit-workout-modal');
   showToast('Trial updated. The chronicle stands corrected. ✦');
   renderAll();
+}
+
+async function giftPoints(recipientId) {
+  const recipient = state.players.find(p => p.id === recipientId);
+  if (!recipient) return;
+  const amount = parseInt(prompt('Gift Laurels to ' + recipient.name + '? Enter amount (1-500):'));
+
+  if (!amount || amount < 1 || amount > 500) { showToast('Enter a valid amount between 1 and 500.'); return; }
+  const reason = prompt('Reason (optional):') || 'A gift from the pack. ✦';
+  const gifterId = currentHowlerId;
+  const gifter = state.players.find(p => p.id === gifterId);
+  if (!gifter) { showToast('Select yourself in the header first.'); return; }
+  state.workouts.push({
+    id: 'gift_' + Date.now(),
+    player_id: recipientId,
+    workout: 'milestone_bonus',
+    date: new Date().toISOString().split('T')[0],
+    laurels_base: amount,
+    quote: reason,
+    timestamp: new Date().toISOString(),
+    milestone_label: '🎁 Gift from ' + gifter.name,
+    milestone_bonus: amount
+  });
+  state.howls.push({
+    id: 'howl_gift_' + Date.now(),
+    player_id: gifterId,
+    player_laurels: (getStats(gifterId).laurels||0),
+    message: '🎁 I gifted ' + amount + ' Laurels to @' + recipient.name + ' — ' + reason,
+    date: new Date().toISOString().split('T')[0],
+    timestamp: new Date().toISOString(),
+    likes: 0
+  });
+  await saveState();
+  closeModal('profile-modal');
+  renderAll();
+  showToast('🎁 ' + amount + ' Laurels gifted to ' + recipient.name + '! ✦');
 }
 
 async function removeWorkout(wid) {
