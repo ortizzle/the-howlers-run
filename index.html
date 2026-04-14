@@ -1014,6 +1014,23 @@
     padding: 12px 8px; box-sizing: border-box; text-align: center;
   }
   .flip-card-back { transform: rotateY(180deg); background: var(--parchment-dark); border-color: var(--amber); }
+
+  /* Confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    top: -10px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
 </style>
 </head>
 <body>
@@ -1525,16 +1542,16 @@ const HOUSE_DESC = {
 };
 const PEERLESS_GOLD = '#c8900a';
 const RANKS = [
-  {min:0,    name:'Lowborn'},
-  {min:150,  name:'Tiro'},
-  {min:300,  name:'Decurion'},
-  {min:500,  name:'Centurion'},
-  {min:800,  name:'Legate'},
-  {min:1200, name:'Praetor'},
-  {min:1800, name:'Imperator'},
-  {min:2400, name:'Peerless Scarred'},
-  {min:3500, name:'ArchImperator'},
-  {min:5000, name:'The Reaper ☀️'}
+  {min:0,     name:'Lowborn'},
+  {min:350,   name:'Tiro'},
+  {min:1000,  name:'Decurion'},
+  {min:2000,  name:'Centurion'},
+  {min:3500,  name:'Legate'},
+  {min:5500,  name:'Praetor'},
+  {min:7500,  name:'Imperator'},
+  {min:9500,  name:'Peerless Scarred'},
+  {min:11500, name:'ArchImperator'},
+  {min:13500, name:'The Reaper ☀️'}
 ];
 const RANK_MOTTOS = {
   'Lowborn':         'The chains are not yet broken.',
@@ -1650,8 +1667,8 @@ const CHALLENGES_DEF = [
   {id:'unbreakable',      name:'Unbreakable',           icon:'💎',  type:'duel', desc:'First to an 8-week streak',                          reward:175, goal:8},
   {id:'the_tireless',     name:'The Tireless',          icon:'⚙️',  type:'duel', desc:'First to log 50 total trials',                       reward:250, goal:50},
   {id:'the_long_road',    name:'The Long Road',         icon:'🌅',  type:'duel', desc:'First to complete a 13.1 mile training run',          reward:200, goal:13.1},
-  {id:'imperator_rising', name:'Peerless Among Peers',  icon:'🌟',  type:'duel', desc:'First to reach Imperator rank (1800 Laurels)',        reward:250, goal:1800},
-  {id:'the_reaper_rises', name:'The Reaper Rises',      icon:'☀️',  type:'duel', desc:'First to reach 3000 Laurels',                        reward:300, goal:3000},
+  {id:'imperator_rising', name:'Peerless Among Peers',  icon:'🌟',  type:'duel', desc:'First to reach Imperator rank (7500 Laurels)',        reward:250, goal:7500},
+  {id:'the_reaper_rises', name:'The Reaper Rises',      icon:'☀️',  type:'duel', desc:'First to reach 13500 Laurels',                       reward:300, goal:13500},
   {id:'the_dancer',       name:'The Dancer',            icon:'💃',  type:'duel', desc:'First to log 5 Crimson Pulse sessions',               reward:75,  goal:5},
   {id:'the_ironborn',     name:'The Ironborn',          icon:'🔩',  type:'duel', desc:'First to log 20 strength sessions',                   reward:150, goal:20},
   {id:'the_sage',         name:'The Sage',              icon:'🧘',  type:'duel', desc:'First to log 15 Mind & Body sessions',                reward:100, goal:15},
@@ -2086,7 +2103,7 @@ function openProfile(pid) {
   const player = state.players.find(function(p) { return p.id === pid; });
   if (!player) return;
   const s = calcPlayerStats(pid);
-  const hc = s.laurels >= 2400 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+  const hc = s.laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
   const works = state.workouts.filter(function(w) { return w.player_id === pid; })
     .sort(function(a,b) { return new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date); });
 
@@ -2137,7 +2154,7 @@ function openProfile(pid) {
   const timelineHTML = (works.length === 0 && bookLaurels === 0) ? '<div class="empty-state" style="padding:20px"><span class="empty-icon">⚔️</span>No trials logged yet.</div>' :
     bookEntry + works.slice().reverse().map(function(w, idx) {
       runningTotal += (w.laurels_base || 0);
-      const wname = WORKOUT_NAMES[w.workout] || w.workout;
+      const wname = w.workout === 'milestone_bonus' ? (w.milestone_label || '⚔ Milestone Bonus') : (WORKOUT_NAMES[w.workout] || w.workout);
       let detail = '';
       if (['long_run','tempo','easy_run','optional_run','walk_run'].includes(w.workout)) detail = w.miles ? w.miles + ' mi' : '';
       else if (w.workout === 'peloton') detail = w.minutes ? w.minutes + ' min' : '';
@@ -2184,11 +2201,11 @@ function openProfile(pid) {
     '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap">' +
     '<div style="flex:1">' +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:900;letter-spacing:0.2em;color:' + hc + ';text-transform:uppercase;margin-bottom:2px">' + escHtml(player.house) + '</div>' +
-    '<div style="font-family:Cinzel,serif;font-size:1.3rem;font-weight:700;color:var(--ink);line-height:1.1;padding-right:24px">' + escHtml(player.name) + '</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:1.1rem;font-weight:700;color:var(--ink);line-height:1.2">' + escHtml(player.name) + '</div>' +
     (player.subtitle ? '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);margin-top:2px">' + escHtml(player.subtitle) + '</div>' : '') +
     '</div>' +
     '<div style="text-align:right">' +
-    '<div style="font-family:Cinzel,serif;font-size:1.6rem;font-weight:700;color:' + hc + ';line-height:1">' + s.laurels + '</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:1.4rem;font-weight:700;color:' + hc + ';line-height:1">' + s.laurels.toLocaleString() + '</div>' +
     '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--ink-light)">LAURELS</div>' +
     '<div style="font-family:Cinzel,serif;font-size:0.7rem;color:var(--amber);margin-top:4px">' + s.rank.name + '</div>' +
     '</div>' +
@@ -2853,6 +2870,7 @@ function checkAndPostChallengeHowls() {
         state.howls.push({id:'challenge_'+ch.id, player_id:'system', player_laurels:9999, message:msg, date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), likes:0});
       }
       changed = true;
+      if (currentHowlerId) setTimeout(function(){ launchConfetti('conquest'); }, 500);
     }
   });
 
@@ -2932,13 +2950,50 @@ function checkAndPostWeeklyRecap() {
 // Stats cache — computed once per render cycle, shared by all render fns
 let _statsCache = {};
 function buildStatsCache() {
+  const prevCache = Object.assign({}, _statsCache);
   _statsCache = {};
   state.players.forEach(function(p) {
+    const prev = prevCache[p.id];
     _statsCache[p.id] = calcPlayerStats(p.id);
+    // Detect rank up
+    if (prev && currentHowlerId === p.id) {
+      const prevRank = prev.rank ? prev.rank.min : 0;
+      const newRank = _statsCache[p.id].rank ? _statsCache[p.id].rank.min : 0;
+      if (newRank > prevRank) {
+        setTimeout(function() { launchConfetti('rankup'); showToast('⚔ RANK UP! You are now ' + _statsCache[p.id].rank.name + '! ✦'); }, 300);
+      }
+    }
   });
 }
 function getStats(pid) {
   return _statsCache[pid] || calcPlayerStats(pid);
+}
+
+
+function launchConfetti(type) {
+  // type: 'conquest' = crimson/gold, 'rankup' = gold/amber
+  var colors = type === 'conquest'
+    ? ['#c8900a','#8b0000','#ffd700','#b22222','#daa520','#ff4500']
+    : ['#c8900a','#ffd700','#daa520','#f5c842','#e8a020','#ffffff'];
+  var count = type === 'conquest' ? 80 : 50;
+  for (var i = 0; i < count; i++) {
+    (function(i) {
+      setTimeout(function() {
+        var el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        el.style.width = (Math.random() * 8 + 4) + 'px';
+        el.style.height = (Math.random() * 8 + 4) + 'px';
+        el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        var dur = (Math.random() * 1.5 + 1.5).toFixed(2);
+        el.style.animationDuration = dur + 's';
+        el.style.animationDelay = '0s';
+        document.body.appendChild(el);
+        setTimeout(function() { el.remove(); }, parseFloat(dur) * 1000 + 100);
+      }, i * 25);
+    })(i);
+  }
 }
 
 function renderAll() {
@@ -2973,7 +3028,7 @@ function renderPlayers() {
   sorted.forEach((p, idx) => {
     const s = statsMap[p.id];
     const stats_for_color = statsMap[p.id];
-    const isPeerless = stats_for_color.laurels >= 2400;
+    const isPeerless = stats_for_color.laurels >= 9500;
     const houseColor = isPeerless ? PEERLESS_GOLD : (HOUSES[p.house] || '#7a5006');
     const isPrimus = p.id === primusId && s.laurels > 0;
     const lastSeenKey = 'howlers_seen_' + p.id + '_' + (localStorage.getItem('howlers_bin_id')||'');
@@ -3121,7 +3176,7 @@ function renderDistanceRankings() {
     var nextM = runnerMilestones.find(function(m){ return !earnedKeys2.includes('the_runner_'+m.tier); });
     var goalMiles = nextM ? nextM.miles : 100;
     const pct = goalMiles > 0 ? Math.min(100, (r.miles / goalMiles) * 100) : 100;
-    const hc = r.laurels >= 2400 ? PEERLESS_GOLD : (HOUSES[r.p.house] || "#7a5006");
+    const hc = r.laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[r.p.house] || "#7a5006");
     html += "<div style='background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:6px'>";
     html += "<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px'>";
     html += "<span style='font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;color:var(--ink-light);width:20px'>" + (i+1) + ".</span>";
@@ -3188,7 +3243,7 @@ function renderChronicle() {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
     const playerStats = getStats(player.id);
-    const houseColor = playerStats.laurels >= 2400 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+    const houseColor = playerStats.laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const badgeDef = w.badge_earned ? BADGES_DEF.find(b => b.id === w.badge_earned) : null;
     // Build meaningful detail string per workout type
     let detail = '';
@@ -3446,7 +3501,7 @@ function renderHowlFeed() {
         '</div></div>';
     }
     if (!player) return '';
-    const hc = (h.player_laurels >= 2400) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+    const hc = (h.player_laurels >= 9500) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const likes = h.likes || [];
     let replyTo = '';
     if (h.activity_ref) {
@@ -3814,7 +3869,7 @@ function exportLeaderboardImage() {
 
 function renderCodex() {
   const ranksBody = document.getElementById('codex-ranks');
-  ranksBody.innerHTML = RANKS.map(r => `<tr><td>${r.min}+</td><td><strong>${r.name}</strong><br><span style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--ink-light)">${RANK_MOTTOS[r.name]||''}</span></td></tr>`).join('');
+  ranksBody.innerHTML = RANKS.map(r => `<tr><td>${r.min.toLocaleString()}+</td><td><strong>${r.name}</strong><br><span style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--ink-light)">${RANK_MOTTOS[r.name]||''}</span></td></tr>`).join('');
   const badgesGrid = document.getElementById('codex-badges');
   badgesGrid.innerHTML = BADGES_DEF.map(b =>
     `<div class="badge-card" style="flex-direction:column;align-items:flex-start;gap:8px">
