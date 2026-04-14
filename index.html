@@ -1087,11 +1087,11 @@
           <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
           <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
           <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-          <option value="walk_run">Walk/Run Intervals (15L/mile)</option>
+          <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
           <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
           <option value="strength">The Forge — Strength (15L flat)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
-        <option value="cardio">The Dance — Cardio (8L per 10 min)</option>
+        <option value="cardio">The Crimson Pulse — Cardio (8L per 10 min)</option>
         </select>
       </div>
       <div class="form-row">
@@ -1210,18 +1210,19 @@
       <table class="codex-table">
         <thead><tr><th>Workout</th><th>Laurels</th></tr></thead>
         <tbody>
-          <tr><td>The March — Long Run</td><td>12 per mile</td></tr>
-          <tr><td>The Charge — Tempo / Race Pace</td><td>10 per mile</td></tr>
-          <tr><td>The Patrol — Easy Run</td><td>8 per mile</td></tr>
-          <tr><td>Optional 5th Day Run</td><td>8 per mile</td></tr>
-          <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
-          <tr><td>Walk/Run Intervals</td><td>15 per mile</td></tr>
-          <tr><td>The Steed — Peloton Ride</td><td>10 per 30 min</td></tr>
-          <tr><td>The Forge — Strength</td><td>12 flat</td></tr>
-          <tr><td>Mind & Body — Mobility/Yoga</td><td>8 flat</td></tr>
-          <tr><td>Perfect Week Bonus (all 4 core days)</td><td>+25</td></tr>
-          <tr><td>Consecutive Week Streak Bonus</td><td>+10 per week</td></tr>
-          <tr><td>📚 Book Read (books 1–6)</td><td>+25 flat each (150 max)</td></tr>
+          <tr><td>The March — Long Run (min 6 mi)</td><td>15 per mile</td></tr>
+          <tr><td>The Charge — Tempo / Race Pace</td><td>12 per mile</td></tr>
+          <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
+          <tr><td>Walk/Run Intervals</td><td>8 per mile</td></tr>
+          <tr><td>The Steed — Peloton Ride</td><td>8L per 10 min (24L / 30 min)</td></tr>
+          <tr><td>The Crimson Pulse — Cardio</td><td>8L per 10 min (24L / 30 min)</td></tr>
+          <tr><td>The Forge — Strength</td><td>15 flat</td></tr>
+          <tr><td>Mind & Body — Mobility/Yoga</td><td>10 flat</td></tr>
+          <tr><td>Perfect Week Bonus</td><td>+25</td></tr>
+          <tr><td>Streak Bonus</td><td>+10 per consecutive week (from week 2)</td></tr>
+          <tr><td>Underdog Bonus</td><td>+20% when 200+ Laurels behind leader</td></tr>
+          <tr><td>Weekly Mile Bonus</td><td>First time hitting 10/15/20/25/30 mi in a week: +30/50/75/100/150L</td></tr>
+          <tr><td>📚 Book Read (books 1–6)</td><td>+25 each (max 150L)</td></tr>
           <tr><td>📚 Red God ✦ (unreleased)</td><td>+200 flat</td></tr>
         </tbody>
       </table>
@@ -1283,15 +1284,17 @@
 <div id="setup-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">
   <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:32px;width:100%;max-width:480px;box-shadow:0 8px 48px rgba(0,0,0,0.5)">
     <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;letter-spacing:0.1em;color:var(--ink);margin-bottom:8px;text-align:center">⚙ Pack Setup</div>
-    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);text-align:center;margin-bottom:24px">Connect your JSONBin.io database for live sync across all devices.</div>
+    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);text-align:center;margin-bottom:24px">Connect via GitHub Gist for live sync across all pack devices.</div>
     
     <div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.7">
-      <strong style="font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.1em;color:var(--amber)">ONE-TIME SETUP STEPS</strong><br>
-      1. Go to <strong>jsonbin.io</strong> → Sign up free<br>
-      2. Click <strong>+ New Bin</strong> → paste <code style="background:var(--parchment-mid);padding:1px 4px;border-radius:2px">{}</code> as content → Save<br>
-      3. Copy the <strong>Bin ID</strong> from the URL or bin details<br>
-      4. Go to <strong>API Keys</strong> tab → copy your <strong>Master Key</strong><br>
-      5. Paste both below — done! Share the HTML file with your pack.
+      <strong style="font-family:'Cinzel',serif;font-siz<div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:18px">
+      <div style="font-family:'Cinzel',serif;font-size:0.7rem;font-weight:700;color:var(--amber);letter-spacing:0.1em;margin-bottom:10px">ONE-TIME SETUP STEPS</div>
+      <div style="font-family:'Crimson Pro',serif;font-size:0.85rem;color:var(--ink-mid);line-height:1.8">
+        1. Go to <strong>github.com/settings/tokens</strong> → Generate new token (classic) → check <strong>gist</strong> scope only<br>
+        2. Go to <strong>gist.github.com</strong> → create a secret gist → filename: <strong>howlers-data.json</strong> → content: <strong>{}</strong><br>
+        3. Copy the <strong>Gist ID</strong> from the URL (long hex string after your username)<br>
+        4. Paste both below and tap Connect — share credentials with your pack once
+      </div>
     </div>
 
     <div style="margin-bottom:12px">
@@ -1302,15 +1305,7 @@
       <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:5px">GitHub Token (ghp_...)</label>
       <input id="setup-gist-token" type="password" placeholder="ghp_..." style="font-family:monospace" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink);box-sizing:border-box">
     </div>
-    <div style="border-top:1px solid var(--border);margin-bottom:12px;padding-top:12px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light)">OR USE JSONBIN (LEGACY)</div>
-    <div style="margin-bottom:14px">
-      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px">JSONBin Bin ID</label>
-      <input id="setup-bin-id" type="text" placeholder="e.g. 64f3a1b2e3c5d6789abcdef0" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:9px 12px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);outline:none">
-    </div>
-    <div style="margin-bottom:20px">
-      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px">Master API Key</label>
-      <input id="setup-api-key" type="password" placeholder="$2a$10$..." style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:9px 12px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);outline:none">
-    </div>
+    
     <button onclick="submitSetup()" style="width:100%;background:var(--ink);color:var(--amber-pale);border:2px solid var(--ink);border-radius:var(--radius);padding:12px 20px;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer">
       ✦ CONNECT THE PACK ✦</button>
       <button onclick="testGistConnection()" style="width:100%;margin-top:8px;background:transparent;border:1.5px solid var(--amber);border-radius:var(--radius);padding:14px;font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;letter-spacing:0.12em;color:var(--amber);cursor:pointer">🔍 TEST CONNECTION</button>
@@ -1335,11 +1330,11 @@
         <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
         <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
         <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-        <option value="walk_run">Walk/Run Intervals (15L/mile)</option>
+        <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
         <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
         <option value="strength">The Forge — Strength (15L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
-        <option value="cardio">The Dance — Cardio (8L per 10 min)</option>
+        <option value="cardio">The Crimson Pulse — Cardio (8L per 10 min)</option>
       </select>
     </div>
     <div class="form-row">
@@ -1614,26 +1609,37 @@ const BADGES_DEF = [
     ]}
 ];
 const CHALLENGES_DEF = [
-  {id:'first_blood',      name:'First Blood',         icon:'⚔️', type:'duel', desc:'First to log any trial',                        reward:50,  goal:1},
-  {id:'the_faithful',     name:'The Faithful',         icon:'📅', type:'duel', desc:'First to complete a Perfect Week',               reward:75,  goal:1},
-  {id:'century_laurels',  name:'Century Laurels',      icon:'💰', type:'duel', desc:'First to reach 100 Laurels',                    reward:75,  goal:100},
-  {id:'five_league',      name:'Five-League March',    icon:'🗺️', type:'duel', desc:'First to run 5+ miles in one session',           reward:50,  goal:5},
-  {id:'the_unbroken',     name:'The Unbroken',         icon:'🔥', type:'duel', desc:'First to a 3-week streak',                      reward:80,  goal:3},
-  {id:'the_swift',        name:'The Swift',            icon:'⚡', type:'duel', desc:'First to log 3 tempo runs in one week',          reward:100, goal:3},
-  {id:'grand_march',      name:'The Grand March',      icon:'🏔️', type:'duel', desc:'First to run 10+ miles in one session',          reward:120, goal:10},
-  {id:'primus_pares',     name:'Primus Inter Pares',   icon:'👑', type:'duel', desc:'First to log workouts in 8 different weeks',     reward:150, goal:8},
-  {id:'iron_league',      name:'The Iron League',      icon:'🏅', type:'duel', desc:'First to run 50 total miles',                   reward:150, goal:50},
-  {id:'unbreakable',      name:'Unbreakable',          icon:'💎', type:'duel', desc:'First to an 8-week streak',                     reward:175, goal:8},
-  {id:'the_tireless',     name:'The Tireless',         icon:'⚙️', type:'duel', desc:'First to log 50 total trials',                  reward:200, goal:50},
-  {id:'the_long_road',    name:'The Long Road',        icon:'🌅', type:'duel', desc:'First to complete a 13.1 mile training run',     reward:200, goal:13.1},
-  {id:'imperator_rising', name:'Peerless Among Peers', icon:'🌟', type:'duel', desc:'First to reach Imperator rank (1800 Laurels)',   reward:250, goal:1800},
-  {id:'the_reaper_rises', name:'The Reaper Rises',     icon:'☀️', type:'duel', desc:'First to reach 3000 Laurels',                   reward:300, goal:3000},
-  {id:'pack_trains',      name:'The Pack Trains',      icon:'🤝', type:'pack', desc:'Everyone logs 10+ trials',                      reward:60,  goal:10},
-  {id:'society_rising',   name:'Society Rising',       icon:'🏛️', type:'pack', desc:'Pack earns 500 combined Laurels',                reward:100, goal:500},
-  {id:'the_iron_pack',    name:'The Iron Pack',        icon:'🦵', type:'pack', desc:'Everyone logs 5+ strength sessions',            reward:75,  goal:5},
-  {id:'warriors_all',     name:'Warriors All',         icon:'🎖️', type:'pack', desc:'Everyone earns at least one badge',             reward:100, goal:1},
-  {id:'the_full_march',   name:'The Full March',       icon:'🗺️', type:'pack', desc:'Everyone runs a 6+ mile session',               reward:125, goal:6},
-  {id:'the_rising_tide',  name:'The Rising Tide',      icon:'🌊', type:'pack', desc:'Pack earns 2000 combined Laurels',              reward:150, goal:2000}
+  // ── Individual — First to achieve ────────────────────────────────────────
+  {id:'first_blood',      name:'First Blood',          icon:'⚔️',  type:'duel', desc:'First to log any trial',                             reward:50,  goal:1},
+  {id:'the_faithful',     name:'The Faithful',          icon:'📅',  type:'duel', desc:'First to complete a Perfect Week',                    reward:75,  goal:1},
+  {id:'century_laurels',  name:'Century Laurels',       icon:'💰',  type:'duel', desc:'First to reach 100 Laurels',                         reward:75,  goal:100},
+  {id:'five_league',      name:'Five-League March',     icon:'🗺️',  type:'duel', desc:'First to run 5+ miles in one session',                reward:50,  goal:5},
+  {id:'the_unbroken',     name:'The Unbroken',          icon:'🔥',  type:'duel', desc:'First to a 3-week streak',                           reward:80,  goal:3},
+  {id:'the_swift',        name:'The Swift',             icon:'⚡',  type:'duel', desc:'First to log 3 tempo runs in one week',               reward:100, goal:3},
+  {id:'grand_march',      name:'The Grand March',       icon:'🏔️',  type:'duel', desc:'First to run 10+ miles in one session',               reward:120, goal:10},
+  {id:'primus_pares',     name:'Primus Inter Pares',    icon:'👑',  type:'duel', desc:'First to log workouts in 8 different weeks',          reward:150, goal:8},
+  {id:'iron_league',      name:'The Iron League',       icon:'🏅',  type:'duel', desc:'First to run 50 total miles',                        reward:150, goal:50},
+  {id:'unbreakable',      name:'Unbreakable',           icon:'💎',  type:'duel', desc:'First to an 8-week streak',                          reward:175, goal:8},
+  {id:'the_tireless',     name:'The Tireless',          icon:'⚙️',  type:'duel', desc:'First to log 50 total trials',                       reward:200, goal:50},
+  {id:'the_long_road',    name:'The Long Road',         icon:'🌅',  type:'duel', desc:'First to complete a 13.1 mile training run',          reward:200, goal:13.1},
+  {id:'imperator_rising', name:'Peerless Among Peers',  icon:'🌟',  type:'duel', desc:'First to reach Imperator rank (1800 Laurels)',        reward:250, goal:1800},
+  {id:'the_reaper_rises', name:'The Reaper Rises',      icon:'☀️',  type:'duel', desc:'First to reach 3000 Laurels',                        reward:300, goal:3000},
+  {id:'the_dancer',       name:'The Dancer',            icon:'💃',  type:'duel', desc:'First to log 5 Crimson Pulse sessions',               reward:75,  goal:5},
+  {id:'the_ironborn',     name:'The Ironborn',          icon:'🔩',  type:'duel', desc:'First to log 20 strength sessions',                   reward:125, goal:20},
+  {id:'the_sage',         name:'The Sage',              icon:'🧘',  type:'duel', desc:'First to log 15 Mind & Body sessions',                reward:100, goal:15},
+  {id:'the_endurance',    name:'The Endurance',         icon:'⏱️',  type:'duel', desc:'First to log 500 total minutes of timed workouts',    reward:150, goal:500},
+  {id:'the_peloton_ace',  name:'The Peloton Ace',       icon:'🚴',  type:'duel', desc:'First to log 20 Peloton rides',                      reward:100, goal:20},
+  // ── Pack — Everyone must achieve ─────────────────────────────────────────
+  {id:'pack_trains',      name:'The Pack Trains',       icon:'🤝',  type:'pack', desc:'Everyone logs 10+ trials',                           reward:60,  goal:10},
+  {id:'society_rising',   name:'Society Rising',        icon:'🏛️',  type:'pack', desc:'Pack earns 500 combined Laurels',                     reward:100, goal:500},
+  {id:'the_iron_pack',    name:'The Iron Pack',         icon:'🦵',  type:'pack', desc:'Everyone logs 5+ strength sessions',                 reward:75,  goal:5},
+  {id:'warriors_all',     name:'Warriors All',          icon:'🎖️',  type:'pack', desc:'Everyone earns at least one badge',                  reward:100, goal:1},
+  {id:'the_full_march',   name:'The Full March',        icon:'🗺️',  type:'pack', desc:'Everyone runs a 6+ mile session',                    reward:125, goal:6},
+  {id:'the_rising_tide',  name:'The Rising Tide',       icon:'🌊',  type:'pack', desc:'Pack earns 2000 combined Laurels',                   reward:150, goal:2000},
+  {id:'cardio_pack',      name:'Crimson Pack',          icon:'🎵',  type:'pack', desc:'Everyone logs at least one Crimson Pulse session',    reward:60,  goal:1},
+  {id:'mobile_pack',      name:'The Flexible Pack',     icon:'🧘',  type:'pack', desc:'Everyone logs at least one Mind & Body session',      reward:60,  goal:1},
+  {id:'iron_pack_hard',   name:'Iron Pack Rising',      icon:'💪',  type:'pack', desc:'Everyone logs 10+ strength sessions',                reward:100, goal:10},
+  {id:'pack_endurance',   name:'Pack Endurance',        icon:'⏱️',  type:'pack', desc:'Pack logs 1000 combined minutes of timed workouts',  reward:125, goal:1000}
 ];
 const MILESTONES_DEF = [
   {id:'m1', num:1, title:'The Pack Assembles', desc:'First trial logged by anyone'},
@@ -1901,16 +1907,11 @@ async function testGistConnection() {
 function submitSetup() {
   const gistId = (document.getElementById('setup-gist-id')||{}).value||'';
   const gistToken = (document.getElementById('setup-gist-token')||{}).value||'';
-  const binId = document.getElementById('setup-bin-id').value.trim();
-  const apiKey = (document.getElementById('setup-api-key')||{}).value||'';
-  if (gistId.trim() && gistToken.trim()) {
-    saveGistConfig(gistId.trim(), gistToken.trim());
-  } else if (binId && apiKey.trim()) {
-    saveConfig(binId, apiKey.trim());
-  } else {
-    alert('Enter your Gist ID + GitHub Token, or JSONBin credentials.');
+  if (!gistId.trim() || !gistToken.trim()) {
+    alert('Please enter your Gist ID and GitHub Token.');
     return;
   }
+  saveGistConfig(gistId.trim(), gistToken.trim());
   hideSetupScreen();
   loadState();
 }
@@ -1920,9 +1921,7 @@ function openSetup() {
   const gt = document.getElementById('setup-gist-token');
   if (gi) gi.value = gc.gistId;
   if (gt) gt.value = gc.token;
-  document.getElementById('setup-bin-id').value = JSONBIN_BIN_ID;
-  const ak = document.getElementById('setup-api-key');
-  if (ak) ak.value = JSONBIN_API_KEY;
+
   showSetupScreen();
 }
 
@@ -2305,9 +2304,7 @@ function calcLaurels(workout, miles, minutes) {
     case 'long_run': return Math.round(miles * 15);
     case 'tempo': return Math.round(miles * 12);
     case 'easy_run': return Math.round(miles * 10);
-    case 'optional_run': return Math.round(miles * 8);
-    case 'optional_other': return 10;
-    case 'walk_run': return miles > 0 ? Math.round(miles * 15) : 15;
+    case 'walk_run': return miles > 0 ? Math.round(miles * 8) : 8;
     case 'peloton': return Math.round((minutes / 10) * 8);
     case 'cardio': return Math.round((minutes / 10) * 8);
     case 'strength': return 15;
@@ -3071,7 +3068,6 @@ function renderChallenges() {
   grid.innerHTML = CHALLENGES_DEF.map(ch => {
     let progress = 0, progressMax = ch.goal, progressLabel = '', winner = null;
     const won = state.challenges_won[ch.id];
-
     if (ch.type === 'duel') {
       if (ch.id==='first_blood') {
         const first=state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
@@ -3084,7 +3080,7 @@ function renderChallenges() {
         state.players.forEach(p=>{const l=statsMap[p.id].laurels;if(l>best){best=l;bestP=p;}});
         progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
       } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
-        const big=state.workouts.filter(w=>['long_run','easy_run','tempo'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        const big=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
         if(big){progress=ch.goal;winner=state.players.find(p=>p.id===big.player_id)?.name;}
         else{let best=0;state.players.forEach(p=>{const m=statsMap[p.id].maxSingleRun||0;if(m>best)best=m;});progress=Math.min(best,ch.goal);}
       } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
@@ -3109,6 +3105,29 @@ function renderChallenges() {
         let best=0,bestP=null;
         state.players.forEach(p=>{const t=statsMap[p.id].trials;if(t>best){best=t;bestP=p;}});
         progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_dancer') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const cnt=state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length;if(cnt>best){best=cnt;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_ironborn') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const s=statsMap[p.id].strength;if(s>best){best=s;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_sage') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const m=statsMap[p.id].mobility;if(m>best){best=m;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_endurance') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{
+          const mins=state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((s,w)=>s+(w.minutes||0),0);
+          if(mins>best){best=mins;bestP=p;}
+        });
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_peloton_ace') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const cnt=statsMap[p.id].pelotons;if(cnt>best){best=cnt;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
       }
     } else {
       if (ch.id==='pack_trains') {
@@ -3129,6 +3148,19 @@ function renderChallenges() {
         const min=state.players.length>0?Math.min(...state.players.map(p=>statsMap[p.id].maxSingleRun||0)):0;
         progress=Math.min(min,ch.goal);
         if(state.players.length>0&&state.players.every(p=>(statsMap[p.id].maxSingleRun||0)>=ch.goal))winner='The Pack';
+      } else if (ch.id==='cardio_pack') {
+        const all=state.players.length>0&&state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
+        progress=all?1:0;if(all)winner='The Pack';
+      } else if (ch.id==='mobile_pack') {
+        const all=state.players.length>0&&state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility'));
+        progress=all?1:0;if(all)winner='The Pack';
+      } else if (ch.id==='iron_pack_hard') {
+        const min=state.players.length>0?Math.min(...state.players.map(p=>statsMap[p.id].strength)):0;
+        progress=Math.min(min,ch.goal);
+        if(state.players.length>0&&state.players.every(p=>statsMap[p.id].strength>=ch.goal))winner='The Pack';
+      } else if (ch.id==='pack_endurance') {
+        const total=state.players.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0),0);
+        progress=Math.min(total,ch.goal);if(total>=ch.goal)winner='The Pack';
       }
     }
     progressLabel = `${progress} / ${progressMax}`;
