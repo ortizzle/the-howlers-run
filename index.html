@@ -1026,7 +1026,7 @@
       <div style="flex:1"></div>
       <div class="sync-bar" onclick="manualRefresh()" title="Refresh" style="gap:5px">
         <div class="sync-dot loading" id="sync-dot"></div>
-        <span id="sync-label" style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.08em;color:rgba(240,208,128,0.5)">SYNC</span>
+        <span id="sync-label" style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.08em;color:rgba(240,208,128,0.5)" title="Auto-refreshes every 5 minutes">SYNC</span>
       </div>
       <button class="refresh-btn" onclick="manualRefresh()" style="padding:4px 9px;font-size:0.6rem">↻ Refresh</button>
       <button class="refresh-btn" onclick="openSetup()" style="border-color:rgba(240,208,128,0.4);color:rgba(240,208,128,0.75);padding:4px 9px;font-size:0.6rem">⚙ Setup</button>
@@ -1084,15 +1084,14 @@
         <label class="form-label">Workout Type</label>
         <select class="form-select" id="log-workout" onchange="updateLaurelPreview()">
           <option value="">— Select Workout —</option>
-          <option value="long_run">The March — Long Run · min 6 mi (12L/mile)</option>
-          <option value="tempo">The Charge — Tempo / Race Pace (10L/mile)</option>
-          <option value="easy_run">The Patrol — Easy Run (8L/mile)</option>
-          <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
-          <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
-          <option value="walk_run">Walk/Run Intervals (15L flat)</option>
-          <option value="peloton">The Steed — Peloton Ride (10L per 30 min)</option>
-          <option value="strength">The Forge — Strength (12L flat)</option>
-          <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
+          <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
+          <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
+          <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
+          <option value="walk_run">Walk/Run Intervals (15L/mile)</option>
+          <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
+          <option value="strength">The Forge — Strength (15L flat)</option>
+          <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
+        <option value="cardio">The Dance — Cardio (8L per 10 min)</option>
         </select>
       </div>
       <div class="form-row">
@@ -1216,7 +1215,7 @@
           <tr><td>The Patrol — Easy Run</td><td>8 per mile</td></tr>
           <tr><td>Optional 5th Day Run</td><td>8 per mile</td></tr>
           <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
-          <tr><td>Walk/Run Intervals</td><td>15 flat</td></tr>
+          <tr><td>Walk/Run Intervals</td><td>15 per mile</td></tr>
           <tr><td>The Steed — Peloton Ride</td><td>10 per 30 min</td></tr>
           <tr><td>The Forge — Strength</td><td>12 flat</td></tr>
           <tr><td>Mind & Body — Mobility/Yoga</td><td>8 flat</td></tr>
@@ -1295,6 +1294,15 @@
       5. Paste both below — done! Share the HTML file with your pack.
     </div>
 
+    <div style="margin-bottom:12px">
+      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:5px">GitHub Gist ID</label>
+      <input id="setup-gist-id" type="text" placeholder="Paste your Gist ID here" style="font-family:monospace;letter-spacing:0.05em" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink);box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:5px">GitHub Token (ghp_...)</label>
+      <input id="setup-gist-token" type="password" placeholder="ghp_..." style="font-family:monospace" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink);box-sizing:border-box">
+    </div>
+    <div style="border-top:1px solid var(--border);margin-bottom:12px;padding-top:12px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light)">OR USE JSONBIN (LEGACY)</div>
     <div style="margin-bottom:14px">
       <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px">JSONBin Bin ID</label>
       <input id="setup-bin-id" type="text" placeholder="e.g. 64f3a1b2e3c5d6789abcdef0" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:9px 12px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);outline:none">
@@ -1304,7 +1312,10 @@
       <input id="setup-api-key" type="password" placeholder="$2a$10$..." style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:9px 12px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);outline:none">
     </div>
     <button onclick="submitSetup()" style="width:100%;background:var(--ink);color:var(--amber-pale);border:2px solid var(--ink);border-radius:var(--radius);padding:12px 20px;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer">
-      ✦ CONNECT THE PACK ✦
+      ✦ CONNECT THE PACK ✦</button>
+      <button onclick="testGistConnection()" style="width:100%;margin-top:8px;background:transparent;border:1.5px solid var(--amber);border-radius:var(--radius);padding:14px;font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;letter-spacing:0.12em;color:var(--amber);cursor:pointer">🔍 TEST CONNECTION</button>
+      <div id="test-result" style="margin-top:10px;font-family:monospace;font-size:0.75rem;color:var(--ink-mid);word-break:break-all;display:none"></div>
+      <button style="display:none
     </button>
     <div style="text-align:center;margin-top:12px">
       <span onclick="hideSetupScreen()" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);cursor:pointer;text-decoration:underline">dismiss (credentials already saved)</span>
@@ -1321,15 +1332,14 @@
     <div class="form-group">
       <label class="form-label">Workout Type</label>
       <select class="form-select" id="edit-workout-type" onchange="updateEditLaurelPreview()">
-        <option value="long_run">The March — Long Run · min 6 mi (12L/mile)</option>
-        <option value="tempo">The Charge — Tempo / Race Pace (10L/mile)</option>
-        <option value="easy_run">The Patrol — Easy Run (8L/mile)</option>
-        <option value="optional_run">Optional 5th Day Run (8L/mile)</option>
-        <option value="optional_other">Optional 5th Day — Other (10L flat)</option>
-        <option value="walk_run">Walk/Run Intervals (15L flat)</option>
-        <option value="peloton">The Steed — Peloton Ride (10L per 30 min)</option>
-        <option value="strength">The Forge — Strength (12L flat)</option>
-        <option value="mobility">Mind & Body — Mobility/Yoga (8L flat)</option>
+        <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
+        <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
+        <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
+        <option value="walk_run">Walk/Run Intervals (15L/mile)</option>
+        <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
+        <option value="strength">The Forge — Strength (15L flat)</option>
+        <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
+        <option value="cardio">The Dance — Cardio (8L per 10 min)</option>
       </select>
     </div>
     <div class="form-row">
@@ -1618,14 +1628,12 @@ const CHALLENGES_DEF = [
   {id:'the_long_road',    name:'The Long Road',        icon:'🌅', type:'duel', desc:'First to complete a 13.1 mile training run',     reward:200, goal:13.1},
   {id:'imperator_rising', name:'Peerless Among Peers', icon:'🌟', type:'duel', desc:'First to reach Imperator rank (1800 Laurels)',   reward:250, goal:1800},
   {id:'the_reaper_rises', name:'The Reaper Rises',     icon:'☀️', type:'duel', desc:'First to reach 3000 Laurels',                   reward:300, goal:3000},
-  {id:'the_dancer',       name:'The Dancer',           icon:'💃', type:'duel', desc:'First to log 5 cardio sessions',                reward:75,  goal:5},
   {id:'pack_trains',      name:'The Pack Trains',      icon:'🤝', type:'pack', desc:'Everyone logs 10+ trials',                      reward:60,  goal:10},
   {id:'society_rising',   name:'Society Rising',       icon:'🏛️', type:'pack', desc:'Pack earns 500 combined Laurels',                reward:100, goal:500},
   {id:'the_iron_pack',    name:'The Iron Pack',        icon:'🦵', type:'pack', desc:'Everyone logs 5+ strength sessions',            reward:75,  goal:5},
   {id:'warriors_all',     name:'Warriors All',         icon:'🎖️', type:'pack', desc:'Everyone earns at least one badge',             reward:100, goal:1},
   {id:'the_full_march',   name:'The Full March',       icon:'🗺️', type:'pack', desc:'Everyone runs a 6+ mile session',               reward:125, goal:6},
-  {id:'the_rising_tide',  name:'The Rising Tide',      icon:'🌊', type:'pack', desc:'Pack earns 2000 combined Laurels',              reward:150, goal:2000},
-  {id:'cardio_pack',      name:'Cardio Pack',          icon:'🎵', type:'pack', desc:'Everyone logs at least one cardio session',     reward:60,  goal:1}
+  {id:'the_rising_tide',  name:'The Rising Tide',      icon:'🌊', type:'pack', desc:'Pack earns 2000 combined Laurels',              reward:150, goal:2000}
 ];
 const MILESTONES_DEF = [
   {id:'m1', num:1, title:'The Pack Assembles', desc:'First trial logged by anyone'},
@@ -1679,6 +1687,16 @@ function saveConfig(binId, apiKey) {
   JSONBIN_API_KEY = apiKey.trim();
   localStorage.setItem('howlers_bin_id', JSONBIN_BIN_ID);
   localStorage.setItem('howlers_api_key', JSONBIN_API_KEY);
+}
+function saveGistConfig(gistId, token) {
+  localStorage.setItem('howlers_gist_id', gistId.trim());
+  localStorage.setItem('howlers_gist_token', token.trim());
+}
+function getGistConfig() {
+  return { gistId: localStorage.getItem('howlers_gist_id')||'', token: localStorage.getItem('howlers_gist_token')||'' };
+}
+function hasGistConfig() {
+  return !!(localStorage.getItem('howlers_gist_id') && localStorage.getItem('howlers_gist_token'));
 }
 let currentHowlerId = localStorage.getItem('howlers_current_player') || '';
 
@@ -1744,7 +1762,7 @@ function updateCurrentHowlerSelect() {
 }
 
 function hasConfig() {
-  return JSONBIN_BIN_ID.length > 0 && JSONBIN_API_KEY.length > 0;
+  return hasGistConfig() || !!(localStorage.getItem('howlers_bin_id') && localStorage.getItem('howlers_api_key'));
 }
 
 // ─── STORAGE ─────────────────────────────────────────────────────────────────
@@ -1752,11 +1770,43 @@ async function loadState() {
   if (!hasConfig()) { showSetupScreen(); setSyncStatus('error'); return Promise.resolve(); }
   setSyncStatus('loading');
   try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-      headers: { 'X-Master-Key': JSONBIN_API_KEY }
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
+    let _stateData;
+    if (hasGistConfig()) {
+      const { gistId, token } = getGistConfig();
+      const res = await fetch('https://api.github.com/gists/' + gistId, {
+        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!res.ok) throw new Error('Gist HTTP ' + res.status);
+      const json = await res.json();
+      // Try howlers-data.json first, then first .json file in gist
+      let fileObj = json.files && json.files['howlers-data.json'];
+      if (!fileObj && json.files) {
+        const firstJson = Object.keys(json.files).find(k => k.endsWith('.json'));
+        if (firstJson) fileObj = json.files[firstJson];
+      }
+      let fc = fileObj && fileObj.content;
+      // If content is truncated, fetch raw_url instead
+      if (fileObj && fileObj.truncated && fileObj.raw_url) {
+        const rawRes = await fetch(fileObj.raw_url, {
+          headers: { 'Authorization': 'token ' + token }
+        });
+        fc = await rawRes.text();
+      }
+      try {
+        _stateData = fc ? JSON.parse(fc) : {};
+      } catch(parseErr) {
+        console.error('JSON parse error:', parseErr, 'Content:', fc && fc.substring(0,200));
+        throw new Error('Failed to parse Gist data: ' + parseErr.message);
+      }
+    } else {
+      const res = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID + '/latest', {
+        headers: { 'X-Master-Key': JSONBIN_API_KEY }
+      });
+      if (!res.ok) throw new Error('JSONBin HTTP ' + res.status);
+      const json = await res.json();
+      _stateData = json.record;
+    }
+    const json = { record: _stateData };
     const data = json.record;
     const prevState = JSON.parse(JSON.stringify(state)); // snapshot before update
     if (data && typeof data === 'object') {
@@ -1770,12 +1820,13 @@ async function loadState() {
     }
     setSyncStatus('live');
   checkForNewActivityNotifications(prevState);
+  retroactiveChallengePayout();
   checkAndPostChallengeHowls();
   checkAndPostWeeklyRecap();
   } catch(e) {
     setSyncStatus('error');
     console.error('Load error:', e);
-    showToast('⚠️ Sync error — tap Setup in header to check credentials.');
+    showToast('⚠️ Sync error: ' + e.message);
   }
   renderAll();
 }
@@ -1784,15 +1835,22 @@ async function saveState() {
   if (!hasConfig()) return;
   setSyncStatus('loading');
   try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': JSONBIN_API_KEY
-      },
-      body: JSON.stringify(state)
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (hasGistConfig()) {
+      const { gistId, token } = getGistConfig();
+      const res = await fetch('https://api.github.com/gists/' + gistId, {
+        method: 'PATCH',
+        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: { 'howlers-data.json': { content: JSON.stringify(state) } } })
+      });
+      if (!res.ok) throw new Error('Gist HTTP ' + res.status);
+    } else {
+      const res = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+        body: JSON.stringify(state)
+      });
+      if (!res.ok) throw new Error('JSONBin HTTP ' + res.status);
+    }
     setSyncStatus('live');
   checkAndPostWeeklyRecap();
   } catch(e) {
@@ -1809,17 +1867,62 @@ function showSetupScreen() {
 function hideSetupScreen() {
   document.getElementById('setup-overlay').style.display = 'none';
 }
+async function testGistConnection() {
+  const gistId = document.getElementById('setup-gist-id').value.trim();
+  const token = document.getElementById('setup-gist-token').value.trim();
+  const result = document.getElementById('test-result');
+  result.style.display = 'block';
+  result.style.color = 'var(--amber)';
+  result.textContent = 'Testing...';
+  if (!gistId || !token) {
+    result.textContent = 'ERROR: Enter Gist ID and Token first';
+    result.style.color = 'red';
+    return;
+  }
+  result.textContent = 'Gist ID: ' + gistId + '\nToken: ' + token.substring(0,8) + '...';
+  try {
+    const res = await fetch('https://api.github.com/gists/' + gistId, {
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    const txt = await res.text();
+    if (res.ok) {
+      result.style.color = 'green';
+      result.textContent = '✓ SUCCESS! Status ' + res.status + '\nGist found and readable.';
+    } else {
+      result.style.color = 'red';
+      result.textContent = '✗ FAILED: HTTP ' + res.status + '\n' + txt.substring(0,200);
+    }
+  } catch(e) {
+    result.style.color = 'red';
+    result.textContent = '✗ NETWORK ERROR: ' + e.message;
+  }
+}
+
 function submitSetup() {
+  const gistId = (document.getElementById('setup-gist-id')||{}).value||'';
+  const gistToken = (document.getElementById('setup-gist-token')||{}).value||'';
   const binId = document.getElementById('setup-bin-id').value.trim();
-  const apiKey = document.getElementById('setup-api-key').value.trim();
-  if (!binId || !apiKey) { alert('Both Bin ID and API Key are required.'); return; }
-  saveConfig(binId, apiKey);
+  const apiKey = (document.getElementById('setup-api-key')||{}).value||'';
+  if (gistId.trim() && gistToken.trim()) {
+    saveGistConfig(gistId.trim(), gistToken.trim());
+  } else if (binId && apiKey.trim()) {
+    saveConfig(binId, apiKey.trim());
+  } else {
+    alert('Enter your Gist ID + GitHub Token, or JSONBin credentials.');
+    return;
+  }
   hideSetupScreen();
   loadState();
 }
 function openSetup() {
+  const gc = getGistConfig();
+  const gi = document.getElementById('setup-gist-id');
+  const gt = document.getElementById('setup-gist-token');
+  if (gi) gi.value = gc.gistId;
+  if (gt) gt.value = gc.token;
   document.getElementById('setup-bin-id').value = JSONBIN_BIN_ID;
-  document.getElementById('setup-api-key').value = JSONBIN_API_KEY;
+  const ak = document.getElementById('setup-api-key');
+  if (ak) ak.value = JSONBIN_API_KEY;
   showSetupScreen();
 }
 
@@ -2021,9 +2124,10 @@ function openProfile(pid) {
     '<div style="font-family:Cinzel,serif;font-size:0.7rem;color:var(--amber);margin-top:4px">' + s.rank.name + '</div>' +
     '</div>' +
     '</div>' +
-    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">' +
+    '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px">' +
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.trials + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">TRIALS</div></div>' +
-    '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.miles + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">MILES</div></div>' +
+    '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.miles + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">RUN MI</div></div>' +
+    '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + (s.pelotonMiles||0) + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">PELO MI</div></div>' +
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.streak + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">WK STREAK</div></div>' +
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.longestRun + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">LONGEST MI</div></div>' +
     '</div>' +
@@ -2198,15 +2302,16 @@ function calcLaurels(workout, miles, minutes) {
   miles = parseFloat(miles) || 0;
   minutes = parseInt(minutes) || 0;
   switch(workout) {
-    case 'long_run': return Math.round(miles * 12);
-    case 'tempo': return Math.round(miles * 10);
-    case 'easy_run': return Math.round(miles * 8);
+    case 'long_run': return Math.round(miles * 15);
+    case 'tempo': return Math.round(miles * 12);
+    case 'easy_run': return Math.round(miles * 10);
     case 'optional_run': return Math.round(miles * 8);
     case 'optional_other': return 10;
-    case 'walk_run': return 15;
-    case 'peloton': return Math.round((minutes / 30) * 10);
-    case 'strength': return 12;
-    case 'mobility': return 8;
+    case 'walk_run': return miles > 0 ? Math.round(miles * 15) : 15;
+    case 'peloton': return Math.round((minutes / 10) * 8);
+    case 'cardio': return Math.round((minutes / 10) * 8);
+    case 'strength': return 15;
+    case 'mobility': return 10;
     default: return 0;
   }
 }
@@ -2348,10 +2453,7 @@ function checkAndResolveDuels() {
     state.howls.push({ id:'duel_result_'+duel.id, player_id:'system', player_laurels:9999, message:'⚔ DUEL RESULT! ' + winnerName + ' defeats ' + loserName + '! ' + winVal.toFixed(1) + ' vs ' + loseVal.toFixed(1) + ' ' + metricLabels[duel.metric] + '. ' + winnerName + ' claims ' + duel.wager + ' Laurels. Per aspera ad astra. 🐺', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
     changed=true;
   });
-  if (changed) {
-    localStorage.setItem('howlers_retro_paid', '1');
-    saveState();
-  }
+  if (changed) saveState();
 }
 
 function renderActiveDuels() {
@@ -2516,6 +2618,63 @@ function checkForNewActivityNotifications(prevState) {
 }
 
 // ─── WEEKLY RECAP ────────────────────────────────────────────────────────────
+function retroactiveChallengePayout() {
+  // One-time fix: pay out rewards for challenges won before payout code existed
+  if (!state.players || !state.workouts) return;
+  if (!state.challenges_won) state.challenges_won = {};
+  var changed = false;
+  CHALLENGES_DEF.forEach(function(ch) {
+    var wonEntry = state.challenges_won[ch.id];
+    if (!wonEntry) return; // not won
+    // Check if reward already paid
+    var alreadyPaid = state.workouts.some(function(w) {
+      return w.id && w.id.indexOf('ch_reward_' + ch.id) === 0;
+    });
+    if (alreadyPaid) return;
+    // Find winner — check challenges_won stored value first
+    var winnerId = null;
+    var _sw = state.challenges_won[ch.id];
+    if (_sw && _sw.id) { winnerId = _sw.id; }
+    else if (_sw && _sw.name) { var _mp=state.players.find(function(p){return p.name===_sw.name;}); if(_mp) winnerId=_mp.id; }
+    if (!winnerId && ch.type === 'duel') {
+      if (ch.id === 'first_blood') {
+        var first = state.workouts.filter(function(w){ return !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); }).slice().sort(function(a,b){ return new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date); })[0];
+        if (first) winnerId = first.player_id;
+      } else {
+        // For other duel challenges, find player with highest relevant stat
+        var best = 0, bestId = null;
+        state.players.forEach(function(p) {
+          var s = getStats(p.id);
+          var val = 0;
+          if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) val = s.laurels;
+          else if (ch.id === 'iron_league') val = s.miles;
+          else if (ch.id === 'the_tireless') val = s.trials;
+          else if (['the_unbroken','unbreakable'].includes(ch.id)) val = s.streak;
+          else if (ch.id === 'primus_pares') val = s.weekSet ? s.weekSet.size : 0;
+          if (val > best) { best = val; bestId = p.id; }
+        });
+        winnerId = bestId;
+      }
+      if (winnerId) {
+        state.workouts.push({ id: 'ch_reward_' + ch.id, player_id: winnerId, workout: 'milestone_bonus', date: new Date().toISOString().split('T')[0], laurels_base: ch.reward, quote: 'Retroactive glory. The laurels were always yours. ✦', timestamp: new Date().toISOString(), milestone_label: 'Challenge: ' + ch.name, milestone_bonus: ch.reward });
+        changed = true;
+        console.log('Retroactive payout: ' + ch.name + ' +' + ch.reward + 'L');
+      }
+    } else {
+      // Pack challenge — pay everyone
+      state.players.forEach(function(p) {
+        var pid = 'ch_reward_' + ch.id + '_' + p.id;
+        var paid = state.workouts.some(function(w){ return w.id === pid; });
+        if (!paid) {
+          state.workouts.push({ id: pid, player_id: p.id, workout: 'milestone_bonus', date: new Date().toISOString().split('T')[0], laurels_base: ch.reward, quote: 'The pack rises together. ✦', timestamp: new Date().toISOString(), milestone_label: 'Challenge: ' + ch.name, milestone_bonus: ch.reward });
+          changed = true;
+        }
+      });
+    }
+  });
+  if (changed) saveState();
+}
+
 function checkAndPostChallengeHowls() {
   if (!state.players||state.players.length===0) return;
   if (!state.howls) state.howls = [];
@@ -2529,9 +2688,9 @@ function checkAndPostChallengeHowls() {
     if (ch.type==='duel') {
       if (ch.id==='first_blood') { var fw=state.workouts.slice().sort(function(a,b){return new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date);})[0]; if(fw) winner=state.players.find(function(p){return p.id===fw.player_id;}); }
       else if (ch.id==='century_laurels') { winner=state.players.find(function(p){return (sm[p.id]||{}).laurels>=100;}); }
-      else if (ch.id==='five_league') { var bw=state.workouts.find(function(w){return ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout)&&(w.miles||0)>=5;}); if(bw) winner=state.players.find(function(p){return p.id===bw.player_id;}); }
+      else if (ch.id==='five_league') { var bw=state.workouts.find(function(w){return ['long_run','easy_run','tempo','optional_run'].includes(w.workout)&&(w.miles||0)>=5;}); if(bw) winner=state.players.find(function(p){return p.id===bw.player_id;}); }
       else if (ch.id==='the_unbroken') { winner=state.players.find(function(p){return (sm[p.id]||{}).streak>=3;}); }
-      else if (ch.id==='grand_march') { var gw=state.workouts.find(function(w){return ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout)&&(w.miles||0)>=10;}); if(gw) winner=state.players.find(function(p){return p.id===gw.player_id;}); }
+      else if (ch.id==='grand_march') { var gw=state.workouts.find(function(w){return ['long_run','easy_run','tempo','optional_run'].includes(w.workout)&&(w.miles||0)>=10;}); if(gw) winner=state.players.find(function(p){return p.id===gw.player_id;}); }
       else if (ch.id==='primus_pares') { winner=state.players.find(function(p){return (sm[p.id]||{}).weekSet&&sm[p.id].weekSet.size>=8;}); }
     } else {
       if (ch.id==='pack_trains'&&state.players.every(function(p){return (sm[p.id]||{}).trials>=10;})) winner={name:'The Pack'};
@@ -2542,6 +2701,15 @@ function checkAndPostChallengeHowls() {
       announced[ch.id] = true;
       var isPack = winner.name==='The Pack';
       var msg = isPack
+        // Pay out reward Laurels
+        if (isPack) {
+          state.players.forEach(function(p) {
+            state.workouts.push({ id:'ch_reward_'+ch.id+'_'+p.id, player_id:p.id, workout:'milestone_bonus', date:new Date().toISOString().split('T')[0], laurels_base:ch.reward, quote:'The pack conquers together. ✦', timestamp:new Date().toISOString(), milestone_label:'Challenge: '+ch.name, milestone_bonus:ch.reward });
+          });
+        } else if (winner && winner.id) {
+          state.workouts.push({ id:'ch_reward_'+ch.id, player_id:winner.id, workout:'milestone_bonus', date:new Date().toISOString().split('T')[0], laurels_base:ch.reward, quote:'Victory tastes of iron and laurels. ✦', timestamp:new Date().toISOString(), milestone_label:'Challenge: '+ch.name, milestone_bonus:ch.reward });
+        }
+        var msg = isPack
         ? '🏆 CHALLENGE CONQUERED: ' + ch.name + '! The entire pack rises together. +' + ch.reward + ' Laurels flow to all. Per aspera ad astra. ✦'
         : '🏆 CHALLENGE CONQUERED: ' + ch.name + '! ' + winner.name + ' strikes first and claims victory. +' + ch.reward + ' Laurels. Go Howler, Go! 🐺';
       state.howls.push({ id:'challenge_'+ch.id+'_'+Date.now(), player_id:'system', player_laurels:9999, message:msg, date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
@@ -2826,13 +2994,14 @@ function renderDistanceRankings() {
   el.innerHTML = html;
 }
 function renderLogDropdown() {
+  const _dl=document.getElementById('log-date');if(_dl){const _td=new Date().toISOString().split('T')[0];_dl.min='2026-04-13';_dl.max=_td;if(!_dl.value)_dl.value=_td;}
   const sel = document.getElementById('log-player');
   const prev = sel.value;
   sel.innerHTML = '<option value="">— Select Howler —</option>';
   state.players.forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
-    opt.textContent = `${p.name} (House ${p.house})`;
+    opt.textContent = `${p.name} · ${p.house}`;
     sel.appendChild(opt);
   });
   if (prev) sel.value = prev;
@@ -2868,24 +3037,21 @@ function renderChronicle() {
       detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
     }
     return `<div class="chronicle-entry" style="--house-color:${houseColor}">
-      <div class="chronicle-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:2px">
         <span class="chronicle-player">${escHtml(player.name)}</span>
-        <span class="chronicle-workout">${WORKOUT_NAMES[w.workout]||w.workout}</span>
-        ${detail ? `<span style="font-family:'Crimson Pro',serif;font-size:0.85rem;color:var(--ink-light)">${detail}</span>` : ''}
-        <span class="chronicle-meta">${formatDate(w.date)}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">+${w.laurels_base}L</span>
       </div>
-      <div class="chronicle-detail">+${w.laurels_base} Laurels earned</div>
-      ${w.notes ? `<div class="chronicle-detail" style="font-style:italic">"${escHtml(w.notes)}"</div>` : ''}
-      ${w.badge_earned ? (() => {
-        const tier = BADGE_TIERS.find(t => w.badge_earned.endsWith('_'+t));
-        const baseId = tier ? w.badge_earned.slice(0,-(tier.length+1)) : w.badge_earned;
-        const bd = BADGES_DEF.find(b => b.id === baseId);
-        return bd ? `<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;box-shadow:0 0 8px ${TIER_COLORS[tier]||'var(--amber)'}44">${bd.icon}<sup style="font-size:0.6em;font-family:'Cinzel',serif">${TIER_ROMAN[tier]||''}</sup> Badge: ${bd.name}</div>` : '';
-      })() : ''}
-      <div class="chronicle-quote">"${w.quote}"</div>
-      <div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">
-        ${reactionBarHTML(w, w.id, 'toggleReaction')}
-        <button onclick="quickHowlAt('${w.id}','${escHtml(player.name)}')" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:0.85rem;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(122,80,6,0.08)'" onmouseout="this.style.background='transparent'" title="Send a Howl">🐺</button>
+      <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);margin-bottom:5px">${WORKOUT_NAMES[w.workout]||w.workout}${w.miles?' · '+w.miles+' mi':''}${w.minutes?' · '+w.minutes+' min':''} · ${formatDate(w.date)}</div>
+      ${w.notes?`<div style="font-family:'Crimson Pro',serif;font-size:0.87rem;font-style:italic;color:var(--ink-mid);margin-bottom:3px">"${escHtml(w.notes)}"</div>`:''}
+      ${w.badge_earned?(()=>{
+        const tier=BADGE_TIERS.find(t=>w.badge_earned.endsWith('_'+t));
+        const baseId=tier?w.badge_earned.slice(0,-(tier.length+1)):w.badge_earned;
+        const bd=BADGES_DEF.find(b=>b.id===baseId);
+        return bd?`<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;margin-bottom:3px">${bd.icon}<sup style="font-size:0.6em">${TIER_ROMAN[tier]||''}</sup> Badge: ${bd.name}</div>`:'';
+      })():''}
+      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--amber);opacity:0.85;margin-bottom:5px">"${w.quote}"</div>
+      <div style="display:flex;gap:5px;padding-top:5px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">
+        ${reactionBarHTML(w,w.id,'toggleReaction')}
         <div style="flex:1"></div>
         <button onclick="openEditWorkout('${w.id}')" style="background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
         <button onclick="removeWorkout('${w.id}')" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
@@ -2898,11 +3064,14 @@ function renderChallenges() {
   const grid = document.getElementById('challenges-grid');
   if (!grid) return;
   const statsMap = {};
-  try { state.players.forEach(p => { statsMap[p.id] = getStats(p.id); }); } catch(e) { console.error('challenges error:',e); return; }
+  try {
+    state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
+  } catch(e) { console.error('renderChallenges statsMap error:', e); return; }
 
   grid.innerHTML = CHALLENGES_DEF.map(ch => {
     let progress = 0, progressMax = ch.goal, progressLabel = '', winner = null;
     const won = state.challenges_won[ch.id];
+
     if (ch.type === 'duel') {
       if (ch.id==='first_blood') {
         const first=state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
@@ -2915,7 +3084,7 @@ function renderChallenges() {
         state.players.forEach(p=>{const l=statsMap[p.id].laurels;if(l>best){best=l;bestP=p;}});
         progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
       } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
-        const big=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        const big=state.workouts.filter(w=>['long_run','easy_run','tempo'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
         if(big){progress=ch.goal;winner=state.players.find(p=>p.id===big.player_id)?.name;}
         else{let best=0;state.players.forEach(p=>{const m=statsMap[p.id].maxSingleRun||0;if(m>best)best=m;});progress=Math.min(best,ch.goal);}
       } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
@@ -2940,10 +3109,6 @@ function renderChallenges() {
         let best=0,bestP=null;
         state.players.forEach(p=>{const t=statsMap[p.id].trials;if(t>best){best=t;bestP=p;}});
         progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
-      } else if (ch.id==='the_dancer') {
-        let best=0,bestP=null;
-        state.players.forEach(p=>{const cnt=state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length;if(cnt>best){best=cnt;bestP=p;}});
-        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
       }
     } else {
       if (ch.id==='pack_trains') {
@@ -2964,9 +3129,6 @@ function renderChallenges() {
         const min=state.players.length>0?Math.min(...state.players.map(p=>statsMap[p.id].maxSingleRun||0)):0;
         progress=Math.min(min,ch.goal);
         if(state.players.length>0&&state.players.every(p=>(statsMap[p.id].maxSingleRun||0)>=ch.goal))winner='The Pack';
-      } else if (ch.id==='cardio_pack') {
-        const all=state.players.length>0&&state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
-        progress=all?1:0;if(all)winner='The Pack';
       }
     }
     progressLabel = `${progress} / ${progressMax}`;
@@ -2992,7 +3154,9 @@ function renderTimeline() {
   const tl = document.getElementById('timeline');
   if (!tl) return;
   const statsMap = {};
-  try { state.players.forEach(p => { statsMap[p.id] = getStats(p.id); }); } catch(e) { console.error('timeline error:',e); return; }
+  try {
+    state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
+  } catch(e) { console.error('renderTimeline statsMap error:', e); return; }
   const now = new Date();
   const raceWeekStart = new Date('2027-01-13T00:00:00');
   const raceWeekEnd = new Date('2027-01-17T23:59:59');
@@ -3039,7 +3203,7 @@ function renderDispatch() {
     state.players.forEach(function(p) {
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = p.name + ' (House ' + p.house + ')';
+      opt.textContent = p.name + ' · ' + p.house;
       sel.appendChild(opt);
     });
     if (prev) sel.value = prev;
@@ -3093,8 +3257,8 @@ function renderHowlFeed() {
     return '<div class="chronicle-entry" style="--house-color:' + hc + ';background:linear-gradient(135deg,' + hc + '08,var(--parchment))">' +
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">' +
       '<span style="font-family:Cinzel,serif;font-size:0.95rem;font-weight:700;color:' + hc + '">' + escHtml(player.name) + '</span>' +
-      '<span style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light);background:var(--parchment-dark);border:1px solid var(--border);padding:1px 6px;border-radius:2px">' + player.house + '</span>' +
-      '<span style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">' + rank.name + '</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.1em;font-weight:700;color:#fff;background:' + hc + ';padding:2px 7px;border-radius:3px">' + escHtml(player.house) + '</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.08em;font-weight:700;color:' + hc + ';background:' + hc + '22;padding:2px 7px;border-radius:3px;border:1px solid ' + hc + '55">' + rank.name + '</span>' +
       '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
       '</div>' +
       replyTo +
@@ -3107,6 +3271,46 @@ function renderHowlFeed() {
       '</div>' +
       '</div>';
   }).join('');
+}
+
+function handleHowlInput(el) {
+  const val = el.value;
+  const cursor = el.selectionStart;
+  const before = val.slice(0, cursor);
+  const match = before.match(/@(\w*)$/);
+  const dd = document.getElementById('mention-dropdown');
+  if (!match) { dd.style.display = 'none'; return; }
+  const query = match[1].toLowerCase();
+  const matches = state.players.filter(p => p.name.toLowerCase().includes(query));
+  if (!matches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = matches.map(p =>
+    '<div data-name="' + escHtml(p.name) + '" onclick="insertMention(this.dataset.name)" style="padding:8px 12px;cursor:pointer;font-family:Cinzel,serif;font-size:0.8rem;color:var(--ink);border-bottom:1px solid var(--border)">' +
+    '<span style="color:var(--amber)">@</span>' + escHtml(p.name) + ' <span style="font-size:0.65rem;color:var(--ink-light)">' + p.house + '</span></div>'
+  ).join('');
+  dd.style.display = 'block';
+}
+
+function insertMention(name) {
+  const el = document.getElementById('howl-message');
+  const val = el.value;
+  const cursor = el.selectionStart;
+  const before = val.slice(0, cursor);
+  const after = val.slice(cursor);
+  const replaced = before.replace(/@\w*$/, '@' + name + ' ');
+  el.value = replaced + after;
+  el.focus();
+  el.selectionStart = el.selectionEnd = replaced.length;
+  document.getElementById('mention-dropdown').style.display = 'none';
+}
+
+function renderMentions(text) {
+  if (!text) return "";
+  var escaped = escHtml(text);
+  state.players.forEach(function(p) {
+    var tag = "@" + escHtml(p.name);
+    escaped = escaped.split(tag).join('<span style="color:var(--amber);font-weight:700">@' + escHtml(p.name) + "</span>");
+  });
+  return escaped;
 }
 
 async function postHowl(replyToId, replyToName, activityRef) {
@@ -3548,9 +3752,20 @@ function openEditWorkout(wid) {
   const w = state.workouts.find(x => x.id === wid);
   if (!w) return;
   document.getElementById('edit-workout-id').value = wid;
-  document.getElementById('edit-workout-type').value = w.workout;
+  const _ewt = w.workout;
+  document.getElementById('edit-workout-type').value = _ewt;
   document.getElementById('edit-workout-miles').value = w.miles || '';
   document.getElementById('edit-workout-minutes').value = w.minutes || '';
+  function _updEF(wt) {
+    const mg=document.getElementById('edit-miles-group');
+    const ng=document.getElementById('edit-minutes-group');
+    if(mg){mg.style.display=['long_run','tempo','easy_run','walk_run','peloton'].includes(wt)?'block':'none';const lb=mg.querySelector('label');if(lb)lb.textContent=wt==='peloton'?'Peloton Miles (optional)':'Miles';}
+    if(ng)ng.style.display=['peloton','cardio','strength','mobility'].includes(wt)?'block':'none';
+    if(ng){const nl=ng.querySelector('label');if(nl)nl.textContent=['strength','mobility'].includes(wt)?'Minutes (optional)':'Minutes';}
+    updateEditLaurelPreview();
+  }
+  _updEF(_ewt);
+  document.getElementById('edit-workout-type').onchange=function(){_updEF(this.value);};
   const editDateEl = document.getElementById('edit-workout-date');
   editDateEl.value = w.date;
   editDateEl.min = '2026-04-13';
@@ -3573,13 +3788,8 @@ async function saveEditWorkout() {
   const w = state.workouts.find(x => x.id === wid);
   if (!w) return;
   const editDate = document.getElementById('edit-workout-date').value;
-  const editDateObj = new Date(editDate + 'T12:00:00');
-  if (editDateObj < TRAINING_START) {
-    showToast('⚔️ Cannot set a date before April 13, 2026.'); return;
-  }
-  if (editDateObj > new Date()) {
-    showToast('⚔️ Cannot set a future date.'); return;
-  }
+  if(editDate<'2026-04-13'){showToast('Cannot set before April 13, 2026.');return;}
+  if(editDate>new Date().toISOString().split('T')[0]){showToast('Cannot set a future date.');return;}
   w.workout = document.getElementById('edit-workout-type').value;
   w.miles = parseFloat(document.getElementById('edit-workout-miles').value) || undefined;
   w.minutes = parseInt(document.getElementById('edit-workout-minutes').value) || undefined;
@@ -3615,12 +3825,23 @@ function updateLaurelPreview() {
   const previewNote = document.getElementById('laurel-preview-note');
 
   // Show/hide miles vs minutes
-  if (workout === 'peloton') {
+  const milesLabel = milesGroup ? milesGroup.querySelector('label') : null;
+  if (workout === 'cardio') {
     milesGroup.style.display = 'none';
     minsGroup.style.display = 'block';
-  } else if (['long_run','tempo','easy_run','optional_run'].includes(workout)) {
+  } else if (workout === 'peloton') {
     milesGroup.style.display = 'block';
+    if (milesLabel) milesLabel.textContent = 'Peloton Miles (optional)';
+    minsGroup.style.display = 'block';
+  } else if (['long_run','tempo','easy_run','optional_run','walk_run'].includes(workout)) {
+    milesGroup.style.display = 'block';
+    if (milesLabel) milesLabel.textContent = 'Miles';
     minsGroup.style.display = 'none';
+  } else if (['strength','mobility'].includes(workout)) {
+    milesGroup.style.display = 'none';
+    minsGroup.style.display = 'block';
+    const minsLabel = minsGroup ? minsGroup.querySelector('label') : null;
+    if (minsLabel) minsLabel.textContent = 'Minutes (optional)';
   } else {
     milesGroup.style.display = 'none';
     minsGroup.style.display = 'none';
@@ -3650,13 +3871,8 @@ async function submitTrial() {
   if (!pid) { showToast('Select a Howler first.'); return; }
   if (!workout) { showToast('Select a workout type.'); return; }
   if (!date) { showToast('Enter a date.'); return; }
-  const entryDate = new Date(date + 'T12:00:00');
-  if (entryDate < TRAINING_START) {
-    showToast('⚔️ The march has not yet begun. No trials before April 13, 2026.'); return;
-  }
-  if (entryDate > new Date()) {
-    showToast('⚔️ You cannot log a trial in the future.'); return;
-  }
+  if(date<'2026-04-13'){showToast('No trials before April 13, 2026.');return;}
+  if(date>new Date().toISOString().split('T')[0]){showToast('Cannot log a future date.');return;}
   if (['long_run','tempo','easy_run','optional_run'].includes(workout) && miles === 0) {
     showToast('Enter miles for this workout.'); return;
   }
@@ -3792,9 +4008,23 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('log-workout').addEventListener('change', updateLaurelPreview);
 
   updateNotifBtn();
+  // Pause auto-refresh when app is hidden (saves rate limit)
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+      // Resume: refresh immediately then restart interval
+      loadState();
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#mention-dropdown') && e.target.id !== 'howl-message') {
+      const dd = document.getElementById('mention-dropdown');
+      if (dd) dd.style.display = 'none';
+    }
+  });
   switchTab('leaderboard');
   loadState().then(function() { autoFillHowlerDropdowns(); });
-  refreshInterval = setInterval(loadState, 30000);
+  refreshInterval = setInterval(function(){ if(document.visibilityState !== "hidden") loadState(); }, 300000);
   renderCodex();
 });
 </script>
