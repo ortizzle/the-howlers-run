@@ -1171,7 +1171,10 @@
       <div id="howl-activity-preview" style="display:none;background:var(--parchment-dark);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:8px 12px;margin-bottom:10px;font-size:0.9rem"></div>
       <div class="form-group">
         <label class="form-label">Your Howl</label>
-        <textarea class="form-textarea" id="howl-message" placeholder="Say something to the pack..." style="min-height:90px"></textarea>
+        <div style="position:relative">
+          <textarea class="form-textarea" id="howl-message" placeholder="Say something to the pack... (type @ to mention)" style="min-height:90px" oninput="handleHowlInput(this)"></textarea>
+          <div id="mention-dropdown" style="display:none;position:absolute;left:0;right:0;top:100%;background:var(--parchment);border:1.5px solid var(--amber);border-radius:var(--radius);box-shadow:var(--shadow-strong);z-index:200;max-height:160px;overflow-y:auto"></div>
+        </div>
       </div>
       <button class="btn-primary" onclick="postHowl()" id="howl-submit-btn">🐺 SEND THE HOWL</button>
     </div>
@@ -1732,10 +1735,10 @@ let currentHowlerId = localStorage.getItem('howlers_current_player') || '';
 
 // ─── NOTIFICATION TRACKING ───────────────────────────────────────────────────
 function getLastHowlSeen() {
-  return localStorage.getItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_bin_id')||'')) || '0';
+  return localStorage.getItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_gist_id')||localStorage.getItem('howlers_bin_id')||'')) || '0';
 }
 function markHowlsSeen() {
-  localStorage.setItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_bin_id')||''), new Date().toISOString());
+  localStorage.setItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_gist_id')||localStorage.getItem('howlers_bin_id')||''), new Date().toISOString());
   updateHowlBadge(0);
 }
 function updateHowlBadge(count) {
@@ -2864,7 +2867,7 @@ function renderPlayers() {
     const isPrimus = p.id === primusId && s.laurels > 0;
     const lastSeenKey = 'howlers_seen_' + p.id + '_' + (localStorage.getItem('howlers_bin_id')||'');
     const lastSeen = localStorage.getItem(lastSeenKey) || '0';
-    const lastHowlSeen = localStorage.getItem('howlers_howl_seen_' + (localStorage.getItem('howlers_gist_id')||'')) || '0';
+    const lastHowlSeen = localStorage.getItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_gist_id')||localStorage.getItem('howlers_bin_id')||'')) || '0' || '0';
   const hasUnreadHowl = (state.howls||[]).some(function(h) {
     return h.player_id !== 'system' && h.player_id !== p.id && (h.timestamp||h.date) > lastHowlSeen;
   });
@@ -2892,7 +2895,7 @@ function renderPlayers() {
       <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor};cursor:pointer" onclick="openProfile('${p.id}')">
         <div style="display:flex;align-items:center;position:relative;z-index:1">
           ${hasNewActivity ? '<span class="new-activity-dot" title="New activity since your last visit"></span>' : ''}
-  ${hasUnreadHowl ? '<span style="position:absolute;top:6px;left:8px;font-size:0.9rem;line-height:1" title="New howl!">🐺</span>' : ''}
+  ${hasUnreadHowl ? '<span style="position:absolute;top:6px;right:8px;font-size:0.9rem;line-height:1;z-index:2" title="New howl!">🐺</span>' : ''}
           <div class="player-color-label">${p.house}</div>
         </div>
         <div class="player-name">${escHtml(p.name)}</div>
@@ -2905,7 +2908,7 @@ function renderPlayers() {
           <div class="stat-item"><span class="stat-val">${s.laurels}</span><span class="stat-label">Laurels</span></div>
           <div class="stat-item"><span class="stat-val">${s.trials}</span><span class="stat-label">Trials</span></div>
           <div class="stat-item"><span class="stat-val">${s.streak}</span><span class="stat-label">Wk Streak</span></div>
-          <div class="stat-item"><span class="stat-val">${s.miles}mi</span><span class="stat-label">Distance</span></div>
+          <div class="stat-item"><span class="stat-val">${(s.miles+(s.pelotonMiles||0)).toFixed(1)}mi</span><span class="stat-label">Distance</span></div>
         </div>
         <div class="player-badges">${earnedBadges || '<span style="font-style:italic;font-size:0.75rem;color:var(--ink-light)">No badges yet</span>'}</div>
         ${(p.books_read && p.books_read.length > 0) ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">📚 BOOKS</span> ${p.books_read.map(b=>({red_rising:'Red Rising',golden_son:'Golden Son',morning_star:'Morning Star',iron_gold:'Iron Gold',dark_age:'Dark Age',light_bringer:'Light Bringer',red_god:'Red God ✦'})[b]||b).join(' · ')}</div>` : ''}
@@ -2966,8 +2969,9 @@ function renderPackStats() {
           <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.12em;color:var(--ink-light);margin-top:3px">${label}</div>
         </div>
         <div class="flip-card-back">
-          <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:6px">${rankTitle}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">${rankTitle}</div>
           <div style="width:100%">${rankHTML}</div>
+          <div style="font-size:0.6rem;color:var(--ink-light);margin-top:4px">tap to flip ↩</div>
         </div>
       </div>
     </div>`;
@@ -2979,7 +2983,7 @@ function renderPackStats() {
     flipCard('🏅', totalLaurels, 'TOTAL LAURELS', rankList(byLaurels, p=>sm[p.id].laurels||0, 'L'), 'LAURELS RANKING') +
     flipCard('👥', totalHowlers, 'HOWLERS', rankList(byLaurels, p=>sm[p.id].rank.name, ''), 'RANK STANDING') +
     flipCard('🐺', totalHowls, 'HOWLS POSTED', rankList(byStreak, p=>sm[p.id].streak||0, ' wks'), 'STREAK RANKING') +
-    flipCard('❤️', totalLikes, 'LIKES GIVEN', rankList(byLaurels, p=>sm[p.id].perfectWeeks||0, ' wks'), 'PERFECT WEEKS') +
+    flipCard('❤️', totalLikes, 'LIKES GIVEN', rankList(state.players.slice().sort((a,b)=>{ const la=(state.howls||[]).filter(h=>h.player_id===b.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0); const lb=(state.howls||[]).filter(h=>h.player_id===a.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0); return la-lb; }), p=>(state.howls||[]).filter(h=>h.player_id===p.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0), ' ❤️'), 'LIKES RECEIVED') +
     flipCard('🔥', peakWeek + ' TRIALS', 'PEAK WEEK', rankList(byStreak, p=>(sm[p.id].perfectWeeks||0)+' wks', ''), 'PERFECT WEEKS') +
     flipCard('💪', state.players.reduce((s,p)=>s+(sm[p.id].strength||0),0), 'STRENGTH SESSIONS', rankList(state.players.slice().sort((a,b)=>(sm[b.id].strength||0)-(sm[a.id].strength||0)), p=>sm[p.id].strength||0, ''), 'STRENGTH RANKING') +
     flipCard('🧘', state.players.reduce((s,p)=>s+(sm[p.id].mobility||0),0), 'MOBILITY SESSIONS', rankList(state.players.slice().sort((a,b)=>(sm[b.id].mobility||0)-(sm[a.id].mobility||0)), p=>sm[p.id].mobility||0, ''), 'MOBILITY RANKING') +
@@ -3222,6 +3226,7 @@ function renderChallenges() {
         progress=Math.min(total,ch.goal);if(total>=ch.goal)winner='The Pack';
       }
     }
+    const pct = progressMax > 0 ? Math.min(100, (progress / progressMax) * 100) : 0;
     progressLabel = `${progress} / ${progressMax}`;
     const isComplete = won || winner;
 
@@ -3322,7 +3327,7 @@ function renderHowlFeed() {
         '<span style="font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--amber)">THE PACK REPORT</span>' +
         '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
         '</div>' +
-        '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);white-space:pre-line">' + escHtml(h.message) + '</div>' +
+        '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);white-space:pre-line">' + renderMentions(h.message) + '</div>' +
         '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">' +
         reactionBarHTML(h, h.id, 'toggleHowlReaction') +
         '<div style="flex:1"></div>' +
@@ -3615,7 +3620,7 @@ function exportLeaderboardImage() {
   const sorted = [...state.players].sort(function(a,b){ return statsMap[b.id].laurels - statsMap[a.id].laurels; });
   const raceDate = new Date('2027-01-17');
   const daysLeft = Math.max(0, Math.ceil((raceDate - new Date()) / 86400000));
-  const totalMiles = sorted.reduce(function(s,p){ return s + statsMap[p.id].miles; }, 0);
+  const totalMiles = sorted.reduce(function(s,p){ return s + statsMap[p.id].miles + (statsMap[p.id].pelotonMiles||0); }, 0);
 
   var rows = sorted.map(function(p, i) {
     const s = statsMap[p.id];
@@ -3624,7 +3629,7 @@ function exportLeaderboardImage() {
     return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:' + (isArch ? 'rgba(200,144,10,0.08)' : (i%2===0?'#ede3d0':'#f5efe4')) + ';border-left:5px solid ' + hc + ';margin-bottom:3px;border-radius:3px">' +
       '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:#6b5040;width:22px">' + (i+1) + '.</span>' +
       '<span style="font-family:Cinzel,serif;font-size:0.95rem;font-weight:700;color:' + hc + ';flex:1">' + escHtml(p.name) + (isArch ? ' ★' : '') + '</span>' +
-      '<span style="font-family:Cinzel,serif;font-size:0.8rem;color:#3d2e1e;margin-right:10px">' + s.miles + ' mi</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.8rem;color:#3d2e1e;margin-right:10px">' + (s.miles+(s.pelotonMiles||0)).toFixed(1) + ' mi</span>' +
       '<span style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:' + hc + '">' + s.laurels + 'L</span>' +
       '</div>';
   }).join('');
