@@ -1003,14 +1003,34 @@
     .nav-tab { padding: 10px 12px; font-size: 0.62rem; }
   }
 
-  .confetti-piece { position:fixed;width:8px;height:8px;top:-10px;border-radius:2px;animation:confettiFall linear forwards;pointer-events:none;z-index:9999; }
-  @keyframes confettiFall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 80%{opacity:1} 100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
+  /* Flip card styles */
+  .flip-card { perspective: 1000px; cursor: pointer; }
+  .flip-card-inner { position: relative; width: 100%; height: 120px; transition: transform 0.5s; transform-style: preserve-3d; }
+  .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+  .flip-card-front, .flip-card-back {
+    position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    background: var(--parchment); border: 1.5px solid var(--border); border-radius: var(--radius);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 12px 8px; box-sizing: border-box; text-align: center;
+  }
+  .flip-card-back { transform: rotateY(180deg); background: var(--parchment-dark); border-color: var(--amber); }
 
-  .flip-card { perspective:1000px;cursor:pointer; }
-  .flip-card-inner { position:relative;width:100%;height:120px;transition:transform 0.5s;transform-style:preserve-3d; }
-  .flip-card.flipped .flip-card-inner { transform:rotateY(180deg); }
-  .flip-card-front, .flip-card-back { position:absolute;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 8px;box-sizing:border-box;text-align:center; }
-  .flip-card-back { transform:rotateY(180deg);background:var(--parchment-dark);border-color:var(--amber); }
+  /* Confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    top: -10px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
 </style>
 </head>
 <body>
@@ -1096,7 +1116,7 @@
           <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
           <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
           <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-          <option value="walk_run">Walk/Run Intervals (15L/mile)</option>
+          <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
           <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
           <option value="strength">The Forge — Strength (15L flat)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
@@ -1168,7 +1188,10 @@
       <div id="howl-activity-preview" style="display:none;background:var(--parchment-dark);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:8px 12px;margin-bottom:10px;font-size:0.9rem"></div>
       <div class="form-group">
         <label class="form-label">Your Howl</label>
-        <textarea class="form-textarea" id="howl-message" placeholder="Say something to the pack..." style="min-height:90px"></textarea>
+        <div style="position:relative">
+          <textarea class="form-textarea" id="howl-message" placeholder="Say something to the pack... (type @ to mention)" style="min-height:90px" oninput="handleHowlInput(this)"></textarea>
+          <div id="mention-dropdown" style="display:none;position:absolute;left:0;right:0;top:100%;background:var(--parchment);border:1.5px solid var(--amber);border-radius:var(--radius);box-shadow:var(--shadow-strong);z-index:200;max-height:160px;overflow-y:auto"></div>
+        </div>
       </div>
       <button class="btn-primary" onclick="postHowl()" id="howl-submit-btn">🐺 SEND THE HOWL</button>
     </div>
@@ -1200,7 +1223,7 @@
           <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
           <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
           <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum</td></tr>
-          <tr><td><strong>Optional 5th Day</strong></td><td>Any workout counts — run or cross-train</td></tr>
+          
           <tr><td><strong>Perfect Week Bonus</strong></td><td>Complete all 4 core days → +25 Laurels</td></tr>
           <tr><td><strong>Streak Bonus</strong></td><td>+10 Laurels per consecutive week after week 1</td></tr>
           <tr><td><strong>Book Bonus</strong></td><td>+25 Laurels per Red Rising book read (max 150)</td></tr>
@@ -1220,18 +1243,20 @@
       <table class="codex-table">
         <thead><tr><th>Workout</th><th>Laurels</th></tr></thead>
         <tbody>
-          <tr><td>The March — Long Run</td><td>12 per mile</td></tr>
-          <tr><td>The Charge — Tempo / Race Pace</td><td>10 per mile</td></tr>
-          <tr><td>The Patrol — Easy Run</td><td>8 per mile</td></tr>
-          <tr><td>Optional 5th Day Run</td><td>8 per mile</td></tr>
-          <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
-          <tr><td>Walk/Run Intervals</td><td>15 per mile</td></tr>
-          <tr><td>The Steed — Peloton Ride</td><td>10 per 30 min</td></tr>
-          <tr><td>The Forge — Strength</td><td>12 flat</td></tr>
-          <tr><td>Mind & Body — Mobility/Yoga</td><td>8 flat</td></tr>
-          <tr><td>Perfect Week Bonus (all 4 core days)</td><td>+25</td></tr>
-          <tr><td>Consecutive Week Streak Bonus</td><td>+10 per week</td></tr>
-          <tr><td>📚 Book Read (books 1–6)</td><td>+25 flat each (150 max)</td></tr>
+          <tr><td>The March — Long Run (min 6 mi)</td><td>15 per mile</td></tr>
+          <tr><td>The Charge — Tempo / Race Pace</td><td>12 per mile</td></tr>
+          <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
+          <tr><td>Walk/Run Intervals</td><td>8 per mile</td></tr>
+          <tr><td>The Steed — Peloton Ride</td><td>8L per 10 min (24L / 30 min)</td></tr>
+          <tr><td>The Crimson Pulse — Cardio</td><td>8L per 10 min (24L / 30 min)</td></tr>
+          <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
+          <tr><td>The Forge — Strength</td><td>15 flat</td></tr>
+          <tr><td>Mind & Body — Mobility/Yoga</td><td>10 flat</td></tr>
+          <tr><td>Perfect Week Bonus</td><td>+25</td></tr>
+          <tr><td>Streak Bonus</td><td>+10 per consecutive week (from week 2)</td></tr>
+          <tr><td>Underdog Bonus</td><td>+20% when 300+ Laurels behind leader</td></tr>
+          <tr><td>Weekly Mile Bonus</td><td>First time hitting 10/15/20/25/30 mi in a week: +30/50/75/100/150L</td></tr>
+          <tr><td>📚 Book Read (books 1–6)</td><td>+25 each (max 150L)</td></tr>
           <tr><td>📚 Red God ✦ (unreleased)</td><td>+200 flat</td></tr>
         </tbody>
       </table>
@@ -1293,9 +1318,17 @@
 <div id="setup-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">
   <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:32px;width:100%;max-width:480px;box-shadow:0 8px 48px rgba(0,0,0,0.5)">
     <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;letter-spacing:0.1em;color:var(--ink);margin-bottom:8px;text-align:center">⚙ Pack Setup</div>
-    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);text-align:center;margin-bottom:24px">Connect your JSONBin.io database for live sync across all devices.</div>
+    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);text-align:center;margin-bottom:24px">The march begins here. Connect your pack.</div>
     
-    <div style="background:linear-gradient(135deg,var(--parchment-dark),rgba(122,80,6,0.08));border:1px solid var(--amber);border-radius:var(--radius);padding:16px;margin-bottom:18px;text-align:center"><div style="font-family:'Cinzel',serif;font-size:0.95rem;font-weight:700;color:var(--amber);letter-spacing:0.08em;margin-bottom:8px">⚔ Welcome to the Institute ⚔</div><div style="font-family:'Crimson Pro',serif;font-size:0.9rem;font-style:italic;color:var(--ink-mid);line-height:1.7">You have been chosen, Howler.<br>The pack runs together — or not at all.<br><span style="font-size:0.78rem;color:var(--ink-light);font-style:normal">Enter your Gist credentials below to join the march.</span></div></div>
+    <div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.7">
+      <strong style="font-family:'Cinzel',serif;font-siz<div style="background:linear-gradient(135deg,var(--parchment-dark),rgba(122,80,6,0.08));border:1px solid var(--amber);border-radius:var(--radius);padding:16px;margin-bottom:18px;text-align:center">
+      <div style="font-family:'Cinzel',serif;font-size:0.95rem;font-weight:700;color:var(--amber);letter-spacing:0.08em;margin-bottom:8px">⚔ Welcome to the Institute ⚔</div>
+      <div style="font-family:'Crimson Pro',serif;font-size:0.9rem;font-style:italic;color:var(--ink-mid);line-height:1.7">
+        You have been chosen, Howler.<br>
+        The pack runs together — or not at all.<br>
+        <span style="font-size:0.78rem;color:var(--ink-light);font-style:normal">Enter your Gist credentials below to join the march.</span>
+      </div>
+    </div>
 
     <div style="margin-bottom:12px">
       <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:5px">GitHub Gist ID</label>
@@ -1305,15 +1338,7 @@
       <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:5px">GitHub Token (ghp_...)</label>
       <input id="setup-gist-token" type="password" placeholder="ghp_..." style="font-family:monospace" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink);box-sizing:border-box">
     </div>
-    <div style="border-top:1px solid var(--border);margin-bottom:12px;padding-top:12px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light)">OR USE JSONBIN (LEGACY)</div>
-    <div style="margin-bottom:14px">
-      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px">JSONBin Bin ID</label>
-      <input id="setup-bin-id" type="text" placeholder="e.g. 64f3a1b2e3c5d6789abcdef0" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:9px 12px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);outline:none">
-    </div>
-    <div style="margin-bottom:20px">
-      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px">Master API Key</label>
-      <input id="setup-api-key" type="password" placeholder="$2a$10$..." style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:9px 12px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);outline:none">
-    </div>
+    
     <button onclick="submitSetup()" style="width:100%;background:var(--ink);color:var(--amber-pale);border:2px solid var(--ink);border-radius:var(--radius);padding:12px 20px;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer">
       ✦ CONNECT THE PACK ✦</button>
       <button onclick="testGistConnection()" style="width:100%;margin-top:8px;background:transparent;border:1.5px solid var(--amber);border-radius:var(--radius);padding:14px;font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;letter-spacing:0.12em;color:var(--amber);cursor:pointer">🔍 TEST CONNECTION</button>
@@ -1338,11 +1363,12 @@
         <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
         <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
         <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-        <option value="walk_run">Walk/Run Intervals (15L/mile)</option>
+        <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
         <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
         <option value="strength">The Forge — Strength (15L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
         <option value="cardio">The Crimson Pulse — Cardio (8L per 10 min)</option>
+        <option value="race">Race Day 🏆 (20L/mile + 50L bonus)</option>
       </select>
     </div>
     <div class="form-row">
@@ -1440,6 +1466,7 @@
 <div class="modal-overlay" id="duel-modal">
   <div class="modal-box" style="max-width:420px">
     <button class="modal-close" onclick="closeModal('duel-modal')">✕</button>
+    <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
     <div class="modal-title">⚔ Challenge to a Duel</div>
     <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;margin-bottom:18px">This week's battle. Laurels on the line.</div>
     <input type="hidden" id="duel-opponent-id">
@@ -1526,16 +1553,16 @@ const HOUSE_DESC = {
 };
 const PEERLESS_GOLD = '#c8900a';
 const RANKS = [
-  {min:0,    name:'Lowborn'},
-  {min:150,  name:'Tiro'},
-  {min:300,  name:'Decurion'},
-  {min:500,  name:'Centurion'},
-  {min:800,  name:'Legate'},
-  {min:1200, name:'Praetor'},
-  {min:1800, name:'Imperator'},
-  {min:2400, name:'Peerless Scarred'},
-  {min:3500, name:'ArchImperator'},
-  {min:5000, name:'The Reaper ☀️'}
+  {min:0,     name:'Lowborn'},
+  {min:350,   name:'Tiro'},
+  {min:1000,  name:'Decurion'},
+  {min:2000,  name:'Centurion'},
+  {min:3500,  name:'Legate'},
+  {min:5500,  name:'Praetor'},
+  {min:7500,  name:'Imperator'},
+  {min:9500,  name:'Peerless Scarred'},
+  {min:11500, name:'ArchImperator'},
+  {min:13500, name:'The Reaper ☀️'}
 ];
 const RANK_MOTTOS = {
   'Lowborn':         'The chains are not yet broken.',
@@ -1606,9 +1633,9 @@ const BADGES_DEF = [
     ]},
   {id:'extra_mile', icon:'⭐', name:'Extra Mile',
     tiers:[
-      {tier:'bronze', desc:'5 optional 5th day workouts', check:(s)=>s.optionals>=5},
-      {tier:'silver', desc:'15 optional 5th day workouts', check:(s)=>s.optionals>=15},
-      {tier:'gold',   desc:'30 optional 5th day workouts', check:(s)=>s.optionals>=30}
+      {tier:'bronze', desc:'5 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=5},
+      {tier:'silver', desc:'15 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=15},
+      {tier:'gold',   desc:'30 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=30}
     ]},
   {id:'centurion', icon:'💯', name:'Centurion',
     tiers:[
@@ -1638,32 +1665,44 @@ const BADGES_DEF = [
   }
 ];
 const CHALLENGES_DEF = [
-  {id:'first_blood',      name:'First Blood',         icon:'⚔️', type:'duel', desc:'First to log any trial',                        reward:50,  goal:1},
-  {id:'the_faithful',     name:'The Faithful',         icon:'📅', type:'duel', desc:'First to complete a Perfect Week',               reward:75,  goal:1},
-  {id:'century_laurels',  name:'Century Laurels',      icon:'💰', type:'duel', desc:'First to reach 100 Laurels',                    reward:75,  goal:100},
-  {id:'five_league',      name:'Five-League March',    icon:'🗺️', type:'duel', desc:'First to run 5+ miles in one session',           reward:50,  goal:5},
-  {id:'the_unbroken',     name:'The Unbroken',         icon:'🔥', type:'duel', desc:'First to a 3-week streak',                      reward:80,  goal:3},
-  {id:'the_swift',        name:'The Swift',            icon:'⚡', type:'duel', desc:'First to log 3 tempo runs in one week',          reward:100, goal:3},
-  {id:'grand_march',      name:'The Grand March',      icon:'🏔️', type:'duel', desc:'First to run 10+ miles in one session',          reward:120, goal:10},
-  {id:'primus_pares',     name:'Primus Inter Pares',   icon:'👑', type:'duel', desc:'First to log workouts in 8 different weeks',     reward:150, goal:8},
-  {id:'iron_league',      name:'The Iron League',      icon:'🏅', type:'duel', desc:'First to run 50 total miles',                   reward:150, goal:50},
-  {id:'unbreakable',      name:'Unbreakable',          icon:'💎', type:'duel', desc:'First to an 8-week streak',                     reward:175, goal:8},
-  {id:'the_tireless',     name:'The Tireless',         icon:'⚙️', type:'duel', desc:'First to log 50 total trials',                  reward:200, goal:50},
-  {id:'the_long_road',    name:'The Long Road',        icon:'🌅', type:'duel', desc:'First to complete a 13.1 mile training run',     reward:200, goal:13.1},
-  {id:'imperator_rising', name:'Peerless Among Peers', icon:'🌟', type:'duel', desc:'First to reach Imperator rank (1800 Laurels)',   reward:250, goal:1800},
-  {id:'the_reaper_rises', name:'The Reaper Rises',     icon:'☀️', type:'duel', desc:'First to reach 3000 Laurels',                   reward:300, goal:3000},
-  {id:'pack_trains',      name:'The Pack Trains',      icon:'🤝', type:'pack', desc:'Everyone logs 10+ trials',                      reward:60,  goal:10},
-  {id:'society_rising',   name:'Society Rising',       icon:'🏛️', type:'pack', desc:'Pack earns 500 combined Laurels',                reward:100, goal:500},
-  {id:'the_iron_pack',    name:'The Iron Pack',        icon:'🦵', type:'pack', desc:'Everyone logs 5+ strength sessions',            reward:75,  goal:5},
-  {id:'warriors_all',     name:'Warriors All',         icon:'🎖️', type:'pack', desc:'Everyone earns at least one badge',             reward:100, goal:1},
-  {id:'the_full_march',   name:'The Full March',       icon:'🗺️', type:'pack', desc:'Everyone runs a 6+ mile session',               reward:125, goal:6},
-  {id:'the_rising_tide',  name:'The Rising Tide',      icon:'🌊', type:'pack', desc:'Pack earns 2000 combined Laurels',              reward:150, goal:2000}
+  // ── Individual — First to achieve ────────────────────────────────────────
+  {id:'first_blood',      name:'First Blood',          icon:'⚔️',  type:'duel', desc:'First to log any trial',                             reward:50,  goal:1},
+  {id:'the_faithful',     name:'The Faithful',          icon:'📅',  type:'duel', desc:'First to complete a Perfect Week',                    reward:75,  goal:1},
+  {id:'century_laurels',  name:'Century Laurels',       icon:'💰',  type:'duel', desc:'First to reach 100 Laurels',                         reward:75,  goal:100},
+  {id:'five_league',      name:'Five-League March',     icon:'🗺️',  type:'duel', desc:'First to run 5+ miles in one session',                reward:50,  goal:5},
+  {id:'the_unbroken',     name:'The Unbroken',          icon:'🔥',  type:'duel', desc:'First to a 3-week streak',                           reward:80,  goal:3},
+  {id:'the_swift',        name:'The Swift',             icon:'⚡',  type:'duel', desc:'First to log 3 tempo runs in one week',               reward:100, goal:3},
+  {id:'grand_march',      name:'The Grand March',       icon:'🏔️',  type:'duel', desc:'First to run 10+ miles in one session',               reward:120, goal:10},
+  {id:'primus_pares',     name:'Primus Inter Pares',    icon:'👑',  type:'duel', desc:'First to log workouts in 8 different weeks',          reward:150, goal:8},
+  {id:'iron_league',      name:'The Iron League',       icon:'🏅',  type:'duel', desc:'First to run 50 total miles',                        reward:150, goal:50},
+  {id:'unbreakable',      name:'Unbreakable',           icon:'💎',  type:'duel', desc:'First to an 8-week streak',                          reward:175, goal:8},
+  {id:'the_tireless',     name:'The Tireless',          icon:'⚙️',  type:'duel', desc:'First to log 50 total trials',                       reward:250, goal:50},
+  {id:'the_long_road',    name:'The Long Road',         icon:'🌅',  type:'duel', desc:'First to complete a 13.1 mile training run',          reward:200, goal:13.1},
+  {id:'imperator_rising', name:'Peerless Among Peers',  icon:'🌟',  type:'duel', desc:'First to reach Imperator rank (7500 Laurels)',        reward:250, goal:7500},
+  {id:'the_reaper_rises', name:'The Reaper Rises',      icon:'☀️',  type:'duel', desc:'First to reach 13500 Laurels',                       reward:300, goal:13500},
+  {id:'the_dancer',       name:'The Dancer',            icon:'💃',  type:'duel', desc:'First to log 5 Crimson Pulse sessions',               reward:75,  goal:5},
+  {id:'the_ironborn',     name:'The Ironborn',          icon:'🔩',  type:'duel', desc:'First to log 20 strength sessions',                   reward:150, goal:20},
+  {id:'the_sage',         name:'The Sage',              icon:'🧘',  type:'duel', desc:'First to log 15 Mind & Body sessions',                reward:100, goal:15},
+  {id:'the_endurance',    name:'The Endurance',         icon:'⏱️',  type:'duel', desc:'First to log 500 total minutes of timed workouts',    reward:150, goal:500},
+  {id:'the_peloton_ace',  name:'The Peloton Ace',       icon:'🚴',  type:'duel', desc:'First to log 20 Peloton rides',                      reward:100, goal:20},
+  // ── Pack — Everyone must achieve ─────────────────────────────────────────
+  {id:'pack_trains',      name:'The Pack Trains',       icon:'🤝',  type:'pack', desc:'Everyone logs 10+ trials',                           reward:60,  goal:10},
+  {id:'society_rising',   name:'Society Rising',        icon:'🏛️',  type:'pack', desc:'Pack earns 500 combined Laurels',                     reward:100, goal:500},
+  {id:'the_iron_pack',    name:'The Iron Pack',         icon:'🦵',  type:'pack', desc:'Everyone logs 5+ strength sessions',                 reward:75,  goal:5},
+  {id:'warriors_all',     name:'Warriors All',          icon:'🎖️',  type:'pack', desc:'Everyone earns at least one badge',                  reward:100, goal:1},
+  {id:'the_full_march',   name:'The Full March',        icon:'🗺️',  type:'pack', desc:'Everyone runs a 6+ mile session',                    reward:125, goal:6},
+  {id:'the_rising_tide',  name:'The Rising Tide',       icon:'🌊',  type:'pack', desc:'Pack earns 2000 combined Laurels',                   reward:150, goal:2000},
+  {id:'cardio_pack',      name:'Crimson Pack',          icon:'🎵',  type:'pack', desc:'Everyone logs at least one Crimson Pulse session',    reward:60,  goal:1},
+  {id:'mobile_pack',      name:'The Flexible Pack',     icon:'🧘',  type:'pack', desc:'Everyone logs at least one Mind & Body session',      reward:60,  goal:1},
+  {id:'iron_pack_hard',   name:'Iron Pack Rising',      icon:'💪',  type:'pack', desc:'Everyone logs 10+ strength sessions',                reward:100, goal:10},
+  {id:'race_finisher',    name:'Race Finisher',         icon:'🏆',  type:'duel', desc:'First to complete a race',                           reward:50,  goal:1},
+  {id:'pack_endurance',   name:'Pack Endurance',        icon:'⏱️',  type:'pack', desc:'Pack logs 1000 combined minutes of timed workouts',  reward:150, goal:1000}
 ];
 const MILESTONES_DEF = [
   {id:'m1', num:1, title:'The Pack Assembles', desc:'First trial logged by anyone'},
   {id:'m2', num:2, title:'Steeds Activated', desc:'Every player has logged a Peloton ride'},
   {id:'m3', num:3, title:'Born to Run', desc:'Every player has completed a run'},
-  {id:'m4', num:4, title:'Optional Warriors', desc:'Every player has used their optional 5th day'},
+  {id:'m4', num:4, title:'Cross-Train Warriors', desc:'Every player has logged a Crimson Pulse or Walk/Run session'},
   {id:'m5', num:5, title:'Four Weeks In', desc:'Combined active weeks across pack reaches 8'},
   {id:'m6', num:6, title:'The First Long March', desc:'Any player runs 6+ miles in one session'},
   {id:'m7', num:7, title:'Double Digit Miles', desc:'Any player runs 10+ miles in one session'},
@@ -1694,7 +1733,7 @@ const RED_GOD_LAURELS = 200;
 const WORKOUT_NAMES = {
   duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
   long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
-  optional_run:'Optional 5th Day Run', optional_other:'Optional 5th Day Other',
+  
   walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
   strength:'The Forge (Strength)', mobility:'Mind & Body (Mobility)'
 };
@@ -1757,13 +1796,17 @@ function checkUnreadActivity() {
       dot.className = 'annals-dot';
       dot.style.cssText = 'display:inline-block;width:7px;height:7px;background:#c8900a;border-radius:50%;margin-left:4px;vertical-align:middle';
       tab.appendChild(dot);
-    } else if (!hasNew && existing) { existing.remove(); }
+    } else if (!hasNew && existing) {
+      existing.remove();
+    }
   }
 }
+
 function markAnnalsSeen() {
   localStorage.setItem('howlers_annals_seen_' + (localStorage.getItem('howlers_gist_id')||''), new Date().toISOString());
   checkUnreadActivity();
 }
+
 function checkUnreadHowls() {
   const lastSeen = getLastHowlSeen();
   const myId = currentHowlerId;
@@ -1866,6 +1909,13 @@ async function loadState() {
     }
     setSyncStatus('live');
   checkForNewActivityNotifications(prevState);
+  // Reset announced cache if challenges version changed
+  var cvKey = 'howlers_ch_version';
+  if (localStorage.getItem(cvKey) !== 'v3') {
+    var syncKey2 = localStorage.getItem('howlers_gist_id') || localStorage.getItem('howlers_bin_id') || 'local';
+    localStorage.removeItem('howlers_announced_' + syncKey2);
+    localStorage.setItem(cvKey, 'v3');
+  }
   retroactiveChallengePayout();
   checkAndPostChallengeHowls();
   checkAndPostWeeklyRecap();
@@ -1947,16 +1997,11 @@ async function testGistConnection() {
 function submitSetup() {
   const gistId = (document.getElementById('setup-gist-id')||{}).value||'';
   const gistToken = (document.getElementById('setup-gist-token')||{}).value||'';
-  const binId = document.getElementById('setup-bin-id').value.trim();
-  const apiKey = (document.getElementById('setup-api-key')||{}).value||'';
-  if (gistId.trim() && gistToken.trim()) {
-    saveGistConfig(gistId.trim(), gistToken.trim());
-  } else if (binId && apiKey.trim()) {
-    saveConfig(binId, apiKey.trim());
-  } else {
-    alert('Enter your Gist ID + GitHub Token, or JSONBin credentials.');
+  if (!gistId.trim() || !gistToken.trim()) {
+    alert('Please enter your Gist ID and GitHub Token.');
     return;
   }
+  saveGistConfig(gistId.trim(), gistToken.trim());
   hideSetupScreen();
   loadState();
 }
@@ -1966,9 +2011,7 @@ function openSetup() {
   const gt = document.getElementById('setup-gist-token');
   if (gi) gi.value = gc.gistId;
   if (gt) gt.value = gc.token;
-  document.getElementById('setup-bin-id').value = JSONBIN_BIN_ID;
-  const ak = document.getElementById('setup-api-key');
-  if (ak) ak.value = JSONBIN_API_KEY;
+
   showSetupScreen();
 }
 
@@ -2005,13 +2048,13 @@ function calcPlayerStats(pid) {
 
   works.forEach(w => {
     laurels += w.laurels_base || 0;
-    if (w.workout === 'peloton') { pelotonMiles += w.miles || 0; } else { miles += w.miles || 0; }
+    if (w.workout === 'peloton') { pelotonMiles += w.miles || 0; } else if (['long_run','easy_run','tempo','walk_run','race','optional_run'].includes(w.workout)) { miles += w.miles || 0; }
     if (w.workout === 'peloton') pelotons++;
     if (w.workout === 'race') races++;
     if (w.workout === 'strength') strength++;
     if (w.workout === 'mobility') mobility++;
-    if (w.workout === 'optional_run' || w.workout === 'optional_other') optionals++;
-    if (['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout) && w.miles) {
+    if (w.workout === 'cardio' || w.workout === 'walk_run') optionals++;
+    if (['long_run','easy_run','tempo','optional_run','walk_run','race'].includes(w.workout) && w.miles) {
       if (w.miles > maxSingleRun) maxSingleRun = w.miles;
     }
     const wk = getWeekKey(w.date);
@@ -2034,6 +2077,7 @@ function calcPlayerStats(pid) {
 
   // Perfect weeks count
   let perfectWeeks = 0;
+  // Perfect week = workouts on 4+ distinct calendar days in a Mon-Sun week
   Object.keys(weekWorkouts).forEach(wk => {
     const daysInWeek = new Set(
       state.workouts.filter(w => !['milestone_bonus','duel_win','duel_loss'].includes(w.workout) && w.player_id === pid && getWeekKey(w.date) === wk)
@@ -2060,7 +2104,7 @@ function calcPlayerStats(pid) {
   const longestRun = runWorkouts.length > 0 ? Math.max(...runWorkouts.map(w => w.miles)) : 0;
   const totalRunMiles = +miles.toFixed(1);
   // Underdog check (based on stored data — compare against other players later in render)
-  return { laurels, miles: totalRunMiles, pelotonMiles: +pelotonMiles.toFixed(1), trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks, longestRun, isUnderdog: false };
+  return { laurels: laurels||0, miles: totalRunMiles||0, pelotonMiles: +pelotonMiles.toFixed(1), trials: trials||0, streak: streak||0, rank: rank||RANKS[0], earnedBadges: earnedBadges||[], pelotons: pelotons||0, strength: strength||0, mobility: mobility||0, optionals: optionals||0, races: races||0, maxSingleRun: maxSingleRun||0, weekSet: weekSet||new Set(), weekWorkouts: weekWorkouts||{}, perfectWeeks: perfectWeeks||0, longestRun: longestRun||0, isUnderdog: false };
 }
 
 function openProfile(pid) {
@@ -2070,7 +2114,7 @@ function openProfile(pid) {
   const player = state.players.find(function(p) { return p.id === pid; });
   if (!player) return;
   const s = calcPlayerStats(pid);
-  const hc = s.laurels >= 2400 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+  const hc = s.laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
   const works = state.workouts.filter(function(w) { return w.player_id === pid; })
     .sort(function(a,b) { return new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date); });
 
@@ -2161,6 +2205,7 @@ function openProfile(pid) {
     }).map(function(t) { return '<span style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);margin-right:8px">✦ ' + t + '</span>'; }).join('') +
     '</div>' : '';
 
+  // Populate sticky header
   const hdrHouse = document.getElementById('profile-header-house');
   const hdrName = document.getElementById('profile-header-name');
   const hdrLaurels = document.getElementById('profile-header-laurels');
@@ -2169,22 +2214,9 @@ function openProfile(pid) {
   if (hdrName) hdrName.textContent = player.name;
   if (hdrLaurels) { hdrLaurels.textContent = s.laurels.toLocaleString(); hdrLaurels.style.color = hc; }
   if (hdrRank) hdrRank.textContent = s.rank.name;
+  // Remove the top color bar + name/laurels block from content since it's in the sticky header
   const el = document.getElementById('profile-modal-content');
   el.innerHTML =
-    '<div style="margin:-28px -28px 16px;border-radius:var(--radius) var(--radius) 0 0;height:6px;background:linear-gradient(to right,' + hc + ',' + hc + '88)"></div>' +
-
-    '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap">' +
-    '<div style="flex:1">' +
-    '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:900;letter-spacing:0.2em;color:' + hc + ';text-transform:uppercase;margin-bottom:2px">' + escHtml(player.house) + '</div>' +
-    '<div style="font-family:Cinzel,serif;font-size:1.3rem;font-weight:700;color:var(--ink);line-height:1.1;padding-right:24px">' + escHtml(player.name) + '</div>' +
-    (player.subtitle ? '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);margin-top:2px">' + escHtml(player.subtitle) + '</div>' : '') +
-    '</div>' +
-    '<div style="text-align:right">' +
-    '<div style="font-family:Cinzel,serif;font-size:1.6rem;font-weight:700;color:' + hc + ';line-height:1">' + s.laurels + '</div>' +
-    '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--ink-light)">LAURELS</div>' +
-    '<div style="font-family:Cinzel,serif;font-size:0.7rem;color:var(--amber);margin-top:4px">' + s.rank.name + '</div>' +
-    '</div>' +
-    '</div>' +
     '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px">' +
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.trials + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">TRIALS</div></div>' +
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.miles + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">RUN MI</div></div>' +
@@ -2193,12 +2225,15 @@ function openProfile(pid) {
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.longestRun + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">LONGEST MI</div></div>' +
     '</div>' +
     (badgePills ? '<div style="margin-bottom:16px"><div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:6px">BADGES</div><div style="display:flex;flex-wrap:wrap;gap:5px">' + badgePills + '</div></div>' : '') +
+    '<div style="display:flex;gap:8px;margin-bottom:16px">' +
+    (currentHowlerId && currentHowlerId !== pid ? '<button onclick="giftPoints(\"' + pid + '\")" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--amber);border-radius:var(--radius);padding:8px;font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--amber);cursor:pointer;letter-spacing:0.08em">🎁 Gift Laurels</button>' : '') +
+    '</div>' +
     booksHTML +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:8px">📅 ACTIVITY HEATMAP</div>' +
     buildHeatmap(pid) +
 
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin:16px 0 8px">⚔️ TRIAL CHRONICLE</div>' +
-    '<div style="max-height:320px;overflow-y:auto;padding-right:4px">' + timelineHTML + '</div>';
+    timelineHTML + '</div>';
 
   document.getElementById('profile-modal').classList.add('open');
 }
@@ -2288,17 +2323,21 @@ function renderMarsBar() {
   if (!el) return;
   // Each real pack mile = 1 million miles toward Mars (140M miles total)
   var totalMiles = state.players.reduce(function(s,p){ var st=getStats(p.id); return s + st.miles + (st.pelotonMiles||0); }, 0);
-  var MARS_MILES = 1400; // real miles needed (1 real mile = 100,000 space miles)
+  var MARS_MILES = 1400; // real miles needed (1 real mile = 100,000 space miles = 140M total)
   var pct = Math.min(100, (totalMiles / MARS_MILES) * 100);
   var milesLeft = Math.max(0, MARS_MILES - totalMiles).toFixed(1);
   var mMilesLeft = Math.max(0, 1400 - totalMiles).toFixed(0);
 
+  if (state.players.length === 0) {
+    el.innerHTML = '<div style="padding:16px;text-align:center;font-family:Cinzel,serif;font-size:0.8rem;color:var(--ink-light)">Awaiting pack data... 🚀</div>';
+    return;
+  }
   el.innerHTML = '<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)">' +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px">' +
     '<div>' +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber)">PACK MILES LOGGED</div>' +
     '<div style="font-family:Cinzel,serif;font-size:1.4rem;font-weight:700;color:var(--ink)">' + totalMiles.toFixed(1) + ' <span style="font-size:0.7em;color:var(--ink-light)">real miles</span></div>' +
-    '<div style="font-family:Crimson Pro,serif;font-size:0.82rem;font-style:italic;color:var(--ink-light)">= ' + (totalMiles * 100000).toLocaleString() + ' miles through space</div>' +
+    '<div style="font-family:Crimson Pro,serif;font-size:0.82rem;font-style:italic;color:var(--ink-light)">= ' + (totalMiles * 1000000).toLocaleString() + ' miles through space</div>' +
     '</div>' +
     '<div style="text-align:right">' +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--ink-light)">TO MARS</div>' +
@@ -2319,6 +2358,7 @@ function renderMarsBar() {
     '</div>' +
     '</div>';
 }
+
 
 function recalcAllBadges() {
   // Wipe all badges and recompute from scratch based on current workouts
@@ -2366,9 +2406,7 @@ function calcLaurels(workout, miles, minutes) {
     case 'long_run': return Math.round(miles * 15);
     case 'tempo': return Math.round(miles * 12);
     case 'easy_run': return Math.round(miles * 10);
-    case 'optional_run': return Math.round(miles * 8);
-    case 'optional_other': return 10;
-    case 'walk_run': return miles > 0 ? Math.round(miles * 15) : 15;
+    case 'walk_run': return miles > 0 ? Math.round(miles * 8) : 8;
     case 'peloton': return Math.round((minutes / 10) * 8);
     case 'cardio': return Math.round((minutes / 10) * 8);
     case 'race': return miles > 0 ? Math.round(miles * 20) + 50 : 50;
@@ -2738,60 +2776,115 @@ function retroactiveChallengePayout() {
 }
 
 function checkAndPostChallengeHowls() {
-  if (!state.players||state.players.length===0) return;
-  if (!state.howls) state.howls=[];
-  if (!state.challenges_won) state.challenges_won={};
-  var syncKey=localStorage.getItem('howlers_gist_id')||localStorage.getItem('howlers_bin_id')||'local';
-  var announcedKey='howlers_announced_'+syncKey;
-  var announced=JSON.parse(localStorage.getItem(announcedKey)||'{}');
-  buildStatsCache(); var sm=_statsCache; var changed=false;
+  if (!state.players || state.players.length === 0) return;
+  if (!state.howls) state.howls = [];
+  if (!state.challenges_won) state.challenges_won = {};
+  // Use gist_id key so it works with new backend
+  var syncKey = localStorage.getItem('howlers_gist_id') || localStorage.getItem('howlers_bin_id') || 'local';
+  var announcedKey = 'howlers_announced_' + syncKey;
+  var announced = JSON.parse(localStorage.getItem(announcedKey) || '{}');
+  buildStatsCache();
+  var sm = _statsCache;
+  var changed = false;
+
   CHALLENGES_DEF.forEach(function(ch) {
     if (announced[ch.id]) return;
-    var winner=null;
-    if (ch.type==='duel') {
-      if (ch.id==='first_blood'){var fw=state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];if(fw)winner=state.players.find(p=>p.id===fw.player_id);}
-      else if(ch.id==='the_faithful'){winner=state.players.find(p=>(sm[p.id]||{}).perfectWeeks>=1);}
-      else if(['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)){var bL=0,bLP=null;state.players.forEach(p=>{var l=(sm[p.id]||{}).laurels||0;if(l>=ch.goal&&l>bL){bL=l;bLP=p;}});winner=bLP;}
-      else if(['five_league','grand_march','the_long_road'].includes(ch.id)){var bw=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];if(bw)winner=state.players.find(p=>p.id===bw.player_id);}
-      else if(['the_unbroken','unbreakable'].includes(ch.id)){winner=state.players.find(p=>(sm[p.id]||{}).streak>=ch.goal);}
-      else if(ch.id==='the_swift'){var wt={};state.workouts.filter(w=>w.workout==='tempo').forEach(w=>{var k=getWeekKey(w.date)+'|'+w.player_id;wt[k]=(wt[k]||0)+1;});var wk=Object.keys(wt).find(k=>wt[k]>=3);if(wk)winner=state.players.find(p=>p.id===wk.split('|')[1]);}
-      else if(ch.id==='primus_pares'){winner=state.players.find(p=>sm[p.id]&&sm[p.id].weekSet&&sm[p.id].weekSet.size>=ch.goal);}
-      else if(ch.id==='iron_league'){winner=state.players.find(p=>(sm[p.id]||{}).miles>=ch.goal);}
-      else if(ch.id==='the_tireless'){winner=state.players.find(p=>(sm[p.id]||{}).trials>=ch.goal);}
-      else if(ch.id==='the_dancer'){var dP=null;state.players.forEach(p=>{if(state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length>=ch.goal)dP=p;});winner=dP;}
-      else if(ch.id==='the_ironborn'){winner=state.players.find(p=>(sm[p.id]||{}).strength>=ch.goal);}
-      else if(ch.id==='the_sage'){winner=state.players.find(p=>(sm[p.id]||{}).mobility>=ch.goal);}
-      else if(ch.id==='the_endurance'){var eP=null;state.players.forEach(p=>{var mins=state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((s,w)=>s+(w.minutes||0),0);if(mins>=ch.goal)eP=p;});winner=eP;}
-      else if(ch.id==='the_peloton_ace'){winner=state.players.find(p=>(sm[p.id]||{}).pelotons>=ch.goal);}
-      else if(ch.id==='race_finisher'){var rw=state.workouts.find(w=>w.workout==='race');if(rw)winner=state.players.find(p=>p.id===rw.player_id);}
+    var winner = null;
+
+    if (ch.type === 'duel') {
+      if (ch.id==='first_blood') {
+        var fw = state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        if (fw) winner = state.players.find(p=>p.id===fw.player_id);
+      } else if (ch.id==='the_faithful') {
+        winner = state.players.find(p=>(sm[p.id]||{}).perfectWeeks>=1);
+      } else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) {
+        var bestL=0, bestLP=null;
+        state.players.forEach(p=>{var l=(sm[p.id]||{}).laurels||0;if(l>bestL&&l>=ch.goal){bestL=l;bestLP=p;}});
+        winner = bestLP;
+      } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
+        var bw = state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        if (bw) winner = state.players.find(p=>p.id===bw.player_id);
+      } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
+        winner = state.players.find(p=>(sm[p.id]||{}).streak>=ch.goal);
+      } else if (ch.id==='the_swift') {
+        var wt={};
+        state.workouts.filter(w=>w.workout==='tempo').forEach(w=>{var k=getWeekKey(w.date)+'|'+w.player_id;wt[k]=(wt[k]||0)+1;});
+        var wk=Object.keys(wt).find(k=>wt[k]>=3);
+        if (wk) winner = state.players.find(p=>p.id===wk.split('|')[1]);
+      } else if (ch.id==='primus_pares') {
+        winner = state.players.find(p=>(sm[p.id]&&sm[p.id].weekSet&&sm[p.id].weekSet.size>=ch.goal));
+      } else if (ch.id==='iron_league') {
+        winner = state.players.find(p=>(sm[p.id]||{}).miles>=ch.goal);
+      } else if (ch.id==='the_tireless') {
+        winner = state.players.find(p=>(sm[p.id]||{}).trials>=ch.goal);
+      } else if (ch.id==='the_dancer') {
+        var danP=null; state.players.forEach(p=>{if(state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length>=ch.goal) danP=p;});
+        winner = danP;
+      } else if (ch.id==='the_ironborn') {
+        winner = state.players.find(p=>(sm[p.id]||{}).strength>=ch.goal);
+      } else if (ch.id==='the_sage') {
+        winner = state.players.find(p=>(sm[p.id]||{}).mobility>=ch.goal);
+      } else if (ch.id==='the_endurance') {
+        var endP=null; state.players.forEach(p=>{var mins=state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((s,w)=>s+(w.minutes||0),0);if(mins>=ch.goal)endP=p;});
+        winner = endP;
+      } else if (ch.id==='the_peloton_ace') {
+        winner = state.players.find(p=>(sm[p.id]||{}).pelotons>=ch.goal);
+      } else if (ch.id==='race_finisher') {
+        var rw=state.workouts.find(w=>w.workout==='race');
+        if (rw) winner = state.players.find(p=>p.id===rw.player_id);
+      }
     } else {
-      var packWon=false;
-      if(ch.id==='pack_trains')packWon=state.players.every(p=>(sm[p.id]||{}).trials>=ch.goal);
-      else if(['society_rising','the_rising_tide'].includes(ch.id))packWon=state.players.reduce((s,p)=>s+((sm[p.id]||{}).laurels||0),0)>=ch.goal;
-      else if(ch.id==='the_iron_pack')packWon=state.players.every(p=>(sm[p.id]||{}).strength>=ch.goal);
-      else if(ch.id==='warriors_all')packWon=state.players.every(p=>(state.badges_awarded[p.id]||[]).length>=1);
-      else if(ch.id==='the_full_march')packWon=state.players.every(p=>(sm[p.id]||{}).maxSingleRun>=ch.goal);
-      else if(ch.id==='cardio_pack')packWon=state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
-      else if(ch.id==='mobile_pack')packWon=state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility'));
-      else if(ch.id==='iron_pack_hard')packWon=state.players.every(p=>(sm[p.id]||{}).strength>=ch.goal);
-      else if(ch.id==='pack_endurance')packWon=state.players.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0),0)>=ch.goal;
-      if(packWon)winner={name:'The Pack',id:null};
+      // Pack challenges
+      var packWon = false;
+      if (ch.id==='pack_trains') packWon=state.players.every(p=>(sm[p.id]||{}).trials>=ch.goal);
+      else if (['society_rising','the_rising_tide'].includes(ch.id)) packWon=state.players.reduce((s,p)=>s+((sm[p.id]||{}).laurels||0),0)>=ch.goal;
+      else if (ch.id==='the_iron_pack') packWon=state.players.every(p=>(sm[p.id]||{}).strength>=ch.goal);
+      else if (ch.id==='warriors_all') packWon=state.players.every(p=>(state.badges_awarded[p.id]||[]).length>=1);
+      else if (ch.id==='the_full_march') packWon=state.players.every(p=>(sm[p.id]||{}).maxSingleRun>=ch.goal);
+      else if (ch.id==='cardio_pack') packWon=state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
+      else if (ch.id==='mobile_pack') packWon=state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility'));
+      else if (ch.id==='iron_pack_hard') packWon=state.players.every(p=>(sm[p.id]||{}).strength>=ch.goal);
+      else if (ch.id==='pack_endurance') packWon=state.players.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0),0)>=ch.goal;
+      if (packWon) winner = {name:'The Pack', id:null};
     }
+
     if (winner) {
-      var isPack=winner.name==='The Pack';
-      state.challenges_won[ch.id]=isPack?{name:'The Pack'}:{id:winner.id,name:winner.name};
-      announced[ch.id]=true;
-      if(isPack){state.players.forEach(function(p){var pid='ch_reward_'+ch.id+'_'+p.id;if(!state.workouts.some(w=>w.id===pid)){state.workouts.push({id:pid,player_id:p.id,workout:'milestone_bonus',date:new Date().toISOString().split('T')[0],laurels_base:ch.reward,quote:'The pack conquers together. ✦',timestamp:new Date().toISOString(),milestone_label:'⚔ Challenge: '+ch.name,milestone_bonus:ch.reward});}});}
-      else if(winner.id){var rid='ch_reward_'+ch.id;if(!state.workouts.some(w=>w.id===rid)){state.workouts.push({id:rid,player_id:winner.id,workout:'milestone_bonus',date:new Date().toISOString().split('T')[0],laurels_base:ch.reward,quote:'Victory tastes of iron and laurels. ✦',timestamp:new Date().toISOString(),milestone_label:'⚔ Challenge: '+ch.name,milestone_bonus:ch.reward});}}
-      var msg=isPack?'🏆 CHALLENGE CONQUERED: '+ch.name+'! The entire pack rises together. +'+ch.reward+'L each. ✦':'🏆 CHALLENGE CONQUERED: '+ch.name+'! @'+winner.name+' strikes first. +'+ch.reward+'L. ⚔ 🐺';
-      if(!state.howls.some(h=>h.id==='challenge_'+ch.id)){state.howls.push({id:'challenge_'+ch.id,player_id:'system',player_laurels:9999,message:msg,date:new Date().toISOString().split('T')[0],timestamp:new Date().toISOString(),likes:0});}
-      changed=true;
-      if(currentHowlerId)setTimeout(function(){launchConfetti('conquest');},500);
+      var isPack = winner.name === 'The Pack';
+      // Record in challenges_won
+      state.challenges_won[ch.id] = isPack ? {name:'The Pack'} : {id:winner.id, name:winner.name};
+      announced[ch.id] = true;
+
+      // Pay out Laurels
+      if (isPack) {
+        state.players.forEach(function(p) {
+          var pid = 'ch_reward_' + ch.id + '_' + p.id;
+          if (!state.workouts.some(w=>w.id===pid)) {
+            state.workouts.push({id:pid, player_id:p.id, workout:'milestone_bonus', date:new Date().toISOString().split('T')[0], laurels_base:ch.reward, quote:'The pack conquers together. ✦', timestamp:new Date().toISOString(), milestone_label:'⚔ Challenge: '+ch.name, milestone_bonus:ch.reward});
+          }
+        });
+      } else if (winner.id) {
+        var rid = 'ch_reward_' + ch.id;
+        if (!state.workouts.some(w=>w.id===rid)) {
+          state.workouts.push({id:rid, player_id:winner.id, workout:'milestone_bonus', date:new Date().toISOString().split('T')[0], laurels_base:ch.reward, quote:'Victory tastes of iron and laurels. ✦', timestamp:new Date().toISOString(), milestone_label:'⚔ Challenge: '+ch.name, milestone_bonus:ch.reward});
+        }
+      }
+
+      // Post howl announcement
+      var msg = isPack
+        ? '🏆 CHALLENGE CONQUERED: ' + ch.name + '! The entire pack rises together. +' + ch.reward + 'L each. Per aspera ad astra. ✦'
+        : '🏆 CHALLENGE CONQUERED: ' + ch.name + '! @' + winner.name + ' strikes first and claims victory. +' + ch.reward + 'L. ⚔ Go Howler, Go! 🐺';
+      if (!state.howls.some(h=>h.id==='challenge_'+ch.id)) {
+        state.howls.push({id:'challenge_'+ch.id, player_id:'system', player_laurels:9999, message:msg, date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), likes:0});
+      }
+      changed = true;
+      if (currentHowlerId) setTimeout(function(){ launchConfetti('conquest'); }, 500);
     }
   });
-  localStorage.setItem(announcedKey,JSON.stringify(announced));
-  if(changed)saveState();
+
+  localStorage.setItem(announcedKey, JSON.stringify(announced));
+  if (changed) saveState();
 }
+
 function checkAndPostWeeklyRecap() {
   if (state.players.length === 0 || state.workouts.length === 0) return;
   const lastRecapKey = 'howlers_last_recap_' + (localStorage.getItem('howlers_bin_id')||'');
@@ -2869,10 +2962,13 @@ function buildStatsCache() {
   state.players.forEach(function(p) {
     const prev = prevCache[p.id];
     _statsCache[p.id] = calcPlayerStats(p.id);
+    // Detect rank up
     if (prev && currentHowlerId === p.id) {
-      const prevMin = prev.rank ? prev.rank.min : 0;
-      const newMin = _statsCache[p.id].rank ? _statsCache[p.id].rank.min : 0;
-      if (newMin > prevMin) setTimeout(function(){ launchConfetti('rankup'); showToast('⚔ RANK UP! You are now ' + _statsCache[p.id].rank.name + '! ✦'); }, 300);
+      const prevRank = prev.rank ? prev.rank.min : 0;
+      const newRank = _statsCache[p.id].rank ? _statsCache[p.id].rank.min : 0;
+      if (newRank > prevRank) {
+        setTimeout(function() { launchConfetti('rankup'); showToast('⚔ RANK UP! You are now ' + _statsCache[p.id].rank.name + '! ✦'); }, 300);
+      }
     }
   });
 }
@@ -2880,17 +2976,31 @@ function getStats(pid) {
   return _statsCache[pid] || calcPlayerStats(pid);
 }
 
+
 function launchConfetti(type) {
-  var colors = type==='conquest' ? ['#c8900a','#8b0000','#ffd700','#b22222','#daa520','#ff4500'] : ['#c8900a','#ffd700','#daa520','#f5c842','#e8a020','#ffffff'];
-  var count = type==='conquest' ? 80 : 50;
-  for (var i=0;i<count;i++) { (function(i){ setTimeout(function(){
-    var el=document.createElement('div'); el.className='confetti-piece';
-    el.style.left=Math.random()*100+'vw'; el.style.background=colors[Math.floor(Math.random()*colors.length)];
-    el.style.width=(Math.random()*8+4)+'px'; el.style.height=(Math.random()*8+4)+'px';
-    el.style.borderRadius=Math.random()>0.5?'50%':'2px';
-    var dur=(Math.random()*1.5+1.5).toFixed(2); el.style.animationDuration=dur+'s';
-    document.body.appendChild(el); setTimeout(function(){el.remove();},parseFloat(dur)*1000+100);
-  },i*25);})(i); }
+  // type: 'conquest' = crimson/gold, 'rankup' = gold/amber
+  var colors = type === 'conquest'
+    ? ['#c8900a','#8b0000','#ffd700','#b22222','#daa520','#ff4500']
+    : ['#c8900a','#ffd700','#daa520','#f5c842','#e8a020','#ffffff'];
+  var count = type === 'conquest' ? 80 : 50;
+  for (var i = 0; i < count; i++) {
+    (function(i) {
+      setTimeout(function() {
+        var el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        el.style.width = (Math.random() * 8 + 4) + 'px';
+        el.style.height = (Math.random() * 8 + 4) + 'px';
+        el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        var dur = (Math.random() * 1.5 + 1.5).toFixed(2);
+        el.style.animationDuration = dur + 's';
+        el.style.animationDelay = '0s';
+        document.body.appendChild(el);
+        setTimeout(function() { el.remove(); }, parseFloat(dur) * 1000 + 100);
+      }, i * 25);
+    })(i);
+  }
 }
 
 function renderAll() {
@@ -2925,12 +3035,16 @@ function renderPlayers() {
   sorted.forEach((p, idx) => {
     const s = statsMap[p.id];
     const stats_for_color = statsMap[p.id];
-    const isPeerless = stats_for_color.laurels >= 2400;
+    const isPeerless = stats_for_color.laurels >= 9500;
     const houseColor = isPeerless ? PEERLESS_GOLD : (HOUSES[p.house] || '#7a5006');
     const isPrimus = p.id === primusId && s.laurels > 0;
     const lastSeenKey = 'howlers_seen_' + p.id + '_' + (localStorage.getItem('howlers_bin_id')||'');
     const lastSeen = localStorage.getItem(lastSeenKey) || '0';
-    const hasNewActivity = state.workouts.some(function(w) {
+    const lastHowlSeen = localStorage.getItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_gist_id')||localStorage.getItem('howlers_bin_id')||'')) || '0' || '0';
+  const hasUnreadHowl = (state.howls||[]).some(function(h) {
+    return h.player_id !== 'system' && h.player_id !== p.id && (h.timestamp||h.date) > lastHowlSeen;
+  });
+  const hasNewActivity = state.workouts.some(function(w) {
       return w.player_id === p.id && (w.timestamp||w.date) > lastSeen;
     });
     // Build tiered badge pills — show highest tier earned per badge
@@ -2954,6 +3068,7 @@ function renderPlayers() {
       <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor};cursor:pointer" onclick="openProfile('${p.id}')">
         <div style="display:flex;align-items:center;position:relative;z-index:1">
           ${hasNewActivity ? '<span class="new-activity-dot" title="New activity since your last visit"></span>' : ''}
+  ${hasUnreadHowl ? '<span style="position:absolute;top:6px;right:8px;font-size:0.9rem;line-height:1;z-index:2" title="New howl!">🐺</span>' : ''}
           <div class="player-color-label">${p.house}</div>
         </div>
         <div class="player-name">${escHtml(p.name)}</div>
@@ -2966,7 +3081,7 @@ function renderPlayers() {
           <div class="stat-item"><span class="stat-val">${s.laurels}</span><span class="stat-label">Laurels</span></div>
           <div class="stat-item"><span class="stat-val">${s.trials}</span><span class="stat-label">Trials</span></div>
           <div class="stat-item"><span class="stat-val">${s.streak}</span><span class="stat-label">Wk Streak</span></div>
-          <div class="stat-item"><span class="stat-val">${s.miles}mi</span><span class="stat-label">Distance</span></div>
+          <div class="stat-item"><span class="stat-val">${(s.miles+(s.pelotonMiles||0)).toFixed(1)}mi</span><span class="stat-label">Distance</span></div>
         </div>
         <div class="player-badges">${earnedBadges || '<span style="font-style:italic;font-size:0.75rem;color:var(--ink-light)">No badges yet</span>'}</div>
         ${(p.books_read && p.books_read.length > 0) ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">📚 BOOKS</span> ${p.books_read.map(b=>({red_rising:'Red Rising',golden_son:'Golden Son',morning_star:'Morning Star',iron_gold:'Iron Gold',dark_age:'Dark Age',light_bringer:'Light Bringer',red_god:'Red God ✦'})[b]||b).join(' · ')}</div>` : ''}
@@ -2993,38 +3108,60 @@ function renderPlayers() {
 function renderPackStats() {
   const el = document.getElementById('pack-stats-dashboard');
   if (!el) return;
-  const totalWorkouts = state.workouts.length;
-  const totalMiles = state.players.reduce(function(s,p){ return s + getStats(p.id).miles; }, 0);
-  const totalLaurels = state.players.reduce(function(s,p){ return s + getStats(p.id).laurels; }, 0);
-  const totalHowls = (state.howls || []).length;
-  const totalLikes = state.workouts.reduce(function(s,w){
-    var r = w.reactions || {}; return s + Object.values(r).reduce(function(a,b){return a+b;},0);
-  }, 0) + (state.howls||[]).reduce(function(s,h){
-    var r = h.reactions || {}; return s + Object.values(r).reduce(function(a,b){return a+b;},0);
-  }, 0);
-  // Most active week
+  const sm = {};
+  try { state.players.forEach(p => { sm[p.id] = getStats(p.id); }); } catch(e) { return; }
+  const totalMiles = state.players.reduce((s,p)=>s+(sm[p.id].miles||0),0);
+  const totalTrials = state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).length;
+  const totalLaurels = state.players.reduce((s,p)=>s+(sm[p.id].laurels||0),0);
+  const totalHowlers = state.players.length;
+  const totalHowls = (state.howls||[]).filter(h=>h.player_id!=='system').length;
+  const totalLikes = (state.howls||[]).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0);
+  // Peak week
   const weekCounts = {};
-  state.workouts.forEach(function(w){
-    const wk = getWeekKey(w.date);
-    weekCounts[wk] = (weekCounts[wk]||0) + 1;
+  state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).forEach(w=>{
+    const wk = getWeekKey(w.date); weekCounts[wk]=(weekCounts[wk]||0)+1;
   });
-  const peakWeekCount = Object.values(weekCounts).length > 0 ? Math.max(...Object.values(weekCounts)) : 0;
-  const stats = [
-    {icon:'🏃', label:'Total Miles', val: totalMiles.toFixed(1)},
-    {icon:'⚔️', label:'Trials Logged', val: totalWorkouts},
-    {icon:'🏅', label:'Total Laurels', val: totalLaurels},
-    {icon:'👥', label:'Howlers', val: state.players.length},
-    {icon:'🐺', label:'Howls Posted', val: totalHowls},
-    {icon:'❤️', label:'Likes Given', val: totalLikes},
-    {icon:'🔥', label:'Peak Week', val: peakWeekCount + ' trials'},
-  ];
-  el.innerHTML = stats.map(function(s) {
-    return '<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);text-align:center">' +
-      '<div style="font-size:1.4rem;margin-bottom:4px">' + s.icon + '</div>' +
-      '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink);line-height:1">' + s.val + '</div>' +
-      '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.1em;color:var(--ink-light);margin-top:3px;text-transform:uppercase">' + s.label + '</div>' +
-      '</div>';
-  }).join('');
+  const peakWeek = Math.max(0,...Object.values(weekCounts));
+
+  // Rankings for back of cards
+  const byLaurels = state.players.slice().sort((a,b)=>(sm[b.id].laurels||0)-(sm[a.id].laurels||0));
+  const byMiles = state.players.slice().sort((a,b)=>(sm[b.id].miles||0)-(sm[a.id].miles||0));
+  const byTrials = state.players.slice().sort((a,b)=>(sm[b.id].trials||0)-(sm[a.id].trials||0));
+  const byStreak = state.players.slice().sort((a,b)=>(sm[b.id].streak||0)-(sm[a.id].streak||0));
+
+  function rankList(players, statFn, unit) {
+    return players.map((p,i)=>`<div style="font-family:'Cinzel',serif;font-size:0.62rem;display:flex;justify-content:space-between;width:100%;padding:1px 0;${i===0?'color:var(--amber);font-weight:700':'color:var(--ink-mid)'}"><span>${i===0?'★':i+1+'.'} ${p.name.split(' ')[0]}</span><span>${statFn(p)}${unit}</span></div>`).join('');
+  }
+
+  function flipCard(icon, value, label, rankHTML, rankTitle) {
+    return `<div class="flip-card" onclick="this.classList.toggle('flipped')" style="user-select:none;-webkit-user-select:none">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <div style="font-size:1.6rem;margin-bottom:4px">${icon}</div>
+          <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;color:var(--ink)">${value}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.12em;color:var(--ink-light);margin-top:3px">${label}</div>
+        </div>
+        <div class="flip-card-back">
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">${rankTitle}</div>
+          <div style="width:100%">${rankHTML}</div>
+          <div style="font-size:0.6rem;color:var(--ink-light);margin-top:4px">tap to flip ↩</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML =
+    flipCard('🏃', totalMiles.toFixed(1), 'TOTAL MILES', rankList(byMiles, p=>(sm[p.id].miles||0).toFixed(1), ' mi'), 'MILES RANKING') +
+    flipCard('⚔️', totalTrials, 'TRIALS LOGGED', rankList(byTrials, p=>sm[p.id].trials||0, ''), 'TRIALS RANKING') +
+    flipCard('🏅', totalLaurels, 'TOTAL LAURELS', rankList(byLaurels, p=>sm[p.id].laurels||0, 'L'), 'LAURELS RANKING') +
+    flipCard('👥', totalHowlers, 'HOWLERS', rankList(byLaurels, p=>sm[p.id].rank.name, ''), 'RANK STANDING') +
+    flipCard('🐺', totalHowls, 'HOWLS POSTED', rankList(byStreak, p=>sm[p.id].streak||0, ' wks'), 'STREAK RANKING') +
+    flipCard('❤️', totalLikes, 'LIKES GIVEN', rankList(state.players.slice().sort((a,b)=>{ const la=(state.howls||[]).filter(h=>h.player_id===b.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0); const lb=(state.howls||[]).filter(h=>h.player_id===a.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0); return la-lb; }), p=>(state.howls||[]).filter(h=>h.player_id===p.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0), ' ❤️'), 'LIKES RECEIVED') +
+    flipCard('🔥', peakWeek + ' TRIALS', 'PEAK WEEK', rankList(byStreak, p=>(sm[p.id].perfectWeeks||0)+' wks', ''), 'PERFECT WEEKS') +
+    flipCard('💪', state.players.reduce((s,p)=>s+(sm[p.id].strength||0),0), 'STRENGTH SESSIONS', rankList(state.players.slice().sort((a,b)=>(sm[b.id].strength||0)-(sm[a.id].strength||0)), p=>sm[p.id].strength||0, ''), 'STRENGTH RANKING') +
+    flipCard('🧘', state.players.reduce((s,p)=>s+(sm[p.id].mobility||0),0), 'MOBILITY SESSIONS', rankList(state.players.slice().sort((a,b)=>(sm[b.id].mobility||0)-(sm[a.id].mobility||0)), p=>sm[p.id].mobility||0, ''), 'MOBILITY RANKING') +
+    flipCard('💃', state.players.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length,0), 'CRIMSON PULSE', rankList(state.players.slice().sort((a,b)=>state.workouts.filter(w=>w.player_id===b.id&&w.workout==='cardio').length-state.workouts.filter(w=>w.player_id===a.id&&w.workout==='cardio').length), p=>state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length, ''), 'CARDIO RANKING') +
+    flipCard('🚴', state.players.reduce((s,p)=>s+(sm[p.id].pelotons||0),0), 'PELOTON RIDES', rankList(state.players.slice().sort((a,b)=>(sm[b.id].pelotons||0)-(sm[a.id].pelotons||0)), p=>sm[p.id].pelotons||0, ''), 'PELOTON RANKING');
 }
 
 function renderDistanceRankings() {
@@ -3046,7 +3183,7 @@ function renderDistanceRankings() {
     var nextM = runnerMilestones.find(function(m){ return !earnedKeys2.includes('the_runner_'+m.tier); });
     var goalMiles = nextM ? nextM.miles : 100;
     const pct = goalMiles > 0 ? Math.min(100, (r.miles / goalMiles) * 100) : 100;
-    const hc = r.laurels >= 2400 ? PEERLESS_GOLD : (HOUSES[r.p.house] || "#7a5006");
+    const hc = r.laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[r.p.house] || "#7a5006");
     html += "<div style='background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:6px'>";
     html += "<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px'>";
     html += "<span style='font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;color:var(--ink-light);width:20px'>" + (i+1) + ".</span>";
@@ -3109,18 +3246,19 @@ function renderChronicle() {
     return;
   }
   const sorted = [...state.workouts].filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).sort((a,b) => {
-    const ta=a.timestamp?new Date(a.timestamp):new Date(a.date+'T23:59:59');
-    const tb=b.timestamp?new Date(b.timestamp):new Date(b.date+'T23:59:59');
-    if(tb-ta!==0)return tb-ta;
-    const ia=parseInt((a.id||'').replace(/[^0-9]/g,''))||0;
-    const ib=parseInt((b.id||'').replace(/[^0-9]/g,''))||0;
-    return ib-ia;
+    const ta = a.timestamp ? new Date(a.timestamp) : new Date(a.date + 'T23:59:59');
+    const tb = b.timestamp ? new Date(b.timestamp) : new Date(b.date + 'T23:59:59');
+    if (tb - ta !== 0) return tb - ta;
+    // Tiebreak by id — newer entries have larger numeric id
+    const ia = parseInt((a.id||'').replace(/\D/g,'')) || 0;
+    const ib = parseInt((b.id||'').replace(/\D/g,'')) || 0;
+    return ib - ia;
   });
   feed.innerHTML = sorted.slice(0, 50).map(w => {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
     const playerStats = getStats(player.id);
-    const houseColor = playerStats.laurels >= 2400 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+    const houseColor = playerStats.laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const badgeDef = w.badge_earned ? BADGES_DEF.find(b => b.id === w.badge_earned) : null;
     // Build meaningful detail string per workout type
     let detail = '';
@@ -3142,7 +3280,7 @@ function renderChronicle() {
         <span class="chronicle-player">${escHtml(player.name)}</span>
         <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">+${w.laurels_base}L</span>
       </div>
-      <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);margin-bottom:5px">${w.workout==='milestone_bonus'?(w.milestone_label||'⚔ Milestone Bonus'):(WORKOUT_NAMES[w.workout]||w.workout)}${w.miles?' · '+w.miles+' mi':''}${w.minutes?' · '+w.minutes+' min':''} · ${formatDate(w.date)}</div>
+      <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);margin-bottom:5px">${WORKOUT_NAMES[w.workout]||w.workout}${w.miles?' · '+w.miles+' mi':''}${w.minutes?' · '+w.minutes+' min':''} · ${formatDate(w.date)}</div>
       ${w.notes?`<div style="font-family:'Crimson Pro',serif;font-size:0.87rem;font-style:italic;color:var(--ink-mid);margin-bottom:3px">"${escHtml(w.notes)}"</div>`:''}
       ${w.badge_earned?(()=>{
         const tier=BADGE_TIERS.find(t=>w.badge_earned.endsWith('_'+t));
@@ -3164,15 +3302,13 @@ function renderChronicle() {
 function renderChallenges() {
   const grid = document.getElementById('challenges-grid');
   if (!grid) return;
+  const EMPTY_STATS = {laurels:0,miles:0,pelotonMiles:0,trials:0,streak:0,perfectWeeks:0,pelotons:0,strength:0,mobility:0,optionals:0,races:0,maxSingleRun:0,weekSet:new Set(),longestRun:0,earnedBadges:[],rank:RANKS[0],isUnderdog:false};
   const statsMap = {};
-  try {
-    state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
-  } catch(e) { console.error('renderChallenges statsMap error:', e); return; }
+  state.players.forEach(p => { try { statsMap[p.id] = getStats(p.id); } catch(e) { statsMap[p.id] = Object.assign({},EMPTY_STATS); } });
 
   grid.innerHTML = CHALLENGES_DEF.map(ch => {
     let progress = 0, progressMax = ch.goal, progressLabel = '', winner = null;
     const won = state.challenges_won[ch.id];
-
     if (ch.type === 'duel') {
       if (ch.id==='first_blood') {
         const first=state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
@@ -3185,7 +3321,7 @@ function renderChallenges() {
         state.players.forEach(p=>{const l=statsMap[p.id].laurels;if(l>best){best=l;bestP=p;}});
         progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
       } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
-        const big=state.workouts.filter(w=>['long_run','easy_run','tempo'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        const big=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
         if(big){progress=ch.goal;winner=state.players.find(p=>p.id===big.player_id)?.name;}
         else{let best=0;state.players.forEach(p=>{const m=statsMap[p.id].maxSingleRun||0;if(m>best)best=m;});progress=Math.min(best,ch.goal);}
       } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
@@ -3210,6 +3346,32 @@ function renderChallenges() {
         let best=0,bestP=null;
         state.players.forEach(p=>{const t=statsMap[p.id].trials;if(t>best){best=t;bestP=p;}});
         progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_dancer') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const cnt=state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length;if(cnt>best){best=cnt;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='race_finisher') {
+        const rf=state.workouts.filter(w=>w.workout==='race').slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        if(rf){progress=1;winner=state.players.find(p=>p.id===rf.player_id)?.name;}
+      } else if (ch.id==='the_ironborn') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const s=statsMap[p.id].strength;if(s>best){best=s;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_sage') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const m=statsMap[p.id].mobility;if(m>best){best=m;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_endurance') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{
+          const mins=state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((s,w)=>s+(w.minutes||0),0);
+          if(mins>best){best=mins;bestP=p;}
+        });
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_peloton_ace') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const cnt=statsMap[p.id].pelotons;if(cnt>best){best=cnt;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
       }
     } else {
       if (ch.id==='pack_trains') {
@@ -3230,8 +3392,22 @@ function renderChallenges() {
         const min=state.players.length>0?Math.min(...state.players.map(p=>statsMap[p.id].maxSingleRun||0)):0;
         progress=Math.min(min,ch.goal);
         if(state.players.length>0&&state.players.every(p=>(statsMap[p.id].maxSingleRun||0)>=ch.goal))winner='The Pack';
+      } else if (ch.id==='cardio_pack') {
+        const all=state.players.length>0&&state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
+        progress=all?1:0;if(all)winner='The Pack';
+      } else if (ch.id==='mobile_pack') {
+        const all=state.players.length>0&&state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility'));
+        progress=all?1:0;if(all)winner='The Pack';
+      } else if (ch.id==='iron_pack_hard') {
+        const min=state.players.length>0?Math.min(...state.players.map(p=>statsMap[p.id].strength)):0;
+        progress=Math.min(min,ch.goal);
+        if(state.players.length>0&&state.players.every(p=>statsMap[p.id].strength>=ch.goal))winner='The Pack';
+      } else if (ch.id==='pack_endurance') {
+        const total=state.players.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0),0);
+        progress=Math.min(total,ch.goal);if(total>=ch.goal)winner='The Pack';
       }
     }
+    const pct = progressMax > 0 ? Math.min(100, (progress / progressMax) * 100) : 0;
     progressLabel = `${progress} / ${progressMax}`;
     const isComplete = won || winner;
 
@@ -3247,7 +3423,7 @@ function renderChallenges() {
         <div class="progress-bar-fill" style="width:${pct}%"></div>
       </div>
       <div class="progress-label"><span>${progressLabel}</span><span>${Math.round(pct)}%</span></div>
-      ${winner ? `<div class="challenge-winner">★ Won by: ${winner}</div>` : ''}
+      ${winner ? `<div class="challenge-winner" style="display:flex;align-items:center;gap:6px"><span style="color:var(--amber)">★</span> <span>Won by:</span> <strong>${winner}</strong></div>` : ''}
     </div>`;
   }).join('');
 }
@@ -3255,10 +3431,9 @@ function renderChallenges() {
 function renderTimeline() {
   const tl = document.getElementById('timeline');
   if (!tl) return;
+  const EMPTY_TL = {laurels:0,miles:0,pelotonMiles:0,trials:0,streak:0,perfectWeeks:0,pelotons:0,strength:0,mobility:0,optionals:0,races:0,maxSingleRun:0,weekSet:new Set(),longestRun:0,earnedBadges:[],rank:RANKS[0],isUnderdog:false};
   const statsMap = {};
-  try {
-    state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
-  } catch(e) { console.error('renderTimeline statsMap error:', e); return; }
+  state.players.forEach(p => { try { statsMap[p.id] = getStats(p.id); } catch(e) { statsMap[p.id] = Object.assign({},EMPTY_TL); } });
   const now = new Date();
   const raceWeekStart = new Date('2027-01-13T00:00:00');
   const raceWeekEnd = new Date('2027-01-17T23:59:59');
@@ -3333,7 +3508,7 @@ function renderHowlFeed() {
         '<span style="font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--amber)">THE PACK REPORT</span>' +
         '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
         '</div>' +
-        '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);white-space:pre-line">' + escHtml(h.message) + '</div>' +
+        '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);white-space:pre-line">' + renderMentions(h.message) + '</div>' +
         '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">' +
         reactionBarHTML(h, h.id, 'toggleHowlReaction') +
         '<div style="flex:1"></div>' +
@@ -3341,7 +3516,7 @@ function renderHowlFeed() {
         '</div></div>';
     }
     if (!player) return '';
-    const hc = (h.player_laurels >= 2400) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+    const hc = (h.player_laurels >= 9500) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const likes = h.likes || [];
     let replyTo = '';
     if (h.activity_ref) {
@@ -3626,16 +3801,16 @@ function exportLeaderboardImage() {
   const sorted = [...state.players].sort(function(a,b){ return statsMap[b.id].laurels - statsMap[a.id].laurels; });
   const raceDate = new Date('2027-01-17');
   const daysLeft = Math.max(0, Math.ceil((raceDate - new Date()) / 86400000));
-  const totalMiles = sorted.reduce(function(s,p){ return s + statsMap[p.id].miles; }, 0);
+  const totalMiles = sorted.reduce(function(s,p){ return s + statsMap[p.id].miles + (statsMap[p.id].pelotonMiles||0); }, 0);
 
   var rows = sorted.map(function(p, i) {
     const s = statsMap[p.id];
-    const hc = s.laurels >= 9500 ? '#c8900a' : (HOUSES[p.house] || '#7a5006');
+    const hc = s.laurels >= 1200 ? '#c8900a' : (HOUSES[p.house] || '#7a5006');
     const isArch = i === 0 && s.laurels > 0;
     return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:' + (isArch ? 'rgba(200,144,10,0.08)' : (i%2===0?'#ede3d0':'#f5efe4')) + ';border-left:5px solid ' + hc + ';margin-bottom:3px;border-radius:3px">' +
       '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:#6b5040;width:22px">' + (i+1) + '.</span>' +
       '<span style="font-family:Cinzel,serif;font-size:0.95rem;font-weight:700;color:' + hc + ';flex:1">' + escHtml(p.name) + (isArch ? ' ★' : '') + '</span>' +
-      '<span style="font-family:Cinzel,serif;font-size:0.8rem;color:#3d2e1e;margin-right:10px">' + s.miles + ' mi</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.8rem;color:#3d2e1e;margin-right:10px">' + (s.miles+(s.pelotonMiles||0)).toFixed(1) + ' mi</span>' +
       '<span style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:' + hc + '">' + s.laurels + 'L</span>' +
       '</div>';
   }).join('');
@@ -3662,14 +3837,14 @@ function exportLeaderboardImage() {
         '<div style="position:absolute;top:12px;left:33%;width:2px;height:2px;background:white;border-radius:50%;opacity:0.4"></div>' +
         '<div style="position:absolute;top:5px;left:58%;width:3px;height:3px;background:white;border-radius:50%;opacity:0.6"></div>' +
         '<div style="position:absolute;top:14px;left:75%;width:2px;height:2px;background:white;border-radius:50%;opacity:0.3"></div>' +
-        '<div style="position:absolute;top:0;left:0;height:100%;width:' + Math.min(100,(totalMiles/1400)*100).toFixed(1) + '%;background:linear-gradient(to right,#ff6f00,#ffa000);border-radius:11px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">' +
+        '<div style="position:absolute;top:0;left:0;height:100%;width:' + Math.min(100,(totalMiles/140)*100).toFixed(1) + '%;background:linear-gradient(to right,#ff6f00,#ffa000);border-radius:11px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">' +
           (totalMiles > 5 ? '<span style="font-size:0.7rem">🚀</span>' : '') +
         '</div>' +
         '<div style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:0.7rem;opacity:0.7">🔴</div>' +
       '</div>' +
       '<div style="display:flex;justify-content:space-between;font-family:Crimson Pro,serif;font-size:0.7rem;color:#6b5040">' +
         '<span>🌍 ' + totalMiles.toFixed(1) + ' mi logged (' + (totalMiles*1000000).toLocaleString() + ' space miles)</span>' +
-        '<span>' + Math.min(100,(totalMiles/1400)*100).toFixed(1) + '% to Mars</span>' +
+        '<span>' + Math.min(100,(totalMiles/140)*100).toFixed(1) + '% to Mars</span>' +
       '</div>' +
     '</div>' +
     '<div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid rgba(122,80,6,0.25)">' +
@@ -3709,7 +3884,7 @@ function exportLeaderboardImage() {
 
 function renderCodex() {
   const ranksBody = document.getElementById('codex-ranks');
-  ranksBody.innerHTML = RANKS.map(r => `<tr><td>${r.min}+</td><td><strong>${r.name}</strong><br><span style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--ink-light)">${RANK_MOTTOS[r.name]||''}</span></td></tr>`).join('');
+  ranksBody.innerHTML = RANKS.map(r => `<tr><td>${r.min.toLocaleString()}+</td><td><strong>${r.name}</strong><br><span style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--ink-light)">${RANK_MOTTOS[r.name]||''}</span></td></tr>`).join('');
   const badgesGrid = document.getElementById('codex-badges');
   badgesGrid.innerHTML = BADGES_DEF.map(b =>
     `<div class="badge-card" style="flex-direction:column;align-items:flex-start;gap:8px">
