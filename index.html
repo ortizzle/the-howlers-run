@@ -1104,6 +1104,7 @@
           <option value="strength">The Forge — Strength (15L flat)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
         <option value="cardio">The Crimson Pulse — Cardio (8L per 10 min)</option>
+        <option value="race">Race Day 🏆 (20L/mile + 50L bonus)</option>
         </select>
       </div>
       <div class="form-row">
@@ -1228,6 +1229,7 @@
           <tr><td>Walk/Run Intervals</td><td>8 per mile</td></tr>
           <tr><td>The Steed — Peloton Ride</td><td>8L per 10 min (24L / 30 min)</td></tr>
           <tr><td>The Crimson Pulse — Cardio</td><td>8L per 10 min (24L / 30 min)</td></tr>
+          <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
           <tr><td>The Forge — Strength</td><td>15 flat</td></tr>
           <tr><td>Mind & Body — Mobility/Yoga</td><td>10 flat</td></tr>
           <tr><td>Perfect Week Bonus</td><td>+25</td></tr>
@@ -1347,6 +1349,7 @@
         <option value="strength">The Forge — Strength (15L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
         <option value="cardio">The Crimson Pulse — Cardio (8L per 10 min)</option>
+        <option value="race">Race Day 🏆 (20L/mile + 50L bonus)</option>
       </select>
     </div>
     <div class="form-row">
@@ -1422,7 +1425,7 @@
 <!-- PROFILE MODAL -->
 <div class="modal-overlay" id="profile-modal">
   <div class="modal-box" style="max-width:540px;max-height:88vh">
-    <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
+    
     <div id="profile-modal-content"></div>
   </div>
 </div>
@@ -1619,6 +1622,14 @@ const BADGES_DEF = [
       {tier:'silver', desc:'3000 Laurels', check:(s)=>s.laurels>=3000},
       {tier:'gold',   desc:'5000 Laurels', check:(s)=>s.laurels>=5000}
     ]}
+,
+  {id:'race_day', icon:'🏆', name:'Race Day',
+    tiers:[
+      {tier:'bronze', desc:'Complete your first race',    check:(s)=>s.races>=1},
+      {tier:'silver', desc:'Complete 3 races',            check:(s)=>s.races>=3},
+      {tier:'gold',   desc:'Complete 5+ races',           check:(s)=>s.races>=5}
+    ]
+  }
 ];
 const CHALLENGES_DEF = [
   // ── Individual — First to achieve ────────────────────────────────────────
@@ -1632,12 +1643,12 @@ const CHALLENGES_DEF = [
   {id:'primus_pares',     name:'Primus Inter Pares',    icon:'👑',  type:'duel', desc:'First to log workouts in 8 different weeks',          reward:150, goal:8},
   {id:'iron_league',      name:'The Iron League',       icon:'🏅',  type:'duel', desc:'First to run 50 total miles',                        reward:150, goal:50},
   {id:'unbreakable',      name:'Unbreakable',           icon:'💎',  type:'duel', desc:'First to an 8-week streak',                          reward:175, goal:8},
-  {id:'the_tireless',     name:'The Tireless',          icon:'⚙️',  type:'duel', desc:'First to log 50 total trials',                       reward:200, goal:50},
+  {id:'the_tireless',     name:'The Tireless',          icon:'⚙️',  type:'duel', desc:'First to log 50 total trials',                       reward:250, goal:50},
   {id:'the_long_road',    name:'The Long Road',         icon:'🌅',  type:'duel', desc:'First to complete a 13.1 mile training run',          reward:200, goal:13.1},
   {id:'imperator_rising', name:'Peerless Among Peers',  icon:'🌟',  type:'duel', desc:'First to reach Imperator rank (1800 Laurels)',        reward:250, goal:1800},
   {id:'the_reaper_rises', name:'The Reaper Rises',      icon:'☀️',  type:'duel', desc:'First to reach 3000 Laurels',                        reward:300, goal:3000},
   {id:'the_dancer',       name:'The Dancer',            icon:'💃',  type:'duel', desc:'First to log 5 Crimson Pulse sessions',               reward:75,  goal:5},
-  {id:'the_ironborn',     name:'The Ironborn',          icon:'🔩',  type:'duel', desc:'First to log 20 strength sessions',                   reward:125, goal:20},
+  {id:'the_ironborn',     name:'The Ironborn',          icon:'🔩',  type:'duel', desc:'First to log 20 strength sessions',                   reward:150, goal:20},
   {id:'the_sage',         name:'The Sage',              icon:'🧘',  type:'duel', desc:'First to log 15 Mind & Body sessions',                reward:100, goal:15},
   {id:'the_endurance',    name:'The Endurance',         icon:'⏱️',  type:'duel', desc:'First to log 500 total minutes of timed workouts',    reward:150, goal:500},
   {id:'the_peloton_ace',  name:'The Peloton Ace',       icon:'🚴',  type:'duel', desc:'First to log 20 Peloton rides',                      reward:100, goal:20},
@@ -1651,7 +1662,8 @@ const CHALLENGES_DEF = [
   {id:'cardio_pack',      name:'Crimson Pack',          icon:'🎵',  type:'pack', desc:'Everyone logs at least one Crimson Pulse session',    reward:60,  goal:1},
   {id:'mobile_pack',      name:'The Flexible Pack',     icon:'🧘',  type:'pack', desc:'Everyone logs at least one Mind & Body session',      reward:60,  goal:1},
   {id:'iron_pack_hard',   name:'Iron Pack Rising',      icon:'💪',  type:'pack', desc:'Everyone logs 10+ strength sessions',                reward:100, goal:10},
-  {id:'pack_endurance',   name:'Pack Endurance',        icon:'⏱️',  type:'pack', desc:'Pack logs 1000 combined minutes of timed workouts',  reward:125, goal:1000}
+  {id:'race_finisher',    name:'Race Finisher',         icon:'🏆',  type:'duel', desc:'First to complete a race',                           reward:50,  goal:1},
+  {id:'pack_endurance',   name:'Pack Endurance',        icon:'⏱️',  type:'pack', desc:'Pack logs 1000 combined minutes of timed workouts',  reward:150, goal:1000}
 ];
 const MILESTONES_DEF = [
   {id:'m1', num:1, title:'The Pack Assembles', desc:'First trial logged by anyone'},
@@ -1963,15 +1975,16 @@ function calcPlayerStats(pid) {
   let laurels = (player && player.book_laurels) ? player.book_laurels : 0;
   const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss'];
   let miles = 0, pelotonMiles = 0, trials = works.filter(w => !SYSTEM_WK.includes(w.workout)).length;
-  let pelotons = 0, strength = 0, mobility = 0, optionals = 0;
+  let pelotons = 0, strength = 0, mobility = 0, optionals = 0, races = 0;
   let maxSingleRun = 0;
   const weekSet = new Set();
   const weekWorkouts = {};
 
   works.forEach(w => {
     laurels += w.laurels_base || 0;
-    if (w.workout === 'peloton') { pelotonMiles += w.miles || 0; } else { miles += w.miles || 0; }
+    if (w.workout === 'peloton') { pelotonMiles += w.miles || 0; } else if (w.workout !== 'cardio') { miles += w.miles || 0; }
     if (w.workout === 'peloton') pelotons++;
+    if (w.workout === 'race') races++;
     if (w.workout === 'strength') strength++;
     if (w.workout === 'mobility') mobility++;
     if (w.workout === 'cardio' || w.workout === 'walk_run') optionals++;
@@ -2018,7 +2031,7 @@ function calcPlayerStats(pid) {
   const longestRun = runWorkouts.length > 0 ? Math.max(...runWorkouts.map(w => w.miles)) : 0;
   const totalRunMiles = +miles.toFixed(1);
   // Underdog check (based on stored data — compare against other players later in render)
-  return { laurels: laurels||0, miles: totalRunMiles||0, pelotonMiles: +pelotonMiles.toFixed(1), trials: trials||0, streak: streak||0, rank: rank||RANKS[0], earnedBadges: earnedBadges||[], pelotons: pelotons||0, strength: strength||0, mobility: mobility||0, optionals: optionals||0, maxSingleRun: maxSingleRun||0, weekSet: weekSet||new Set(), weekWorkouts: weekWorkouts||{}, perfectWeeks: perfectWeeks||0, longestRun: longestRun||0, isUnderdog: false };
+  return { laurels: laurels||0, miles: totalRunMiles||0, pelotonMiles: +pelotonMiles.toFixed(1), trials: trials||0, streak: streak||0, rank: rank||RANKS[0], earnedBadges: earnedBadges||[], pelotons: pelotons||0, strength: strength||0, mobility: mobility||0, optionals: optionals||0, races: races||0, maxSingleRun: maxSingleRun||0, weekSet: weekSet||new Set(), weekWorkouts: weekWorkouts||{}, perfectWeeks: perfectWeeks||0, longestRun: longestRun||0, isUnderdog: false };
 }
 
 function openProfile(pid) {
@@ -2243,6 +2256,10 @@ function renderMarsBar() {
   var milesLeft = Math.max(0, MARS_MILES - totalMiles).toFixed(1);
   var mMilesLeft = Math.max(0, 140 - totalMiles).toFixed(0);
 
+  if (state.players.length === 0) {
+    el.innerHTML = '<div style="padding:16px;text-align:center;font-family:Cinzel,serif;font-size:0.8rem;color:var(--ink-light)">Awaiting pack data... 🚀</div>';
+    return;
+  }
   el.innerHTML = '<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)">' +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px">' +
     '<div>' +
@@ -2320,6 +2337,7 @@ function calcLaurels(workout, miles, minutes) {
     case 'walk_run': return miles > 0 ? Math.round(miles * 8) : 8;
     case 'peloton': return Math.round((minutes / 10) * 8);
     case 'cardio': return Math.round((minutes / 10) * 8);
+    case 'race': return miles > 0 ? Math.round(miles * 20) + 50 : 50;
     case 'strength': return 15;
     case 'mobility': return 10;
     default: return 0;
@@ -3143,6 +3161,9 @@ function renderChallenges() {
         let best=0,bestP=null;
         state.players.forEach(p=>{const cnt=state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length;if(cnt>best){best=cnt;bestP=p;}});
         progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='race_finisher') {
+        const rf=state.workouts.filter(w=>w.workout==='race').slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        if(rf){progress=1;winner=state.players.find(p=>p.id===rf.player_id)?.name;}
       } else if (ch.id==='the_ironborn') {
         let best=0,bestP=null;
         state.players.forEach(p=>{const s=statsMap[p.id].strength;if(s>best){best=s;bestP=p;}});
@@ -3900,7 +3921,7 @@ function updateLaurelPreview() {
     milesGroup.style.display = 'block';
     if (milesLabel) milesLabel.textContent = 'Peloton Miles (optional)';
     minsGroup.style.display = 'block';
-  } else if (['long_run','tempo','easy_run','optional_run','walk_run'].includes(workout)) {
+  } else if (['long_run','tempo','easy_run','optional_run','walk_run','race'].includes(workout)) {
     milesGroup.style.display = 'block';
     if (milesLabel) milesLabel.textContent = 'Miles';
     minsGroup.style.display = 'none';
