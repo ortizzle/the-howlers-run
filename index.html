@@ -2226,7 +2226,7 @@ function renderMarsBar() {
   var el = document.getElementById('mars-bar-section');
   if (!el) return;
   // Each real pack mile = 1 million miles toward Mars (140M miles total)
-  var totalMiles = state.players.reduce(function(s,p){ return s + getStats(p.id).miles; }, 0);
+  var totalMiles = state.players.reduce(function(s,p){ var st=getStats(p.id); return s + st.miles + (st.pelotonMiles||0); }, 0);
   var MARS_MILES = 140; // real miles needed (represents 140M miles)
   var pct = Math.min(100, (totalMiles / MARS_MILES) * 100);
   var milesLeft = Math.max(0, MARS_MILES - totalMiles).toFixed(1);
@@ -3062,8 +3062,11 @@ function renderChronicle() {
 
 function renderChallenges() {
   const grid = document.getElementById('challenges-grid');
+  if (!grid) return;
   const statsMap = {};
-  state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
+  try {
+    state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
+  } catch(e) { console.error('renderChallenges statsMap error:', e); return; }
 
   grid.innerHTML = CHALLENGES_DEF.map(ch => {
     let progress = 0, progressMax = ch.goal, progressLabel = '', winner = null;
@@ -3096,7 +3099,7 @@ function renderChallenges() {
         else{progress=Math.min(Math.max(0,...Object.values(wt).concat([0])),3);}
       } else if (ch.id==='primus_pares') {
         let best=0,bestP=null;
-        state.players.forEach(p=>{const s=statsMap[p.id].weekSet?.size||0;if(s>best){best=s;bestP=p;}});
+        state.players.forEach(p=>{const s=(statsMap[p.id].weekSet&&statsMap[p.id].weekSet.size)||0;if(s>best){best=s;bestP=p;}});
         progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
       } else if (ch.id==='iron_league') {
         let best=0,bestP=null;
@@ -3149,8 +3152,11 @@ function renderChallenges() {
 
 function renderTimeline() {
   const tl = document.getElementById('timeline');
+  if (!tl) return;
   const statsMap = {};
-  state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
+  try {
+    state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
+  } catch(e) { console.error('renderTimeline statsMap error:', e); return; }
   const now = new Date();
   const raceWeekStart = new Date('2027-01-13T00:00:00');
   const raceWeekEnd = new Date('2027-01-17T23:59:59');
@@ -3160,7 +3166,7 @@ function renderTimeline() {
     if (id === 'm2') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && w.workout === 'peloton'));
     if (id === 'm3') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout)));
     if (id === 'm4') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && ['optional_run','optional_other'].includes(w.workout)));
-    if (id === 'm5') { const totalWeeks = state.players.reduce((s,p)=>s+statsMap[p.id].weekSet.size,0); return totalWeeks >= 8; }
+    if (id === 'm5') { const totalWeeks = state.players.reduce((s,p)=>s+((statsMap[p.id].weekSet&&statsMap[p.id].weekSet.size)||0),0); return totalWeeks >= 8; }
     if (id === 'm6') return state.workouts.some(w => ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 6);
     if (id === 'm7') return state.workouts.some(w => ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 10);
     if (id === 'm8') return state.workouts.length >= 100;
@@ -3251,8 +3257,8 @@ function renderHowlFeed() {
     return '<div class="chronicle-entry" style="--house-color:' + hc + ';background:linear-gradient(135deg,' + hc + '08,var(--parchment))">' +
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">' +
       '<span style="font-family:Cinzel,serif;font-size:0.95rem;font-weight:700;color:' + hc + '">' + escHtml(player.name) + '</span>' +
-      '<span style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light);background:var(--parchment-dark);border:1px solid var(--border);padding:1px 6px;border-radius:2px">' + player.house + '</span>' +
-      '<span style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">' + rank.name + '</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.1em;font-weight:700;color:#fff;background:' + hc + ';padding:2px 7px;border-radius:3px">' + escHtml(player.house) + '</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.08em;font-weight:700;color:' + hc + ';background:' + hc + '22;padding:2px 7px;border-radius:3px;border:1px solid ' + hc + '55">' + rank.name + '</span>' +
       '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
       '</div>' +
       replyTo +
