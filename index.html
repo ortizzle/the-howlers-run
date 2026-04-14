@@ -1298,16 +1298,15 @@
 <div id="setup-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">
   <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:32px;width:100%;max-width:480px;box-shadow:0 8px 48px rgba(0,0,0,0.5)">
     <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;letter-spacing:0.1em;color:var(--ink);margin-bottom:8px;text-align:center">⚙ Pack Setup</div>
-    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);text-align:center;margin-bottom:24px">Connect via GitHub Gist for live sync across all pack devices.</div>
+    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);text-align:center;margin-bottom:24px">The march begins here. Connect your pack.</div>
     
     <div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.7">
-      <strong style="font-family:'Cinzel',serif;font-siz<div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:18px">
-      <div style="font-family:'Cinzel',serif;font-size:0.7rem;font-weight:700;color:var(--amber);letter-spacing:0.1em;margin-bottom:10px">ONE-TIME SETUP STEPS</div>
-      <div style="font-family:'Crimson Pro',serif;font-size:0.85rem;color:var(--ink-mid);line-height:1.8">
-        1. Go to <strong>github.com/settings/tokens</strong> → Generate new token (classic) → check <strong>gist</strong> scope only<br>
-        2. Go to <strong>gist.github.com</strong> → create a secret gist → filename: <strong>howlers-data.json</strong> → content: <strong>{}</strong><br>
-        3. Copy the <strong>Gist ID</strong> from the URL (long hex string after your username)<br>
-        4. Paste both below and tap Connect — share credentials with your pack once
+      <strong style="font-family:'Cinzel',serif;font-siz<div style="background:linear-gradient(135deg,var(--parchment-dark),rgba(122,80,6,0.08));border:1px solid var(--amber);border-radius:var(--radius);padding:16px;margin-bottom:18px;text-align:center">
+      <div style="font-family:'Cinzel',serif;font-size:0.95rem;font-weight:700;color:var(--amber);letter-spacing:0.08em;margin-bottom:8px">⚔ Welcome to the Institute ⚔</div>
+      <div style="font-family:'Crimson Pro',serif;font-size:0.9rem;font-style:italic;color:var(--ink-mid);line-height:1.7">
+        You have been chosen, Howler.<br>
+        The pack runs together — or not at all.<br>
+        <span style="font-size:0.78rem;color:var(--ink-light);font-style:normal">Enter your Gist credentials below to join the march.</span>
       </div>
     </div>
 
@@ -2252,10 +2251,10 @@ function renderMarsBar() {
   if (!el) return;
   // Each real pack mile = 1 million miles toward Mars (140M miles total)
   var totalMiles = state.players.reduce(function(s,p){ var st=getStats(p.id); return s + st.miles + (st.pelotonMiles||0); }, 0);
-  var MARS_MILES = 140; // real miles needed (represents 140M miles)
+  var MARS_MILES = 1400; // real miles needed (1 real mile = 100,000 space miles = 140M total)
   var pct = Math.min(100, (totalMiles / MARS_MILES) * 100);
   var milesLeft = Math.max(0, MARS_MILES - totalMiles).toFixed(1);
-  var mMilesLeft = Math.max(0, 140 - totalMiles).toFixed(0);
+  var mMilesLeft = Math.max(0, 1400 - totalMiles).toFixed(0);
 
   if (state.players.length === 0) {
     el.innerHTML = '<div style="padding:16px;text-align:center;font-family:Cinzel,serif;font-size:0.8rem;color:var(--ink-light)">Awaiting pack data... 🚀</div>';
@@ -2270,7 +2269,7 @@ function renderMarsBar() {
     '</div>' +
     '<div style="text-align:right">' +
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--ink-light)">TO MARS</div>' +
-    '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:#c62828">' + mMilesLeft + 'M mi left</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:#c62828">' + mMilesLeft + ' mi left</div>' +
     '</div>' +
     '</div>' +
     '<div style="position:relative;height:28px;background:linear-gradient(to right,#1a1040,#0d0d30);border-radius:14px;overflow:hidden;margin-bottom:8px">' +
