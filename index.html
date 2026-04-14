@@ -1948,7 +1948,8 @@ function calcPlayerStats(pid) {
   const works = state.workouts.filter(w => w.player_id === pid);
   const player = state.players.find(p => p.id === pid);
   let laurels = (player && player.book_laurels) ? player.book_laurels : 0;
-  let miles = 0, trials = works.length;
+  const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss'];
+  let miles = 0, pelotonMiles = 0, trials = works.filter(w => !SYSTEM_WK.includes(w.workout)).length;
   let pelotons = 0, strength = 0, mobility = 0, optionals = 0;
   let maxSingleRun = 0;
   const weekSet = new Set();
