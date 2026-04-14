@@ -1444,10 +1444,21 @@
 <!-- PROFILE MODAL -->
 <div class="modal-overlay" id="profile-modal">
   <div class="modal-box" style="max-width:540px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;padding:0">
-    <div style="display:flex;justify-content:flex-end;padding:10px 14px 0;flex-shrink:0">
-      <button class="modal-close" style="position:relative;top:auto;right:auto" onclick="closeModal('profile-modal')">✕</button>
+    <div id="profile-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;flex-shrink:0;border-bottom:1px solid var(--border)">
+      <div style="flex:1;min-width:0">
+        <div id="profile-header-house" style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:900;letter-spacing:0.2em;text-transform:uppercase"></div>
+        <div id="profile-header-name" style="font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;margin-left:12px">
+        <div style="text-align:right">
+          <div id="profile-header-laurels" style="font-family:'Cinzel',serif;font-size:1.4rem;font-weight:700;line-height:1"></div>
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">LAURELS</div>
+          <div id="profile-header-rank" style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--amber);margin-top:2px"></div>
+        </div>
+        <button class="modal-close" style="position:relative;top:auto;right:auto;flex-shrink:0" onclick="closeModal('profile-modal')">✕</button>
+      </div>
     </div>
-    <div id="profile-modal-content" style="overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;padding:0 20px 20px"></div>
+    <div id="profile-modal-content" style="overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;padding:16px 20px 20px"></div>
   </div>
 </div>
 
@@ -2194,22 +2205,18 @@ function openProfile(pid) {
     }).map(function(t) { return '<span style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);margin-right:8px">✦ ' + t + '</span>'; }).join('') +
     '</div>' : '';
 
+  // Populate sticky header
+  const hdrHouse = document.getElementById('profile-header-house');
+  const hdrName = document.getElementById('profile-header-name');
+  const hdrLaurels = document.getElementById('profile-header-laurels');
+  const hdrRank = document.getElementById('profile-header-rank');
+  if (hdrHouse) { hdrHouse.textContent = player.house; hdrHouse.style.color = hc; }
+  if (hdrName) hdrName.textContent = player.name;
+  if (hdrLaurels) { hdrLaurels.textContent = s.laurels.toLocaleString(); hdrLaurels.style.color = hc; }
+  if (hdrRank) hdrRank.textContent = s.rank.name;
+  // Remove the top color bar + name/laurels block from content since it's in the sticky header
   const el = document.getElementById('profile-modal-content');
   el.innerHTML =
-    '<div style="margin:-28px -28px 16px;border-radius:var(--radius) var(--radius) 0 0;height:6px;background:linear-gradient(to right,' + hc + ',' + hc + '88)"></div>' +
-
-    '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap">' +
-    '<div style="flex:1">' +
-    '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:900;letter-spacing:0.2em;color:' + hc + ';text-transform:uppercase;margin-bottom:2px">' + escHtml(player.house) + '</div>' +
-    '<div style="font-family:Cinzel,serif;font-size:1.1rem;font-weight:700;color:var(--ink);line-height:1.2">' + escHtml(player.name) + '</div>' +
-    (player.subtitle ? '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);margin-top:2px">' + escHtml(player.subtitle) + '</div>' : '') +
-    '</div>' +
-    '<div style="text-align:right">' +
-    '<div style="font-family:Cinzel,serif;font-size:1.4rem;font-weight:700;color:' + hc + ';line-height:1">' + s.laurels.toLocaleString() + '</div>' +
-    '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--ink-light)">LAURELS</div>' +
-    '<div style="font-family:Cinzel,serif;font-size:0.7rem;color:var(--amber);margin-top:4px">' + s.rank.name + '</div>' +
-    '</div>' +
-    '</div>' +
     '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px">' +
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.trials + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">TRIALS</div></div>' +
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.miles + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">RUN MI</div></div>' +
@@ -4063,42 +4070,6 @@ async function saveEditWorkout() {
   closeModal('edit-workout-modal');
   showToast('Trial updated. The chronicle stands corrected. ✦');
   renderAll();
-}
-
-async function giftPoints(recipientId) {
-  const recipient = state.players.find(p => p.id === recipientId);
-  if (!recipient) return;
-  const amount = parseInt(prompt('Gift Laurels to ' + recipient.name + '? Enter amount (1-500):'));
-
-  if (!amount || amount < 1 || amount > 500) { showToast('Enter a valid amount between 1 and 500.'); return; }
-  const reason = prompt('Reason (optional):') || 'A gift from the pack. ✦';
-  const gifterId = currentHowlerId;
-  const gifter = state.players.find(p => p.id === gifterId);
-  if (!gifter) { showToast('Select yourself in the header first.'); return; }
-  state.workouts.push({
-    id: 'gift_' + Date.now(),
-    player_id: recipientId,
-    workout: 'milestone_bonus',
-    date: new Date().toISOString().split('T')[0],
-    laurels_base: amount,
-    quote: reason,
-    timestamp: new Date().toISOString(),
-    milestone_label: '🎁 Gift from ' + gifter.name,
-    milestone_bonus: amount
-  });
-  state.howls.push({
-    id: 'howl_gift_' + Date.now(),
-    player_id: gifterId,
-    player_laurels: (getStats(gifterId).laurels||0),
-    message: '🎁 I gifted ' + amount + ' Laurels to @' + recipient.name + ' — ' + reason,
-    date: new Date().toISOString().split('T')[0],
-    timestamp: new Date().toISOString(),
-    likes: 0
-  });
-  await saveState();
-  closeModal('profile-modal');
-  renderAll();
-  showToast('🎁 ' + amount + ' Laurels gifted to ' + recipient.name + '! ✦');
 }
 
 async function removeWorkout(wid) {
