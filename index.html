@@ -3245,7 +3245,15 @@ function renderChronicle() {
     feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📜</span>No trials logged yet. The pack awaits its first march.</div>';
     return;
   }
-  const sorted = [...state.workouts].filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).sort((a,b) => new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date));
+  const sorted = [...state.workouts].filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).sort((a,b) => {
+    const ta = a.timestamp ? new Date(a.timestamp) : new Date(a.date + 'T23:59:59');
+    const tb = b.timestamp ? new Date(b.timestamp) : new Date(b.date + 'T23:59:59');
+    if (tb - ta !== 0) return tb - ta;
+    // Tiebreak by id — newer entries have larger numeric id
+    const ia = parseInt((a.id||'').replace(/\D/g,'')) || 0;
+    const ib = parseInt((b.id||'').replace(/\D/g,'')) || 0;
+    return ib - ia;
+  });
   feed.innerHTML = sorted.slice(0, 50).map(w => {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
