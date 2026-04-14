@@ -1434,6 +1434,7 @@
 <div class="modal-overlay" id="duel-modal">
   <div class="modal-box" style="max-width:420px">
     <button class="modal-close" onclick="closeModal('duel-modal')">✕</button>
+    <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
     <div class="modal-title">⚔ Challenge to a Duel</div>
     <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;margin-bottom:18px">This week's battle. Laurels on the line.</div>
     <input type="hidden" id="duel-opponent-id">
@@ -1982,13 +1983,13 @@ function calcPlayerStats(pid) {
 
   works.forEach(w => {
     laurels += w.laurels_base || 0;
-    if (w.workout === 'peloton') { pelotonMiles += w.miles || 0; } else if (w.workout !== 'cardio') { miles += w.miles || 0; }
+    if (w.workout === 'peloton') { pelotonMiles += w.miles || 0; } else if (['long_run','easy_run','tempo','walk_run','race','optional_run'].includes(w.workout)) { miles += w.miles || 0; }
     if (w.workout === 'peloton') pelotons++;
     if (w.workout === 'race') races++;
     if (w.workout === 'strength') strength++;
     if (w.workout === 'mobility') mobility++;
     if (w.workout === 'cardio' || w.workout === 'walk_run') optionals++;
-    if (['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout) && w.miles) {
+    if (['long_run','easy_run','tempo','optional_run','walk_run','race'].includes(w.workout) && w.miles) {
       if (w.miles > maxSingleRun) maxSingleRun = w.miles;
     }
     const wk = getWeekKey(w.date);
@@ -2953,7 +2954,7 @@ function renderPackStats() {
   }
 
   function flipCard(icon, value, label, rankHTML, rankTitle) {
-    return `<div class="flip-card" onclick="this.classList.toggle('flipped')">
+    return `<div class="flip-card" onclick="this.classList.toggle('flipped')" style="user-select:none;-webkit-user-select:none">
       <div class="flip-card-inner">
         <div class="flip-card-front">
           <div style="font-size:1.6rem;margin-bottom:4px">${icon}</div>
@@ -4031,6 +4032,9 @@ function switchTab(id) {
     if (ids[i] === id) t.classList.add('active');
   });
   if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
+  if (id === 'leaderboard') { renderMarsBar(); renderDistanceRankings(); renderPackStats(); }
+  if (id === 'trials') { renderChallenges(); }
+  if (id === 'conquests') { renderTimeline(); }
 }
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
