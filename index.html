@@ -1087,10 +1087,11 @@
           <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
           <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
           <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-          <option value="walk_run">Walk/Run Intervals (15L flat)</option>
+          <option value="walk_run">Walk/Run Intervals (15L/mile)</option>
           <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
           <option value="strength">The Forge — Strength (15L flat)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
+        <option value="cardio">The Dance — Cardio (8L per 10 min)</option>
         </select>
       </div>
       <div class="form-row">
@@ -1214,7 +1215,7 @@
           <tr><td>The Patrol — Easy Run</td><td>8 per mile</td></tr>
           <tr><td>Optional 5th Day Run</td><td>8 per mile</td></tr>
           <tr><td>Optional 5th Day Other</td><td>10 flat</td></tr>
-          <tr><td>Walk/Run Intervals</td><td>15 flat</td></tr>
+          <tr><td>Walk/Run Intervals</td><td>15 per mile</td></tr>
           <tr><td>The Steed — Peloton Ride</td><td>10 per 30 min</td></tr>
           <tr><td>The Forge — Strength</td><td>12 flat</td></tr>
           <tr><td>Mind & Body — Mobility/Yoga</td><td>8 flat</td></tr>
@@ -1334,10 +1335,11 @@
         <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
         <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
         <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-        <option value="walk_run">Walk/Run Intervals (15L flat)</option>
+        <option value="walk_run">Walk/Run Intervals (15L/mile)</option>
         <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
         <option value="strength">The Forge — Strength (15L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
+        <option value="cardio">The Dance — Cardio (8L per 10 min)</option>
       </select>
     </div>
     <div class="form-row">
@@ -2305,8 +2307,9 @@ function calcLaurels(workout, miles, minutes) {
     case 'easy_run': return Math.round(miles * 10);
     case 'optional_run': return Math.round(miles * 8);
     case 'optional_other': return 10;
-    case 'walk_run': return 15;
+    case 'walk_run': return miles > 0 ? Math.round(miles * 15) : 15;
     case 'peloton': return Math.round((minutes / 10) * 8);
+    case 'cardio': return Math.round((minutes / 10) * 8);
     case 'strength': return 15;
     case 'mobility': return 10;
     default: return 0;
@@ -2617,18 +2620,23 @@ function checkForNewActivityNotifications(prevState) {
 // ─── WEEKLY RECAP ────────────────────────────────────────────────────────────
 function retroactiveChallengePayout() {
   // One-time fix: pay out rewards for challenges won before payout code existed
-  if (!state.challenges_won || !state.players || !state.workouts) return;
+  if (!state.players || !state.workouts) return;
+  if (!state.challenges_won) state.challenges_won = {};
   var changed = false;
   CHALLENGES_DEF.forEach(function(ch) {
-    if (!state.challenges_won[ch.id]) return; // not won
+    var wonEntry = state.challenges_won[ch.id];
+    if (!wonEntry) return; // not won
     // Check if reward already paid
     var alreadyPaid = state.workouts.some(function(w) {
       return w.id && w.id.indexOf('ch_reward_' + ch.id) === 0;
     });
     if (alreadyPaid) return;
-    // Find winner from renderChallenges logic
+    // Find winner — check challenges_won stored value first
     var winnerId = null;
-    if (ch.type === 'duel') {
+    var _sw = state.challenges_won[ch.id];
+    if (_sw && _sw.id) { winnerId = _sw.id; }
+    else if (_sw && _sw.name) { var _mp=state.players.find(function(p){return p.name===_sw.name;}); if(_mp) winnerId=_mp.id; }
+    if (!winnerId && ch.type === 'duel') {
       if (ch.id === 'first_blood') {
         var first = state.workouts.filter(function(w){ return !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); }).slice().sort(function(a,b){ return new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date); })[0];
         if (first) winnerId = first.player_id;
@@ -3746,7 +3754,8 @@ function openEditWorkout(wid) {
     const mg=document.getElementById('edit-miles-group');
     const ng=document.getElementById('edit-minutes-group');
     if(mg){mg.style.display=['long_run','tempo','easy_run','walk_run','peloton'].includes(wt)?'block':'none';const lb=mg.querySelector('label');if(lb)lb.textContent=wt==='peloton'?'Peloton Miles (optional)':'Miles';}
-    if(ng)ng.style.display=wt==='peloton'?'block':'none';
+    if(ng)ng.style.display=['peloton','cardio','strength','mobility'].includes(wt)?'block':'none';
+    if(ng){const nl=ng.querySelector('label');if(nl)nl.textContent=['strength','mobility'].includes(wt)?'Minutes (optional)':'Minutes';}
     updateEditLaurelPreview();
   }
   _updEF(_ewt);
@@ -3810,13 +3819,23 @@ function updateLaurelPreview() {
   const previewNote = document.getElementById('laurel-preview-note');
 
   // Show/hide miles vs minutes
-  if (workout === 'peloton') {
-    milesGroup.style.display = 'block';
-    const _pl=milesGroup.querySelector('label');if(_pl)_pl.textContent='Peloton Miles (optional)';
+  const milesLabel = milesGroup ? milesGroup.querySelector('label') : null;
+  if (workout === 'cardio') {
+    milesGroup.style.display = 'none';
     minsGroup.style.display = 'block';
-  } else if (['long_run','tempo','easy_run','optional_run'].includes(workout)) {
+  } else if (workout === 'peloton') {
     milesGroup.style.display = 'block';
+    if (milesLabel) milesLabel.textContent = 'Peloton Miles (optional)';
+    minsGroup.style.display = 'block';
+  } else if (['long_run','tempo','easy_run','optional_run','walk_run'].includes(workout)) {
+    milesGroup.style.display = 'block';
+    if (milesLabel) milesLabel.textContent = 'Miles';
     minsGroup.style.display = 'none';
+  } else if (['strength','mobility'].includes(workout)) {
+    milesGroup.style.display = 'none';
+    minsGroup.style.display = 'block';
+    const minsLabel = minsGroup ? minsGroup.querySelector('label') : null;
+    if (minsLabel) minsLabel.textContent = 'Minutes (optional)';
   } else {
     milesGroup.style.display = 'none';
     minsGroup.style.display = 'none';
