@@ -1773,7 +1773,12 @@ async function loadState() {
       });
       if (!res.ok) throw new Error('Gist HTTP ' + res.status);
       const json = await res.json();
-      const fc = json.files && json.files['howlers-data.json'] && json.files['howlers-data.json'].content;
+      // Try howlers-data.json first, then first .json file in gist
+      let fc = json.files && json.files['howlers-data.json'] && json.files['howlers-data.json'].content;
+      if (!fc && json.files) {
+        const firstJson = Object.keys(json.files).find(k => k.endsWith('.json'));
+        if (firstJson) fc = json.files[firstJson].content;
+      }
       _stateData = fc ? JSON.parse(fc) : {};
     } else {
       const res = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID + '/latest', {
