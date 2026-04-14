@@ -1604,15 +1604,28 @@ const BADGES_DEF = [
     ]}
 ];
 const CHALLENGES_DEF = [
-  {id:'first_blood', name:'First Blood', icon:'⚔️', type:'duel', desc:'First to log any trial', reward:50, goal:1},
-  {id:'century_laurels', name:'Century Laurels', icon:'💰', type:'duel', desc:'First to reach 100 Laurels', reward:75, goal:100},
-  {id:'pack_trains', name:'The Pack Trains', icon:'🤝', type:'pack', desc:'Everyone logs 10+ trials', reward:60, goal:10},
-  {id:'five_league', name:'Five-League March', icon:'🗺️', type:'duel', desc:'First to run 5+ miles in one session', reward:50, goal:5},
-  {id:'the_unbroken', name:'The Unbroken', icon:'🔥', type:'duel', desc:'First to a 3-week streak', reward:80, goal:3},
-  {id:'society_rising', name:'Society Rising', icon:'🤝', type:'pack', desc:'Pack earns 500 combined Laurels', reward:100, goal:500},
-  {id:'grand_march', name:'The Grand March', icon:'🏔️', type:'duel', desc:'First to run 10+ miles in one session', reward:120, goal:10},
-  {id:'primus_pares', name:'Primus Inter Pares', icon:'👑', type:'duel', desc:'First to log workouts in 8 different weeks', reward:150, goal:8},
-  {id:'beyond_quota', name:'Beyond the Quota', icon:'🤝', type:'pack', desc:'Everyone logs 5 optional 5th day workouts', reward:80, goal:5}
+  {id:'first_blood',      name:'First Blood',         icon:'⚔️', type:'duel', desc:'First to log any trial',                        reward:50,  goal:1},
+  {id:'the_faithful',     name:'The Faithful',         icon:'📅', type:'duel', desc:'First to complete a Perfect Week',               reward:75,  goal:1},
+  {id:'century_laurels',  name:'Century Laurels',      icon:'💰', type:'duel', desc:'First to reach 100 Laurels',                    reward:75,  goal:100},
+  {id:'five_league',      name:'Five-League March',    icon:'🗺️', type:'duel', desc:'First to run 5+ miles in one session',           reward:50,  goal:5},
+  {id:'the_unbroken',     name:'The Unbroken',         icon:'🔥', type:'duel', desc:'First to a 3-week streak',                      reward:80,  goal:3},
+  {id:'the_swift',        name:'The Swift',            icon:'⚡', type:'duel', desc:'First to log 3 tempo runs in one week',          reward:100, goal:3},
+  {id:'grand_march',      name:'The Grand March',      icon:'🏔️', type:'duel', desc:'First to run 10+ miles in one session',          reward:120, goal:10},
+  {id:'primus_pares',     name:'Primus Inter Pares',   icon:'👑', type:'duel', desc:'First to log workouts in 8 different weeks',     reward:150, goal:8},
+  {id:'iron_league',      name:'The Iron League',      icon:'🏅', type:'duel', desc:'First to run 50 total miles',                   reward:150, goal:50},
+  {id:'unbreakable',      name:'Unbreakable',          icon:'💎', type:'duel', desc:'First to an 8-week streak',                     reward:175, goal:8},
+  {id:'the_tireless',     name:'The Tireless',         icon:'⚙️', type:'duel', desc:'First to log 50 total trials',                  reward:200, goal:50},
+  {id:'the_long_road',    name:'The Long Road',        icon:'🌅', type:'duel', desc:'First to complete a 13.1 mile training run',     reward:200, goal:13.1},
+  {id:'imperator_rising', name:'Peerless Among Peers', icon:'🌟', type:'duel', desc:'First to reach Imperator rank (1800 Laurels)',   reward:250, goal:1800},
+  {id:'the_reaper_rises', name:'The Reaper Rises',     icon:'☀️', type:'duel', desc:'First to reach 3000 Laurels',                   reward:300, goal:3000},
+  {id:'the_dancer',       name:'The Dancer',           icon:'💃', type:'duel', desc:'First to log 5 cardio sessions',                reward:75,  goal:5},
+  {id:'pack_trains',      name:'The Pack Trains',      icon:'🤝', type:'pack', desc:'Everyone logs 10+ trials',                      reward:60,  goal:10},
+  {id:'society_rising',   name:'Society Rising',       icon:'🏛️', type:'pack', desc:'Pack earns 500 combined Laurels',                reward:100, goal:500},
+  {id:'the_iron_pack',    name:'The Iron Pack',        icon:'🦵', type:'pack', desc:'Everyone logs 5+ strength sessions',            reward:75,  goal:5},
+  {id:'warriors_all',     name:'Warriors All',         icon:'🎖️', type:'pack', desc:'Everyone earns at least one badge',             reward:100, goal:1},
+  {id:'the_full_march',   name:'The Full March',       icon:'🗺️', type:'pack', desc:'Everyone runs a 6+ mile session',               reward:125, goal:6},
+  {id:'the_rising_tide',  name:'The Rising Tide',      icon:'🌊', type:'pack', desc:'Pack earns 2000 combined Laurels',              reward:150, goal:2000},
+  {id:'cardio_pack',      name:'Cardio Pack',          icon:'🎵', type:'pack', desc:'Everyone logs at least one cardio session',     reward:60,  goal:1}
 ];
 const MILESTONES_DEF = [
   {id:'m1', num:1, title:'The Pack Assembles', desc:'First trial logged by anyone'},
@@ -2335,7 +2348,10 @@ function checkAndResolveDuels() {
     state.howls.push({ id:'duel_result_'+duel.id, player_id:'system', player_laurels:9999, message:'⚔ DUEL RESULT! ' + winnerName + ' defeats ' + loserName + '! ' + winVal.toFixed(1) + ' vs ' + loseVal.toFixed(1) + ' ' + metricLabels[duel.metric] + '. ' + winnerName + ' claims ' + duel.wager + ' Laurels. Per aspera ad astra. 🐺', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
     changed=true;
   });
-  if (changed) saveState();
+  if (changed) {
+    localStorage.setItem('howlers_retro_paid', '1');
+    saveState();
+  }
 }
 
 function renderActiveDuels() {
@@ -2513,9 +2529,9 @@ function checkAndPostChallengeHowls() {
     if (ch.type==='duel') {
       if (ch.id==='first_blood') { var fw=state.workouts.slice().sort(function(a,b){return new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date);})[0]; if(fw) winner=state.players.find(function(p){return p.id===fw.player_id;}); }
       else if (ch.id==='century_laurels') { winner=state.players.find(function(p){return (sm[p.id]||{}).laurels>=100;}); }
-      else if (ch.id==='five_league') { var bw=state.workouts.find(function(w){return ['long_run','easy_run','tempo','optional_run'].includes(w.workout)&&(w.miles||0)>=5;}); if(bw) winner=state.players.find(function(p){return p.id===bw.player_id;}); }
+      else if (ch.id==='five_league') { var bw=state.workouts.find(function(w){return ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout)&&(w.miles||0)>=5;}); if(bw) winner=state.players.find(function(p){return p.id===bw.player_id;}); }
       else if (ch.id==='the_unbroken') { winner=state.players.find(function(p){return (sm[p.id]||{}).streak>=3;}); }
-      else if (ch.id==='grand_march') { var gw=state.workouts.find(function(w){return ['long_run','easy_run','tempo','optional_run'].includes(w.workout)&&(w.miles||0)>=10;}); if(gw) winner=state.players.find(function(p){return p.id===gw.player_id;}); }
+      else if (ch.id==='grand_march') { var gw=state.workouts.find(function(w){return ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout)&&(w.miles||0)>=10;}); if(gw) winner=state.players.find(function(p){return p.id===gw.player_id;}); }
       else if (ch.id==='primus_pares') { winner=state.players.find(function(p){return (sm[p.id]||{}).weekSet&&sm[p.id].weekSet.size>=8;}); }
     } else {
       if (ch.id==='pack_trains'&&state.players.every(function(p){return (sm[p.id]||{}).trials>=10;})) winner={name:'The Pack'};
@@ -2887,60 +2903,72 @@ function renderChallenges() {
   grid.innerHTML = CHALLENGES_DEF.map(ch => {
     let progress = 0, progressMax = ch.goal, progressLabel = '', winner = null;
     const won = state.challenges_won[ch.id];
-
     if (ch.type === 'duel') {
-      if (ch.id === 'first_blood') {
-        const first = state.workouts.sort((a,b) => new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
-        if (first) { progress = 1; winner = state.players.find(p=>p.id===first.player_id)?.name; }
-      } else if (ch.id === 'century_laurels') {
-        let best = 0, bestP = null;
-        state.players.forEach(p => { const l = statsMap[p.id].laurels; if(l>best){best=l;bestP=p;} });
-        progress = Math.min(best, 100); progressMax = 100;
-        if (best >= 100 && bestP) winner = bestP.name;
-      } else if (ch.id === 'five_league') {
-        const big = state.workouts.filter(w => ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 5);
-        if (big.length > 0) { progress = 5; winner = state.players.find(p=>p.id===big[0].player_id)?.name; }
-        else { const best = Math.max(0, ...state.workouts.filter(w=>w.miles).map(w=>w.miles)); progress = Math.min(best, 5); }
-      } else if (ch.id === 'the_unbroken') {
-        let best = 0, bestP = null;
-        state.players.forEach(p => { const s = statsMap[p.id].streak; if(s>best){best=s;bestP=p;} });
-        progress = Math.min(best, 3); progressMax = 3;
-        if (best >= 3 && bestP) winner = bestP.name;
-      } else if (ch.id === 'grand_march') {
-        const big = state.workouts.filter(w => ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 10);
-        if (big.length > 0) { progress = 10; winner = state.players.find(p=>p.id===big[0].player_id)?.name; }
-        else { const best = Math.max(0, ...state.workouts.filter(w=>w.miles).map(w=>w.miles||0)); progress = Math.min(best, 10); }
-      } else if (ch.id === 'primus_pares') {
-        let best = 0, bestP = null;
-        state.players.forEach(p => { const wks = statsMap[p.id].weekSet.size; if(wks>best){best=wks;bestP=p;} });
-        progress = Math.min(best, 8); progressMax = 8;
-        if (best >= 8 && bestP) winner = bestP.name;
+      if (ch.id==='first_blood') {
+        const first=state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        if(first){progress=1;winner=state.players.find(p=>p.id===first.player_id)?.name;}
+      } else if (ch.id==='the_faithful') {
+        const bp=state.players.find(p=>statsMap[p.id].perfectWeeks>=1);
+        if(bp){progress=1;winner=bp.name;}
+      } else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const l=statsMap[p.id].laurels;if(l>best){best=l;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
+        const big=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        if(big){progress=ch.goal;winner=state.players.find(p=>p.id===big.player_id)?.name;}
+        else{let best=0;state.players.forEach(p=>{const m=statsMap[p.id].maxSingleRun||0;if(m>best)best=m;});progress=Math.min(best,ch.goal);}
+      } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const s=statsMap[p.id].streak;if(s>best){best=s;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_swift') {
+        const wt={};
+        state.workouts.filter(w=>w.workout==='tempo').forEach(w=>{const k=getWeekKey(w.date)+'|'+w.player_id;wt[k]=(wt[k]||0)+1;});
+        const wk=Object.keys(wt).find(k=>wt[k]>=3);
+        if(wk){const pid=wk.split('|')[1];progress=3;winner=state.players.find(p=>p.id===pid)?.name;}
+        else{progress=Math.min(Math.max(0,...Object.values(wt).concat([0])),3);}
+      } else if (ch.id==='primus_pares') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const s=(statsMap[p.id].weekSet&&statsMap[p.id].weekSet.size)||0;if(s>best){best=s;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='iron_league') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const m=statsMap[p.id].miles;if(m>best){best=m;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_tireless') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const t=statsMap[p.id].trials;if(t>best){best=t;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
+      } else if (ch.id==='the_dancer') {
+        let best=0,bestP=null;
+        state.players.forEach(p=>{const cnt=state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length;if(cnt>best){best=cnt;bestP=p;}});
+        progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
       }
     } else {
-      // Pack challenges
-      if (ch.id === 'pack_trains') {
-        if (state.players.length === 0) { progress = 0; progressMax = 10; }
-        else {
-          const minTrials = Math.min(...state.players.map(p => statsMap[p.id].trials));
-          progress = Math.min(minTrials, 10); progressMax = 10;
-          if (state.players.every(p => statsMap[p.id].trials >= 10)) winner = 'The Pack';
-        }
-      } else if (ch.id === 'society_rising') {
-        const total = state.players.reduce((s,p) => s + statsMap[p.id].laurels, 0);
-        progress = Math.min(total, 500); progressMax = 500;
-        if (total >= 500) winner = 'The Pack';
-      } else if (ch.id === 'beyond_quota') {
-        if (state.players.length === 0) { progress = 0; progressMax = 5; }
-        else {
-          const minOpt = Math.min(...state.players.map(p => statsMap[p.id].optionals));
-          progress = Math.min(minOpt, 5); progressMax = 5;
-          if (state.players.every(p => statsMap[p.id].optionals >= 5)) winner = 'The Pack';
-        }
+      if (ch.id==='pack_trains') {
+        const min=state.players.length>0?Math.min(...state.players.map(p=>statsMap[p.id].trials)):0;
+        progress=Math.min(min,ch.goal);
+        if(state.players.length>0&&state.players.every(p=>statsMap[p.id].trials>=ch.goal))winner='The Pack';
+      } else if (['society_rising','the_rising_tide'].includes(ch.id)) {
+        const total=state.players.reduce((s,p)=>s+statsMap[p.id].laurels,0);
+        progress=Math.min(total,ch.goal);if(total>=ch.goal)winner='The Pack';
+      } else if (ch.id==='the_iron_pack') {
+        const min=state.players.length>0?Math.min(...state.players.map(p=>statsMap[p.id].strength)):0;
+        progress=Math.min(min,ch.goal);
+        if(state.players.length>0&&state.players.every(p=>statsMap[p.id].strength>=ch.goal))winner='The Pack';
+      } else if (ch.id==='warriors_all') {
+        const all=state.players.length>0&&state.players.every(p=>(state.badges_awarded[p.id]||[]).length>=1);
+        progress=all?1:0;if(all)winner='The Pack';
+      } else if (ch.id==='the_full_march') {
+        const min=state.players.length>0?Math.min(...state.players.map(p=>statsMap[p.id].maxSingleRun||0)):0;
+        progress=Math.min(min,ch.goal);
+        if(state.players.length>0&&state.players.every(p=>(statsMap[p.id].maxSingleRun||0)>=ch.goal))winner='The Pack';
+      } else if (ch.id==='cardio_pack') {
+        const all=state.players.length>0&&state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
+        progress=all?1:0;if(all)winner='The Pack';
       }
     }
-
-    const pct = progressMax > 0 ? Math.min(100, (progress/progressMax)*100) : 0;
-    const isComplete = winner !== null;
     progressLabel = `${progress} / ${progressMax}`;
 
     return `<div class="challenge-card ${isComplete?'completed':''}">
