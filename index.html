@@ -1026,7 +1026,7 @@
       <div style="flex:1"></div>
       <div class="sync-bar" onclick="manualRefresh()" title="Refresh" style="gap:5px">
         <div class="sync-dot loading" id="sync-dot"></div>
-        <span id="sync-label" style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.08em;color:rgba(240,208,128,0.5)">SYNC</span>
+        <span id="sync-label" style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.08em;color:rgba(240,208,128,0.5)" title="Auto-refreshes every 5 minutes">SYNC</span>
       </div>
       <button class="refresh-btn" onclick="manualRefresh()" style="padding:4px 9px;font-size:0.6rem">↻ Refresh</button>
       <button class="refresh-btn" onclick="openSetup()" style="border-color:rgba(240,208,128,0.4);color:rgba(240,208,128,0.75);padding:4px 9px;font-size:0.6rem">⚙ Setup</button>
@@ -1293,6 +1293,15 @@
       5. Paste both below — done! Share the HTML file with your pack.
     </div>
 
+    <div style="margin-bottom:12px">
+      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:5px">GitHub Gist ID</label>
+      <input id="setup-gist-id" type="text" placeholder="Paste your Gist ID here" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink);box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:5px">GitHub Token (ghp_...)</label>
+      <input id="setup-gist-token" type="password" placeholder="ghp_..." style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink);box-sizing:border-box">
+    </div>
+    <div style="border-top:1px solid var(--border);margin-bottom:12px;padding-top:12px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light)">OR USE JSONBIN (LEGACY)</div>
     <div style="margin-bottom:14px">
       <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px">JSONBin Bin ID</label>
       <input id="setup-bin-id" type="text" placeholder="e.g. 64f3a1b2e3c5d6789abcdef0" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:9px 12px;font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);outline:none">
@@ -1674,6 +1683,16 @@ function saveConfig(binId, apiKey) {
   localStorage.setItem('howlers_bin_id', JSONBIN_BIN_ID);
   localStorage.setItem('howlers_api_key', JSONBIN_API_KEY);
 }
+function saveGistConfig(gistId, token) {
+  localStorage.setItem('howlers_gist_id', gistId.trim());
+  localStorage.setItem('howlers_gist_token', token.trim());
+}
+function getGistConfig() {
+  return { gistId: localStorage.getItem('howlers_gist_id')||'', token: localStorage.getItem('howlers_gist_token')||'' };
+}
+function hasGistConfig() {
+  return !!(localStorage.getItem('howlers_gist_id') && localStorage.getItem('howlers_gist_token'));
+}
 let currentHowlerId = localStorage.getItem('howlers_current_player') || '';
 
 // ─── NOTIFICATION TRACKING ───────────────────────────────────────────────────
@@ -1738,7 +1757,7 @@ function updateCurrentHowlerSelect() {
 }
 
 function hasConfig() {
-  return JSONBIN_BIN_ID.length > 0 && JSONBIN_API_KEY.length > 0;
+  return hasGistConfig() || !!(localStorage.getItem('howlers_bin_id') && localStorage.getItem('howlers_api_key'));
 }
 
 // ─── STORAGE ─────────────────────────────────────────────────────────────────
@@ -1746,11 +1765,25 @@ async function loadState() {
   if (!hasConfig()) { showSetupScreen(); setSyncStatus('error'); return Promise.resolve(); }
   setSyncStatus('loading');
   try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-      headers: { 'X-Master-Key': JSONBIN_API_KEY }
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
+    let _stateData;
+    if (hasGistConfig()) {
+      const { gistId, token } = getGistConfig();
+      const res = await fetch('https://api.github.com/gists/' + gistId, {
+        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!res.ok) throw new Error('Gist HTTP ' + res.status);
+      const json = await res.json();
+      const fc = json.files && json.files['howlers-data.json'] && json.files['howlers-data.json'].content;
+      _stateData = fc ? JSON.parse(fc) : {};
+    } else {
+      const res = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID + '/latest', {
+        headers: { 'X-Master-Key': JSONBIN_API_KEY }
+      });
+      if (!res.ok) throw new Error('JSONBin HTTP ' + res.status);
+      const json = await res.json();
+      _stateData = json.record;
+    }
+    const json = { record: _stateData };
     const data = json.record;
     const prevState = JSON.parse(JSON.stringify(state)); // snapshot before update
     if (data && typeof data === 'object') {
@@ -1764,6 +1797,7 @@ async function loadState() {
     }
     setSyncStatus('live');
   checkForNewActivityNotifications(prevState);
+  retroactiveChallengePayout();
   checkAndPostChallengeHowls();
   checkAndPostWeeklyRecap();
   } catch(e) {
@@ -1778,15 +1812,22 @@ async function saveState() {
   if (!hasConfig()) return;
   setSyncStatus('loading');
   try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': JSONBIN_API_KEY
-      },
-      body: JSON.stringify(state)
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (hasGistConfig()) {
+      const { gistId, token } = getGistConfig();
+      const res = await fetch('https://api.github.com/gists/' + gistId, {
+        method: 'PATCH',
+        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: { 'howlers-data.json': { content: JSON.stringify(state) } } })
+      });
+      if (!res.ok) throw new Error('Gist HTTP ' + res.status);
+    } else {
+      const res = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+        body: JSON.stringify(state)
+      });
+      if (!res.ok) throw new Error('JSONBin HTTP ' + res.status);
+    }
     setSyncStatus('live');
   checkAndPostWeeklyRecap();
   } catch(e) {
@@ -1804,16 +1845,30 @@ function hideSetupScreen() {
   document.getElementById('setup-overlay').style.display = 'none';
 }
 function submitSetup() {
+  const gistId = (document.getElementById('setup-gist-id')||{}).value||'';
+  const gistToken = (document.getElementById('setup-gist-token')||{}).value||'';
   const binId = document.getElementById('setup-bin-id').value.trim();
-  const apiKey = document.getElementById('setup-api-key').value.trim();
-  if (!binId || !apiKey) { alert('Both Bin ID and API Key are required.'); return; }
-  saveConfig(binId, apiKey);
+  const apiKey = (document.getElementById('setup-api-key')||{}).value||'';
+  if (gistId.trim() && gistToken.trim()) {
+    saveGistConfig(gistId.trim(), gistToken.trim());
+  } else if (binId && apiKey.trim()) {
+    saveConfig(binId, apiKey.trim());
+  } else {
+    alert('Enter your Gist ID + GitHub Token, or JSONBin credentials.');
+    return;
+  }
   hideSetupScreen();
   loadState();
 }
 function openSetup() {
+  const gc = getGistConfig();
+  const gi = document.getElementById('setup-gist-id');
+  const gt = document.getElementById('setup-gist-token');
+  if (gi) gi.value = gc.gistId;
+  if (gt) gt.value = gc.token;
   document.getElementById('setup-bin-id').value = JSONBIN_BIN_ID;
-  document.getElementById('setup-api-key').value = JSONBIN_API_KEY;
+  const ak = document.getElementById('setup-api-key');
+  if (ak) ak.value = JSONBIN_API_KEY;
   showSetupScreen();
 }
 
@@ -2507,6 +2562,58 @@ function checkForNewActivityNotifications(prevState) {
 }
 
 // ─── WEEKLY RECAP ────────────────────────────────────────────────────────────
+function retroactiveChallengePayout() {
+  // One-time fix: pay out rewards for challenges won before payout code existed
+  if (!state.challenges_won || !state.players || !state.workouts) return;
+  var changed = false;
+  CHALLENGES_DEF.forEach(function(ch) {
+    if (!state.challenges_won[ch.id]) return; // not won
+    // Check if reward already paid
+    var alreadyPaid = state.workouts.some(function(w) {
+      return w.id && w.id.indexOf('ch_reward_' + ch.id) === 0;
+    });
+    if (alreadyPaid) return;
+    // Find winner from renderChallenges logic
+    var winnerId = null;
+    if (ch.type === 'duel') {
+      if (ch.id === 'first_blood') {
+        var first = state.workouts.filter(function(w){ return !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); }).slice().sort(function(a,b){ return new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date); })[0];
+        if (first) winnerId = first.player_id;
+      } else {
+        // For other duel challenges, find player with highest relevant stat
+        var best = 0, bestId = null;
+        state.players.forEach(function(p) {
+          var s = getStats(p.id);
+          var val = 0;
+          if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) val = s.laurels;
+          else if (ch.id === 'iron_league') val = s.miles;
+          else if (ch.id === 'the_tireless') val = s.trials;
+          else if (['the_unbroken','unbreakable'].includes(ch.id)) val = s.streak;
+          else if (ch.id === 'primus_pares') val = s.weekSet ? s.weekSet.size : 0;
+          if (val > best) { best = val; bestId = p.id; }
+        });
+        winnerId = bestId;
+      }
+      if (winnerId) {
+        state.workouts.push({ id: 'ch_reward_' + ch.id, player_id: winnerId, workout: 'milestone_bonus', date: new Date().toISOString().split('T')[0], laurels_base: ch.reward, quote: 'Retroactive glory. The laurels were always yours. ✦', timestamp: new Date().toISOString(), milestone_label: 'Challenge: ' + ch.name, milestone_bonus: ch.reward });
+        changed = true;
+        console.log('Retroactive payout: ' + ch.name + ' +' + ch.reward + 'L');
+      }
+    } else {
+      // Pack challenge — pay everyone
+      state.players.forEach(function(p) {
+        var pid = 'ch_reward_' + ch.id + '_' + p.id;
+        var paid = state.workouts.some(function(w){ return w.id === pid; });
+        if (!paid) {
+          state.workouts.push({ id: pid, player_id: p.id, workout: 'milestone_bonus', date: new Date().toISOString().split('T')[0], laurels_base: ch.reward, quote: 'The pack rises together. ✦', timestamp: new Date().toISOString(), milestone_label: 'Challenge: ' + ch.name, milestone_bonus: ch.reward });
+          changed = true;
+        }
+      });
+    }
+  });
+  if (changed) saveState();
+}
+
 function checkAndPostChallengeHowls() {
   if (!state.players||state.players.length===0) return;
   if (!state.howls) state.howls = [];
@@ -3823,6 +3930,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('log-workout').addEventListener('change', updateLaurelPreview);
 
   updateNotifBtn();
+  // Pause auto-refresh when app is hidden (saves rate limit)
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+      // Resume: refresh immediately then restart interval
+      loadState();
+    }
+  });
+
   document.addEventListener('click', function(e) {
     if (!e.target.closest('#mention-dropdown') && e.target.id !== 'howl-message') {
       const dd = document.getElementById('mention-dropdown');
@@ -3831,7 +3946,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   switchTab('leaderboard');
   loadState().then(function() { autoFillHowlerDropdowns(); });
-  refreshInterval = setInterval(loadState, 30000);
+  refreshInterval = setInterval(function(){ if(document.visibilityState !== "hidden") loadState(); }, 300000);
   renderCodex();
 });
 </script>
