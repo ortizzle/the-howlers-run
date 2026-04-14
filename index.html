@@ -1002,6 +1002,18 @@
     .player-grid { grid-template-columns: 1fr 1fr; }
     .nav-tab { padding: 10px 12px; font-size: 0.62rem; }
   }
+
+  /* Flip card styles */
+  .flip-card { perspective: 1000px; cursor: pointer; }
+  .flip-card-inner { position: relative; width: 100%; height: 120px; transition: transform 0.5s; transform-style: preserve-3d; }
+  .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+  .flip-card-front, .flip-card-back {
+    position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    background: var(--parchment); border: 1.5px solid var(--border); border-radius: var(--radius);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 12px 8px; box-sizing: border-box; text-align: center;
+  }
+  .flip-card-back { transform: rotateY(180deg); background: var(--parchment-dark); border-color: var(--amber); }
 </style>
 </head>
 <body>
@@ -1190,7 +1202,7 @@
           <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
           <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
           <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum</td></tr>
-          <tr><td><strong>Optional 5th Day</strong></td><td>Any workout counts — run or cross-train</td></tr>
+          
           <tr><td><strong>Perfect Week Bonus</strong></td><td>Complete all 4 core days → +25 Laurels</td></tr>
           <tr><td><strong>Streak Bonus</strong></td><td>+10 Laurels per consecutive week after week 1</td></tr>
           <tr><td><strong>Book Bonus</strong></td><td>+25 Laurels per Red Rising book read (max 150)</td></tr>
@@ -1585,9 +1597,9 @@ const BADGES_DEF = [
     ]},
   {id:'extra_mile', icon:'⭐', name:'Extra Mile',
     tiers:[
-      {tier:'bronze', desc:'5 optional 5th day workouts', check:(s)=>s.optionals>=5},
-      {tier:'silver', desc:'15 optional 5th day workouts', check:(s)=>s.optionals>=15},
-      {tier:'gold',   desc:'30 optional 5th day workouts', check:(s)=>s.optionals>=30}
+      {tier:'bronze', desc:'5 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=5},
+      {tier:'silver', desc:'15 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=15},
+      {tier:'gold',   desc:'30 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=30}
     ]},
   {id:'centurion', icon:'💯', name:'Centurion',
     tiers:[
@@ -1645,7 +1657,7 @@ const MILESTONES_DEF = [
   {id:'m1', num:1, title:'The Pack Assembles', desc:'First trial logged by anyone'},
   {id:'m2', num:2, title:'Steeds Activated', desc:'Every player has logged a Peloton ride'},
   {id:'m3', num:3, title:'Born to Run', desc:'Every player has completed a run'},
-  {id:'m4', num:4, title:'Optional Warriors', desc:'Every player has used their optional 5th day'},
+  {id:'m4', num:4, title:'Cross-Train Warriors', desc:'Every player has logged a Crimson Pulse or Walk/Run session'},
   {id:'m5', num:5, title:'Four Weeks In', desc:'Combined active weeks across pack reaches 8'},
   {id:'m6', num:6, title:'The First Long March', desc:'Any player runs 6+ miles in one session'},
   {id:'m7', num:7, title:'Double Digit Miles', desc:'Any player runs 10+ miles in one session'},
@@ -1676,7 +1688,7 @@ const RED_GOD_LAURELS = 200;
 const WORKOUT_NAMES = {
   duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
   long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
-  optional_run:'Optional 5th Day Run', optional_other:'Optional 5th Day Other',
+  
   walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
   strength:'The Forge (Strength)', mobility:'Mind & Body (Mobility)'
 };
@@ -1962,7 +1974,7 @@ function calcPlayerStats(pid) {
     if (w.workout === 'peloton') pelotons++;
     if (w.workout === 'strength') strength++;
     if (w.workout === 'mobility') mobility++;
-    if (w.workout === 'optional_run' || w.workout === 'optional_other') optionals++;
+    if (w.workout === 'cardio' || w.workout === 'walk_run') optionals++;
     if (['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout) && w.miles) {
       if (w.miles > maxSingleRun) maxSingleRun = w.miles;
     }
@@ -2257,6 +2269,7 @@ function renderMarsBar() {
     '</div>' +
     '</div>';
 }
+
 
 function recalcAllBadges() {
   // Wipe all badges and recompute from scratch based on current workouts
@@ -2896,38 +2909,59 @@ function renderPlayers() {
 function renderPackStats() {
   const el = document.getElementById('pack-stats-dashboard');
   if (!el) return;
-  const totalWorkouts = state.workouts.length;
-  const totalMiles = state.players.reduce(function(s,p){ return s + getStats(p.id).miles; }, 0);
-  const totalLaurels = state.players.reduce(function(s,p){ return s + getStats(p.id).laurels; }, 0);
-  const totalHowls = (state.howls || []).length;
-  const totalLikes = state.workouts.reduce(function(s,w){
-    var r = w.reactions || {}; return s + Object.values(r).reduce(function(a,b){return a+b;},0);
-  }, 0) + (state.howls||[]).reduce(function(s,h){
-    var r = h.reactions || {}; return s + Object.values(r).reduce(function(a,b){return a+b;},0);
-  }, 0);
-  // Most active week
+  const sm = {};
+  try { state.players.forEach(p => { sm[p.id] = getStats(p.id); }); } catch(e) { return; }
+  const totalMiles = state.players.reduce((s,p)=>s+(sm[p.id].miles||0),0);
+  const totalTrials = state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).length;
+  const totalLaurels = state.players.reduce((s,p)=>s+(sm[p.id].laurels||0),0);
+  const totalHowlers = state.players.length;
+  const totalHowls = (state.howls||[]).filter(h=>h.player_id!=='system').length;
+  const totalLikes = (state.howls||[]).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0);
+  // Peak week
   const weekCounts = {};
-  state.workouts.forEach(function(w){
-    const wk = getWeekKey(w.date);
-    weekCounts[wk] = (weekCounts[wk]||0) + 1;
+  state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).forEach(w=>{
+    const wk = getWeekKey(w.date); weekCounts[wk]=(weekCounts[wk]||0)+1;
   });
-  const peakWeekCount = Object.values(weekCounts).length > 0 ? Math.max(...Object.values(weekCounts)) : 0;
-  const stats = [
-    {icon:'🏃', label:'Total Miles', val: totalMiles.toFixed(1)},
-    {icon:'⚔️', label:'Trials Logged', val: totalWorkouts},
-    {icon:'🏅', label:'Total Laurels', val: totalLaurels},
-    {icon:'👥', label:'Howlers', val: state.players.length},
-    {icon:'🐺', label:'Howls Posted', val: totalHowls},
-    {icon:'❤️', label:'Likes Given', val: totalLikes},
-    {icon:'🔥', label:'Peak Week', val: peakWeekCount + ' trials'},
-  ];
-  el.innerHTML = stats.map(function(s) {
-    return '<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);text-align:center">' +
-      '<div style="font-size:1.4rem;margin-bottom:4px">' + s.icon + '</div>' +
-      '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink);line-height:1">' + s.val + '</div>' +
-      '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.1em;color:var(--ink-light);margin-top:3px;text-transform:uppercase">' + s.label + '</div>' +
-      '</div>';
-  }).join('');
+  const peakWeek = Math.max(0,...Object.values(weekCounts));
+
+  // Rankings for back of cards
+  const byLaurels = state.players.slice().sort((a,b)=>(sm[b.id].laurels||0)-(sm[a.id].laurels||0));
+  const byMiles = state.players.slice().sort((a,b)=>(sm[b.id].miles||0)-(sm[a.id].miles||0));
+  const byTrials = state.players.slice().sort((a,b)=>(sm[b.id].trials||0)-(sm[a.id].trials||0));
+  const byStreak = state.players.slice().sort((a,b)=>(sm[b.id].streak||0)-(sm[a.id].streak||0));
+
+  function rankList(players, statFn, unit) {
+    return players.map((p,i)=>`<div style="font-family:'Cinzel',serif;font-size:0.62rem;display:flex;justify-content:space-between;width:100%;padding:1px 0;${i===0?'color:var(--amber);font-weight:700':'color:var(--ink-mid)'}"><span>${i===0?'★':i+1+'.'} ${p.name.split(' ')[0]}</span><span>${statFn(p)}${unit}</span></div>`).join('');
+  }
+
+  function flipCard(icon, value, label, rankHTML, rankTitle) {
+    return `<div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <div style="font-size:1.6rem;margin-bottom:4px">${icon}</div>
+          <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;color:var(--ink)">${value}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.12em;color:var(--ink-light);margin-top:3px">${label}</div>
+        </div>
+        <div class="flip-card-back">
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:6px">${rankTitle}</div>
+          <div style="width:100%">${rankHTML}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML =
+    flipCard('🏃', totalMiles.toFixed(1), 'TOTAL MILES', rankList(byMiles, p=>(sm[p.id].miles||0).toFixed(1), ' mi'), 'MILES RANKING') +
+    flipCard('⚔️', totalTrials, 'TRIALS LOGGED', rankList(byTrials, p=>sm[p.id].trials||0, ''), 'TRIALS RANKING') +
+    flipCard('🏅', totalLaurels, 'TOTAL LAURELS', rankList(byLaurels, p=>sm[p.id].laurels||0, 'L'), 'LAURELS RANKING') +
+    flipCard('👥', totalHowlers, 'HOWLERS', rankList(byLaurels, p=>sm[p.id].rank.name, ''), 'RANK STANDING') +
+    flipCard('🐺', totalHowls, 'HOWLS POSTED', rankList(byStreak, p=>sm[p.id].streak||0, ' wks'), 'STREAK RANKING') +
+    flipCard('❤️', totalLikes, 'LIKES GIVEN', rankList(byLaurels, p=>sm[p.id].perfectWeeks||0, ' wks'), 'PERFECT WEEKS') +
+    `<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div style="font-size:1.6rem;margin-bottom:4px">🔥</div>
+      <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;color:var(--ink)">${peakWeek} TRIALS</div>
+      <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.12em;color:var(--ink-light);margin-top:3px">PEAK WEEK</div>
+    </div>`;
 }
 
 function renderDistanceRankings() {
@@ -3164,6 +3198,7 @@ function renderChallenges() {
       }
     }
     progressLabel = `${progress} / ${progressMax}`;
+    const isComplete = won || winner;
 
     return `<div class="challenge-card ${isComplete?'completed':''}">
       ${isComplete ? '<div class="conquered-stamp">✦ CONQUERED</div>' : ''}
