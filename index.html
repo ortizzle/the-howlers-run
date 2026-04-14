@@ -2865,7 +2865,11 @@ function renderPlayers() {
     const isPrimus = p.id === primusId && s.laurels > 0;
     const lastSeenKey = 'howlers_seen_' + p.id + '_' + (localStorage.getItem('howlers_bin_id')||'');
     const lastSeen = localStorage.getItem(lastSeenKey) || '0';
-    const hasNewActivity = state.workouts.some(function(w) {
+    const lastHowlSeen = localStorage.getItem('howlers_howl_seen_' + (localStorage.getItem('howlers_gist_id')||'')) || '0';
+  const hasUnreadHowl = (state.howls||[]).some(function(h) {
+    return h.player_id !== 'system' && h.player_id !== p.id && (h.timestamp||h.date) > lastHowlSeen;
+  });
+  const hasNewActivity = state.workouts.some(function(w) {
       return w.player_id === p.id && (w.timestamp||w.date) > lastSeen;
     });
     // Build tiered badge pills — show highest tier earned per badge
@@ -2889,6 +2893,7 @@ function renderPlayers() {
       <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor};cursor:pointer" onclick="openProfile('${p.id}')">
         <div style="display:flex;align-items:center;position:relative;z-index:1">
           ${hasNewActivity ? '<span class="new-activity-dot" title="New activity since your last visit"></span>' : ''}
+  ${hasUnreadHowl ? '<span style="position:absolute;top:6px;left:8px;font-size:0.9rem;line-height:1" title="New howl!">🐺</span>' : ''}
           <div class="player-color-label">${p.house}</div>
         </div>
         <div class="player-name">${escHtml(p.name)}</div>
@@ -2976,11 +2981,11 @@ function renderPackStats() {
     flipCard('👥', totalHowlers, 'HOWLERS', rankList(byLaurels, p=>sm[p.id].rank.name, ''), 'RANK STANDING') +
     flipCard('🐺', totalHowls, 'HOWLS POSTED', rankList(byStreak, p=>sm[p.id].streak||0, ' wks'), 'STREAK RANKING') +
     flipCard('❤️', totalLikes, 'LIKES GIVEN', rankList(byLaurels, p=>sm[p.id].perfectWeeks||0, ' wks'), 'PERFECT WEEKS') +
-    `<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center">
-      <div style="font-size:1.6rem;margin-bottom:4px">🔥</div>
-      <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;color:var(--ink)">${peakWeek} TRIALS</div>
-      <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.12em;color:var(--ink-light);margin-top:3px">PEAK WEEK</div>
-    </div>`;
+    flipCard('🔥', peakWeek + ' TRIALS', 'PEAK WEEK', rankList(byStreak, p=>(sm[p.id].perfectWeeks||0)+' wks', ''), 'PERFECT WEEKS') +
+    flipCard('💪', state.players.reduce((s,p)=>s+(sm[p.id].strength||0),0), 'STRENGTH SESSIONS', rankList(state.players.slice().sort((a,b)=>(sm[b.id].strength||0)-(sm[a.id].strength||0)), p=>sm[p.id].strength||0, ''), 'STRENGTH RANKING') +
+    flipCard('🧘', state.players.reduce((s,p)=>s+(sm[p.id].mobility||0),0), 'MOBILITY SESSIONS', rankList(state.players.slice().sort((a,b)=>(sm[b.id].mobility||0)-(sm[a.id].mobility||0)), p=>sm[p.id].mobility||0, ''), 'MOBILITY RANKING') +
+    flipCard('💃', state.players.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length,0), 'CRIMSON PULSE', rankList(state.players.slice().sort((a,b)=>state.workouts.filter(w=>w.player_id===b.id&&w.workout==='cardio').length-state.workouts.filter(w=>w.player_id===a.id&&w.workout==='cardio').length), p=>state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length, ''), 'CARDIO RANKING') +
+    flipCard('🚴', state.players.reduce((s,p)=>s+(sm[p.id].pelotons||0),0), 'PELOTON RIDES', rankList(state.players.slice().sort((a,b)=>(sm[b.id].pelotons||0)-(sm[a.id].pelotons||0)), p=>sm[p.id].pelotons||0, ''), 'PELOTON RANKING');
 }
 
 function renderDistanceRankings() {
@@ -3113,10 +3118,9 @@ function renderChronicle() {
 function renderChallenges() {
   const grid = document.getElementById('challenges-grid');
   if (!grid) return;
+  const EMPTY_STATS = {laurels:0,miles:0,pelotonMiles:0,trials:0,streak:0,perfectWeeks:0,pelotons:0,strength:0,mobility:0,optionals:0,races:0,maxSingleRun:0,weekSet:new Set(),longestRun:0,earnedBadges:[],rank:RANKS[0],isUnderdog:false};
   const statsMap = {};
-  try {
-    state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
-  } catch(e) { console.error('renderChallenges statsMap error:', e); return; }
+  state.players.forEach(p => { try { statsMap[p.id] = getStats(p.id); } catch(e) { statsMap[p.id] = Object.assign({},EMPTY_STATS); } });
 
   grid.innerHTML = CHALLENGES_DEF.map(ch => {
     let progress = 0, progressMax = ch.goal, progressLabel = '', winner = null;
@@ -3242,10 +3246,9 @@ function renderChallenges() {
 function renderTimeline() {
   const tl = document.getElementById('timeline');
   if (!tl) return;
+  const EMPTY_TL = {laurels:0,miles:0,pelotonMiles:0,trials:0,streak:0,perfectWeeks:0,pelotons:0,strength:0,mobility:0,optionals:0,races:0,maxSingleRun:0,weekSet:new Set(),longestRun:0,earnedBadges:[],rank:RANKS[0],isUnderdog:false};
   const statsMap = {};
-  try {
-    state.players.forEach(p => { statsMap[p.id] = getStats(p.id); });
-  } catch(e) { console.error('renderTimeline statsMap error:', e); return; }
+  state.players.forEach(p => { try { statsMap[p.id] = getStats(p.id); } catch(e) { statsMap[p.id] = Object.assign({},EMPTY_TL); } });
   const now = new Date();
   const raceWeekStart = new Date('2027-01-13T00:00:00');
   const raceWeekEnd = new Date('2027-01-17T23:59:59');
