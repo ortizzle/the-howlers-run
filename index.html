@@ -1052,7 +1052,7 @@
   <div class="nav-inner">
     <div class="nav-tab active" onclick="switchTab('leaderboard')">🏅 Leaderboard</div>
     <div class="nav-tab" onclick="switchTab('log')">⚔ Log Trial</div>
-    <div class="nav-tab" onclick="switchTab('chronicle')">📜 The Annals</div>
+    <div class="nav-tab" onclick="switchTab('chronicle')" id="nav-annals">📜 The Annals</div>
     <div class="nav-tab" onclick="switchTab('dispatch')" id="howl-nav-tab">🐺 The Howl<span class="nav-badge" id="howl-badge" style="display:none">0</span></div>
     <div class="nav-tab" onclick="switchTab('trials')">🏆 Trials</div>
     <div class="nav-tab" onclick="switchTab('conquests')">✦ Conquests</div>
@@ -1237,7 +1237,7 @@
           <tr><td>Mind & Body — Mobility/Yoga</td><td>10 flat</td></tr>
           <tr><td>Perfect Week Bonus</td><td>+25</td></tr>
           <tr><td>Streak Bonus</td><td>+10 per consecutive week (from week 2)</td></tr>
-          <tr><td>Underdog Bonus</td><td>+20% when 200+ Laurels behind leader</td></tr>
+          <tr><td>Underdog Bonus</td><td>+20% when 300+ Laurels behind leader</td></tr>
           <tr><td>Weekly Mile Bonus</td><td>First time hitting 10/15/20/25/30 mi in a week: +30/50/75/100/150L</td></tr>
           <tr><td>📚 Book Read (books 1–6)</td><td>+25 each (max 150L)</td></tr>
           <tr><td>📚 Red God ✦ (unreleased)</td><td>+200 flat</td></tr>
@@ -1426,9 +1426,11 @@
 
 <!-- PROFILE MODAL -->
 <div class="modal-overlay" id="profile-modal">
-  <div class="modal-box" style="max-width:540px;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
-    <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
-    <div id="profile-modal-content"></div>
+  <div class="modal-box" style="max-width:540px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;padding:0">
+    <div style="display:flex;justify-content:flex-end;padding:10px 14px 0;flex-shrink:0">
+      <button class="modal-close" style="position:relative;top:auto;right:auto" onclick="closeModal('profile-modal')">✕</button>
+    </div>
+    <div id="profile-modal-content" style="overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;padding:0 20px 20px"></div>
   </div>
 </div>
 
@@ -1751,6 +1753,32 @@ function updateHowlBadge(count) {
     badge.style.display = 'none';
   }
 }
+function checkUnreadActivity() {
+  const lastSeen = localStorage.getItem('howlers_annals_seen_' + (localStorage.getItem('howlers_gist_id')||'')) || '0';
+  const hasNew = state.workouts.some(w =>
+    !['milestone_bonus','duel_win','duel_loss'].includes(w.workout) &&
+    w.player_id !== currentHowlerId &&
+    (w.timestamp||w.date) > lastSeen
+  );
+  const tab = document.getElementById('nav-annals');
+  if (tab) {
+    const existing = tab.querySelector('.annals-dot');
+    if (hasNew && !existing) {
+      const dot = document.createElement('span');
+      dot.className = 'annals-dot';
+      dot.style.cssText = 'display:inline-block;width:7px;height:7px;background:#c8900a;border-radius:50%;margin-left:4px;vertical-align:middle';
+      tab.appendChild(dot);
+    } else if (!hasNew && existing) {
+      existing.remove();
+    }
+  }
+}
+
+function markAnnalsSeen() {
+  localStorage.setItem('howlers_annals_seen_' + (localStorage.getItem('howlers_gist_id')||''), new Date().toISOString());
+  checkUnreadActivity();
+}
+
 function checkUnreadHowls() {
   const lastSeen = getLastHowlSeen();
   const myId = currentHowlerId;
@@ -2021,7 +2049,14 @@ function calcPlayerStats(pid) {
 
   // Perfect weeks count
   let perfectWeeks = 0;
-  Object.values(weekWorkouts).forEach(cnt => { if (cnt >= 4) perfectWeeks++; });
+  // Perfect week = workouts on 4+ distinct calendar days in a Mon-Sun week
+  Object.keys(weekWorkouts).forEach(wk => {
+    const daysInWeek = new Set(
+      state.workouts.filter(w => !['milestone_bonus','duel_win','duel_loss'].includes(w.workout) && w.player_id === pid && getWeekKey(w.date) === wk)
+      .map(w => w.date)
+    );
+    if (daysInWeek.size >= 4) perfectWeeks++;
+  });
 
   // Build stats object for badge checks
   const statsObj = { laurels, miles: +miles.toFixed(1), trials, streak, pelotons, strength, mobility, optionals, maxSingleRun, perfectWeeks };
@@ -2174,7 +2209,7 @@ function openProfile(pid) {
     buildHeatmap(pid) +
 
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin:16px 0 8px">⚔️ TRIAL CHRONICLE</div>' +
-    '<div style="max-height:45vh;overflow-y:auto;padding-right:4px;-webkit-overflow-scrolling:touch">' + timelineHTML + '</div>';
+    timelineHTML + '</div>';
 
   document.getElementById('profile-modal').classList.add('open');
 }
@@ -2932,7 +2967,7 @@ function renderPlayers() {
   const sorted = [...state.players].sort((a,b) => (statsMap[b.id].laurels - statsMap[a.id].laurels));
   const primusId = sorted.length > 0 ? sorted[0].id : null;
   const leaderScore = sorted.length > 0 ? statsMap[sorted[0].id].laurels : 0;
-  sorted.forEach(function(p) { statsMap[p.id].isUnderdog = leaderScore - statsMap[p.id].laurels >= 200 && statsMap[p.id].laurels > 0; });
+  sorted.forEach(function(p) { statsMap[p.id].isUnderdog = leaderScore - statsMap[p.id].laurels >= 300 && statsMap[p.id].laurels > 0; });
 
   let html = '';
   sorted.forEach((p, idx) => {
@@ -3148,7 +3183,7 @@ function renderChronicle() {
     feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📜</span>No trials logged yet. The pack awaits its first march.</div>';
     return;
   }
-  const sorted = [...state.workouts].sort((a,b) => new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date));
+  const sorted = [...state.workouts].filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).sort((a,b) => new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date));
   feed.innerHTML = sorted.slice(0, 50).map(w => {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
@@ -3318,7 +3353,7 @@ function renderChallenges() {
         <div class="progress-bar-fill" style="width:${pct}%"></div>
       </div>
       <div class="progress-label"><span>${progressLabel}</span><span>${Math.round(pct)}%</span></div>
-      ${winner ? `<div class="challenge-winner">★ Won by: ${winner}</div>` : ''}
+      ${winner ? `<div class="challenge-winner" style="display:flex;align-items:center;gap:6px"><span style="color:var(--amber)">★</span> <span>Won by:</span> <strong>${winner}</strong></div>` : ''}
     </div>`;
   }).join('');
 }
@@ -4098,7 +4133,7 @@ async function submitTrial() {
   const allLaurels = state.players.map(function(p){ return (_statsCache[p.id]||{}).laurels||0; });
   const leaderLaurels = allLaurels.length > 0 ? Math.max(...allLaurels) : 0;
   const myCurrentLaurels = (_statsCache[pid]||{}).laurels||0;
-  const isUnderdog = leaderLaurels - myCurrentLaurels >= 200;
+  const isUnderdog = leaderLaurels - myCurrentLaurels >= 300;
   const underdogBonus = isUnderdog ? Math.round(laurels_base * 0.2) : 0;
   const laurels_total = laurels_base + underdogBonus;
   const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
@@ -4151,6 +4186,7 @@ function switchTab(id) {
     if (ids[i] === id) t.classList.add('active');
   });
   if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
+  if (id === 'chronicle') { markAnnalsSeen(); }
   if (id === 'leaderboard') { renderMarsBar(); renderDistanceRankings(); renderPackStats(); }
   if (id === 'trials') { renderChallenges(); }
   if (id === 'conquests') { renderTimeline(); }
