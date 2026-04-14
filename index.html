@@ -2018,7 +2018,7 @@ function calcPlayerStats(pid) {
   const longestRun = runWorkouts.length > 0 ? Math.max(...runWorkouts.map(w => w.miles)) : 0;
   const totalRunMiles = +miles.toFixed(1);
   // Underdog check (based on stored data — compare against other players later in render)
-  return { laurels, miles: totalRunMiles, pelotonMiles: +pelotonMiles.toFixed(1), trials, streak, rank, earnedBadges, pelotons, strength, mobility, optionals, maxSingleRun, weekSet, weekWorkouts, perfectWeeks, longestRun, isUnderdog: false };
+  return { laurels: laurels||0, miles: totalRunMiles||0, pelotonMiles: +pelotonMiles.toFixed(1), trials: trials||0, streak: streak||0, rank: rank||RANKS[0], earnedBadges: earnedBadges||[], pelotons: pelotons||0, strength: strength||0, mobility: mobility||0, optionals: optionals||0, maxSingleRun: maxSingleRun||0, weekSet: weekSet||new Set(), weekWorkouts: weekWorkouts||{}, perfectWeeks: perfectWeeks||0, longestRun: longestRun||0, isUnderdog: false };
 }
 
 function openProfile(pid) {
