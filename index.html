@@ -2350,12 +2350,12 @@ function renderMarsBar() {
     '<div style="position:absolute;top:0;left:0;height:100%;width:' + pct.toFixed(2) + '%;background:linear-gradient(to right,#ff6f00,#ff8f00,#ffa000);border-radius:14px;transition:width 1s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:flex-end;padding-right:8px">' +
     (totalMiles > 3 ? '<span style="font-size:0.9rem">🚀</span>' : '') +
     '</div>' +
-    (pct >= 95 ? '<div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:1rem">⛓️‍💥</div>' : '<div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:1rem;opacity:0.6">⛓️‍💥</div>') +
+    (pct >= 95 ? '<div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:1rem">🔴</div>' : '<div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:1rem;opacity:0.6">🔴</div>') +
     '</div>' +
     '<div style="display:flex;justify-content:space-between;font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light)">' +
     '<span>🌍 Earth</span>' +
     '<span>' + pct.toFixed(1) + '% of the journey</span>' +
-    '<span>Mars ⛓️‍💥</span>' +
+    '<span>Mars 🔴</span>' +
     '</div>' +
     '</div>';
 }
