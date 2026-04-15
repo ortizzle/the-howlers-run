@@ -3274,14 +3274,13 @@ function renderChronicle() {
   }
   const sorted = [...state.workouts]
     .filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout))
-    .map((w, idx) => ({w, idx}))
     .sort((a, b) => {
-      const ta = a.w.timestamp ? new Date(a.w.timestamp) : new Date(a.w.date + 'T00:00:00');
-      const tb = b.w.timestamp ? new Date(b.w.timestamp) : new Date(b.w.date + 'T00:00:00');
-      if (tb - ta !== 0) return tb - ta;
-      return b.idx - a.idx; // newer array position wins for same-time entries
-    })
-    .map(({w}) => w);
+      // Sort by workout date first, then timestamp within same day
+      if (b.w.date !== a.w.date) return b.w.date > a.w.date ? 1 : -1;
+      const ta = a.w.timestamp ? new Date(a.w.timestamp) : 0;
+      const tb = b.w.timestamp ? new Date(b.w.timestamp) : 0;
+      return tb - ta;
+    });
   feed.innerHTML = sorted.slice(0, 50).map(w => {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
