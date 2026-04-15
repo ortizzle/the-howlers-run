@@ -1770,6 +1770,7 @@ function getLastHowlSeen() {
 function markHowlsSeen() {
   localStorage.setItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_gist_id')||localStorage.getItem('howlers_bin_id')||''), new Date().toISOString());
   updateHowlBadge(0);
+  renderPlayers(); // refresh wolf icon
 }
 function updateHowlBadge(count) {
   const badge = document.getElementById('howl-badge');
@@ -2163,7 +2164,7 @@ function openProfile(pid) {
   }
 
   const timelineHTML = (works.length === 0 && bookLaurels === 0) ? '<div class="empty-state" style="padding:20px"><span class="empty-icon">⚔️</span>No trials logged yet.</div>' :
-    bookEntry + works.slice().reverse().map(function(w, idx) {
+    bookEntry + works.slice().map(function(w, idx) {
       runningTotal += (w.laurels_base || 0);
       const wname = w.workout === 'milestone_bonus' ? (w.milestone_label || '⚔ Milestone Bonus') : (WORKOUT_NAMES[w.workout] || w.workout);
       let detail = '';
@@ -3250,8 +3251,8 @@ function renderChronicle() {
     const tb = b.timestamp ? new Date(b.timestamp) : new Date(b.date + 'T23:59:59');
     if (tb - ta !== 0) return tb - ta;
     // Tiebreak by id — newer entries have larger numeric id
-    const ia = parseInt((a.id||'').replace(/\D/g,'')) || 0;
-    const ib = parseInt((b.id||'').replace(/\D/g,'')) || 0;
+    const ia = parseInt((a.id||'').replace(/[^0-9]/g,'')) || 0;
+    const ib = parseInt((b.id||'').replace(/[^0-9]/g,'')) || 0;
     return ib - ia;
   });
   feed.innerHTML = sorted.slice(0, 50).map(w => {
@@ -3805,7 +3806,7 @@ function exportLeaderboardImage() {
 
   var rows = sorted.map(function(p, i) {
     const s = statsMap[p.id];
-    const hc = s.laurels >= 1200 ? '#c8900a' : (HOUSES[p.house] || '#7a5006');
+    const hc = s.laurels >= 9500 ? '#c8900a' : (HOUSES[p.house] || '#7a5006');
     const isArch = i === 0 && s.laurels > 0;
     return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:' + (isArch ? 'rgba(200,144,10,0.08)' : (i%2===0?'#ede3d0':'#f5efe4')) + ';border-left:5px solid ' + hc + ';margin-bottom:3px;border-radius:3px">' +
       '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:#6b5040;width:22px">' + (i+1) + '.</span>' +
