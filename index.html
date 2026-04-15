@@ -1089,7 +1089,7 @@
   <div class="nav-inner">
     <div class="nav-tab active" onclick="switchTab('leaderboard')">🏅 Leaderboard</div>
     <div class="nav-tab" onclick="switchTab('log')">⚔ Log Trial</div>
-    <div class="nav-tab" onclick="switchTab('chronicle')" id="nav-annals">📜 The Annals</div>
+    <div class="nav-tab" onclick="switchTab('chronicle')" id="nav-annals">📜 Chronicle</div>
     <div class="nav-tab" onclick="switchTab('dispatch')" id="howl-nav-tab">🐺 The Howl<span class="nav-badge" id="howl-badge" style="display:none">0</span></div>
     <div class="nav-tab" onclick="switchTab('trials')">🏆 Trials</div>
     <div class="nav-tab" onclick="switchTab('conquests')">✦ Conquests</div>
@@ -3266,15 +3266,16 @@ function renderChronicle() {
     feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📜</span>No trials logged yet. The pack awaits its first march.</div>';
     return;
   }
-  const sorted = [...state.workouts].filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).sort((a,b) => {
-    const ta = a.timestamp ? new Date(a.timestamp) : new Date(a.date + 'T00:00:00');
-    const tb = b.timestamp ? new Date(b.timestamp) : new Date(b.date + 'T00:00:00');
-    if (tb - ta !== 0) return tb - ta;
-    // Tiebreak by id — newer entries have larger numeric id
-    const ia = parseInt((a.id||'').replace(/[^0-9]/g,'')) || 0;
-    const ib = parseInt((b.id||'').replace(/[^0-9]/g,'')) || 0;
-    return ib - ia;
-  });
+  const sorted = [...state.workouts]
+    .filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout))
+    .map((w, idx) => ({w, idx}))
+    .sort((a, b) => {
+      const ta = a.w.timestamp ? new Date(a.w.timestamp) : new Date(a.w.date + 'T00:00:00');
+      const tb = b.w.timestamp ? new Date(b.w.timestamp) : new Date(b.w.date + 'T00:00:00');
+      if (tb - ta !== 0) return tb - ta;
+      return b.idx - a.idx; // newer array position wins for same-time entries
+    })
+    .map(({w}) => w);
   feed.innerHTML = sorted.slice(0, 50).map(w => {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
