@@ -1031,26 +1031,6 @@
     80%  { opacity: 1; }
     100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
   }
-
-  /* Challenge card flip */
-  .ch-flip { perspective: 800px; cursor: pointer; }
-  .ch-flip-inner { position: relative; width: 100%; transition: transform 0.45s; transform-style: preserve-3d; min-height: 180px; }
-  .ch-flip.flipped .ch-flip-inner { transform: rotateY(180deg); }
-  .ch-flip-front, .ch-flip-back {
-    backface-visibility: hidden; -webkit-backface-visibility: hidden;
-    width: 100%;
-  }
-  .ch-flip-front { position: relative; }
-  .ch-flip-back {
-    position: absolute; top: 0; left: 0;
-    transform: rotateY(180deg);
-    background: var(--parchment-dark);
-    border: 1.5px solid var(--amber);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    box-sizing: border-box;
-    min-height: 180px;
-  }
 </style>
 </head>
 <body>
@@ -1790,7 +1770,7 @@ function getLastHowlSeen() {
 function markHowlsSeen() {
   localStorage.setItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_gist_id')||localStorage.getItem('howlers_bin_id')||''), new Date().toISOString());
   updateHowlBadge(0);
-  renderPlayers(); // refresh wolf icon
+  renderPlayers();
 }
 function updateHowlBadge(count) {
   const badge = document.getElementById('howl-badge');
@@ -1937,12 +1917,6 @@ async function loadState() {
     localStorage.removeItem('howlers_announced_' + syncKey2);
     localStorage.setItem(cvKey, 'v3');
   }
-  // Normalise entries missing timestamps — use date as fallback
-  state.workouts.forEach(function(w) {
-    if (!w.timestamp && w.date) {
-      w.timestamp = w.date + 'T00:00:01.000Z';
-    }
-  });
   retroactiveChallengePayout();
   checkAndPostChallengeHowls();
   checkAndPostWeeklyRecap();
@@ -2190,7 +2164,7 @@ function openProfile(pid) {
   }
 
   const timelineHTML = (works.length === 0 && bookLaurels === 0) ? '<div class="empty-state" style="padding:20px"><span class="empty-icon">⚔️</span>No trials logged yet.</div>' :
-    bookEntry + works.slice().map(function(w, idx) {
+    bookEntry + works.slice().reverse().map(function(w, idx) {
       runningTotal += (w.laurels_base || 0);
       const wname = w.workout === 'milestone_bonus' ? (w.milestone_label || '⚔ Milestone Bonus') : (WORKOUT_NAMES[w.workout] || w.workout);
       let detail = '';
@@ -3272,16 +3246,12 @@ function renderChronicle() {
     feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📜</span>No trials logged yet. The pack awaits its first march.</div>';
     return;
   }
-  const sorted = [...state.workouts]
-    .filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout))
-    .map((w, idx) => ({w, idx}))
-    .sort((a, b) => {
-      const ta = a.w.timestamp ? new Date(a.w.timestamp) : new Date(a.w.date + 'T00:00:00');
-      const tb = b.w.timestamp ? new Date(b.w.timestamp) : new Date(b.w.date + 'T00:00:00');
-      if (tb - ta !== 0) return tb - ta;
-      return b.idx - a.idx; // newer array position wins for same-time entries
-    })
-    .map(({w}) => w);
+  const sorted = [...state.workouts].filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).sort((a,b) => {
+    if (b.date !== a.date) return b.date > a.date ? 1 : -1;
+    const ta = a.timestamp ? new Date(a.timestamp) : 0;
+    const tb = b.timestamp ? new Date(b.timestamp) : 0;
+    return tb - ta;
+  });
   feed.innerHTML = sorted.slice(0, 50).map(w => {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
@@ -3439,88 +3409,19 @@ function renderChallenges() {
     progressLabel = `${progress} / ${progressMax}`;
     const isComplete = won || winner;
 
-    // Build back-of-card content
-    let backHTML = '';
-    if (ch.type === 'duel') {
-      if (isComplete && won) {
-        const winDate = won.date ? new Date(won.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-        backHTML = `
-          <div style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">⚔ CONQUEST RECORD</div>
-          <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:4px">★ ${won.name||winner}</div>
-          ${winDate ? `<div style="font-family:'Crimson Pro',serif;font-size:0.82rem;color:var(--ink-light);margin-bottom:10px">${winDate}</div>` : ''}
-          <div style="font-family:'Crimson Pro',serif;font-size:0.85rem;font-style:italic;color:var(--ink-mid)">"Victory tastes of iron and laurels."</div>
-          <div style="margin-top:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;color:var(--amber)">+${ch.reward}L AWARDED</div>`;
-      } else {
-        // Show pack standings for this duel
-        const standings = state.players.map(p => {
-          const s = statsMap[p.id];
-          let val = 0;
-          if (ch.id==='first_blood') val = state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)&&w.player_id===p.id).length > 0 ? 1 : 0;
-          else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) val = s.laurels||0;
-          else if (['five_league','grand_march','the_long_road'].includes(ch.id)) val = s.maxSingleRun||0;
-          else if (['the_unbroken','unbreakable'].includes(ch.id)) val = s.streak||0;
-          else if (ch.id==='iron_league') val = s.miles||0;
-          else if (ch.id==='the_tireless') val = s.trials||0;
-          else if (ch.id==='the_dancer') val = state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length;
-          else if (ch.id==='the_ironborn') val = s.strength||0;
-          else if (ch.id==='the_sage') val = s.mobility||0;
-          else if (ch.id==='the_peloton_ace') val = s.pelotons||0;
-          else if (ch.id==='the_endurance') val = state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0);
-          else if (ch.id==='race_finisher') val = state.workouts.filter(w=>w.player_id===p.id&&w.workout==='race').length;
-          else if (ch.id==='the_faithful') val = s.perfectWeeks||0;
-          else if (ch.id==='primus_pares') val = (s.weekSet&&s.weekSet.size)||0;
-          return {name: p.name.split(' ')[0], val, house: p.house};
-        }).sort((a,b) => b.val - a.val);
-        backHTML = `<div style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">⚔ RACE TO GLORY</div>` +
-          standings.map((s,i) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border);font-family:'Cinzel',serif;font-size:0.7rem;${i===0?'color:var(--amber);font-weight:700':'color:var(--ink-mid)'}">
-            <span>${i===0?'🏆':i===1?'🥈':i===2?'🥉':'  '} ${s.name}</span>
-            <span>${typeof s.val === 'number' && s.val % 1 !== 0 ? s.val.toFixed(1) : s.val} / ${ch.goal}</span>
-          </div>`).join('');
-      }
-    } else {
-      // Pack challenge — show each member's status
-      const memberStatus = state.players.map(p => {
-        const s = statsMap[p.id];
-        let val = 0, goal = ch.goal;
-        if (ch.id==='pack_trains') val = s.trials||0;
-        else if (['society_rising','the_rising_tide'].includes(ch.id)) val = s.laurels||0;
-        else if (['the_iron_pack','iron_pack_hard'].includes(ch.id)) val = s.strength||0;
-        else if (ch.id==='warriors_all') val = (state.badges_awarded[p.id]||[]).length > 0 ? 1 : 0;
-        else if (ch.id==='the_full_march') val = s.maxSingleRun||0;
-        else if (ch.id==='cardio_pack') { val = state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio') ? 1 : 0; }
-        else if (ch.id==='mobile_pack') { val = state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility') ? 1 : 0; }
-        else if (ch.id==='pack_endurance') val = state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0);
-        const done = val >= goal;
-        return {name: p.name.split(' ')[0], val, goal, done};
-      });
-      const doneCount = memberStatus.filter(m=>m.done).length;
-      backHTML = `<div style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">🤝 PACK PROGRESS — ${doneCount}/${state.players.length}</div>` +
-        memberStatus.map(m => `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
-          <span style="font-family:'Cinzel',serif;font-size:0.7rem;color:${m.done?'#2e7d32':'var(--ink-mid)'};">${m.done?'✓':'○'} ${m.name}</span>
-          <span style="font-family:'Cinzel',serif;font-size:0.68rem;color:${m.done?'#2e7d32':'var(--ink-light)'};">${typeof m.val==='number'&&m.val%1!==0?m.val.toFixed(1):m.val} / ${m.goal}</span>
-        </div>`).join('') +
-        `<div style="font-family:'Crimson Pro',serif;font-size:0.75rem;font-style:italic;color:var(--ink-light);margin-top:8px">${doneCount===state.players.length?'The pack has risen. ✦':'The march continues...'}</div>`;
-    }
-
-    return `<div class="ch-flip" onclick="this.classList.toggle('flipped')">
-      <div class="ch-flip-inner">
-        <div class="ch-flip-front challenge-card ${isComplete?'completed':''}">
-          ${isComplete ? '<div class="conquered-stamp">✦ CONQUERED</div>' : ''}
-          <div class="challenge-top">
-            <div class="challenge-type-badge ${ch.type}">${ch.type === 'duel' ? '⚔️ DUEL' : '🤝 PACK'}</div>
-            <div class="challenge-name">${ch.icon} ${ch.name}</div>
-            <div class="challenge-reward">+${ch.reward}L</div>
-          </div>
-          <div class="challenge-desc">${ch.desc}</div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar-fill" style="width:${pct}%"></div>
-          </div>
-          <div class="progress-label"><span>${progressLabel}</span><span>${Math.round(pct)}%</span></div>
-          ${winner ? `<div class="challenge-winner" style="display:flex;align-items:center;gap:6px"><span style="color:var(--amber)">★</span> <span>Won by:</span> <strong>${winner}</strong></div>` : ''}
-          <div style="font-family:'Cinzel',serif;font-size:0.55rem;color:var(--ink-light);text-align:right;margin-top:6px;letter-spacing:0.06em">tap to flip ↩</div>
-        </div>
-        <div class="ch-flip-back">${backHTML}</div>
+    return `<div class="challenge-card ${isComplete?'completed':''}">
+      ${isComplete ? '<div class="conquered-stamp">✦ CONQUERED</div>' : ''}
+      <div class="challenge-top">
+        <div class="challenge-type-badge ${ch.type}">${ch.type === 'duel' ? '⚔️ DUEL' : '🤝 PACK'}</div>
+        <div class="challenge-name">${ch.icon} ${ch.name}</div>
+        <div class="challenge-reward">+${ch.reward}L</div>
       </div>
+      <div class="challenge-desc">${ch.desc}</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="progress-label"><span>${progressLabel}</span><span>${Math.round(pct)}%</span></div>
+      ${winner ? `<div class="challenge-winner" style="display:flex;align-items:center;gap:6px"><span style="color:var(--amber)">★</span> <span>Won by:</span> <strong>${winner}</strong></div>` : ''}
     </div>`;
   }).join('');
 }
@@ -3928,20 +3829,20 @@ function exportLeaderboardImage() {
     rows +
     // Mars bar
     '<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(122,80,6,0.25)">' +
-      '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.14em;color:#6b5040;margin-bottom:8px">🔴 MISSION TO MARS — EVERY MILE = 100,000 MILES</div>' +
+      '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.14em;color:#6b5040;margin-bottom:8px">🔴 MISSION TO MARS — EVERY MILE = 1 MILLION MILES</div>' +
       '<div style="position:relative;height:22px;background:linear-gradient(to right,#1a1040,#0d0d30);border-radius:11px;overflow:hidden;margin-bottom:6px">' +
         '<div style="position:absolute;top:3px;left:12%;width:3px;height:3px;background:white;border-radius:50%;opacity:0.5"></div>' +
         '<div style="position:absolute;top:12px;left:33%;width:2px;height:2px;background:white;border-radius:50%;opacity:0.4"></div>' +
         '<div style="position:absolute;top:5px;left:58%;width:3px;height:3px;background:white;border-radius:50%;opacity:0.6"></div>' +
         '<div style="position:absolute;top:14px;left:75%;width:2px;height:2px;background:white;border-radius:50%;opacity:0.3"></div>' +
-        '<div style="position:absolute;top:0;left:0;height:100%;width:' + Math.min(100,(totalMiles/1400)*100).toFixed(1) + '%;background:linear-gradient(to right,#ff6f00,#ffa000);border-radius:11px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">' +
+        '<div style="position:absolute;top:0;left:0;height:100%;width:' + Math.min(100,(totalMiles/140)*100).toFixed(1) + '%;background:linear-gradient(to right,#ff6f00,#ffa000);border-radius:11px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">' +
           (totalMiles > 5 ? '<span style="font-size:0.7rem">🚀</span>' : '') +
         '</div>' +
         '<div style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:0.7rem;opacity:0.7">🔴</div>' +
       '</div>' +
       '<div style="display:flex;justify-content:space-between;font-family:Crimson Pro,serif;font-size:0.7rem;color:#6b5040">' +
         '<span>🌍 ' + totalMiles.toFixed(1) + ' mi logged (' + (totalMiles*1000000).toLocaleString() + ' space miles)</span>' +
-        '<span>' + Math.min(100,(totalMiles/1400)*100).toFixed(1) + '% to Mars</span>' +
+        '<span>' + Math.min(100,(totalMiles/140)*100).toFixed(1) + '% to Mars</span>' +
       '</div>' +
     '</div>' +
     '<div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid rgba(122,80,6,0.25)">' +
@@ -4168,7 +4069,6 @@ async function saveEditWorkout() {
   w.miles = parseFloat(document.getElementById('edit-workout-miles').value) || undefined;
   w.minutes = parseInt(document.getElementById('edit-workout-minutes').value) || undefined;
   w.date = editDate;
-  w.timestamp = editDate + 'T12:00:00.000Z'; // lock sort to workout date
   w.notes = document.getElementById('edit-workout-notes').value.trim();
   w.laurels_base = calcLaurels(w.workout, w.miles, w.minutes);
   recalcAllBadges();
