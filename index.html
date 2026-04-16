@@ -1103,6 +1103,8 @@
     <div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:8px;box-shadow:var(--shadow);margin-bottom:8px" id="weekly-lb">
       <div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;padding:12px">Loading...</div>
     </div>
+    <button id="export-week-btn" onclick="exportWeeklyImage()" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--ink-mid);cursor:pointer;margin-bottom:8px">📸 CAPTURE THIS WEEK</button>
+    <div id="weekly-snapshot" style="display:none;background:#f5efe4;padding:28px;font-family:Cinzel,serif;border-radius:8px"></div>
     <div class="section-title" style="margin-top:28px;font-size:1rem">🏃 Distance Rankings</div>
     <div id="distance-rankings" style="display:flex;flex-direction:column;gap:8px;max-width:560px"></div>
 
@@ -3269,6 +3271,84 @@ function renderWeeklyLeaderboard() {
       '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:'+hc+'">'+lau+'L</span>' +
       '</div>';
   }).join('');
+}
+
+
+function exportWeeklyImage() {
+  if (typeof html2canvas === 'undefined') { showToast('Export not available. Try refreshing.'); return; }
+  var btn = document.getElementById('export-week-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '\u23f3 Generating\u2026'; }
+
+  var snap = document.getElementById('weekly-snapshot');
+  var thisWeek = getThisWeekKey();
+  var weekStart = new Date(thisWeek + 'T00:00:00');
+  var weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+7);
+  var weekLabel = weekStart.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' - ' + new Date(weekEnd-1).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+  var weekData = {};
+  state.players.forEach(function(p) { weekData[p.id] = {laurels:0, trials:0, miles:0}; });
+  state.workouts.filter(function(w) {
+    var d = new Date(w.date+'T12:00:00');
+    return d >= weekStart && d < weekEnd && w.workout !== 'milestone_bonus';
+  }).forEach(function(w) {
+    if (!weekData[w.player_id]) return;
+    weekData[w.player_id].laurels += (w.laurels_base||0);
+    weekData[w.player_id].trials++;
+    weekData[w.player_id].miles += (w.miles||0);
+  });
+
+  var sorted = state.players.slice().sort(function(a,b){ return weekData[b.id].laurels - weekData[a.id].laurels; });
+  var hasActivity = sorted.some(function(p){ return weekData[p.id].laurels > 0; });
+
+  var rows = sorted.map(function(p,i) {
+    var d = weekData[p.id];
+    var hc = HOUSES[p.house] || '#7a5006';
+    var isFirst = i===0 && d.laurels>0;
+    var bg = isFirst ? 'rgba(200,144,10,0.08)' : (i%2===0 ? '#ede3d0' : '#f5efe4');
+    var rank = isFirst ? '\u2657' : (i+1)+'.' ;
+    var milesStr = d.miles > 0 ? '<span style="font-family:Cinzel,serif;font-size:0.75rem;color:#6b5040;margin-right:8px">'+d.miles.toFixed(1)+' mi</span>' : '';
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:'+bg+';border-left:5px solid '+hc+';margin-bottom:3px;border-radius:3px">'+
+      '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:#6b5040;width:22px">'+rank+'</span>'+
+      '<span style="font-family:Cinzel,serif;font-size:0.95rem;font-weight:700;color:'+hc+';flex:1">'+escHtml(p.name)+'</span>'+
+      '<span style="font-family:Cinzel,serif;font-size:0.75rem;color:#6b5040;margin-right:8px">'+d.trials+' trials</span>'+
+      milesStr+
+      '<span style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:'+hc+'">'+d.laurels+'L</span>'+
+      '</div>';
+  }).join('');
+
+  var header = '<div style="background:#1a1410;color:#f0d080;padding:16px 20px;margin:-28px -28px 20px;border-radius:4px 4px 0 0;display:flex;align-items:center;justify-content:space-between">'+
+    '<div>'+
+      '<div style="font-family:Cinzel,serif;font-size:1.4rem;font-weight:900;letter-spacing:0.08em">THE HOWLERS</div>'+
+      '<div style="font-family:Georgia,serif;font-style:italic;font-size:0.75rem;color:rgba(240,208,128,0.6);margin-top:2px">Rock n Roll Arizona - Half Marathon - Tempe AZ</div>'+
+    '</div>'+
+    '<div style="text-align:right">'+
+      '<div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.12em;color:rgba(240,208,128,0.5)">THIS WEEKS RACE</div>'+
+      '<div style="font-family:Cinzel,serif;font-size:0.75rem;font-weight:700">'+weekLabel+'</div>'+
+    '</div>'+
+  '</div>';
+
+  snap.style.display = 'block';
+  snap.innerHTML = header +
+    '<div style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.15em;color:#6b5040;margin-bottom:10px">WEEKLY LEADERBOARD</div>' +
+    (hasActivity ? rows : '<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#6b5040;padding:20px">No activity logged yet this week.</div>') +
+    '<div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid rgba(122,80,6,0.25)">'+
+      '<div style="font-family:Georgia,serif;font-size:0.75rem;color:#6b5040;font-style:italic">Per aspera ad astra</div>'+
+      '<div style="font-family:Cinzel,serif;font-size:0.65rem;color:#b87a1a">Go Howler, Go!</div>'+
+    '</div>';
+
+  html2canvas(snap, {backgroundColor:'#f5efe4', scale:2, useCORS:true, logging:false}).then(function(canvas) {
+    snap.style.display = 'none';
+    if (btn) { btn.disabled = false; btn.textContent = '\ud83d\udcf8 CAPTURE THIS WEEK'; }
+    var link = document.createElement('a');
+    link.download = 'howlers-week-' + thisWeek + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('This week captured! Share it with the pack. \ud83d\udc3a');
+  }).catch(function(err) {
+    snap.style.display = 'none';
+    if (btn) { btn.disabled = false; btn.textContent = '\ud83d\udcf8 CAPTURE THIS WEEK'; }
+    showToast('Could not generate image.');
+  });
 }
 
 function renderAll() {
