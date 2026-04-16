@@ -1364,6 +1364,7 @@
           <button onclick="importBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.68rem;font-weight:700;color:var(--ink-mid);cursor:pointer;letter-spacing:0.06em">⬆ Restore Backup</button>
           </div>
           <button onclick="forceRestore()" style="width:100%;margin-top:6px;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.06em">⚠️ Force Restore (bypasses merge)</button>
+          <button onclick="purgeWorkoutById('w_1776175000000_kat3')" style="width:100%;margin-top:6px;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.06em">🗑 Purge Fake Kat Tempo</button>
           <div style="display:none">
         </div>
         <div style="font-family:'Crimson Pro',serif;font-size:0.78rem;font-style:italic;color:var(--ink-light);margin-top:8px">Export saves a local JSON file. Restore imports it back to the Gist.</div>
@@ -3414,6 +3415,49 @@ async function forceRestore() {
   document.body.appendChild(input);
   input.click();
   document.body.removeChild(input);
+}
+
+
+async function purgeWorkoutById(wid) {
+  if (!wid) wid = prompt('Enter workout ID to purge:');
+  if (!wid) return;
+  const { gistId, token } = getGistConfig();
+  if (!gistId || !token) { showToast('No Gist config.'); return; }
+  if (!confirm('Purge workout ID: ' + wid + '?\nThis writes directly to the Gist.')) return;
+  setSyncStatus('loading');
+  showToast('⏳ Fetching Gist...');
+  try {
+    // Fetch current Gist
+    const res = await fetch('https://api.github.com/gists/' + gistId, {
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+    const json = await res.json();
+    const fileObj = json.files && (json.files['howlers-data.json'] || json.files[Object.keys(json.files).find(k=>k.endsWith('.json'))]);
+    if (!fileObj) throw new Error('No data file found in Gist');
+    const fc = fileObj.truncated && fileObj.raw_url
+      ? await (await fetch(fileObj.raw_url, { headers: { 'Authorization': 'token ' + token } })).text()
+      : fileObj.content;
+    const gistData = JSON.parse(fc);
+    const before = gistData.workouts.length;
+    gistData.workouts = gistData.workouts.filter(w => w.id !== wid);
+    const after = gistData.workouts.length;
+    if (before === after) { showToast('⚠️ ID not found in Gist: ' + wid); setSyncStatus('live'); return; }
+    // Write back directly
+    const writeRes = await fetch('https://api.github.com/gists/' + gistId, {
+      method: 'PATCH',
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: { 'howlers-data.json': { content: JSON.stringify(gistData) } } })
+    });
+    if (!writeRes.ok) throw new Error('Write failed: ' + writeRes.status);
+    state = gistData;
+    setSyncStatus('live');
+    renderAll();
+    showToast('✅ Purged ' + wid + ' directly from Gist! (' + before + ' → ' + after + ' workouts)');
+  } catch(err) {
+    setSyncStatus('error');
+    showToast('⚠️ Purge failed: ' + err.message);
+  }
 }
 
 function renderAll() {
