@@ -312,7 +312,7 @@
     background-size: 120px 140px;
   }
   .player-card.primus::after {
-    content: '♛ PRIMUS';
+    content: '♛ ARCHPRIMUS';
     position: absolute;
     top: 8px; right: 8px;
     font-family: 'Cinzel', serif;
@@ -1129,7 +1129,7 @@
           <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
           <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
           <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
-          <option value="strength">The Forge — Strength (15L flat)</option>
+          <option value="strength">The Iron Forge — Strength (15L flat)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
         <option value="cardio">The Crimson Pulse — Cardio (8L per 10 min)</option>
         <option value="race">Race Day 🏆 (20L/mile + 50L bonus)</option>
@@ -1261,7 +1261,7 @@
           <tr><td>The Steed — Peloton Ride</td><td>8L per 10 min (24L / 30 min)</td></tr>
           <tr><td>The Crimson Pulse — Cardio</td><td>8L per 10 min (24L / 30 min)</td></tr>
           <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
-          <tr><td>The Forge — Strength</td><td>15 flat</td></tr>
+          <tr><td>The Iron Forge — Strength</td><td>15 flat</td></tr>
           <tr><td>Mind & Body — Mobility/Yoga</td><td>10 flat</td></tr>
           <tr><td>Perfect Week Bonus</td><td>+25</td></tr>
           <tr><td>Streak Bonus</td><td>+10 per consecutive week (from week 2)</td></tr>
@@ -1385,7 +1385,7 @@
         <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
         <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
         <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
-        <option value="strength">The Forge — Strength (15L flat)</option>
+        <option value="strength">The Iron Forge — Strength (15L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
         <option value="cardio">The Crimson Pulse — Cardio (8L per 10 min)</option>
         <option value="race">Race Day 🏆 (20L/mile + 50L bonus)</option>
@@ -1609,84 +1609,82 @@ const TIER_ROMAN = {bronze:'I', silver:'II', gold:'III'};
 const BADGES_DEF = [
   {id:'first_step', icon:'👟', name:'First Step',
     tiers:[
-      {tier:'bronze', desc:'Log 1 workout', check:(s)=>s.trials>=1},
-      {tier:'silver', desc:'Log 25 workouts', check:(s)=>s.trials>=25},
-      {tier:'gold',   desc:'Log 50 workouts', check:(s)=>s.trials>=50}
+      {tier:'bronze', desc:'Log 1 workout',    check:(s)=>s.trials>=1},
+      {tier:'silver', desc:'Log 40 workouts',  check:(s)=>s.trials>=40},
+      {tier:'gold',   desc:'Log 100 workouts', check:(s)=>s.trials>=100}
     ]},
   {id:'week_warrior', icon:'⚔️', name:'Week Warrior',
     tiers:[
       {tier:'bronze', desc:'1 perfect week (4 core days)', check:(s)=>s.perfectWeeks>=1},
-      {tier:'silver', desc:'4 perfect weeks', check:(s)=>s.perfectWeeks>=4},
-      {tier:'gold',   desc:'8 perfect weeks', check:(s)=>s.perfectWeeks>=8}
+      {tier:'silver', desc:'8 perfect weeks',              check:(s)=>s.perfectWeeks>=8},
+      {tier:'gold',   desc:'20 perfect weeks',             check:(s)=>s.perfectWeeks>=20}
     ]},
   {id:'steed_master', icon:'🚴', name:'Steed Master',
     tiers:[
-      {tier:'bronze', desc:'5 Peloton rides', check:(s)=>s.pelotons>=5},
-      {tier:'silver', desc:'15 Peloton rides', check:(s)=>s.pelotons>=15},
-      {tier:'gold',   desc:'30 Peloton rides', check:(s)=>s.pelotons>=30}
+      {tier:'bronze', desc:'5 Peloton rides',  check:(s)=>s.pelotons>=5},
+      {tier:'silver', desc:'20 Peloton rides', check:(s)=>s.pelotons>=20},
+      {tier:'gold',   desc:'50 Peloton rides', check:(s)=>s.pelotons>=50}
     ]},
   {id:'the_runner', icon:'🏃', name:'The Runner',
     tiers:[
-      {tier:'bronze', desc:'25 total miles', check:(s)=>s.miles>=25},
-      {tier:'silver', desc:'50 total miles', check:(s)=>s.miles>=50},
-      {tier:'gold',   desc:'100 total miles', check:(s)=>s.miles>=100}
+      {tier:'bronze', desc:'50 total miles',  check:(s)=>s.miles>=50},
+      {tier:'silver', desc:'100 total miles', check:(s)=>s.miles>=100},
+      {tier:'gold',   desc:'200 total miles', check:(s)=>s.miles>=200}
     ]},
   {id:'iron_forged', icon:'🦵', name:'Iron Forged',
     tiers:[
-      {tier:'bronze', desc:'5 strength sessions', check:(s)=>s.strength>=5},
-      {tier:'silver', desc:'15 strength sessions', check:(s)=>s.strength>=15},
-      {tier:'gold',   desc:'30 strength sessions', check:(s)=>s.strength>=30}
+      {tier:'bronze', desc:'10 strength sessions', check:(s)=>s.strength>=10},
+      {tier:'silver', desc:'25 strength sessions', check:(s)=>s.strength>=25},
+      {tier:'gold',   desc:'60 strength sessions', check:(s)=>s.strength>=60}
     ]},
   {id:'mind_body', icon:'🧘', name:'Mind & Body',
     tiers:[
-      {tier:'bronze', desc:'3 mobility sessions', check:(s)=>s.mobility>=3},
-      {tier:'silver', desc:'10 mobility sessions', check:(s)=>s.mobility>=10},
-      {tier:'gold',   desc:'20 mobility sessions', check:(s)=>s.mobility>=20}
+      {tier:'bronze', desc:'5 mobility sessions',  check:(s)=>s.mobility>=5},
+      {tier:'silver', desc:'15 mobility sessions', check:(s)=>s.mobility>=15},
+      {tier:'gold',   desc:'40 mobility sessions', check:(s)=>s.mobility>=40}
     ]},
   {id:'long_march', icon:'🗺️', name:'The Long March',
     tiers:[
-      {tier:'bronze', desc:'Run 6 miles in one session', check:(s)=>s.maxSingleRun>=6},
-      {tier:'silver', desc:'Run 10 miles in one session', check:(s)=>s.maxSingleRun>=10},
+      {tier:'bronze', desc:'Run 6 miles in one session',    check:(s)=>s.maxSingleRun>=6},
+      {tier:'silver', desc:'Run 10 miles in one session',   check:(s)=>s.maxSingleRun>=10},
       {tier:'gold',   desc:'Run 13.1 miles in one session', check:(s)=>s.maxSingleRun>=13.1}
     ]},
   {id:'unbroken', icon:'🔥', name:'Unbroken',
     tiers:[
-      {tier:'bronze', desc:'3-week streak', check:(s)=>s.streak>=3},
-      {tier:'silver', desc:'6-week streak', check:(s)=>s.streak>=6},
-      {tier:'gold',   desc:'12-week streak', check:(s)=>s.streak>=12}
+      {tier:'bronze', desc:'4-week streak',  check:(s)=>s.streak>=4},
+      {tier:'silver', desc:'10-week streak', check:(s)=>s.streak>=10},
+      {tier:'gold',   desc:'20-week streak', check:(s)=>s.streak>=20}
     ]},
   {id:'extra_mile', icon:'⭐', name:'Extra Mile',
     tiers:[
-      {tier:'bronze', desc:'5 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=5},
-      {tier:'silver', desc:'15 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=15},
-      {tier:'gold',   desc:'30 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=30}
+      {tier:'bronze', desc:'10 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=10},
+      {tier:'silver', desc:'25 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=25},
+      {tier:'gold',   desc:'60 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=60}
     ]},
   {id:'centurion', icon:'💯', name:'Centurion',
     tiers:[
-      {tier:'bronze', desc:'500 Laurels', check:(s)=>s.laurels>=500},
-      {tier:'silver', desc:'1000 Laurels', check:(s)=>s.laurels>=1000},
-      {tier:'gold',   desc:'2000 Laurels', check:(s)=>s.laurels>=2000}
+      {tier:'bronze', desc:'1,000 Laurels', check:(s)=>s.laurels>=1000},
+      {tier:'silver', desc:'3,500 Laurels', check:(s)=>s.laurels>=3500},
+      {tier:'gold',   desc:'7,500 Laurels', check:(s)=>s.laurels>=7500}
     ]},
   {id:'peerless', icon:'🌟', name:'Peerless',
     tiers:[
-      {tier:'bronze', desc:'Run 10 miles in one session', check:(s)=>s.maxSingleRun>=10},
-      {tier:'silver', desc:'Run 12 miles in one session', check:(s)=>s.maxSingleRun>=12},
+      {tier:'bronze', desc:'Run 10 miles in one session',   check:(s)=>s.maxSingleRun>=10},
+      {tier:'silver', desc:'Run 12 miles in one session',   check:(s)=>s.maxSingleRun>=12},
       {tier:'gold',   desc:'Run 13.1 miles — the full half!', check:(s)=>s.maxSingleRun>=13.1}
     ]},
   {id:'the_reaper', icon:'☀️', name:'The Reaper',
     tiers:[
-      {tier:'bronze', desc:'2000 Laurels', check:(s)=>s.laurels>=2000},
-      {tier:'silver', desc:'3000 Laurels', check:(s)=>s.laurels>=3000},
-      {tier:'gold',   desc:'5000 Laurels', check:(s)=>s.laurels>=5000}
-    ]}
-,
+      {tier:'bronze', desc:'5,000 Laurels',  check:(s)=>s.laurels>=5000},
+      {tier:'silver', desc:'9,500 Laurels',  check:(s)=>s.laurels>=9500},
+      {tier:'gold',   desc:'13,500 Laurels', check:(s)=>s.laurels>=13500}
+    ]},
   {id:'race_day', icon:'🏆', name:'Race Day',
     tiers:[
-      {tier:'bronze', desc:'Complete your first race',    check:(s)=>s.races>=1},
-      {tier:'silver', desc:'Complete 3 races',            check:(s)=>s.races>=3},
-      {tier:'gold',   desc:'Complete 5+ races',           check:(s)=>s.races>=5}
-    ]
-  }
+      {tier:'bronze', desc:'Complete your first race', check:(s)=>s.races>=1},
+      {tier:'silver', desc:'Complete 3 races',         check:(s)=>s.races>=3},
+      {tier:'gold',   desc:'Complete 5+ races',        check:(s)=>s.races>=5}
+    ]}
 ];
 const CHALLENGES_DEF = [
   // ── Individual — First to achieve ────────────────────────────────────────
@@ -1759,7 +1757,7 @@ const WORKOUT_NAMES = {
   long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
   
   walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
-  strength:'The Forge (Strength)', mobility:'Mind & Body (Mobility)'
+  strength:'The Iron Forge (Strength)', mobility:'Mind & Body (Mobility)'
 };
 
 let state = { players: [], workouts: [], howls: [], duels: [], challenges_won: {}, badges_awarded: {} };
@@ -2707,7 +2705,7 @@ var QUICK_WORKOUTS = [
   {label:'Easy Run 5mi', workout:'easy_run', icon:'🏃', miles:5, desc:'+40 Laurels'},
   {label:'The March 6mi', workout:'long_run', icon:'🗺️', miles:6, desc:'+72 Laurels'},
   {label:'The March 8mi', workout:'long_run', icon:'🗺️', miles:8, desc:'+96 Laurels'},
-  {label:'The Forge', workout:'strength', icon:'🦵', miles:0, desc:'+12 Laurels'},
+  {label:'The Iron Forge', workout:'strength', icon:'💪', miles:0, desc:'+12 Laurels'},
   {label:'Mind & Body', workout:'mobility', icon:'🧘', miles:0, desc:'+8 Laurels'},
   {label:'The Steed 30min', workout:'peloton', icon:'🚴', minutes:30, desc:'+10 Laurels'},
   {label:'The Steed 45min', workout:'peloton', icon:'🚴', minutes:45, desc:'+15 Laurels'},
@@ -3266,7 +3264,7 @@ function renderWeeklyLeaderboard() {
     const hc = lau > 0 ? (HOUSES[p.house]||'#7a5006') : 'var(--ink-light)';
     const isFirst = i===0 && lau>0;
     return '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:'+(isFirst?'rgba(200,144,10,0.06)':'transparent')+';border-radius:4px">' +
-      '<span style="font-family:Cinzel,serif;font-size:0.7rem;color:var(--ink-light);width:16px">'+(isFirst?'♛':i+1+'.')+'</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.7rem;color:'+(isFirst?'var(--amber)':'var(--ink-light)')+';width:'+(isFirst?'auto':'16px')+'">'+(isFirst?'♛ PRIMUS':i+1+'.')+'</span>' +
       '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:'+hc+';flex:1">'+escHtml(p.name.split(' ')[0])+'</span>' +
       '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:'+hc+'">'+lau+'L</span>' +
       '</div>';
