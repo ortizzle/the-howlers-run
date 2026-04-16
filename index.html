@@ -286,7 +286,7 @@
     z-index: 0;
   }
   .player-card.primus::after {
-    content: '★ PRIMUS';
+    content: '';
     position: absolute;
     top: 8px; right: 8px;
     font-family: 'Cinzel', serif;
@@ -312,7 +312,7 @@
     background-size: 120px 140px;
   }
   .player-card.primus::after {
-    content: '★ ARCHPRIMUS';
+    content: '♛ PRIMUS';
     position: absolute;
     top: 8px; right: 8px;
     font-family: 'Cinzel', serif;
@@ -1099,6 +1099,10 @@
       </div>
     </div>
 
+    <div class="section-title" style="margin-top:28px;font-size:1rem">⚔️ This Week's Race</div>
+    <div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:8px;box-shadow:var(--shadow);margin-bottom:8px" id="weekly-lb">
+      <div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;padding:12px">Loading...</div>
+    </div>
     <div class="section-title" style="margin-top:28px;font-size:1rem">🏃 Distance Rankings</div>
     <div id="distance-rankings" style="display:flex;flex-direction:column;gap:8px;max-width:560px"></div>
 
@@ -3159,6 +3163,116 @@ function importBackup() {
   document.body.removeChild(input);
 }
 
+
+const TAUNTS = [
+  "Did you even break a sweat? My grandmother trains harder than that. 😴",
+  "The Obsidians are embarrassed on your behalf. 😴",
+  "Darrow ran 13 miles before breakfast. Just saying. ⚔️",
+  "Is that all you've got? The Laurels won't earn themselves. 😴",
+  "Even the Grays outpaced you this week. For shame. 🐺",
+  "I would have lived in peace — but apparently not trained harder than @{name}. 😂",
+  "The Reaper weeps. Not from sadness — from laughter. ☀️",
+  "Per aspera ad astra. Emphasis on the *aspera* part. You need it. ⛓️‍💥",
+  "I've seen Lowborns train harder. Step it up, Howler. 😴",
+  "Your laurels are safe from me. Mostly because I already have more. ♛",
+  "Breaking the chains requires actually moving. 🐺",
+  "The pack is only as strong as its slowest Howler. Guess who that is? 😴",
+];
+
+function openTrashTalk(workoutId, playerName) {
+  const taunt = TAUNTS[Math.floor(Math.random() * TAUNTS.length)]
+    .replace('@{name}', '@' + playerName);
+  switchTab('dispatch');
+  const msg = document.getElementById('howl-message');
+  msg.value = '@' + playerName + ' — ' + taunt;
+  const howlSel = document.getElementById('howl-player');
+  if (howlSel && currentHowlerId) howlSel.value = currentHowlerId;
+  // Show preview
+  const w = state.workouts.find(x => x.id === workoutId);
+  if (w) {
+    const wname = WORKOUT_NAMES[w.workout] || w.workout;
+    const detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
+    const preview = document.getElementById('howl-activity-preview');
+    if (preview) {
+      preview.style.display = 'block';
+      preview.innerHTML = '<span style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--amber)">😴 TRASH TALKING</span><br>' +
+        '<span style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);font-style:italic">' +
+        escHtml(playerName) + ' · ' + escHtml(wname) + (detail?' · '+detail:'') + '</span>' +
+        '<span onclick="clearHowlReply()" style="float:right;cursor:pointer;font-size:0.8rem;color:var(--ink-light);padding:2px 4px">✕</span>';
+    }
+    const btn = document.getElementById('howl-submit-btn');
+    const actRef = {id:workoutId,player:playerName,workout:wname,detail:detail,date:w.date};
+    btn.onclick = function() {
+      postHowl(workoutId, playerName, actRef).then(function() {
+        clearHowlReply(); btn.onclick = postHowl;
+      });
+    };
+  }
+  msg.focus();
+  showToast('😴 Trash talk loaded — edit or send as-is!');
+}
+
+
+function showBadgeEarners(badgeId, badgeName) {
+  const def = BADGES_DEF.find(b => b.id === badgeId);
+  if (!def) return;
+  const lines = def.tiers.map(t => {
+    const key = badgeId + '_' + t.tier;
+    const earners = state.players.filter(p => (state.badges_awarded[p.id]||[]).includes(key));
+    const color = TIER_COLORS[t.tier];
+    const hc = earners.map(p => {
+      const pc = HOUSES[p.house] || '#7a5006';
+      return '<span style="color:'+pc+';font-weight:600">'+p.name.split(' ')[0]+'</span>';
+    }).join(', ') || '<span style="color:var(--ink-light);font-style:italic">None yet</span>';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">' +
+      '<span style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:'+color+';min-width:28px">'+TIER_ROMAN[t.tier]+'</span>' +
+      '<span style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink-light);flex:1">'+t.desc+'</span>' +
+      '<span style="font-family:Crimson Pro,serif;font-size:0.82rem">'+hc+'</span></div>';
+  }).join('');
+  showToast(def.icon + ' ' + badgeName + ' — tap profile to see details');
+  // Build a mini modal using existing toast — or use a quick overlay
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(26,20,16,0.7);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = '<div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:20px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.5)">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
+    '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + def.icon + ' ' + badgeName + '</div>' +
+    '<button onclick="this.parentNode.parentNode.remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>' +
+    '</div>' + lines + '</div>';
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+
+function renderWeeklyLeaderboard() {
+  const el = document.getElementById('weekly-lb');
+  if (!el) return;
+  const thisWeek = getThisWeekKey();
+  const weekStart = new Date(thisWeek + 'T00:00:00');
+  const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+7);
+  const weekLaurels = {};
+  state.players.forEach(p => weekLaurels[p.id] = 0);
+  state.workouts.filter(w => {
+    const d = new Date(w.date+'T12:00:00');
+    return d >= weekStart && d < weekEnd && !['milestone_bonus'].includes(w.workout);
+  }).forEach(w => {
+    if (weekLaurels[w.player_id] !== undefined)
+      weekLaurels[w.player_id] += (w.laurels_base||0);
+  });
+  const sorted = state.players.slice().sort((a,b)=>weekLaurels[b.id]-weekLaurels[a.id]);
+  const hasActivity = sorted.some(p=>weekLaurels[p.id]>0);
+  if (!hasActivity) { el.innerHTML = '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;padding:12px">No activity yet this week. Break the chains! ⛓️‍💥</div>'; return; }
+  el.innerHTML = sorted.map((p,i) => {
+    const lau = weekLaurels[p.id];
+    const hc = lau > 0 ? (HOUSES[p.house]||'#7a5006') : 'var(--ink-light)';
+    const isFirst = i===0 && lau>0;
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:'+(isFirst?'rgba(200,144,10,0.06)':'transparent')+';border-radius:4px">' +
+      '<span style="font-family:Cinzel,serif;font-size:0.7rem;color:var(--ink-light);width:16px">'+(isFirst?'♛':i+1+'.')+'</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:'+hc+';flex:1">'+escHtml(p.name.split(' ')[0])+'</span>' +
+      '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:'+hc+'">'+lau+'L</span>' +
+      '</div>';
+  }).join('');
+}
+
 function renderAll() {
   buildStatsCache();
   renderPackStats();
@@ -3174,6 +3288,7 @@ function renderAll() {
   renderDispatch();
   renderDistanceRankings();
   renderMarsBar();
+  renderWeeklyLeaderboard();
   renderCodex();
   checkUnreadHowls();
 }
@@ -3218,7 +3333,7 @@ function renderPlayers() {
       const def = BADGES_DEF.find(b => b.id === baseId);
       const tier = BADGE_TIERS[tierIdx];
       const color = TIER_COLORS[tier];
-      return def ? `<span class="badge-pill" title="${def.name} — ${TIER_LABELS[tier]}" style="border:2px solid ${color};background:${color}15;color:${color};box-shadow:0 0 6px ${color}55;padding:2px 6px;font-size:0.8rem">${def.icon}<sup style="font-size:0.55rem;font-family:'Cinzel',serif;font-weight:700">${TIER_ROMAN[tier]}</sup></span>` : '';
+      return def ? `<span class="badge-pill" style="border:2px solid ${color};background:${color}15;color:${color};box-shadow:0 0 6px ${color}55;padding:2px 6px;font-size:0.8rem;cursor:pointer" onclick="event.stopPropagation();showBadgeEarners('${def.id}','${def.name}')" title="${def.name} — ${TIER_LABELS[tier]}">${def.icon}<sup style="font-size:0.55rem;font-family:'Cinzel',serif;font-weight:700">${TIER_ROMAN[tier]}</sup></span>` : '';
     }).join('');
     html += `
       <div class="player-card ${isPrimus?'primus':''} ${isPeerless?'peerless-gold':''}" style="--house-color:${houseColor};cursor:pointer" onclick="openProfile('${p.id}')">
@@ -3227,7 +3342,7 @@ function renderPlayers() {
   ${hasUnreadHowl ? '<span style="position:absolute;top:6px;right:8px;font-size:0.9rem;line-height:1;z-index:2" title="New howl!">🐺</span>' : ''}
           <div class="player-color-label">${p.house}</div>
         </div>
-        <div class="player-name">${escHtml(p.name)}</div>
+        <div class="player-name">${isPrimus ? '<span style="color:var(--amber);margin-right:4px">♛</span>' : ''}${escHtml(p.name)}</div>
         ${p.subtitle ? `<div class="player-subtitle">${escHtml(p.subtitle)}</div>` : ''}
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
           <div class="player-rank" style="margin-bottom:0">${s.rank.name}</div>
@@ -3716,7 +3831,10 @@ function renderHowlFeed() {
     // System recap howls
     if (h.is_recap || h.player_id === 'system') {
       const likes = h.likes || [];
-      return '<div class="chronicle-entry" style="--house-color:var(--amber);background:linear-gradient(135deg,rgba(200,144,10,0.08),var(--parchment))">' +
+      const isConquest = h.id && h.id.startsWith('challenge_');
+      const conquestBg = isConquest ? 'linear-gradient(135deg,rgba(139,0,0,0.12),rgba(200,144,10,0.1),var(--parchment))' : 'linear-gradient(135deg,rgba(200,144,10,0.08),var(--parchment))';
+      const conquestBorder = isConquest ? '2px solid var(--amber)' : '1.5px solid var(--border)';
+      return '<div class="chronicle-entry" style="--house-color:var(--amber);background:' + conquestBg + ';border:' + conquestBorder + ';' + (isConquest?'box-shadow:0 0 16px rgba(200,144,10,0.2);':'') + '">' +
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
         '<span style="font-size:1.2rem">📊</span>' +
         '<span style="font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--amber)">THE PACK REPORT</span>' +
@@ -3916,7 +4034,7 @@ async function toggleHowlReaction(howlId, emoji) {
 function reactionBarHTML(obj, idVal, fnPrefix) {
   var reactions = (obj && obj.reactions) ? obj.reactions : {};
   var bar = '<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">';
-  [['🔥','Hype'],['😴','Trash talk']].forEach(function(r) {
+  [['🔥','Hype']].forEach(function(r) {
     var emoji = r[0], label = r[1];
     var count = reactions[emoji] || 0;
     var hasCount = count > 0;
@@ -3927,10 +4045,17 @@ function reactionBarHTML(obj, idVal, fnPrefix) {
     if (hasCount) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + count + '</span>';
     bar += '</button>';
   });
-  // Reply button on workout entries
+  // Reply + trash talk on workout entries
   if (fnPrefix === 'toggleReaction') {
+    var workoutPlayer = '';
+    var wo = state.workouts.find(function(x){return x.id===idVal;});
+    if (wo) { var wp=state.players.find(function(p){return p.id===wo.player_id;}); if(wp) workoutPlayer=wp.name; }
     bar += '<button data-id="' + idVal + '" onclick="replyToWorkout(this.dataset.id)" ';
     bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">🐺 Reply</button>';
+    if (workoutPlayer && wo && wo.player_id !== currentHowlerId) {
+      bar += '<button data-wid="' + idVal + '" data-name="' + workoutPlayer.replace(/&/g,'&amp;') + '" onclick="openTrashTalk(this.dataset.wid,this.dataset.name)" ';
+      bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">😴 Trash talk</button>';
+    }
   }
   // Reply button on howl entries
   if (fnPrefix === 'toggleHowlReaction') {
@@ -4465,7 +4590,7 @@ function switchTab(id) {
   });
   if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
   if (id === 'chronicle') { markAnnalsSeen(); }
-  if (id === 'leaderboard') { renderMarsBar(); renderDistanceRankings(); renderPackStats(); }
+  if (id === 'leaderboard') { renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard(); }
   if (id === 'trials') { renderChallenges(); }
   if (id === 'conquests') { renderTimeline(); }
 }
