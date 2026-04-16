@@ -2987,7 +2987,7 @@ function checkAndPostChallengeHowls() {
         state.howls.push({id:'challenge_'+ch.id, player_id:'system', player_laurels:9999, message:msg, date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), likes:0});
       }
       changed = true;
-      if (currentHowlerId) setTimeout(function(){ launchConfetti('conquest'); }, 500);
+      setTimeout(function(){ launchConfetti('conquest'); }, 500);
     }
   });
 
@@ -4047,7 +4047,16 @@ function renderHowlFeed() {
         escHtml(ref.workout) + (ref.detail ? ' &middot; ' + ref.detail : '') + ' &middot; ' + formatDate(ref.date) +
         '</div></div>';
     } else if (h.reply_to_name) {
-      replyTo = '<div style="font-family:Crimson Pro,serif;font-size:0.8rem;font-style:italic;color:var(--ink-light);margin-bottom:4px">↩ re: ' + escHtml(h.reply_to_name) + '</div>';
+      // Look up original howl message by reply_to_id
+      var origHowl = h.reply_to_id ? (state.howls||[]).find(function(x){ return x.id === h.reply_to_id; }) : null;
+      var origMsg = origHowl ? origHowl.message : null;
+      replyTo = '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:8px 12px;margin-bottom:10px">' +
+        '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:4px">↩ REPLYING TO ' + escHtml(h.reply_to_name).toUpperCase() + '</div>' +
+        (origMsg
+          ? '<div style="font-family:Crimson Pro,serif;font-size:0.88rem;color:var(--ink-mid);font-style:italic">\"' + escHtml(origMsg.length > 120 ? origMsg.slice(0,120) + '…' : origMsg) + '\"</div>'
+          : '<div style="font-family:Crimson Pro,serif;font-size:0.82rem;color:var(--ink-light);font-style:italic">(message no longer available)</div>'
+        ) +
+        '</div>';
     }
     const rank = (function(l){ var r=RANKS[0]; RANKS.forEach(function(rk){if(l>=rk.min)r=rk;}); return r; })(h.player_laurels||0);
     return '<div class="chronicle-entry" style="--house-color:' + hc + ';background:linear-gradient(135deg,' + hc + '18,' + hc + '08,var(--parchment))">' +
