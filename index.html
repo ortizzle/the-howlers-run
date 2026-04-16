@@ -3968,13 +3968,49 @@ function handleHowlInput(el) {
   const dd = document.getElementById('mention-dropdown');
   if (!match) { dd.style.display = 'none'; return; }
   const query = match[1].toLowerCase();
-  const matches = state.players.filter(p => p.name.toLowerCase().includes(query));
-  if (!matches.length) { dd.style.display = 'none'; return; }
-  dd.innerHTML = matches.map(p =>
-    '<div data-name="' + escHtml(p.name) + '" onclick="insertMention(this.dataset.name)" style="padding:8px 12px;cursor:pointer;font-family:Cinzel,serif;font-size:0.8rem;color:var(--ink);border-bottom:1px solid var(--border)">' +
-    '<span style="color:var(--amber)">@</span>' + escHtml(p.name) + ' <span style="font-size:0.65rem;color:var(--ink-light)">' + p.house + '</span></div>'
-  ).join('');
+
+  // @pack shortcut — show as first option
+  const packMatches = 'pack'.startsWith(query) ? [{isPack:true}] : [];
+  const playerMatches = state.players.filter(p => p.name.toLowerCase().includes(query));
+  const allMatches = [...packMatches, ...playerMatches];
+
+  if (!allMatches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = allMatches.map(p => {
+    if (p.isPack) {
+      return '<div onclick="insertPackMention()" style="padding:8px 12px;cursor:pointer;font-family:Cinzel,serif;font-size:0.8rem;color:var(--ink);border-bottom:1px solid var(--border);background:rgba(200,144,10,0.06)">' +
+        '<span style="color:var(--amber)">@</span><strong>pack</strong> <span style="font-size:0.65rem;color:var(--amber)">🐺 Mention everyone</span></div>';
+    }
+    return '<div data-name="' + escHtml(p.name) + '" onclick="insertMention(this.dataset.name)" style="padding:8px 12px;cursor:pointer;font-family:Cinzel,serif;font-size:0.8rem;color:var(--ink);border-bottom:1px solid var(--border)">' +
+      '<span style="color:var(--amber)">@</span>' + escHtml(p.name) + ' <span style="font-size:0.65rem;color:var(--ink-light)">' + p.house + '</span></div>';
+  }).join('');
   dd.style.display = 'block';
+}
+
+function insertPackMention() {
+  const el = document.getElementById('howl-message');
+  const val = el.value;
+  const cursor = el.selectionStart;
+  const before = val.slice(0, cursor);
+  const after = val.slice(cursor);
+  // Build @mentions for all pack members except current howler
+  const mentions = state.players
+    .filter(p => p.id !== currentHowlerId)
+    .map(p => '@' + p.name)
+    .join(' ');
+  const replaced = before.replace(/@\w*$/, mentions + ' ');
+  el.value = replaced + after;
+  el.focus();
+  el.selectionStart = el.selectionEnd = replaced.length;
+  document.getElementById('mention-dropdown').style.display = 'none';
+  // Gold pulse on the compose box
+  el.style.transition = 'box-shadow 0.15s, background 0.15s';
+  el.style.boxShadow = '0 0 0 3px rgba(200,144,10,0.6)';
+  el.style.background = 'rgba(200,144,10,0.08)';
+  setTimeout(function() {
+    el.style.boxShadow = '';
+    el.style.background = '';
+  }, 600);
+  showToast('🐺 The whole pack is mentioned! Send the howl.');
 }
 
 function insertMention(name) {
@@ -4027,7 +4063,14 @@ async function postHowl(replyToId, replyToName, activityRef) {
   await saveState();
   document.getElementById('howl-message').value = '';
   if (btn) { btn.disabled = false; btn.textContent = '🐺 SEND THE HOWL'; }
-  showToast('The pack heard you. 🐺');
+  // Fanfare for @pack howls
+  var mentionCount = (msg.match(/@/g)||[]).length;
+  if (mentionCount >= state.players.length - 1) {
+    launchConfetti('conquest');
+    showToast('🐺 THE PACK HOWLS! Everyone has been summoned. ⛓️‍💥');
+  } else {
+    showToast('The pack heard you. 🐺');
+  }
   renderDispatch();
 }
 
