@@ -1434,6 +1434,10 @@
       <label class="form-label">Subtitle</label>
       <input class="form-input" type="text" id="edit-subtitle" placeholder="e.g. Chandler, AZ">
     </div>
+    <div class="form-group">
+      <label class="form-label">📚 Books Read <span style="font-family:'Crimson Pro',serif;font-weight:400;font-size:0.8rem;color:var(--ink-light)">(25L each · Red God ✦ = 200L)</span></label>
+      <div style="display:flex;flex-direction:column;gap:6px" id="edit-books-list"></div>
+    </div>
     <button class="btn-primary" onclick="saveEditPlayer()">✦ SAVE CHANGES ✦</button>
   </div>
 </div>
@@ -1547,7 +1551,7 @@ const QUOTES = [
 ];
 const HOUSES = {
   Red: '#9a1010', Obsidian: '#1e3858', Violet: '#4a1878', Green: '#1a4818',
-  Copper: '#8b4513', Pink: '#d44a8a', Yellow: '#e8c000', Silver: '#4a5568', Blue: '#1a4a7a'
+  Copper: '#8b4513', Pink: '#d44a8a', Yellow: '#c8980a', Silver: '#4a5568', Blue: '#1a4a7a'
 };
 const HOUSE_DESC = {
   Red:      'Manual laborers and miners',
@@ -3244,7 +3248,6 @@ function renderPlayers() {
         </div>` : ''}
         <div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
           <button onclick="event.stopPropagation();openEditModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
-          <button onclick="event.stopPropagation();openBooksModal('${p.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">📚 Books</button>
           <button onclick="event.stopPropagation();removePlayer('${p.id}','${p.name}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:5px 8px;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
         </div>
       </div>`;
@@ -3294,9 +3297,8 @@ function renderPackStats() {
           <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.12em;color:var(--ink-light);margin-top:3px">${label}</div>
         </div>
         <div class="flip-card-back">
-          <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">${rankTitle}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:6px;border-bottom:1px solid var(--amber);padding-bottom:4px">${rankTitle}</div>
           <div style="width:100%">${rankHTML}</div>
-          <div style="font-size:0.6rem;color:var(--ink-light);margin-top:4px">tap to flip ↩</div>
         </div>
       </div>
     </div>`;
@@ -3309,7 +3311,7 @@ function renderPackStats() {
     flipCard('👥', totalHowlers, 'HOWLERS', rankList(byLaurels, p=>sm[p.id].rank.name, ''), 'RANK STANDING') +
     flipCard('🐺', totalHowls, 'HOWLS POSTED', rankList(byStreak, p=>sm[p.id].streak||0, ' wks'), 'STREAK RANKING') +
     flipCard('❤️', totalLikes, 'LIKES GIVEN', rankList(state.players.slice().sort((a,b)=>{ const la=(state.howls||[]).filter(h=>h.player_id===b.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0); const lb=(state.howls||[]).filter(h=>h.player_id===a.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0); return la-lb; }), p=>(state.howls||[]).filter(h=>h.player_id===p.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0), ' ❤️'), 'LIKES RECEIVED') +
-    flipCard('🔥', peakWeek + ' TRIALS', 'PEAK WEEK', rankList(byStreak, p=>(sm[p.id].perfectWeeks||0)+' wks', ''), 'PERFECT WEEKS') +
+    flipCard('🔥', peakWeek + ' TRIALS', 'PEAK WEEK', rankList(byTrials, p=>sm[p.id].trials||0, ''), 'TRIALS RANKING') +
     flipCard('💪', state.players.reduce((s,p)=>s+(sm[p.id].strength||0),0), 'STRENGTH SESSIONS', rankList(state.players.slice().sort((a,b)=>(sm[b.id].strength||0)-(sm[a.id].strength||0)), p=>sm[p.id].strength||0, ''), 'STRENGTH RANKING') +
     flipCard('🧘', state.players.reduce((s,p)=>s+(sm[p.id].mobility||0),0), 'MOBILITY SESSIONS', rankList(state.players.slice().sort((a,b)=>(sm[b.id].mobility||0)-(sm[a.id].mobility||0)), p=>sm[p.id].mobility||0, ''), 'MOBILITY RANKING') +
     flipCard('💃', state.players.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length,0), 'CRIMSON PULSE', rankList(state.players.slice().sort((a,b)=>state.workouts.filter(w=>w.player_id===b.id&&w.workout==='cardio').length-state.workouts.filter(w=>w.player_id===a.id&&w.workout==='cardio').length), p=>state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length, ''), 'CARDIO RANKING') +
@@ -4143,6 +4145,29 @@ function openEditModal(pid) {
   document.getElementById('edit-name').value = player.name;
   document.getElementById('edit-house').value = player.house;
   document.getElementById('edit-subtitle').value = player.subtitle || '';
+  // Populate books
+  const editBooksList = document.getElementById('edit-books-list');
+  if (editBooksList) {
+    const read = player.books_read || [];
+    const BOOK_LIST = [
+      {id:'red_rising',title:'Red Rising',laurels:25},
+      {id:'golden_son',title:'Golden Son',laurels:25},
+      {id:'morning_star',title:'Morning Star',laurels:25},
+      {id:'iron_gold',title:'Iron Gold',laurels:25},
+      {id:'dark_age',title:'Dark Age',laurels:25},
+      {id:'light_bringer',title:'Light Bringer',laurels:25},
+      {id:'red_god',title:'Red God ✦',laurels:200}
+    ];
+    const BOOK_COLORS = {red_rising:'#cc2200',golden_son:'#c8980a',morning_star:'#1a6aaa',iron_gold:'#7a5006',dark_age:'#8a6800',light_bringer:'#5ab4e0',red_god:'#9a1010'};
+    editBooksList.innerHTML = BOOK_LIST.map(b => {
+      const checked = read.includes(b.id);
+      return `<label style="display:flex;align-items:center;gap:8px;font-family:'Crimson Pro',serif;font-size:0.9rem;cursor:pointer;padding:6px 10px;background:var(--parchment-dark);border-radius:4px;border:1.5px solid ${checked?'var(--amber)':'var(--border)'}">
+        <input type="checkbox" value="${b.id}" ${checked?'checked':''} style="accent-color:var(--amber)" onchange="this.closest('label').style.borderColor=this.checked?'var(--amber)':'var(--border)'">
+        <span style="flex:1;color:${BOOK_COLORS[b.id]||'var(--ink-mid)'};font-weight:600">◆ ${b.title}</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.62rem;color:var(--amber)">+${b.laurels}L</span>
+      </label>`;
+    }).join('');
+  }
   document.getElementById('edit-modal').classList.add('open');
 }
 
@@ -4157,6 +4182,13 @@ async function saveEditPlayer() {
   player.name = name;
   player.house = house;
   player.subtitle = subtitle;
+  // Save books
+  const editBooksCbs = document.querySelectorAll('#edit-books-list input:checked');
+  if (editBooksCbs.length >= 0) {
+    const checked = [...editBooksCbs].map(cb => cb.value);
+    player.books_read = checked;
+    player.book_laurels = checked.reduce((s, bid) => s + (bid==='red_god' ? 200 : 25), 0);
+  }
   await saveState();
   closeModal('edit-modal');
   showToast(`${name} updated. The pack record stands corrected. ✦`);
