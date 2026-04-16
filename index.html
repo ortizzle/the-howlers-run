@@ -1985,10 +1985,10 @@ async function loadState() {
   checkForNewActivityNotifications(prevState);
   // Reset announced cache if challenges version changed
   var cvKey = 'howlers_ch_version';
-  if (localStorage.getItem(cvKey) !== 'v3') {
+  if (localStorage.getItem(cvKey) !== 'v4') {
     var syncKey2 = localStorage.getItem('howlers_gist_id') || localStorage.getItem('howlers_bin_id') || 'local';
     localStorage.removeItem('howlers_announced_' + syncKey2);
-    localStorage.setItem(cvKey, 'v3');
+    localStorage.setItem(cvKey, 'v4');
   }
   retroactiveChallengePayout();
   checkAndPostChallengeHowls();
@@ -3042,7 +3042,8 @@ function checkAndPostChallengeHowls() {
         state.players.forEach(p=>{var l=(sm[p.id]||{}).laurels||0;if(l>bestL&&l>=ch.goal){bestL=l;bestLP=p;}});
         winner = bestLP;
       } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
-        var bw = state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        var bwArr = state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date));
+        var bw = bwArr.length > 0 ? bwArr[0] : null;
         if (bw) winner = state.players.find(p=>p.id===bw.player_id);
       } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
         winner = state.players.find(p=>(sm[p.id]||{}).streak>=ch.goal);
