@@ -4054,6 +4054,12 @@ function renderChallenges() {
         `<div style="font-family:'Crimson Pro',serif;font-size:0.75rem;font-style:italic;color:var(--ink-light);margin-top:6px">${doneCount===state.players.length?'The pack has risen. ✦':'The march continues...'}</div>`;
     }
 
+    // Winner house color for duel, gold for pack
+    const winnerPlayer = winner && ch.type === 'duel'
+      ? state.players.find(p => p.name.split(' ')[0] === winner || p.name === winner)
+      : null;
+    const winnerColor = winnerPlayer ? (winnerPlayer && statsMap[winnerPlayer.id] && statsMap[winnerPlayer.id].laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[winnerPlayer.house] || 'var(--amber)')) : 'var(--amber)';
+
     return `<div class="ch-flip" onclick="this.classList.toggle('flipped')">
       <div class="ch-flip-inner">
         <div class="ch-flip-front challenge-card ${isComplete?'completed':''}">
@@ -4061,14 +4067,19 @@ function renderChallenges() {
           <div class="challenge-top">
             <div class="challenge-type-badge ${ch.type}">${ch.type === 'duel' ? '⚔️ DUEL' : '🤝 PACK'}</div>
             <div class="challenge-name">${ch.icon} ${ch.name}</div>
-            <div class="challenge-reward">+${ch.reward}L</div>
+            <div class="challenge-reward" style="${isComplete ? 'color:var(--amber);font-weight:700' : ''}">+${ch.reward}L</div>
           </div>
           <div class="challenge-desc">${ch.desc}</div>
           <div class="progress-bar-wrap">
             <div class="progress-bar-fill" style="width:${pct}%"></div>
           </div>
           <div class="progress-label"><span>${progressLabel}</span><span>${Math.round(pct)}%</span></div>
-          ${winner ? `<div class="challenge-winner" style="display:flex;align-items:center;gap:6px"><span style="color:var(--amber)">★</span> <span>Won by:</span> <strong>${winner}</strong></div>` : ''}
+          ${winner ? `<div class="challenge-winner" style="display:flex;align-items:center;gap:6px">
+            <span style="color:${winnerColor}">★</span>
+            <span style="color:var(--ink-light)">Won by:</span>
+            <strong style="color:${winnerColor}">${winner}</strong>
+            <span style="margin-left:auto;font-family:'Cinzel',serif;font-size:0.7rem;font-weight:700;color:${winnerColor}">+${ch.reward}L</span>
+          </div>` : ''}
         </div>
         <div class="ch-flip-back">${backHTML}</div>
       </div>
