@@ -1316,7 +1316,8 @@
 
 <!-- SETUP OVERLAY -->
 <div id="setup-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">
-  <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:32px;width:100%;max-width:480px;box-shadow:0 8px 48px rgba(0,0,0,0.5)">
+  <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:32px;width:100%;max-width:480px;box-shadow:0 8px 48px rgba(0,0,0,0.5);position:relative">
+    <button onclick="hideSetupScreen()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid);line-height:1;padding:4px">✕</button>
     <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;letter-spacing:0.1em;color:var(--ink);margin-bottom:8px;text-align:center">⚙ Pack Setup</div>
     <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);text-align:center;margin-bottom:24px">The march begins here. Connect your pack.</div>
     
@@ -2286,11 +2287,15 @@ function openProfile(pid) {
     '</div>' +
     (badgePills ? '<div style="margin-bottom:16px"><div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:6px">BADGES</div><div style="display:flex;flex-wrap:wrap;gap:5px">' + badgePills + '</div></div>' : '') +
     '<div style="display:flex;gap:8px;margin-bottom:16px">' +
-    (currentHowlerId && currentHowlerId !== pid ? '<button onclick="giftPoints(\"' + pid + '\")" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--amber);border-radius:var(--radius);padding:8px;font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--amber);cursor:pointer;letter-spacing:0.08em">🎁 Gift Laurels</button>' : '') +
+    booksHTML +
     '</div>' +
     booksHTML +
-    '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:8px">📅 ACTIVITY HEATMAP</div>' +
-    buildHeatmap(pid) +
+    '<div style="margin-bottom:20px">' +
+    buildRankProgress(pid, s) +
+    '</div>' +
+    '<div style="margin-bottom:20px">' +
+    buildStreakBar(pid, s) +
+    '</div>' +
 
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin:16px 0 8px">⚔️ TRIAL CHRONICLE</div>' +
     timelineHTML + '</div>';
@@ -2298,43 +2303,68 @@ function openProfile(pid) {
   document.getElementById('profile-modal').classList.add('open');
 }
 
-function buildHeatmap(pid) {
-  var works = state.workouts.filter(function(w){ return w.player_id === pid; });
-  var dateCounts = {};
-  works.forEach(function(w){ dateCounts[w.date] = (dateCounts[w.date]||0)+1; });
-  var today = new Date();
-  var days = [];
-  for (var i = 125; i >= 0; i--) {
-    var d = new Date(today); d.setDate(d.getDate() - i);
-    var key = d.toISOString().split('T')[0];
-    days.push({ key: key, count: dateCounts[key]||0, dow: d.getDay() });
+function buildRankProgress(pid, s) {
+  var laurels = s.laurels || 0;
+  var rank = s.rank || RANKS[0];
+  var nextRank = null;
+  for (var i = 0; i < RANKS.length; i++) {
+    if (RANKS[i].min > laurels) { nextRank = RANKS[i]; break; }
   }
-  var weeks = []; var week = [];
-  var firstDow = days[0].dow;
-  for (var p2 = 0; p2 < firstDow; p2++) week.push(null);
-  days.forEach(function(d) {
-    week.push(d);
-    if (week.length === 7) { weeks.push(week); week = []; }
-  });
-  if (week.length > 0) weeks.push(week);
-  var colors = ['var(--parchment-mid)','rgba(122,80,6,0.25)','rgba(122,80,6,0.5)','rgba(122,80,6,0.85)'];
-  var html = '<div style="overflow-x:auto;margin-bottom:4px"><div style="display:flex;gap:2px">';
-  weeks.forEach(function(wk) {
-    html += '<div style="display:flex;flex-direction:column;gap:2px">';
-    wk.forEach(function(d) {
-      if (!d) { html += '<div style="width:10px;height:10px"></div>'; return; }
-      var c = d.count===0?colors[0]:d.count===1?colors[1]:d.count===2?colors[2]:colors[3];
-      html += '<div title="' + d.key + (d.count?' · '+d.count+' trial'+(d.count>1?'s':''):'') + '" style="width:10px;height:10px;border-radius:2px;background:' + c + '"></div>';
-    });
-    html += '</div>';
-  });
-  var trainingStart2 = new Date('2026-04-13T00:00:00');
-  var nowW = new Date();
-  var weekNum2 = Math.max(1, Math.ceil((nowW - trainingStart2) / (7*24*60*60*1000)));
-  html += '<div style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">TRAINING · WEEK ' + toRoman(weekNum2) + '</div>';
-  html += '</div><div style="display:flex;gap:6px;align-items:center;margin-top:4px;font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light)"><span>Less</span>';
-  colors.forEach(function(c){ html += '<div style="width:10px;height:10px;border-radius:2px;background:' + c + '"></div>'; });
-  html += '<span>More</span></div></div>';
+  var hc = laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[(state.players.find(function(p){return p.id===pid;})||{}).house] || '#7a5006');
+  if (!nextRank) {
+    return '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">⚔ RANK PROGRESS</div>' +
+      '<div style="text-align:center;padding:12px;background:linear-gradient(135deg,rgba(200,144,10,0.15),rgba(200,144,10,0.05));border:1.5px solid var(--amber);border-radius:var(--radius)">' +
+      '<div style="font-family:Cinzel,serif;font-size:0.9rem;font-weight:700;color:var(--amber)">☀️ The Reaper</div>' +
+      '<div style="font-family:Crimson Pro,serif;font-size:0.8rem;font-style:italic;color:var(--ink-light)">You have reached the pinnacle. ✦</div>' +
+      '</div>';
+  }
+  var pct = Math.min(100, ((laurels - rank.min) / (nextRank.min - rank.min)) * 100);
+  var needed = nextRank.min - laurels;
+  return '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">⚔ RANK PROGRESS</div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">' +
+    '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:' + hc + '">' + rank.name + '</span>' +
+    '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:var(--ink-light)">' + nextRank.name + '</span>' +
+    '</div>' +
+    '<div style="height:10px;background:var(--parchment-dark);border-radius:5px;overflow:hidden;margin-bottom:6px">' +
+    '<div style="height:100%;width:' + pct.toFixed(1) + '%;background:linear-gradient(to right,' + hc + ',' + hc + 'cc);border-radius:5px;transition:width 0.6s ease"></div>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:space-between;font-family:Crimson Pro,serif;font-size:0.75rem;color:var(--ink-light)">' +
+    '<span>' + laurels.toLocaleString() + 'L</span>' +
+    '<span style="font-style:italic">' + needed.toLocaleString() + 'L to go</span>' +
+    '<span>' + nextRank.min.toLocaleString() + 'L</span>' +
+    '</div>';
+}
+
+function buildStreakBar(pid, s) {
+  var TRAINING_START = new Date('2026-04-13');
+  var today = new Date();
+  var totalWeeks = Math.ceil((today - TRAINING_START) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  totalWeeks = Math.min(totalWeeks, 39);
+  var weekSet = s.weekSet || new Set();
+  var html = '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">🔥 WEEKLY STREAK</div>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">';
+  for (var w = 0; w < totalWeeks; w++) {
+    var weekDate = new Date(TRAINING_START);
+    weekDate.setDate(weekDate.getDate() + w * 7);
+    var wk = weekDate.toISOString().split('T')[0].slice(0, 7) + '-W' + String(Math.ceil((weekDate.getDate()) / 7)).padStart(2,'0');
+    // Use getWeekKey equivalent
+    var mon = new Date(weekDate);
+    mon.setDate(mon.getDate() - ((mon.getDay()+6)%7));
+    var wkKey = mon.toISOString().split('T')[0];
+    var active = weekSet.has(wkKey);
+    var isCurrent = w === totalWeeks - 1;
+    var color = active ? '#2e7d32' : (isCurrent ? 'var(--amber)' : 'var(--parchment-dark)');
+    var border = active ? '#2e7d32' : (isCurrent ? 'var(--amber)' : 'var(--border)');
+    var label = active ? '✓' : (isCurrent ? '·' : '○');
+    html += '<div style="width:22px;height:22px;border-radius:4px;background:' + color + ';border:1.5px solid ' + border + ';display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:' + (active ? 'white' : 'var(--ink-light)') + ';font-family:Cinzel,serif" title="Week ' + (w+1) + '">' + label + '</div>';
+  }
+  html += '</div>';
+  var streak = s.streak || 0;
+  var perfectWeeks = s.perfectWeeks || 0;
+  html += '<div style="display:flex;gap:16px;font-family:Crimson Pro,serif;font-size:0.8rem;color:var(--ink-light)">' +
+    '<span>🔥 <strong style="color:var(--ink)">' + streak + '</strong> week streak</span>' +
+    '<span>⭐ <strong style="color:var(--ink)">' + perfectWeeks + '</strong> perfect weeks</span>' +
+    '</div>';
   return html;
 }
 
