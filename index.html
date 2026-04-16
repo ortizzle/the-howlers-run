@@ -1116,53 +1116,11 @@
 
   <!-- TAB: LOG TRIAL -->
   <div class="tab-content" id="tab-log">
-    <div class="section-title">Log Trial</div>
-    <div class="log-form-card">
-      <div class="form-group">
-        <label class="form-label">Howler</label>
-        <select class="form-select" id="log-player" onchange="updateLaurelPreview()"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Workout Type</label>
-        <select class="form-select" id="log-workout" onchange="updateLaurelPreview()">
-          <option value="">— Select Workout —</option>
-          <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
-          <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
-          <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-          <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
-          <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
-          <option value="strength">The Iron Forge — Strength (15L flat)</option>
-          <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
-        <option value="cardio">The Crimson Pulse — Cardio (8L per 10 min)</option>
-        <option value="race">Race Day 🏆 (20L/mile + 50L bonus)</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <div class="form-group" id="miles-group">
-          <label class="form-label">Distance (mi)</label>
-          <input class="form-input" type="number" id="log-miles" min="0" step="0.1" placeholder="e.g. 6.2" oninput="updateLaurelPreview()">
-        </div>
-        <div class="form-group" id="minutes-group" style="display:none">
-          <label class="form-label">Minutes</label>
-          <input class="form-input" type="number" id="log-minutes" min="0" step="1" placeholder="e.g. 45" oninput="updateLaurelPreview()">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Date</label>
-          <input class="form-input" type="date" id="log-date">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Notes (optional)</label>
-        <textarea class="form-textarea" id="log-notes" placeholder="How'd it feel? Any highlights?"></textarea>
-      </div>
-      <div class="laurel-preview" id="laurel-preview" style="display:none">
-        <div>
-          <div class="laurel-preview-label">Laurels Earned</div>
-          <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.75rem;color:var(--amber);" id="laurel-preview-note"></div>
-        </div>
-        <div class="laurel-preview-val" id="laurel-preview-val">+0</div>
-      </div>
-      <button class="btn-primary" onclick="submitTrial()">✦ RECORD TRIAL ✦</button>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center">
+      <div style="font-size:2.5rem;margin-bottom:16px">⚔</div>
+      <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px">Log a Trial</div>
+      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);margin-bottom:24px">Tap the button below to record your workout</div>
+      <button onclick="openQuickLog()" style="background:var(--ink);color:var(--amber-pale);border:2px solid var(--amber);border-radius:var(--radius);padding:14px 32px;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;letter-spacing:0.1em;cursor:pointer">⚔ LOG A TRIAL</button>
     </div>
   </div>
 
@@ -1535,11 +1493,54 @@
 <!-- QUICK LOG -->
 <div onclick="openQuickLog()" style="position:fixed;bottom:24px;right:24px;z-index:150;background:var(--ink);color:var(--amber-pale);border:2px solid var(--amber);border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.35)" title="Quick Log">⚔</div>
 <div class="modal-overlay" id="quick-log-modal">
-  <div class="modal-box" style="max-width:400px">
+  <div class="modal-box" style="max-width:480px;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
     <button class="modal-close" onclick="closeModal('quick-log-modal')">✕</button>
-    <div class="modal-title">⚔ Quick Log</div>
-    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;margin-bottom:16px">Tap to log your most common workouts instantly</div>
-    <div id="quick-log-options" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="modal-title">⚔ Log a Trial</div>
+    <div class="form-group">
+      <label class="form-label">Howler</label>
+      <select class="form-select" id="ql-player" onchange="qlUpdatePreview()"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Workout Type</label>
+      <select class="form-select" id="ql-workout" onchange="qlUpdatePreview()">
+        <option value="">— Select Workout —</option>
+        <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
+        <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
+        <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
+        <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
+        <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
+        <option value="strength">The Iron Forge — Strength (15L flat)</option>
+        <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
+        <option value="cardio">The Crimson Pulse — Cardio (8L per 10 min)</option>
+        <option value="race">Race Day 🏆 (20L/mile + 50L bonus)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group" id="ql-miles-group" style="display:none">
+        <label class="form-label" id="ql-miles-label">Distance (mi)</label>
+        <input class="form-input" type="number" id="ql-miles" min="0" step="0.1" placeholder="e.g. 3.1" oninput="qlUpdatePreview()">
+      </div>
+      <div class="form-group" id="ql-minutes-group" style="display:none">
+        <label class="form-label" id="ql-minutes-label">Minutes</label>
+        <input class="form-input" type="number" id="ql-minutes" min="0" step="1" placeholder="e.g. 30" oninput="qlUpdatePreview()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-input" type="date" id="ql-date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes (optional)</label>
+      <textarea class="form-textarea" id="ql-notes" placeholder="How'd it feel? Any highlights?" rows="2"></textarea>
+    </div>
+    <div class="laurel-preview" id="ql-preview" style="display:none">
+      <div>
+        <div class="laurel-preview-label">Laurels Earned</div>
+        <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.75rem;color:var(--ink-light)">Base amount</div>
+      </div>
+      <div class="laurel-preview-val" id="ql-preview-val">+0</div>
+    </div>
+    <button class="btn-primary" onclick="qlSubmit()">✦ RECORD TRIAL ✦</button>
   </div>
 </div>
 
@@ -2707,55 +2708,138 @@ function renderActiveDuels() {
 }
 
 // ─── QUICK LOG ───────────────────────────────────────────────────────────────
-var QUICK_WORKOUTS = [
-  {label:'Easy Run 3mi', workout:'easy_run', icon:'🏃', miles:3, desc:'+24 Laurels'},
-  {label:'Easy Run 5mi', workout:'easy_run', icon:'🏃', miles:5, desc:'+40 Laurels'},
-  {label:'The March 6mi', workout:'long_run', icon:'🗺️', miles:6, desc:'+72 Laurels'},
-  {label:'The March 8mi', workout:'long_run', icon:'🗺️', miles:8, desc:'+96 Laurels'},
-  {label:'The Iron Forge', workout:'strength', icon:'💪', miles:0, desc:'+12 Laurels'},
-  {label:'Mind & Body', workout:'mobility', icon:'🧘', miles:0, desc:'+8 Laurels'},
-  {label:'The Steed 30min', workout:'peloton', icon:'🚴', minutes:30, desc:'+10 Laurels'},
-  {label:'The Steed 45min', workout:'peloton', icon:'🚴', minutes:45, desc:'+15 Laurels'},
-];
 function openQuickLog() {
-  var el = document.getElementById('quick-log-options');
-  var pid = currentHowlerId;
-  var warning = pid ? '' : '<div style="background:var(--amber-glow);border:1px solid var(--amber);border-radius:4px;padding:8px 12px;font-family:Crimson Pro,serif;font-size:0.85rem;color:var(--amber);margin-bottom:10px">Select yourself in the header (🐺 I am...) first</div>';
-  el.innerHTML = warning + QUICK_WORKOUTS.map(function(q,i) {
-    var l = calcLaurels(q.workout, q.miles||0, q.minutes||0);
-    return '<button onclick="quickLogSubmit(' + i + ')" style="display:flex;align-items:center;gap:12px;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;text-align:left;width:100%">' +
-      '<span style="font-size:1.2rem">' + q.icon + '</span><span style="flex:1">' +
-      '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:var(--ink);display:block">' + q.label + '</span>' +
-      '<span style="font-family:Crimson Pro,serif;font-size:0.82rem;color:var(--ink-light)">+' + l + ' Laurels</span></span></button>';
-  }).join('');
-  document.getElementById('quick-log-modal').classList.add('open');
-}
-async function quickLogSubmit(idx) {
-  var q = QUICK_WORKOUTS[idx];
-  var pid = currentHowlerId;
-  if (!pid) { showToast('Select yourself in the header first.'); return; }
+  var modal = document.getElementById('quick-log-modal');
+  // Populate player dropdown
+  var sel = document.getElementById('ql-player');
+  var prev = sel.value;
+  sel.innerHTML = '<option value="">— Select Howler —</option>';
+  state.players.forEach(function(p) {
+    var opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name + ' · ' + p.house;
+    sel.appendChild(opt);
+  });
+  if (currentHowlerId) sel.value = currentHowlerId;
+  else if (prev) sel.value = prev;
+  // Set today's date
   var today = new Date().toISOString().split('T')[0];
-  if (new Date(today) < TRAINING_START) { showToast('Training has not begun yet!'); return; }
-  if (q.workout === 'long_run' && (q.miles||0) < 6) { showToast('The March requires 6+ miles.'); return; }
-  var laurels = calcLaurels(q.workout, q.miles||0, q.minutes||0);
+  var dateEl = document.getElementById('ql-date');
+  dateEl.value = today;
+  dateEl.min = '2026-04-13';
+  dateEl.max = today;
+  // Reset form
+  document.getElementById('ql-workout').value = '';
+  document.getElementById('ql-miles').value = '';
+  document.getElementById('ql-minutes').value = '';
+  document.getElementById('ql-notes').value = '';
+  document.getElementById('ql-preview').style.display = 'none';
+  document.getElementById('ql-miles-group').style.display = 'none';
+  document.getElementById('ql-minutes-group').style.display = 'none';
+  modal.classList.add('open');
+}
+
+function qlUpdatePreview() {
+  var workout = document.getElementById('ql-workout').value;
+  var miles = document.getElementById('ql-miles').value;
+  var minutes = document.getElementById('ql-minutes').value;
+  var milesGrp = document.getElementById('ql-miles-group');
+  var minsGrp = document.getElementById('ql-minutes-group');
+  var milesLbl = document.getElementById('ql-miles-label');
+  var minsLbl = document.getElementById('ql-minutes-label');
+
+  // Show/hide fields
+  if (workout === 'cardio') {
+    milesGrp.style.display = 'none';
+    minsGrp.style.display = 'block';
+    if (minsLbl) minsLbl.textContent = 'Minutes';
+  } else if (workout === 'peloton') {
+    milesGrp.style.display = 'block';
+    if (milesLbl) milesLbl.textContent = 'Peloton Miles (optional)';
+    minsGrp.style.display = 'block';
+    if (minsLbl) minsLbl.textContent = 'Minutes';
+  } else if (['long_run','tempo','easy_run','walk_run','race'].includes(workout)) {
+    milesGrp.style.display = 'block';
+    if (milesLbl) milesLbl.textContent = 'Distance (mi)';
+    minsGrp.style.display = 'none';
+  } else if (['strength','mobility'].includes(workout)) {
+    milesGrp.style.display = 'none';
+    minsGrp.style.display = 'block';
+    if (minsLbl) minsLbl.textContent = 'Minutes (optional)';
+  } else {
+    milesGrp.style.display = 'none';
+    minsGrp.style.display = 'none';
+  }
+
+  var base = calcLaurels(workout, miles, minutes);
+  var preview = document.getElementById('ql-preview');
+  var previewVal = document.getElementById('ql-preview-val');
+  if (workout && (base > 0 || workout)) {
+    preview.style.display = 'flex';
+    previewVal.textContent = '+' + base;
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+async function qlSubmit() {
+  var pid = document.getElementById('ql-player').value;
+  var workout = document.getElementById('ql-workout').value;
+  var date = document.getElementById('ql-date').value;
+  var miles = parseFloat(document.getElementById('ql-miles').value) || 0;
+  var minutes = parseInt(document.getElementById('ql-minutes').value) || 0;
+  var notes = document.getElementById('ql-notes').value.trim();
+
+  if (!pid) { showToast('Select a Howler first.'); return; }
+  if (!workout) { showToast('Select a workout type.'); return; }
+  if (!date) { showToast('Enter a date.'); return; }
+  if (date < '2026-04-13') { showToast('No trials before April 13, 2026.'); return; }
+  if (date > new Date().toISOString().split('T')[0]) { showToast('Cannot log a future date.'); return; }
+  if (['long_run','tempo','easy_run'].includes(workout) && miles === 0) { showToast('Enter miles for this workout.'); return; }
+  if (workout === 'long_run' && miles < 6) { showToast('The March requires at least 6 miles.'); return; }
+  if (workout === 'peloton' && minutes === 0) { showToast('Enter minutes for Peloton ride.'); return; }
+
+  var btn = document.querySelector('#quick-log-modal .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ RECORDING…'; }
+
+  var laurels_base = calcLaurels(workout, miles, minutes);
+  buildStatsCache();
+  var allLaurels = state.players.map(function(p){ return (_statsCache[p.id]||{}).laurels||0; });
+  var leaderLaurels = allLaurels.length > 0 ? Math.max.apply(null, allLaurels) : 0;
+  var myLaurels = (_statsCache[pid]||{}).laurels||0;
+  var isUnderdog = leaderLaurels - myLaurels >= 300;
+  var underdogBonus = isUnderdog ? Math.round(laurels_base * 0.2) : 0;
+  var laurels_total = laurels_base + underdogBonus;
+
   var prevBadges = (state.badges_awarded[pid]||[]).slice();
-  var entry = { id:'w_'+Date.now()+'_'+Math.random().toString(36).slice(2,5), player_id:pid, workout:q.workout, date:today, miles:q.miles||undefined, minutes:q.minutes||undefined, laurels_base:laurels, quote:QUOTES[Math.floor(Math.random()*QUOTES.length)], timestamp:new Date().toISOString() };
+  var entry = {
+    id: 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    player_id: pid, workout: workout, date: date,
+    miles: miles||undefined, minutes: minutes||undefined,
+    notes: notes, laurels_base: laurels_total,
+    laurels_earned: laurels_base, underdog_bonus: underdogBonus,
+    quote: QUOTES[Math.floor(Math.random()*QUOTES.length)],
+    timestamp: new Date().toISOString()
+  };
   state.workouts.push(entry);
   calcPlayerStats(pid);
   var newBadges = (state.badges_awarded[pid]||[]).filter(function(b){ return !prevBadges.includes(b); });
   if (newBadges.length > 0) entry.badge_earned = newBadges[0];
+
   await saveState();
   closeModal('quick-log-modal');
+
   var player = state.players.find(function(p){ return p.id===pid; });
-  var msg = 'Logged! +' + laurels + 'L for ' + (player?player.name:'you') + '. ✦';
+  var msg = '✦ Trial recorded! +' + laurels_total + 'L for ' + (player?player.name:'you') + '.';
+  if (underdogBonus > 0) msg += ' (+' + underdogBonus + 'L Underdog bonus 🐺)';
   if (newBadges.length > 0) {
-    var tiers = ['bronze','silver','gold'];
-    var tier = tiers.find(function(t){ return newBadges[0].endsWith('_'+t); });
+    var tier = ['bronze','silver','gold'].find(function(t){ return newBadges[0].endsWith('_'+t); });
     var baseId = tier ? newBadges[0].slice(0,-(tier.length+1)) : newBadges[0];
     var bd = BADGES_DEF.find(function(b){ return b.id===baseId; });
     if (bd && tier) msg += ' ' + {bronze:'I',silver:'II',gold:'III'}[tier] + ' Badge: ' + bd.icon + ' ' + bd.name + '!';
   }
   showToast(msg);
+  if (btn) { btn.disabled = false; btn.textContent = '✦ RECORD TRIAL ✦'; }
   renderAll();
   switchTab('chronicle');
 }
@@ -4870,9 +4954,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('profile-modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal('profile-modal');
   });
-  document.getElementById('quick-log-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal('quick-log-modal');
-  });
+  document.getElementById('quick-log-modal').addEventListener('click', function(e) { if (e.target === this) closeModal('quick-log-modal'); });
   document.getElementById('duel-modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal('duel-modal');
   });
