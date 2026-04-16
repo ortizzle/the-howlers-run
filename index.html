@@ -1834,6 +1834,7 @@ function hasGistConfig() {
 }
 let currentHowlerId = localStorage.getItem('howlers_current_player') || '';
 let _skipMerge = false; // set true for force restore
+let _deletedWorkoutIds = new Set(); // IDs deleted this session — never merge back
 
 // ─── NOTIFICATION TRACKING ───────────────────────────────────────────────────
 function getLastHowlSeen() {
@@ -2035,8 +2036,9 @@ async function saveState() {
         const remoteIds = new Set((remoteState.workouts||[]).map(w => w.id));
 
         // Add any workouts present in remote but missing locally
+        // Skip IDs that were explicitly deleted this session
         (remoteState.workouts||[]).forEach(w => {
-          if (!localIds.has(w.id)) {
+          if (!localIds.has(w.id) && !_deletedWorkoutIds.has(w.id)) {
             state.workouts.push(w);
             console.log('Merged remote workout:', w.id, w.workout, w.date);
           }
@@ -2879,6 +2881,11 @@ async function qlSubmit() {
   }
   showToast(msg);
   if (btn) { btn.disabled = false; btn.textContent = '✦ RECORD TRIAL ✦'; }
+  // House-colored confetti burst
+  var trialPlayer = state.players.find(function(p){ return p.id===pid; });
+  var houseCol = trialPlayer ? (HOUSES[trialPlayer.house] || '#c8900a') : '#c8900a';
+  var trialColors = [houseCol, houseCol+'cc', houseCol+'99', '#f0c040', '#ffffff'];
+  setTimeout(function(){ launchConfetti('trial', trialColors); }, 100);
   renderAll();
   switchTab('chronicle');
 }
@@ -3210,12 +3217,13 @@ function getStats(pid) {
 }
 
 
-function launchConfetti(type) {
-  // type: 'conquest' = crimson/gold, 'rankup' = gold/amber
-  var colors = type === 'conquest'
+function launchConfetti(type, customColors) {
+  // type: 'conquest' = crimson/gold, 'rankup' = gold/amber, 'trial' = house color
+  var colors = customColors ? customColors
+    : type === 'conquest'
     ? ['#c8900a','#8b0000','#ffd700','#b22222','#daa520','#ff4500']
     : ['#c8900a','#ffd700','#daa520','#f5c842','#e8a020','#ffffff'];
-  var count = type === 'conquest' ? 80 : 50;
+  var count = type === 'conquest' ? 80 : type === 'trial' ? 30 : 50;
   for (var i = 0; i < count; i++) {
     (function(i) {
       setTimeout(function() {
@@ -4815,6 +4823,7 @@ async function removeWorkout(wid) {
   const w = state.workouts.find(x => x.id === wid);
   if (!w) return;
   if (!confirm('Remove this trial from the chronicle?')) return;
+  _deletedWorkoutIds.add(wid);
   state.workouts = state.workouts.filter(x => x.id !== wid);
   recalcAllBadges();
   await saveState();
@@ -4937,6 +4946,11 @@ async function submitTrial() {
   }
   showToast(toastMsg);
   if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✦ RECORD TRIAL ✦'; }
+  // House-colored confetti burst
+  var trialPlayer2 = state.players.find(function(p){ return p.id===pid; });
+  var houseCol2 = trialPlayer2 ? (HOUSES[trialPlayer2.house] || '#c8900a') : '#c8900a';
+  var trialColors2 = [houseCol2, houseCol2+'cc', houseCol2+'99', '#f0c040', '#ffffff'];
+  setTimeout(function(){ launchConfetti('trial', trialColors2); }, 100);
   renderAll();
   switchTab('chronicle');
 }
