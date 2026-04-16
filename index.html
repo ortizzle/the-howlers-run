@@ -1547,7 +1547,7 @@ const QUOTES = [
 ];
 const HOUSES = {
   Red: '#9a1010', Obsidian: '#1e3858', Violet: '#4a1878', Green: '#1a4818',
-  Copper: '#8b4513', Pink: '#9c2d6e', Yellow: '#8a7000', Silver: '#4a5568', Blue: '#1a4a7a'
+  Copper: '#8b4513', Pink: '#d44a8a', Yellow: '#8a7000', Silver: '#4a5568', Blue: '#1a4a7a'
 };
 const HOUSE_DESC = {
   Red:      'Manual laborers and miners',
@@ -2286,9 +2286,6 @@ function openProfile(pid) {
     '<div style="text-align:center;background:var(--parchment-dark);border-radius:4px;padding:8px 4px"><div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + s.longestRun + '</div><div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">LONGEST MI</div></div>' +
     '</div>' +
     (badgePills ? '<div style="margin-bottom:16px"><div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:6px">BADGES</div><div style="display:flex;flex-wrap:wrap;gap:5px">' + badgePills + '</div></div>' : '') +
-    '<div style="display:flex;gap:8px;margin-bottom:16px">' +
-    booksHTML +
-    '</div>' +
     booksHTML +
     '<div style="margin-bottom:20px">' +
     buildRankProgress(pid, s) +
