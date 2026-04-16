@@ -663,8 +663,12 @@
     transition: box-shadow 0.2s;
   }
   .challenge-card.completed {
-    border-color: var(--gold);
-    background: linear-gradient(to right, var(--amber-glow), var(--parchment) 40%);
+    border-color: var(--card-color, var(--gold));
+    background: linear-gradient(135deg, var(--card-glow, var(--amber-glow)), var(--parchment) 50%);
+  }
+  .challenge-card.active-lead {
+    border-color: var(--card-color, var(--border));
+    background: linear-gradient(135deg, var(--card-glow, var(--parchment)), var(--parchment) 60%);
   }
   .challenge-card:hover { box-shadow: var(--shadow-strong); }
   .challenge-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
@@ -4060,9 +4064,54 @@ function renderChallenges() {
       : null;
     const winnerColor = winnerPlayer ? (winnerPlayer && statsMap[winnerPlayer.id] && statsMap[winnerPlayer.id].laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[winnerPlayer.house] || 'var(--amber)')) : 'var(--amber)';
 
+    // Card gradient colors
+    let cardColor = 'var(--gold)';
+    let cardGlow = 'rgba(200,144,10,0.15)';
+    let cardClass = isComplete ? 'completed' : '';
+
+    if (isComplete && ch.type === 'duel' && winnerPlayer) {
+      // Bold house color for conquered duel
+      cardColor = winnerColor;
+      cardGlow = winnerColor + '30';
+    } else if (isComplete && ch.type === 'pack') {
+      // Bold gold for conquered pack
+      cardColor = 'var(--gold)';
+      cardGlow = 'rgba(200,144,10,0.18)';
+    } else if (!isComplete && ch.type === 'duel') {
+      // Subtle: find leader of this challenge
+      const leaderStandings = state.players.map(p => {
+        const s = statsMap[p.id]; let val = 0;
+        if (ch.id==='first_blood') val = state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)&&w.player_id===p.id).length>0?1:0;
+        else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) val=s.laurels||0;
+        else if (['five_league','grand_march','the_long_road'].includes(ch.id)) val=s.maxSingleRun||0;
+        else if (['the_unbroken','unbreakable'].includes(ch.id)) val=s.streak||0;
+        else if (ch.id==='iron_league') val=s.miles||0;
+        else if (ch.id==='the_tireless') val=s.trials||0;
+        else if (ch.id==='the_dancer') val=state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length;
+        else if (ch.id==='the_ironborn') val=s.strength||0;
+        else if (ch.id==='the_sage') val=s.mobility||0;
+        else if (ch.id==='the_peloton_ace') val=s.pelotons||0;
+        else if (ch.id==='the_faithful') val=s.perfectWeeks||0;
+        else if (ch.id==='primus_pares') val=(s.weekSet&&s.weekSet.size)||0;
+        return {p, val};
+      }).sort((a,b)=>b.val-a.val);
+      const leader = leaderStandings[0] && leaderStandings[0].val > 0 ? leaderStandings[0].p : null;
+      if (leader) {
+        const lc = HOUSES[leader.house] || 'var(--amber)';
+        cardColor = lc;
+        cardGlow = lc + '18';
+        cardClass = 'active-lead';
+      }
+    } else if (!isComplete && ch.type === 'pack') {
+      // Subtle gold for active pack
+      cardGlow = 'rgba(200,144,10,0.06)';
+    }
+
+    const cardStyle = '--card-color:' + cardColor + ';--card-glow:' + cardGlow;
+
     return `<div class="ch-flip" onclick="this.classList.toggle('flipped')">
       <div class="ch-flip-inner">
-        <div class="ch-flip-front challenge-card ${isComplete?'completed':''}">
+        <div class="ch-flip-front challenge-card ${cardClass}" style="${cardStyle}">
           ${isComplete ? '<div class="conquered-stamp">✦ CONQUERED</div>' : ''}
           <div class="challenge-top">
             <div class="challenge-type-badge ${ch.type}">${ch.type === 'duel' ? '⚔️ DUEL' : '🤝 PACK'}</div>
