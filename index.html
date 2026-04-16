@@ -1362,6 +1362,9 @@
         <div style="display:flex;gap:8px">
           <button onclick="exportBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.68rem;font-weight:700;color:var(--ink-mid);cursor:pointer;letter-spacing:0.06em">⬇ Export Backup</button>
           <button onclick="importBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.68rem;font-weight:700;color:var(--ink-mid);cursor:pointer;letter-spacing:0.06em">⬆ Restore Backup</button>
+          </div>
+          <button onclick="forceRestore()" style="width:100%;margin-top:6px;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.06em">⚠️ Force Restore (bypasses merge)</button>
+          <div style="display:none">
         </div>
         <div style="font-family:'Crimson Pro',serif;font-size:0.78rem;font-style:italic;color:var(--ink-light);margin-top:8px">Export saves a local JSON file. Restore imports it back to the Gist.</div>
       </div>
@@ -1786,6 +1789,7 @@ function hasGistConfig() {
   return !!(localStorage.getItem('howlers_gist_id') && localStorage.getItem('howlers_gist_token'));
 }
 let currentHowlerId = localStorage.getItem('howlers_current_player') || '';
+let _skipMerge = false; // set true for force restore
 
 // ─── NOTIFICATION TRACKING ───────────────────────────────────────────────────
 function getLastHowlSeen() {
@@ -3349,6 +3353,50 @@ function exportWeeklyImage() {
     if (btn) { btn.disabled = false; btn.textContent = '\ud83d\udcf8 CAPTURE THIS WEEK'; }
     showToast('Could not generate image.');
   });
+}
+
+
+async function forceRestore() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(ev) {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (!imported.players || !imported.workouts) {
+          showToast('⚠️ Invalid backup file.');
+          return;
+        }
+        const wCount = imported.workouts.filter(w => w.workout !== 'milestone_bonus').length;
+        const confirmed = confirm(
+          '⚠️ FORCE RESTORE — skips safe merge\n\n' +
+          'This will overwrite the Gist directly.\n\n' +
+          imported.players.length + ' players · ' +
+          wCount + ' workouts · ' +
+          (imported.howls||[]).length + ' howls\n\n' +
+          'Use only to fix corrupted data. Continue?'
+        );
+        if (!confirmed) return;
+        _skipMerge = true;
+        state = imported;
+        await saveState();
+        _skipMerge = false;
+        renderAll();
+        showToast('✅ Force restore complete! Data written directly. 🐺');
+      } catch(err) {
+        _skipMerge = false;
+        showToast('⚠️ Could not read file: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(input);
+  input.click();
+  document.body.removeChild(input);
 }
 
 function renderAll() {
