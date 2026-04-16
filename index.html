@@ -3374,22 +3374,39 @@ async function forceRestore() {
         const wCount = imported.workouts.filter(w => w.workout !== 'milestone_bonus').length;
         const confirmed = confirm(
           '⚠️ FORCE RESTORE — skips safe merge\n\n' +
-          'This will overwrite the Gist directly.\n\n' +
+          'This writes directly to the Gist, bypassing merge.\n\n' +
           imported.players.length + ' players · ' +
           wCount + ' workouts · ' +
           (imported.howls||[]).length + ' howls\n\n' +
           'Use only to fix corrupted data. Continue?'
         );
         if (!confirmed) return;
-        _skipMerge = true;
+        // Write DIRECTLY to Gist — no merge, no saveState
+        const { gistId, token } = getGistConfig();
+        if (!gistId || !token) { showToast('⚠️ No Gist config found.'); return; }
+        setSyncStatus('loading');
+        showToast('⏳ Writing directly to Gist...');
+        const res = await fetch('https://api.github.com/gists/' + gistId, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': 'token ' + token,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ files: { 'howlers-data.json': { content: JSON.stringify(imported) } } })
+        });
+        if (!res.ok) {
+          setSyncStatus('error');
+          showToast('⚠️ Gist write failed: HTTP ' + res.status);
+          return;
+        }
         state = imported;
-        await saveState();
-        _skipMerge = false;
+        setSyncStatus('live');
         renderAll();
-        showToast('✅ Force restore complete! Data written directly. 🐺');
+        showToast('✅ Force restore complete! Gist overwritten directly. 🐺');
       } catch(err) {
-        _skipMerge = false;
-        showToast('⚠️ Could not read file: ' + err.message);
+        setSyncStatus('error');
+        showToast('⚠️ Error: ' + err.message);
       }
     };
     reader.readAsText(file);
