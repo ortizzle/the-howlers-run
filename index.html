@@ -1343,6 +1343,14 @@
       ✦ CONNECT THE PACK ✦</button>
       <button onclick="testGistConnection()" style="width:100%;margin-top:8px;background:transparent;border:1.5px solid var(--amber);border-radius:var(--radius);padding:14px;font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;letter-spacing:0.12em;color:var(--amber);cursor:pointer">🔍 TEST CONNECTION</button>
       <div id="test-result" style="margin-top:10px;font-family:monospace;font-size:0.75rem;color:var(--ink-mid);word-break:break-all;display:none"></div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+        <div style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">📦 DATA BACKUP</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="exportBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.68rem;font-weight:700;color:var(--ink-mid);cursor:pointer;letter-spacing:0.06em">⬇ Export Backup</button>
+          <button onclick="importBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.68rem;font-weight:700;color:var(--ink-mid);cursor:pointer;letter-spacing:0.06em">⬆ Restore Backup</button>
+        </div>
+        <div style="font-family:'Crimson Pro',serif;font-size:0.78rem;font-style:italic;color:var(--ink-light);margin-top:8px">Export saves a local JSON file. Restore imports it back to the Gist.</div>
+      </div>
       <button style="display:none
     </button>
     <div style="text-align:center;margin-top:12px">
@@ -3053,6 +3061,61 @@ function launchConfetti(type) {
       }, i * 25);
     })(i);
   }
+}
+
+
+function exportBackup() {
+  const filename = 'howlers-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('📦 Backup saved: ' + filename);
+}
+
+function importBackup() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(ev) {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        // Validate it looks like Howlers data
+        if (!imported.players || !imported.workouts) {
+          showToast('⚠️ Invalid backup file — missing players or workouts.');
+          return;
+        }
+        const wCount = imported.workouts.filter(w=>w.workout!=='milestone_bonus').length;
+        const confirmed = confirm(
+          'Restore backup?\n\n' +
+          imported.players.length + ' players\n' +
+          wCount + ' workouts\n' +
+          (imported.howls||[]).length + ' howls\n\n' +
+          'This will overwrite current Gist data. Continue?'
+        );
+        if (!confirmed) return;
+        state = imported;
+        await saveState();
+        renderAll();
+        showToast('✅ Backup restored successfully!');
+      } catch(err) {
+        showToast('⚠️ Could not read backup file: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(input);
+  input.click();
+  document.body.removeChild(input);
 }
 
 function renderAll() {
