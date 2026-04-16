@@ -3289,7 +3289,7 @@ function exportWeeklyImage() {
   state.players.forEach(function(p) { weekData[p.id] = {laurels:0, trials:0, miles:0}; });
   state.workouts.filter(function(w) {
     var d = new Date(w.date+'T12:00:00');
-    return d >= weekStart && d < weekEnd && w.workout !== 'milestone_bonus';
+    return d >= weekStart && d < weekEnd && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout);
   }).forEach(function(w) {
     if (!weekData[w.player_id]) return;
     weekData[w.player_id].laurels += (w.laurels_base||0);
