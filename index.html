@@ -1934,6 +1934,57 @@ async function saveState() {
   try {
     if (hasGistConfig()) {
       const { gistId, token } = getGistConfig();
+
+      // ── SAFE MERGE: fetch current Gist state before overwriting ──────────
+      // This prevents race conditions where a stale in-memory state
+      // overwrites newer data saved by another pack member.
+      let remoteState = null;
+      try {
+        const checkRes = await fetch('https://api.github.com/gists/' + gistId, {
+          headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (checkRes.ok) {
+          const checkJson = await checkRes.json();
+          const fileObj = checkJson.files && (checkJson.files['howlers-data.json'] || checkJson.files[Object.keys(checkJson.files).find(k=>k.endsWith('.json'))]);
+          if (fileObj) {
+            const fc = fileObj.truncated && fileObj.raw_url
+              ? await (await fetch(fileObj.raw_url, { headers: { 'Authorization': 'token ' + token } })).text()
+              : fileObj.content;
+            if (fc) remoteState = JSON.parse(fc);
+          }
+        }
+      } catch(mergeErr) {
+        console.warn('Merge check failed, saving anyway:', mergeErr);
+      }
+
+      // If remote has more workouts than local, merge remote workouts in first
+      if (remoteState && remoteState.workouts) {
+        const localIds = new Set((state.workouts||[]).map(w => w.id));
+        const remoteIds = new Set((remoteState.workouts||[]).map(w => w.id));
+
+        // Add any workouts present in remote but missing locally
+        (remoteState.workouts||[]).forEach(w => {
+          if (!localIds.has(w.id)) {
+            state.workouts.push(w);
+            console.log('Merged remote workout:', w.id, w.workout, w.date);
+          }
+        });
+
+        // Warn if we were about to lose data
+        const wouldHaveLost = (remoteState.workouts||[]).filter(w => !localIds.has(w.id)).length;
+        if (wouldHaveLost > 0) {
+          console.warn('Safe merge: recovered ' + wouldHaveLost + ' workout(s) that would have been lost');
+          showToast('🔄 Merged ' + wouldHaveLost + ' new workout(s) from pack before saving.');
+        }
+
+        // Also merge howls we might be missing
+        const localHowlIds = new Set((state.howls||[]).map(h => h.id));
+        (remoteState.howls||[]).forEach(h => {
+          if (!localHowlIds.has(h.id)) state.howls.push(h);
+        });
+      }
+      // ── END SAFE MERGE ────────────────────────────────────────────────────
+
       const res = await fetch('https://api.github.com/gists/' + gistId, {
         method: 'PATCH',
         headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
@@ -1949,7 +2000,7 @@ async function saveState() {
       if (!res.ok) throw new Error('JSONBin HTTP ' + res.status);
     }
     setSyncStatus('live');
-  checkAndPostWeeklyRecap();
+    checkAndPostWeeklyRecap();
   } catch(e) {
     setSyncStatus('error');
     console.error('Save error:', e);
@@ -2554,7 +2605,7 @@ function checkAndResolveDuels() {
     state.howls.push({ id:'duel_result_'+duel.id, player_id:'system', player_laurels:9999, message:'⚔ DUEL RESULT! ' + winnerName + ' defeats ' + loserName + '! ' + winVal.toFixed(1) + ' vs ' + loseVal.toFixed(1) + ' ' + metricLabels[duel.metric] + '. ' + winnerName + ' claims ' + duel.wager + ' Laurels. Per aspera ad astra. 🐺', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
     changed=true;
   });
-  if (changed) saveState();
+  // saveState removed — prevents race condition data loss on auto-refresh
 }
 
 function renderActiveDuels() {
@@ -2773,7 +2824,7 @@ function retroactiveChallengePayout() {
       });
     }
   });
-  if (changed) saveState();
+  // saveState removed — prevents race condition
 }
 
 function checkAndPostChallengeHowls() {
@@ -2883,7 +2934,7 @@ function checkAndPostChallengeHowls() {
   });
 
   localStorage.setItem(announcedKey, JSON.stringify(announced));
-  if (changed) saveState();
+  // Don't auto-save — prevents race condition
 }
 
 function checkAndPostWeeklyRecap() {
