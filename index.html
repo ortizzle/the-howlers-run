@@ -1005,7 +1005,7 @@
 
   /* Flip card styles */
   .flip-card { perspective: 1000px; cursor: pointer; }
-  .flip-card-inner { position: relative; width: 100%; height: 120px; transition: transform 0.5s; transform-style: preserve-3d; }
+  .flip-card-inner { position: relative; width: 100%; min-height: 120px; height: auto; transition: transform 0.5s; transform-style: preserve-3d; }
   .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
   .flip-card-front, .flip-card-back {
     position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden;
@@ -2262,10 +2262,18 @@ function openProfile(pid) {
   const booksHTML = (player.books_read && player.books_read.length > 0) ?
     '<div style="margin-bottom:16px"><div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:6px">📚 BOOKS READ</div>' +
     player.books_read.map(function(b) {
-      return ({red_rising:'Red Rising',golden_son:'Golden Son',morning_star:'Morning Star',iron_gold:'Iron Gold',dark_age:'Dark Age',light_bringer:'Light Bringer',red_god:'Red God ✦'})[b]||b;
-    }).map(function(t) { return '<span style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);margin-right:8px">✦ ' + t + '</span>'; }).join('') +
-    '</div>' : '';
-
+      var bookMap = {
+        red_rising:   {title:'Red Rising',    color:'#cc2200'},
+        golden_son:   {title:'Golden Son',    color:'#e8c000'},
+        morning_star: {title:'Morning Star',  color:'#1a6aaa'},
+        iron_gold:    {title:'Iron Gold',     color:'#7a5006'},
+        dark_age:     {title:'Dark Age',      color:'#8a6800'},
+        light_bringer:{title:'Light Bringer', color:'#5ab4e0'},
+        red_god:      {title:'Red God',       color:'#9a1010'}
+      };
+      var entry = bookMap[b] || {title: b, color: 'var(--ink-mid)'};
+      return '<span style="font-family:Crimson Pro,serif;font-size:0.9rem;font-weight:600;color:' + entry.color + ';margin-right:10px">◆ ' + entry.title + '</span>';
+    }).join('') + '</div>' : '';
   // Populate sticky header
   const hdrHouse = document.getElementById('profile-header-house');
   const hdrName = document.getElementById('profile-header-name');
@@ -3221,7 +3229,14 @@ function renderPlayers() {
           <div class="stat-item"><span class="stat-val">${(s.miles+(s.pelotonMiles||0)).toFixed(1)}mi</span><span class="stat-label">Distance</span></div>
         </div>
         <div class="player-badges">${earnedBadges || '<span style="font-style:italic;font-size:0.75rem;color:var(--ink-light)">No badges yet</span>'}</div>
-        ${(p.books_read && p.books_read.length > 0) ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">📚 BOOKS</span> ${p.books_read.map(b=>({red_rising:'Red Rising',golden_son:'Golden Son',morning_star:'Morning Star',iron_gold:'Iron Gold',dark_age:'Dark Age',light_bringer:'Light Bringer',red_god:'Red God ✦'})[b]||b).join(' · ')}</div>` : ''}
+        ${(p.books_read && p.books_read.length > 0) ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">
+          <div style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">📚 BOOKS READ</div>
+          <div>${p.books_read.map(function(b){
+            var bm={red_rising:{t:'Red Rising',c:'#cc2200'},golden_son:{t:'Golden Son',c:'#e8c000'},morning_star:{t:'Morning Star',c:'#1a6aaa'},iron_gold:{t:'Iron Gold',c:'#7a5006'},dark_age:{t:'Dark Age',c:'#8a6800'},light_bringer:{t:'Light Bringer',c:'#5ab4e0'},red_god:{t:'Red God',c:'#9a1010'}};
+            var e=bm[b]||{t:b,c:'var(--ink-mid)'};
+            return '<span style="font-size:0.72rem;font-weight:600;color:'+e.c+';margin-right:6px">◆ '+e.t+'</span>';
+          }).join('')}</div>
+        </div>` : ''}
         ${s.longestRun > 0 || s.trials > 0 ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap">
           ${s.longestRun > 0 ? `<div style="font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">🏅 LONGEST</span> ${s.longestRun} mi</div>` : ''}
           ${s.perfectWeeks > 0 ? `<div style="font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light)"><span style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--amber)">⭐ PERFECT WKS</span> ${s.perfectWeeks}</div>` : ''}
@@ -3267,7 +3282,7 @@ function renderPackStats() {
   const byStreak = state.players.slice().sort((a,b)=>(sm[b.id].streak||0)-(sm[a.id].streak||0));
 
   function rankList(players, statFn, unit) {
-    return players.map((p,i)=>`<div style="font-family:'Cinzel',serif;font-size:0.62rem;display:flex;justify-content:space-between;width:100%;padding:1px 0;${i===0?'color:var(--amber);font-weight:700':'color:var(--ink-mid)'}"><span>${i===0?'★':i+1+'.'} ${p.name.split(' ')[0]}</span><span>${statFn(p)}${unit}</span></div>`).join('');
+    return players.map((p,i)=>`<div style="font-family:'Cinzel',serif;font-size:0.6rem;display:flex;justify-content:space-between;width:100%;padding:2px 0;border-bottom:1px solid rgba(0,0,0,0.05);${i===0?'color:var(--amber);font-weight:700':'color:var(--ink-mid)'}"><span>${i===0?'★':i+1+'.'} ${p.name.split(' ')[0]}</span><span>${statFn(p)}${unit}</span></div>`).join('');
   }
 
   function flipCard(icon, value, label, rankHTML, rankTitle) {
