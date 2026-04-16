@@ -2287,12 +2287,7 @@ function openProfile(pid) {
     '</div>' +
     (badgePills ? '<div style="margin-bottom:16px"><div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:6px">BADGES</div><div style="display:flex;flex-wrap:wrap;gap:5px">' + badgePills + '</div></div>' : '') +
     booksHTML +
-    '<div style="margin-bottom:20px">' +
-    buildRankProgress(pid, s) +
-    '</div>' +
-    '<div style="margin-bottom:20px">' +
-    buildStreakBar(pid, s) +
-    '</div>' +
+    buildSwordProgress(pid, s) +
 
     '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin:16px 0 8px">⚔️ TRIAL CHRONICLE</div>' +
     timelineHTML + '</div>';
@@ -2300,7 +2295,7 @@ function openProfile(pid) {
   document.getElementById('profile-modal').classList.add('open');
 }
 
-function buildRankProgress(pid, s) {
+function buildSwordProgress(pid, s) {
   var laurels = s.laurels || 0;
   var rank = s.rank || RANKS[0];
   var nextRank = null;
@@ -2308,61 +2303,61 @@ function buildRankProgress(pid, s) {
     if (RANKS[i].min > laurels) { nextRank = RANKS[i]; break; }
   }
   var hc = laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[(state.players.find(function(p){return p.id===pid;})||{}).house] || '#7a5006');
-  if (!nextRank) {
-    return '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">⚔ RANK PROGRESS</div>' +
-      '<div style="text-align:center;padding:12px;background:linear-gradient(135deg,rgba(200,144,10,0.15),rgba(200,144,10,0.05));border:1.5px solid var(--amber);border-radius:var(--radius)">' +
-      '<div style="font-family:Cinzel,serif;font-size:0.9rem;font-weight:700;color:var(--amber)">☀️ The Reaper</div>' +
-      '<div style="font-family:Crimson Pro,serif;font-size:0.8rem;font-style:italic;color:var(--ink-light)">You have reached the pinnacle. ✦</div>' +
-      '</div>';
-  }
-  var pct = Math.min(100, ((laurels - rank.min) / (nextRank.min - rank.min)) * 100);
-  var needed = nextRank.min - laurels;
-  return '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">⚔ RANK PROGRESS</div>' +
-    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">' +
-    '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:' + hc + '">' + rank.name + '</span>' +
-    '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:var(--ink-light)">' + nextRank.name + '</span>' +
-    '</div>' +
-    '<div style="height:10px;background:var(--parchment-dark);border-radius:5px;overflow:hidden;margin-bottom:6px">' +
-    '<div style="height:100%;width:' + pct.toFixed(1) + '%;background:linear-gradient(to right,' + hc + ',' + hc + 'cc);border-radius:5px;transition:width 0.6s ease"></div>' +
-    '</div>' +
-    '<div style="display:flex;justify-content:space-between;font-family:Crimson Pro,serif;font-size:0.75rem;color:var(--ink-light)">' +
-    '<span>' + laurels.toLocaleString() + 'L</span>' +
-    '<span style="font-style:italic">' + needed.toLocaleString() + 'L to go</span>' +
-    '<span>' + nextRank.min.toLocaleString() + 'L</span>' +
-    '</div>';
-}
+  var pct = nextRank ? Math.min(100, ((laurels - rank.min) / (nextRank.min - rank.min)) * 100) : 100;
+  var needed = nextRank ? (nextRank.min - laurels).toLocaleString() + 'L to ' + nextRank.name : 'The Reaper has risen. ☀️';
 
-function buildStreakBar(pid, s) {
-  var TRAINING_START = new Date('2026-04-13');
-  var today = new Date();
-  var totalWeeks = Math.ceil((today - TRAINING_START) / (7 * 24 * 60 * 60 * 1000)) + 1;
-  totalWeeks = Math.min(totalWeeks, 39);
-  var weekSet = s.weekSet || new Set();
-  var html = '<div style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">🔥 WEEKLY STREAK</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">';
-  for (var w = 0; w < totalWeeks; w++) {
-    var weekDate = new Date(TRAINING_START);
-    weekDate.setDate(weekDate.getDate() + w * 7);
-    var wk = weekDate.toISOString().split('T')[0].slice(0, 7) + '-W' + String(Math.ceil((weekDate.getDate()) / 7)).padStart(2,'0');
-    // Use getWeekKey equivalent
-    var mon = new Date(weekDate);
-    mon.setDate(mon.getDate() - ((mon.getDay()+6)%7));
-    var wkKey = mon.toISOString().split('T')[0];
-    var active = weekSet.has(wkKey);
-    var isCurrent = w === totalWeeks - 1;
-    var color = active ? '#2e7d32' : (isCurrent ? 'var(--amber)' : 'var(--parchment-dark)');
-    var border = active ? '#2e7d32' : (isCurrent ? 'var(--amber)' : 'var(--border)');
-    var label = active ? '✓' : (isCurrent ? '·' : '○');
-    html += '<div style="width:22px;height:22px;border-radius:4px;background:' + color + ';border:1.5px solid ' + border + ';display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:' + (active ? 'white' : 'var(--ink-light)') + ';font-family:Cinzel,serif" title="Week ' + (w+1) + '">' + label + '</div>';
-  }
-  html += '</div>';
-  var streak = s.streak || 0;
-  var perfectWeeks = s.perfectWeeks || 0;
-  html += '<div style="display:flex;gap:16px;font-family:Crimson Pro,serif;font-size:0.8rem;color:var(--ink-light)">' +
-    '<span>🔥 <strong style="color:var(--ink)">' + streak + '</strong> week streak</span>' +
-    '<span>⭐ <strong style="color:var(--ink)">' + perfectWeeks + '</strong> perfect weeks</span>' +
+  // SVG sword — blade fills from hilt toward tip
+  var svgW = 320, svgH = 60;
+  // Blade goes from x=74 to x=310, tapers to point
+  var bladeStart = 74;
+  var bladeEnd = 310;
+  var bladeLen = bladeEnd - bladeStart;
+  var fillX = bladeStart + (bladeLen * pct / 100);
+  var tipTop = 18 + (12 * pct / 100);
+  var tipBot = 42 - (12 * pct / 100);
+
+  return '<div style="margin-bottom:8px">' +
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">' +
+    '<span style="font-family:Cinzel,serif;font-size:0.9rem;font-weight:700;color:' + hc + '">' + rank.name + '</span>' +
+    '<span style="font-family:Cinzel,serif;font-size:0.75rem;color:var(--ink-light)">' + (nextRank ? nextRank.name : '★ MAX') + '</span>' +
+    '</div>' +
+    '<svg width="100%" viewBox="0 0 320 60" preserveAspectRatio="none" style="display:block;height:50px;overflow:visible">' +
+    '<defs>' +
+    '<linearGradient id="sg_' + pid.slice(-4) + '" x1="0" x2="1" y1="0" y2="0">' +
+    '<stop offset="0%" stop-color="#3a1a1a"/>' +
+    '<stop offset="25%" stop-color="' + hc + '"/>' +
+    '<stop offset="65%" stop-color="#e87000"/>' +
+    '<stop offset="90%" stop-color="#f0c040"/>' +
+    '<stop offset="100%" stop-color="#ffffff"/>' +
+    '</linearGradient>' +
+    '</defs>' +
+    // Pommel
+    '<ellipse cx="12" cy="30" rx="12" ry="18" fill="' + hc + '"/>' +
+    '<ellipse cx="10" cy="28" rx="7" ry="10" fill="#f0c040" opacity="0.35"/>' +
+    // Grip
+    '<rect x="24" y="23" width="40" height="14" rx="2" fill="#3d2a1a"/>' +
+    '<line x1="32" y1="23" x2="32" y2="37" stroke="#5a3e28" stroke-width="2"/>' +
+    '<line x1="40" y1="23" x2="40" y2="37" stroke="#5a3e28" stroke-width="2"/>' +
+    '<line x1="48" y1="23" x2="48" y2="37" stroke="#5a3e28" stroke-width="2"/>' +
+    '<line x1="56" y1="23" x2="56" y2="37" stroke="#5a3e28" stroke-width="2"/>' +
+    // Guard
+    '<rect x="64" y="8" width="10" height="44" rx="3" fill="' + hc + '"/>' +
+    '<rect x="66" y="8" width="4" height="44" rx="2" fill="#f0c040" opacity="0.4"/>' +
+    // Blade track (empty)
+    '<polygon points="74,18 294,24 310,30 294,36 74,42" fill="#2a2018"/>' +
+    // Blade fill
+    '<polygon points="74,18 ' + fillX.toFixed(1) + ',' + tipTop.toFixed(1) + ' ' + fillX.toFixed(1) + ',' + tipBot.toFixed(1) + ' 74,42" fill="url(#sg_' + pid.slice(-4) + ')"/>' +
+    // Fuller
+    '<line x1="74" y1="30" x2="308" y2="30" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>' +
+    // Blade shine
+    '<polygon points="74,18 294,24 294,26 74,21" fill="rgba(255,255,255,0.07)"/>' +
+    '</svg>' +
+    '<div style="display:flex;justify-content:space-between;font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light);margin-top:4px">' +
+    '<span>' + laurels.toLocaleString() + 'L</span>' +
+    '<span style="font-family:Crimson Pro,serif;font-style:italic;color:' + hc + ';font-size:0.72rem">' + needed + '</span>' +
+    '<span>' + (nextRank ? nextRank.min.toLocaleString() + 'L' : '') + '</span>' +
+    '</div>' +
     '</div>';
-  return html;
 }
 
 function buildWeeklyChart(pid) {
