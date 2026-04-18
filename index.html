@@ -3938,7 +3938,7 @@ function renderPlayers() {
       +   '<div class="card-rank-left">'
       +     (hasNewActivity ? '<span class="new-activity-dot" title="New activity"></span>' : '')
       +     '<div class="card-house-dot"></div>'
-      +     '<div class="card-house-label">' + escHtml(p.house) + '</div>'
+      + '<div class="card-house-label" onclick="event.stopPropagation();openHouseLore(\'' + escHtml(p.house) + '\')" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;-webkit-tap-highlight-color:transparent">' + escHtml(p.house) + '</div>'
       +   '</div>'
       +   '<div class="card-rank-right">'
       +     (hasUnreadHowl ? '<span style="font-size:0.85rem">\ud83d\udc3a</span>' : '')
