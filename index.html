@@ -2088,13 +2088,16 @@ async function loadState() {
   checkForNewActivityNotifications(prevState);
   // Reset announced cache if challenges version changed
   var cvKey = 'howlers_ch_version';
-  if (localStorage.getItem(cvKey) !== 'v5') {
+  if (localStorage.getItem(cvKey) !== 'v6') {
     var syncKey2 = localStorage.getItem('howlers_gist_id') || localStorage.getItem('howlers_bin_id') || 'local';
     localStorage.removeItem('howlers_announced_' + syncKey2);
-    localStorage.setItem(cvKey, 'v5');
+    localStorage.setItem(cvKey, 'v6');
   }
   retroactiveChallengePayout();
-  checkAndPostChallengeHowls();
+  if (!window._challengesChecked) {
+    window._challengesChecked = true;
+    checkAndPostChallengeHowls();
+  }
   checkAndPostWeeklyRecap();
   } catch(e) {
     setSyncStatus('error');
