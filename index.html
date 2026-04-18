@@ -611,6 +611,34 @@
 
   /* CHRONICLE */
   .chronicle-feed { display: flex; flex-direction: column; gap: 14px; }
+  .ch-entry-wrap { perspective: 800px; cursor: pointer; margin-bottom: 12px; }
+  .ch-entry-inner { position: relative; width: 100%; transition: transform 0.45s; transform-style: preserve-3d; min-height: 120px; }
+  .ch-entry-wrap.flipped .ch-entry-inner { transform: rotateY(180deg); }
+  .ch-entry-front { position: relative; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .ch-entry-back {
+    position: absolute; top: 0; left: 0; width: 100%; min-height: 120px;
+    transform: rotateY(180deg);
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    background: var(--parchment-dark);
+    border: 1.5px solid var(--border-strong);
+    border-left: 4px solid var(--house-color, var(--amber));
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .ch-flip-hint {
+    font-family: 'Cinzel', serif;
+    font-size: 0.48rem;
+    letter-spacing: 0.12em;
+    color: var(--ink-light);
+    padding: 4px 0 0;
+    opacity: 0.55;
+  }
+
   .chronicle-entry {
     background: var(--parchment);
     border: 1.5px solid var(--border);
@@ -3671,6 +3699,27 @@ function loadCardAnnals(pid, el) {
   }).join('');
 }
 
+
+function buildHypersList(w) {
+  var raw = w.reactions && (w.reactions['🔥'] || w.reactions['🔥']);
+  var hypers = Array.isArray(raw) ? raw : [];
+  if (!hypers.length) return '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">No hypes yet.</div>';
+  var names = hypers.map(function(pid) {
+    var pl = state.players.find(function(p) { return p.id === pid; });
+    return pl ? '<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">?? ' + escHtml(pl.name.split(' ')[0]) + '</span>' : '';
+  }).join('');
+  return '<div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">HYPED BY</div>' + names;
+}
+
+function toggleChronicleBack(entryEl) {
+  var wrap = entryEl.closest('.ch-entry-wrap');
+  if (!wrap) return;
+  var back = wrap.querySelector('.ch-back');
+  if (!back) return;
+  var isOpen = back.style.display === 'flex';
+  back.style.display = isOpen ? 'none' : 'flex';
+}
+
 function renderAll() {
   buildStatsCache();
   renderPackStats();
@@ -4018,7 +4067,7 @@ function renderChronicle() {
     } else {
       detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
     }
-    return `<div class="chronicle-entry" style="--house-color:${houseColor}">
+    return `<div class="ch-entry-wrap" onclick="this.classList.toggle('flipped')" style="--house-color:${houseColor}"><div class="ch-entry-inner"><div class="ch-entry-front chronicle-entry" style="--house-color:${houseColor}">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:2px">
         <span class="chronicle-player">${escHtml(player.name)}</span>
         <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">+${w.laurels_base}L</span>
@@ -4034,11 +4083,19 @@ function renderChronicle() {
       <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--amber);opacity:0.85;margin-bottom:5px">"${w.quote}"</div>
       <div style="display:flex;gap:5px;padding-top:5px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">
         ${reactionBarHTML(w,w.id,'toggleReaction')}
-        <div style="flex:1"></div>
-        <button onclick="openEditWorkout('${w.id}')" style="background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
-        <button onclick="removeWorkout('${w.id}')" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
       </div>
-    </div>`;
+      <div class="ch-flip-hint">tap card for options</div>
+    </div>
+    <div class="ch-entry-back" style="--house-color:${houseColor}">
+      <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light);margin-bottom:10px">${WORKOUT_NAMES[w.workout]||w.workout} &middot; ${formatDate(w.date)}</div>
+      <div style="margin-bottom:12px;width:100%">${buildHypersList(w)}</div>
+      <div style="display:flex;gap:10px;width:100%">
+        <button onclick="event.stopPropagation();openEditWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">&#9998; Edit</button>
+        <button onclick="event.stopPropagation();removeWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.4);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer">&#10005; Remove</button>
+      </div>
+      <button onclick="event.stopPropagation();this.closest('.ch-entry-wrap').classList.remove('flipped')" style="background:transparent;border:none;font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light);cursor:pointer;margin-top:8px;opacity:0.7">&#10005; close</button>
+    </div>
+    </div></div>`;
   }).join('');
 }
 
@@ -4589,11 +4646,15 @@ function clearHowlReply() {
 }
 
 async function toggleReaction(workoutId, emoji) {
+  if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
   const w = state.workouts.find(function(x) { return x.id === workoutId; });
   if (!w) return;
   if (!w.reactions) w.reactions = {};
-  if (!w.reactions[emoji]) w.reactions[emoji] = 0;
-  w.reactions[emoji]++;
+  if (typeof w.reactions[emoji] === 'number') w.reactions[emoji] = [];
+  if (!Array.isArray(w.reactions[emoji])) w.reactions[emoji] = [];
+  var arr = w.reactions[emoji];
+  var idx = arr.indexOf(currentHowlerId);
+  if (idx >= 0) { arr.splice(idx, 1); } else { arr.push(currentHowlerId); }
   await saveState();
   renderChronicle();
 }
@@ -4614,13 +4675,15 @@ function reactionBarHTML(obj, idVal, fnPrefix) {
   var bar = '<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">';
   [['🔥','Hype']].forEach(function(r) {
     var emoji = r[0], label = r[1];
-    var count = reactions[emoji] || 0;
-    var hasCount = count > 0;
+    var raw = reactions[emoji];
+    var hypers = Array.isArray(raw) ? raw : [];
+    var count = hypers.length;
+    var iHyped = currentHowlerId && hypers.indexOf(currentHowlerId) >= 0;
     var safeId = idVal.replace(/"/g,'');
-    bar += '<button data-id="' + safeId + '" data-emoji="' + emoji + '" data-fn="' + fnPrefix + '" onclick="handleReaction(this)" ';
-    bar += 'style="background:' + (hasCount ? 'rgba(122,80,6,0.1)' : 'transparent') + ';border:1.5px solid ' + (hasCount ? 'var(--amber)' : 'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
+    bar += '<button data-id="' + safeId + '" data-emoji="' + emoji + '" data-fn="' + fnPrefix + '" onclick="handleReaction(this,event)" ';
+    bar += 'style="background:' + (iHyped ? 'rgba(122,80,6,0.15)' : 'transparent') + ';border:1.5px solid ' + (iHyped ? 'var(--amber)' : 'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
     bar += emoji + ' ' + label;
-    if (hasCount) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + count + '</span>';
+    if (count > 0) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + count + '</span>';
     bar += '</button>';
   });
   // Reply + trash talk on workout entries
@@ -4628,10 +4691,10 @@ function reactionBarHTML(obj, idVal, fnPrefix) {
     var workoutPlayer = '';
     var wo = state.workouts.find(function(x){return x.id===idVal;});
     if (wo) { var wp=state.players.find(function(p){return p.id===wo.player_id;}); if(wp) workoutPlayer=wp.name; }
-    bar += '<button data-id="' + idVal + '" onclick="replyToWorkout(this.dataset.id)" ';
+    bar += '<button data-id="' + idVal + '" onclick="event.stopPropagation();replyToWorkout(this.dataset.id)" ';
     bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">🐺 Reply</button>';
     if (workoutPlayer && wo && wo.player_id !== currentHowlerId) {
-      bar += '<button data-wid="' + idVal + '" data-name="' + workoutPlayer.replace(/&/g,'&amp;') + '" onclick="openTrashTalk(this.dataset.wid,this.dataset.name)" ';
+      bar += '<button data-wid="' + idVal + '" data-name="' + workoutPlayer.replace(/&/g,'&amp;') + '" onclick="event.stopPropagation();openTrashTalk(this.dataset.wid,this.dataset.name)" ';
       bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">😴 Trash talk</button>';
     }
   }
@@ -4680,7 +4743,8 @@ function replyToHowl(howlId) {
   msg.focus();
 }
 
-function handleReaction(btn) {
+function handleReaction(btn, evt) {
+  if (evt) evt.stopPropagation();
   var id = btn.dataset.id;
   var emoji = btn.dataset.emoji;
   var fn = btn.dataset.fn;
