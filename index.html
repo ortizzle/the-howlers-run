@@ -4018,7 +4018,7 @@ function renderChronicle() {
     } else {
       detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
     }
-    return `<div class="ch-entry-flip" onclick="this.classList.toggle('flipped')" style="--house-color:${houseColor}"><div class="ch-entry-inner"><div class="ch-entry-front chronicle-entry" style="--house-color:${houseColor}">
+    return `<div class="chronicle-entry" style="--house-color:${houseColor}">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:2px">
         <span class="chronicle-player">${escHtml(player.name)}</span>
         <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">+${w.laurels_base}L</span>
@@ -4034,18 +4034,11 @@ function renderChronicle() {
       <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--amber);opacity:0.85;margin-bottom:5px">"${w.quote}"</div>
       <div style="display:flex;gap:5px;padding-top:5px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">
         ${reactionBarHTML(w,w.id,'toggleReaction')}
+        <div style="flex:1"></div>
+        <button onclick="openEditWorkout('${w.id}')" style="background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--ink-mid)'">✎ Edit</button>
+        <button onclick="removeWorkout('${w.id}')" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer;" onmouseover="this.style.background='rgba(154,16,16,0.08)'" onmouseout="this.style.background='transparent'">✕ Remove</button>
       </div>
-      <div class="ch-flip-hint">tap to flip ▸</div>
-    </div>
-    <div class="ch-entry-back" style="--house-color:${houseColor}" onclick="event.stopPropagation();this.closest('.ch-entry-flip').classList.remove('flipped')">
-      <div style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.1em;color:var(--ink-light);margin-bottom:4px">${WORKOUT_NAMES[w.workout]||w.workout} · ${formatDate(w.date)}</div>
-      <div style="display:flex;gap:10px;width:100%">
-        <button onclick="event.stopPropagation();openEditWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:4px;padding:10px 8px;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.1em;color:var(--ink-mid);cursor:pointer">✎ Edit</button>
-        <button onclick="event.stopPropagation();removeWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.4);border-radius:4px;padding:10px 8px;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.1em;color:var(--house-red);cursor:pointer">✕ Remove</button>
-      </div>
-      <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light);opacity:0.6">tap back to close</div>
-    </div>
-    </div></div>`;
+    </div>`;
   }).join('');
 }
 
