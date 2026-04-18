@@ -3183,15 +3183,15 @@ function checkAndPostChallengeHowls() {
     } else {
       // Pack challenges
       var packWon = false;
-      if (ch.id==='pack_trains') packWon=state.players.every(p=>(sm[p.id]||{}).trials>=ch.goal);
-      else if (['society_rising','the_rising_tide'].includes(ch.id)) packWon=state.players.reduce((s,p)=>s+((sm[p.id]||{}).laurels||0),0)>=ch.goal;
-      else if (ch.id==='the_iron_pack') packWon=state.players.every(p=>(sm[p.id]||{}).strength>=ch.goal);
-      else if (ch.id==='warriors_all') packWon=state.players.every(p=>(state.badges_awarded[p.id]||[]).length>=1);
-      else if (ch.id==='the_full_march') packWon=state.players.every(p=>(sm[p.id]||{}).maxSingleRun>=ch.goal);
-      else if (ch.id==='cardio_pack') packWon=state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
-      else if (ch.id==='mobile_pack') packWon=state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility'));
-      else if (ch.id==='iron_pack_hard') packWon=state.players.every(p=>(sm[p.id]||{}).strength>=ch.goal);
-      else if (ch.id==='pack_endurance') packWon=state.players.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0),0)>=ch.goal;
+      if (allHaveTrials && ch.id==='pack_trains') packWon=state.players.every(p=>(sm[p.id]||{}).trials>=ch.goal);
+      else if (allHaveTrials && ['society_rising','the_rising_tide'].includes(ch.id)) packWon=state.players.reduce((s,p)=>s+((sm[p.id]||{}).laurels||0),0)>=ch.goal;
+      else if (allHaveTrials && ch.id==='the_iron_pack') packWon=state.players.every(p=>(sm[p.id]||{}).strength>=ch.goal);
+      else if (allHaveTrials && ch.id==='warriors_all') packWon=state.players.every(p=>(state.badges_awarded[p.id]||[]).length>=1);
+      else if (allHaveTrials && ch.id==='the_full_march') packWon=state.players.every(p=>(sm[p.id]||{}).maxSingleRun>=ch.goal);
+      else if (allHaveTrials && ch.id==='cardio_pack') packWon=state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
+      else if (allHaveTrials && ch.id==='mobile_pack') packWon=state.players.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility'));
+      else if (allHaveTrials && ch.id==='iron_pack_hard') packWon=state.players.every(p=>(sm[p.id]||{}).strength>=ch.goal);
+      else if (allHaveTrials && ch.id==='pack_endurance') packWon=state.players.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0),0)>=ch.goal;
       if (packWon) winner = {name:'The Pack', id:null};
     }
 
