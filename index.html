@@ -3372,52 +3372,124 @@ function importBackup() {
 }
 
 
-const TAUNTS = [
-  "Did you even break a sweat? My grandmother trains harder than that. 😴",
-  "The Obsidians are embarrassed on your behalf. 😴",
-  "Darrow ran 13 miles before breakfast. Just saying. ⚔️",
-  "Is that all you've got? The Laurels won't earn themselves. 😴",
-  "Even the Grays outpaced you this week. For shame. 🐺",
-  "I would have lived in peace — but apparently not trained harder than @{name}. 😂",
-  "The Reaper weeps. Not from sadness — from laughter. ☀️",
-  "Per aspera ad astra. Emphasis on the *aspera* part. You need it. ⛓️‍💥",
-  "I've seen Lowborns train harder. Step it up, Howler. 😴",
-  "Your laurels are safe from me. Mostly because I already have more. ♛",
-  "Breaking the chains requires actually moving. 🐺",
-  "The pack is only as strong as its slowest Howler. Guess who that is? 😴",
-];
+// Contextual trash talk by workout type
+// Use {name}, {miles}, {minutes} as placeholders
+const TRASH_TALK = {
+  long_run: [
+    "{miles} miles? Bloodydamn, my grandmother marches further to the market. ☀️",
+    "The March requires at least 6 miles, not {miles}. Even a Ruster knows that. ⚔️",
+    "Call that a long run? Gorydamn pixie effort. Darrow ran the Laurel in his sleep. 😴",
+    "{miles} miles and you think you earned those Laurels? Slag work, Howler. 🐺",
+    "The Obsidians are embarrassed on your behalf. {miles} miles. Bloodydamn. ⛓️‍💥",
+  ],
+  tempo: [
+    "{miles} miles at tempo pace? I've seen Grays move faster. Gorydamn. 😴",
+    "Race pace they said. {miles} miles they ran. The Reaper weeps. ☀️",
+    "Bloodydamn, even a tinsucker could hold that pace longer than {miles} miles. ⚔️",
+    "{miles} miles of tempo? The pack expects more, Ruster. Step it up. 🐺",
+    "The Charge should be fiercer than {miles} miles. Slag effort. ⛓️‍💥",
+  ],
+  easy_run: [
+    "Easy run? More like a bloodydamn stroll. {miles} miles, really? 😴",
+    "{miles} miles at easy pace. Even the Pinks train harder than that. ☀️",
+    "Gorydamn, a Patrol should cover more ground than {miles} miles. 🐺",
+    "The Lowborns mine deeper than you run, Ruster. {miles} miles. Slag. ⚔️",
+    "{miles} easy miles. I suppose even a pixie needs their rest. ⛓️‍💥",
+  ],
+  walk_run: [
+    "Walk/run intervals? Bloodydamn, pick a lane, Howler. 😴",
+    "{miles} miles of walk/run. The Grays march further just running errands. 🐺",
+    "Gorydamn tinsucker can't even commit to a full run. {miles} miles. ☀️",
+    "Walk/run. How very... measured of you. A real Howler runs. ⚔️",
+    "{miles} miles of intervals. The Reaper doesn't walk, pixie. ⛓️‍💥",
+  ],
+  peloton: [
+    "{minutes} minutes on the Steed? My grandmother cycles longer and she's Lowborn. 😴",
+    "Bloodydamn, the Steed deserves a real rider. {minutes} minutes is a warmup. 🐺",
+    "Gorydamn {minutes} minutes. The Iron Golds would be ashamed. ☀️",
+    "{minutes} minutes on the Steed. Even a pixie rides harder than that. ⚔️",
+    "The pack runs while you pedal for {minutes} minutes. Slag effort. ⛓️‍💥",
+  ],
+  strength: [
+    "Strength session? Bloodydamn, the Iron Forge demands more than that. 😴",
+    "The Iron Forge. {minutes} minutes. Gorydamn pixie weights. 🐺",
+    "A true Obsidian never leaves the Forge in {minutes} minutes. Ruster. ☀️",
+    "Strength training. Bold of you to call it that. Bloodydamn slag. ⚔️",
+    "Even a tinsucker lifts more. The pack is watching, Howler. ⛓️‍💥",
+  ],
+  mobility: [
+    "Stretching. Bloodydamn, even the Pinks train harder between shows. 😴",
+    "{minutes} minutes of mobility. Gorydamn, that's barely a warmup. 🐺",
+    "Mind & Body. More mind than body based on {minutes} minutes. ☀️",
+    "A pixie move if I ever saw one. {minutes} minutes of stretching. ⚔️",
+    "The Reaper doesn't stretch. The Reaper just endures. Bloodydamn. ⛓️‍💥",
+  ],
+  cardio: [
+    "{minutes} minutes of cardio? Gorydamn, the Crimson Pulse should hit harder. 😴",
+    "Bloodydamn {minutes} minutes. Even the Grays get more cardio chasing Reds. 🐺",
+    "The Crimson Pulse barely registered with {minutes} minutes. Slag effort. ☀️",
+    "{minutes} minutes? A pixie warm-up. The pack demands more, Ruster. ⚔️",
+    "Gorydamn tinsucker, {minutes} minutes of cardio won't win the Laurel. ⛓️‍💥",
+  ],
+  default: [
+    "Bloodydamn, the pack expects more than that. Step it up, Howler. 😴",
+    "Gorydamn pixie effort. Darrow would be ashamed. ⚔️",
+    "The Reaper weeps. Not from sadness — from laughter. ☀️",
+    "Breaking the chains requires actually moving, Ruster. 🐺",
+    "Even a tinsucker trains harder. Bloodydamn slag. ⛓️‍💥",
+    "The pack is only as strong as its slowest Howler. Guess who that is? 😴",
+  ]
+};
 
-function openTrashTalk(workoutId, playerName) {
-  const taunt = TAUNTS[Math.floor(Math.random() * TAUNTS.length)]
-    .replace('@{name}', '@' + playerName);
-  switchTab('dispatch');
-  const msg = document.getElementById('howl-message');
-  msg.value = '@' + playerName + ' — ' + taunt;
-  const howlSel = document.getElementById('howl-player');
-  if (howlSel && currentHowlerId) howlSel.value = currentHowlerId;
-  // Show preview
+function getTrashTalk(workout, miles, minutes, playerName) {
+  var pool = TRASH_TALK[workout] || TRASH_TALK.default;
+  var pick = pool[Math.floor(Math.random() * pool.length)];
+  return pick
+    .replace(/{name}/g, playerName)
+    .replace(/{miles}/g, miles || '?')
+    .replace(/{minutes}/g, minutes || '?');
+}
+
+// Keep TAUNTS for backward compat
+const TAUNTS = TRASH_TALK.default;
+
+async function openTrashTalk(workoutId, playerName) {
+  if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
   const w = state.workouts.find(x => x.id === workoutId);
-  if (w) {
-    const wname = WORKOUT_NAMES[w.workout] || w.workout;
-    const detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
-    const preview = document.getElementById('howl-activity-preview');
-    if (preview) {
-      preview.style.display = 'block';
-      preview.innerHTML = '<span style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--amber)">😴 TRASH TALKING</span><br>' +
-        '<span style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);font-style:italic">' +
-        escHtml(playerName) + ' · ' + escHtml(wname) + (detail?' · '+detail:'') + '</span>' +
-        '<span onclick="clearHowlReply()" style="float:right;cursor:pointer;font-size:0.8rem;color:var(--ink-light);padding:2px 4px">✕</span>';
-    }
-    const btn = document.getElementById('howl-submit-btn');
-    const actRef = {id:workoutId,player:playerName,workout:wname,detail:detail,date:w.date};
-    btn.onclick = function() {
-      postHowl(workoutId, playerName, actRef).then(function() {
-        clearHowlReply(); btn.onclick = postHowl;
-      });
-    };
+  if (!w) return;
+
+  // Track who trash talked
+  if (!w.trashTalk) w.trashTalk = [];
+  if (!w.trashTalk.includes(currentHowlerId)) {
+    w.trashTalk.push(currentHowlerId);
   }
-  msg.focus();
-  showToast('😴 Trash talk loaded — edit or send as-is!');
+
+  // Generate contextual zinger
+  const taunt = getTrashTalk(w.workout, w.miles, w.minutes, playerName);
+  const wname = WORKOUT_NAMES[w.workout] || w.workout;
+  const detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
+
+  // Auto-post directly as a Howl reply — no editing needed
+  if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
+  const player = state.players.find(p => p.id === currentHowlerId);
+  const playerLaurels = player ? (getStats(currentHowlerId).laurels || 0) : 0;
+  const howl = {
+    id: 'h_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+    player_id: currentHowlerId,
+    player_laurels: playerLaurels,
+    message: '@' + playerName + ' — ' + taunt,
+    date: new Date().toISOString().split('T')[0],
+    timestamp: new Date().toISOString(),
+    likes: [],
+    reply_to_id: workoutId,
+    reply_to_name: playerName,
+    activity_ref: {id: workoutId, player: playerName, workout: wname, detail: detail, date: w.date}
+  };
+  state.howls.push(howl);
+  await saveState();
+  renderAll();
+  switchTab('dispatch');
+  showToast('😴 Gorydamn trash talk delivered! ⛓️‍💥');
 }
 
 
@@ -3720,12 +3792,24 @@ function buildHypersList(w) {
     }
   }
   var hypers = Array.isArray(raw) ? raw : [];
-  if (!hypers.length) return '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">No hypes yet.</div>';
-  var names = hypers.map(function(pid) {
-    var pl = state.players.find(function(p) { return p.id === pid; });
-    return pl ? '<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128293; ' + escHtml(pl.name.split(' ')[0]) + '</span>' : '';
-  }).join('');
-  return '<div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">HYPED BY</div>' + names;
+  var talkers = Array.isArray(w.trashTalk) ? w.trashTalk : [];
+  var html = '';
+  if (hypers.length) {
+    var names = hypers.map(function(pid) {
+      var pl = state.players.find(function(p) { return p.id === pid; });
+      return pl ? '<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128293; ' + escHtml(pl.name.split(' ')[0]) + '</span>' : '';
+    }).join('');
+    html += '<div style="margin-bottom:8px"><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">HYPED BY</div>' + names + '</div>';
+  }
+  if (talkers.length) {
+    var tnames = talkers.map(function(pid) {
+      var pl = state.players.find(function(p) { return p.id === pid; });
+      return pl ? '<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128564; ' + escHtml(pl.name.split(' ')[0]) + '</span>' : '';
+    }).join('');
+    html += '<div><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--house-red,#9a1010);margin-bottom:4px">TRASH TALKED BY</div>' + tnames + '</div>';
+  }
+  if (!html) return '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">No reactions yet.</div>';
+  return html;
 }
 
 function markAllPlayersSeen() {
