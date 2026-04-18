@@ -3477,7 +3477,7 @@ async function openTrashTalk(workoutId, playerName) {
     id: 'h_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
     player_id: currentHowlerId,
     player_laurels: playerLaurels,
-    message: '@' + playerName + ' — ' + taunt,
+    message: '\u2694 @' + playerName + ' — ' + taunt + ' #trashtalk',
     date: new Date().toISOString().split('T')[0],
     timestamp: new Date().toISOString(),
     likes: [],
@@ -4547,8 +4547,13 @@ function renderHowlFeed() {
       // Look up original howl message by reply_to_id
       var origHowl = h.reply_to_id ? (state.howls||[]).find(function(x){ return x.id === h.reply_to_id; }) : null;
       var origMsg = origHowl ? origHowl.message : null;
-      replyTo = '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:8px 12px;margin-bottom:10px">' +
-        '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:4px">↩ REPLYING TO ' + escHtml(h.reply_to_name).toUpperCase() + '</div>' +
+      var replyPlayer = state.players.find(function(p){ return p.name === h.reply_to_name; });
+      var replyHc = replyPlayer ? (HOUSES[replyPlayer.house] || '#c8900a') : '#c8900a';
+      replyTo = '<div style="background:#ede5d5;border:1px solid ' + replyHc + '33;border-left:4px solid ' + replyHc + ';border-radius:4px;padding:8px 12px;margin-bottom:10px">' +
+        '<div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;margin-bottom:5px;display:flex;align-items:center;gap:6px">' +
+        '<span style="color:#8a7060">&#8629;</span>' +
+        '<span style="background:' + replyHc + ';color:white;padding:1px 7px;border-radius:3px;font-size:0.48rem;font-weight:700;letter-spacing:0.08em">' + escHtml(h.reply_to_name) + '</span>' +
+        '</div>' +
         (origMsg
           ? '<div style="font-family:Crimson Pro,serif;font-size:0.88rem;color:var(--ink-mid);font-style:italic">\"' + escHtml(origMsg.length > 120 ? origMsg.slice(0,120) + '…' : origMsg) + '\"</div>'
           : '<div style="font-family:Crimson Pro,serif;font-size:0.82rem;color:var(--ink-light);font-style:italic">(message no longer available)</div>'
@@ -4564,7 +4569,7 @@ function renderHowlFeed() {
       '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
       '</div>' +
       replyTo +
-      '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message) + '&rdquo;</div>' +
+      '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message).replace(/#trashtalk/g, '<span style="font-family:Cinzel,serif;font-size:0.62rem;font-weight:700;color:#9a1010;letter-spacing:0.06em;font-style:normal;opacity:0.85">#trashtalk</span>') + '&rdquo;</div>' +
       '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">' +
       reactionBarHTML(h, h.id, 'toggleHowlReaction') +
       '<button onclick="copyHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">⎘ Copy</button>' +
