@@ -3760,7 +3760,7 @@ function renderPlayers() {
     var houseColor = isPeerless ? PEERLESS_GOLD : (HOUSES[p.house] || '#7a5006');
     var isPrimus = p.id === primusId && s.laurels > 0;
     var gistId = localStorage.getItem('howlers_gist_id') || '';
-    var lastSeenKey = 'howlers_seen_' + p.id + '_' + gistId;
+    var lastSeenKey = 'howlers_seen_' + p.id + '_' + (localStorage.getItem('howlers_bin_id') || gistId);
     var lastSeen = localStorage.getItem(lastSeenKey) || '0';
     var lastHowlSeen = localStorage.getItem('howlers_last_howl_seen_' + gistId) || '0';
     var hasUnreadHowl = (state.howls||[]).some(function(h) {
