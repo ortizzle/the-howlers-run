@@ -2088,10 +2088,10 @@ async function loadState() {
   checkForNewActivityNotifications(prevState);
   // Reset announced cache if challenges version changed
   var cvKey = 'howlers_ch_version';
-  if (localStorage.getItem(cvKey) !== 'v4') {
+  if (localStorage.getItem(cvKey) !== 'v5') {
     var syncKey2 = localStorage.getItem('howlers_gist_id') || localStorage.getItem('howlers_bin_id') || 'local';
     localStorage.removeItem('howlers_announced_' + syncKey2);
-    localStorage.setItem(cvKey, 'v4');
+    localStorage.setItem(cvKey, 'v5');
   }
   retroactiveChallengePayout();
   checkAndPostChallengeHowls();
