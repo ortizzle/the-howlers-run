@@ -3728,6 +3728,14 @@ function buildHypersList(w) {
   return '<div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">HYPED BY</div>' + names;
 }
 
+function markAllPlayersSeen() {
+  var suffix = localStorage.getItem('howlers_bin_id') || localStorage.getItem('howlers_gist_id') || '';
+  var now = new Date().toISOString();
+  state.players.forEach(function(p) {
+    localStorage.setItem('howlers_seen_' + p.id + '_' + suffix, now);
+  });
+}
+
 function renderAll() {
   buildStatsCache();
   renderPackStats();
@@ -3746,6 +3754,7 @@ function renderAll() {
   renderWeeklyLeaderboard();
   renderCodex();
   checkUnreadHowls();
+  markAllPlayersSeen();
 }
 
 function renderPlayers() {
