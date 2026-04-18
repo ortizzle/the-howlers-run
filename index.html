@@ -3796,7 +3796,7 @@ function renderPlayers() {
       // summary row
       + '<div class="card-summary" onclick="event.stopPropagation();this.closest(\'.player-card\').classList.toggle(\'card-open\')">'
       +   '<div class="card-name-block">'
-      +     '<div class="card-name">' + (isPrimus ? '<span style="color:var(--amber);margin-right:3px">\u265b</span>' : '') + escHtml(p.name) + '</div>'
+      +     '<div class="card-name">' + (isPrimus ? '<span style="color:#e8b830;text-shadow:0 0 6px rgba(232,184,48,0.5);margin-right:3px">\u265b</span>' : '') + escHtml(p.name) + '</div>'
       +     '<div class="card-sub">' + escHtml(p.subtitle || (p.house + ' House')) + '</div>'
       +   '</div>'
       +   '<div class="card-quick-stats">'
