@@ -3701,23 +3701,20 @@ function loadCardAnnals(pid, el) {
 
 
 function buildHypersList(w) {
-  var raw = w.reactions && (w.reactions['🔥'] || w.reactions['🔥']);
+  var raw = null;
+  if (w.reactions) {
+    var keys = Object.keys(w.reactions);
+    for (var i = 0; i < keys.length; i++) {
+      if (Array.isArray(w.reactions[keys[i]])) { raw = w.reactions[keys[i]]; break; }
+    }
+  }
   var hypers = Array.isArray(raw) ? raw : [];
   if (!hypers.length) return '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">No hypes yet.</div>';
   var names = hypers.map(function(pid) {
     var pl = state.players.find(function(p) { return p.id === pid; });
-    return pl ? '<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">?? ' + escHtml(pl.name.split(' ')[0]) + '</span>' : '';
+    return pl ? '<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128293; ' + escHtml(pl.name.split(' ')[0]) + '</span>' : '';
   }).join('');
   return '<div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">HYPED BY</div>' + names;
-}
-
-function toggleChronicleBack(entryEl) {
-  var wrap = entryEl.closest('.ch-entry-wrap');
-  if (!wrap) return;
-  var back = wrap.querySelector('.ch-back');
-  if (!back) return;
-  var isOpen = back.style.display === 'flex';
-  back.style.display = isOpen ? 'none' : 'flex';
 }
 
 function renderAll() {
