@@ -3877,7 +3877,7 @@ function renderPackStats() {
   const byStreak = state.players.slice().sort((a,b)=>(sm[b.id].streak||0)-(sm[a.id].streak||0));
 
   function rankList(players, statFn, unit) {
-    return players.map((p,i)=>`<div style="font-family:'Cinzel',serif;font-size:0.6rem;display:flex;justify-content:space-between;width:100%;padding:2px 0;border-bottom:1px solid rgba(0,0,0,0.05);${i===0?'color:var(--amber);font-weight:700':'color:var(--ink-mid)'}"><span>${i===0?'★':i+1+'.'} ${p.name.split(' ')[0]}</span><span>${statFn(p)}${unit}</span></div>`).join('');
+    return players.slice(0,3).map((p,i)=>`<div style="font-family:'Cinzel',serif;font-size:0.6rem;display:flex;justify-content:space-between;width:100%;padding:2px 0;border-bottom:1px solid rgba(0,0,0,0.05);${i===0?'color:var(--amber);font-weight:700':'color:var(--ink-mid)'}"><span>${i===0?'★':i+1+'.'} ${p.name.split(' ')[0]}</span><span>${statFn(p)}${unit}</span></div>`).join('');
   }
 
   function flipCard(icon, value, label, rankHTML, rankTitle) {
