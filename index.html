@@ -88,16 +88,7 @@
     font-size: clamp(1rem, 4vw, 1.4rem);
     font-weight: 900;
     letter-spacing: 0.08em;
-    background: linear-gradient(to right,
-      #9a1010 0%,
-      #b82010 30%,
-      #cc2a0a 45%,
-      #e07010 65%,
-      #c8900a 78%,
-      #e0a800 88%,
-      #f5c800 96%,
-      #ffd700 100%
-    );
+    background: linear-gradient(to right, #9a1010 0%, #b82010 30%, #cc2a0a 45%, #e07010 65%, #c8900a 78%, #e0a800 88%, #f5c800 96%, #ffd700 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -641,14 +632,7 @@
     justify-content: center;
     gap: 10px;
   }
-  .ch-flip-hint {
-    font-family: 'Cinzel', serif;
-    font-size: 0.48rem;
-    letter-spacing: 0.12em;
-    color: var(--ink-light);
-    padding: 4px 0 0;
-    opacity: 0.55;
-  }
+  .ch-flip-hint { font-family:'Cinzel',serif; font-size:0.48rem; letter-spacing:0.12em; color:var(--ink-light); padding:4px 0 0; opacity:0.55; }
 
   .chronicle-entry {
     background: var(--parchment);
@@ -1657,6 +1641,11 @@
   </div>
 </div>
 
+<!-- HOUSE LORE MODAL -->
+<div class="modal-overlay" id="house-lore-modal" onclick="if(event.target===this)closeHouseLore()">
+  <div id="house-lore-content" style="background:var(--parchment);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px 20px 40px;border-top:4px solid #9a1010;position:relative;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -1680,6 +1669,49 @@ const QUOTES = [
   "You do not follow me because I am strong. You follow me because you are. ⚔️",
   "Break the chains and run. 🏃"
 ];
+
+const HOUSE_LORE = {
+  Red:      { color:'#9a1010', icon:'&#9939;',  title:'The Miners. The Foundation.',       role:'Reds are the backbone of the Society — lowColor laborers who mine helium-3 deep in the belly of planets, believing they sacrifice for humanity\'s expansion. They are the most numerous and the most oppressed, kept ignorant of the world above them.', quote:'I would have lived in peace. But my enemies brought me war.', traits:'Fierce, loyal, stubborn, and hardened by hardship. Reds survive where others would break. They fight not for glory — but for those they love.' },
+  Obsidian: { color:'#1e3858', icon:'&#9876;',  title:'The Warriors. The Sword of Gold.',  role:'Obsidians are the deadliest fighters in the Society — massive, fearless, and bred for war. They serve as the personal guard of Golds and the shock troops of conquest. Their culture worships battle and the strength of the pack.', quote:'We do not break. We are the darkness between the stars.', traits:'Immense strength, absolute loyalty, and terrifying in combat. Obsidians live by a warrior code — honor in battle, death before surrender.' },
+  Pink:     { color:'#d44a8a', icon:'&#127800;',title:'The Companions. The Pleasers.',     role:'Pinks are trained from birth in beauty, pleasure, and the subtle arts of influence. Often underestimated, they are in truth among the most dangerous — masters of reading people and bending situations to their will without anyone noticing.', quote:'Cleverness is the armor of those who cannot afford iron.', traits:'Highly perceptive, emotionally intelligent, and deceptively strategic. Never mistake a Pink\'s grace for weakness.' },
+  Yellow:   { color:'#c8980a', icon:'&#9877;',  title:'The Healers. The Learned.',         role:'Yellows are the doctors, scientists, and intellectuals of the Society. Valued for their minds above all else, they keep the machinery of civilization running — healing the wounded, advancing technology, and preserving knowledge.', quote:'The mind is a sharper weapon than any blade.', traits:'Analytical, methodical, and quietly powerful through knowledge. Yellows outlast empires because information outlasts armies.' },
+  Green:    { color:'#2a6a28', icon:'&#128225;',title:'The Technicians. The Communicators.',role:'Greens manage the vast communication and technology networks that hold the Society together — programmers, hackers, and systems engineers. They move information, and in the Society, information is power.', quote:'Every empire runs on data. We are the ones who carry it.', traits:'Quick-thinking, resourceful, and quietly indispensable. Greens see the architecture behind everything.' },
+  Silver:   { color:'#4a5568', icon:'&#128176;',title:'The Financiers. The Economy.',      role:'Silvers control the financial systems of the Society — bankers, merchants, and economic architects. Without them, the great machine of civilization grinds to a halt. They trade in wealth and influence with equal skill.', quote:'Gold rules, but Silver counts the cost.', traits:'Calculating, patient, and always aware of leverage. A Silver never makes a move without knowing the price.' },
+  Blue:     { color:'#1a4a7a', icon:'&#128640;',title:'The Navigators. The Pilots.',       role:'Blues crew the starships and navigate the void between worlds. Born with an innate connection to space and mathematics, they are the ones who carry civilization to the stars. Without Blues, humanity stays earthbound.', quote:'The stars do not wait for the timid.', traits:'Precise, disciplined, and quietly proud. Blues see further — literally and figuratively.' },
+  Copper:   { color:'#8b4513', icon:'&#128220;',title:'The Bureaucrats. The Administrators.',role:'Coppers administer the vast bureaucracy of the Society — filling roles in law, record-keeping, and civic management. They are the paper trail behind every decree, the clerks who make the empire function day to day.', quote:'The pen outlasts the sword — it signs the death warrants.', traits:'Meticulous, procedural, and often overlooked. Never underestimate those who control the records.' },
+  Violet:   { color:'#4a1878', icon:'&#127912;',title:'The Artists. The Creatives.',       role:'Violets are the artists, sculptors, and entertainers of the Society — creators of beauty and culture who serve the higher colors. Their work adorns the palaces of Golds and the screens of billions, shaping what the Society sees as beautiful.', quote:'Beauty is the most powerful weapon. It makes you lower your guard.', traits:'Deeply creative, emotionally expressive, and subtly subversive. Art has always been a form of rebellion.' },
+};
+
+function openHouseLore(houseName) {
+  var lore = HOUSE_LORE[houseName];
+  if (!lore) return;
+  var modal = document.getElementById('house-lore-modal');
+  var content = document.getElementById('house-lore-content');
+  content.style.borderTopColor = lore.color;
+  var members = state.players.filter(function(p){ return p.house === houseName; });
+  var memberPills = members.map(function(p){
+    return '<span style="font-family:Cinzel,serif;font-size:0.55rem;font-weight:700;padding:3px 10px;border-radius:12px;background:' + lore.color + ';color:white;opacity:0.85">' + escHtml(p.name.split(' ')[0]) + '</span>';
+  }).join('');
+  content.innerHTML =
+    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(122,80,6,0.15)">' +
+      '<div style="width:52px;height:52px;border-radius:50%;background:' + lore.color + ';flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem">' + lore.icon + '</div>' +
+      '<div><div style="font-family:Cinzel,serif;font-size:1.2rem;font-weight:900;color:' + lore.color + ';line-height:1;margin-bottom:4px">' + houseName + '</div>' +
+      '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light)">' + lore.title + '</div></div>' +
+    '</div>' +
+    '<div style="margin-bottom:14px"><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.14em;color:' + lore.color + ';opacity:0.7;text-transform:uppercase;margin-bottom:5px">Role in the Society</div>' +
+    '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink);line-height:1.55">' + lore.role + '</div></div>' +
+    '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:1rem;color:' + lore.color + ';border-left:3px solid ' + lore.color + ';padding:8px 12px;margin:12px 0;opacity:0.85;background:rgba(122,80,6,0.04);border-radius:0 4px 4px 0">&ldquo;' + lore.quote + '&rdquo;</div>' +
+    '<div style="margin-bottom:14px"><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.14em;color:' + lore.color + ';opacity:0.7;text-transform:uppercase;margin-bottom:5px">Traits</div>' +
+    '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink);line-height:1.55">' + lore.traits + '</div></div>' +
+    (memberPills ? '<div style="margin-bottom:14px"><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.14em;color:' + lore.color + ';opacity:0.7;text-transform:uppercase;margin-bottom:6px">Pack Members</div><div style="display:flex;flex-wrap:wrap;gap:6px">' + memberPills + '</div></div>' : '') +
+    '<button onclick="closeHouseLore()" style="width:100%;margin-top:16px;background:transparent;border:1.5px solid rgba(122,80,6,0.3);border-radius:8px;padding:12px;font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.1em;color:var(--ink-mid);cursor:pointer">&#10005; Close</button>';
+  modal.classList.add('open');
+}
+
+function closeHouseLore() {
+  document.getElementById('house-lore-modal').classList.remove('open');
+}
+
 const HOUSES = {
   Red: '#9a1010', Obsidian: '#1e3858', Violet: '#4a1878', Green: '#1a4818',
   Copper: '#8b4513', Pink: '#d44a8a', Yellow: '#c8980a', Silver: '#4a5568', Blue: '#1a4a7a'
@@ -3372,124 +3404,109 @@ function importBackup() {
 }
 
 
-// Contextual trash talk by workout type
-// Use {name}, {miles}, {minutes} as placeholders
 const TRASH_TALK = {
   long_run: [
     "{miles} miles? Bloodydamn, my grandmother marches further to the market. ☀️",
     "The March requires at least 6 miles, not {miles}. Even a Ruster knows that. ⚔️",
     "Call that a long run? Gorydamn pixie effort. Darrow ran the Laurel in his sleep. 😴",
     "{miles} miles and you think you earned those Laurels? Slag work, Howler. 🐺",
-    "The Obsidians are embarrassed on your behalf. {miles} miles. Bloodydamn. ⛓️‍💥",
+    "The Obsidians are embarrassed on your behalf. {miles} miles. Bloodydamn.",
   ],
   tempo: [
     "{miles} miles at tempo pace? I've seen Grays move faster. Gorydamn. 😴",
     "Race pace they said. {miles} miles they ran. The Reaper weeps. ☀️",
     "Bloodydamn, even a tinsucker could hold that pace longer than {miles} miles. ⚔️",
     "{miles} miles of tempo? The pack expects more, Ruster. Step it up. 🐺",
-    "The Charge should be fiercer than {miles} miles. Slag effort. ⛓️‍💥",
+    "The Charge should be fiercer than {miles} miles. Slag effort.",
   ],
   easy_run: [
     "Easy run? More like a bloodydamn stroll. {miles} miles, really? 😴",
     "{miles} miles at easy pace. Even the Pinks train harder than that. ☀️",
     "Gorydamn, a Patrol should cover more ground than {miles} miles. 🐺",
     "The Lowborns mine deeper than you run, Ruster. {miles} miles. Slag. ⚔️",
-    "{miles} easy miles. I suppose even a pixie needs their rest. ⛓️‍💥",
+    "{miles} easy miles. I suppose even a pixie needs their rest.",
   ],
   walk_run: [
     "Walk/run intervals? Bloodydamn, pick a lane, Howler. 😴",
     "{miles} miles of walk/run. The Grays march further just running errands. 🐺",
     "Gorydamn tinsucker can't even commit to a full run. {miles} miles. ☀️",
     "Walk/run. How very... measured of you. A real Howler runs. ⚔️",
-    "{miles} miles of intervals. The Reaper doesn't walk, pixie. ⛓️‍💥",
+    "{miles} miles of intervals. The Reaper doesn't walk, pixie.",
   ],
   peloton: [
     "{minutes} minutes on the Steed? My grandmother cycles longer and she's Lowborn. 😴",
     "Bloodydamn, the Steed deserves a real rider. {minutes} minutes is a warmup. 🐺",
     "Gorydamn {minutes} minutes. The Iron Golds would be ashamed. ☀️",
     "{minutes} minutes on the Steed. Even a pixie rides harder than that. ⚔️",
-    "The pack runs while you pedal for {minutes} minutes. Slag effort. ⛓️‍💥",
+    "The pack runs while you pedal for {minutes} minutes. Slag effort.",
   ],
   strength: [
     "Strength session? Bloodydamn, the Iron Forge demands more than that. 😴",
     "The Iron Forge. {minutes} minutes. Gorydamn pixie weights. 🐺",
     "A true Obsidian never leaves the Forge in {minutes} minutes. Ruster. ☀️",
     "Strength training. Bold of you to call it that. Bloodydamn slag. ⚔️",
-    "Even a tinsucker lifts more. The pack is watching, Howler. ⛓️‍💥",
+    "Even a tinsucker lifts more. The pack is watching, Howler.",
   ],
   mobility: [
     "Stretching. Bloodydamn, even the Pinks train harder between shows. 😴",
     "{minutes} minutes of mobility. Gorydamn, that's barely a warmup. 🐺",
     "Mind & Body. More mind than body based on {minutes} minutes. ☀️",
     "A pixie move if I ever saw one. {minutes} minutes of stretching. ⚔️",
-    "The Reaper doesn't stretch. The Reaper just endures. Bloodydamn. ⛓️‍💥",
+    "The Reaper doesn't stretch. The Reaper just endures. Bloodydamn.",
   ],
   cardio: [
     "{minutes} minutes of cardio? Gorydamn, the Crimson Pulse should hit harder. 😴",
     "Bloodydamn {minutes} minutes. Even the Grays get more cardio chasing Reds. 🐺",
     "The Crimson Pulse barely registered with {minutes} minutes. Slag effort. ☀️",
     "{minutes} minutes? A pixie warm-up. The pack demands more, Ruster. ⚔️",
-    "Gorydamn tinsucker, {minutes} minutes of cardio won't win the Laurel. ⛓️‍💥",
+    "Gorydamn tinsucker, {minutes} minutes of cardio won't win the Laurel.",
   ],
   default: [
     "Bloodydamn, the pack expects more than that. Step it up, Howler. 😴",
     "Gorydamn pixie effort. Darrow would be ashamed. ⚔️",
     "The Reaper weeps. Not from sadness — from laughter. ☀️",
     "Breaking the chains requires actually moving, Ruster. 🐺",
-    "Even a tinsucker trains harder. Bloodydamn slag. ⛓️‍💥",
+    "Even a tinsucker trains harder. Bloodydamn slag.",
     "The pack is only as strong as its slowest Howler. Guess who that is? 😴",
   ]
 };
 
-function getTrashTalk(workout, miles, minutes, playerName) {
+function getTrashTalk(workout, miles, minutes) {
   var pool = TRASH_TALK[workout] || TRASH_TALK.default;
   var pick = pool[Math.floor(Math.random() * pool.length)];
-  return pick
-    .replace(/{name}/g, playerName)
-    .replace(/{miles}/g, miles || '?')
-    .replace(/{minutes}/g, minutes || '?');
+  return pick.replace(/{miles}/g, miles||'?').replace(/{minutes}/g, minutes||'?');
 }
 
-// Keep TAUNTS for backward compat
 const TAUNTS = TRASH_TALK.default;
 
 async function openTrashTalk(workoutId, playerName) {
   if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
   const w = state.workouts.find(x => x.id === workoutId);
   if (!w) return;
-
-  // Track who trash talked
   if (!w.trashTalk) w.trashTalk = [];
-  if (!w.trashTalk.includes(currentHowlerId)) {
-    w.trashTalk.push(currentHowlerId);
-  }
-
-  // Generate contextual zinger
-  const taunt = getTrashTalk(w.workout, w.miles, w.minutes, playerName);
+  if (!w.trashTalk.includes(currentHowlerId)) w.trashTalk.push(currentHowlerId);
+  const taunt = getTrashTalk(w.workout, w.miles, w.minutes);
   const wname = WORKOUT_NAMES[w.workout] || w.workout;
   const detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
-
-  // Auto-post directly as a Howl reply — no editing needed
-  if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
   const player = state.players.find(p => p.id === currentHowlerId);
   const playerLaurels = player ? (getStats(currentHowlerId).laurels || 0) : 0;
   const howl = {
     id: 'h_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
     player_id: currentHowlerId,
     player_laurels: playerLaurels,
-    message: '\u2694 @' + playerName + ' — ' + taunt + ' #trashtalk',
+    message: '⚔ @' + playerName + ' — ' + taunt + ' #trashtalk',
     date: new Date().toISOString().split('T')[0],
     timestamp: new Date().toISOString(),
     likes: [],
     reply_to_id: workoutId,
     reply_to_name: playerName,
-    activity_ref: {id: workoutId, player: playerName, workout: wname, detail: detail, date: w.date}
+    activity_ref: {id:workoutId,player:playerName,workout:wname,detail:detail,date:w.date}
   };
   state.howls.push(howl);
   await saveState();
   renderAll();
   switchTab('dispatch');
-  showToast('😴 Gorydamn trash talk delivered! ⛓️‍💥');
+  showToast('&#128564; Gorydamn trash talk delivered! &#9851;');
 }
 
 
@@ -3785,28 +3802,17 @@ function loadCardAnnals(pid, el) {
 
 function buildHypersList(w) {
   var raw = null;
-  if (w.reactions) {
-    var keys = Object.keys(w.reactions);
-    for (var i = 0; i < keys.length; i++) {
-      if (Array.isArray(w.reactions[keys[i]])) { raw = w.reactions[keys[i]]; break; }
-    }
-  }
+  if (w.reactions) { var keys=Object.keys(w.reactions); for(var i=0;i<keys.length;i++){if(Array.isArray(w.reactions[keys[i]])){raw=w.reactions[keys[i]];break;}} }
   var hypers = Array.isArray(raw) ? raw : [];
   var talkers = Array.isArray(w.trashTalk) ? w.trashTalk : [];
   var html = '';
   if (hypers.length) {
-    var names = hypers.map(function(pid) {
-      var pl = state.players.find(function(p) { return p.id === pid; });
-      return pl ? '<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128293; ' + escHtml(pl.name.split(' ')[0]) + '</span>' : '';
-    }).join('');
-    html += '<div style="margin-bottom:8px"><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">HYPED BY</div>' + names + '</div>';
+    html += '<div style="margin-bottom:8px"><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">HYPED BY</div>'
+      + hypers.map(function(pid){var pl=state.players.find(function(p){return p.id===pid;});return pl?'<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128293; '+escHtml(pl.name.split(' ')[0])+'</span>':'';}).join('')+'</div>';
   }
   if (talkers.length) {
-    var tnames = talkers.map(function(pid) {
-      var pl = state.players.find(function(p) { return p.id === pid; });
-      return pl ? '<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128564; ' + escHtml(pl.name.split(' ')[0]) + '</span>' : '';
-    }).join('');
-    html += '<div><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--house-red,#9a1010);margin-bottom:4px">TRASH TALKED BY</div>' + tnames + '</div>';
+    html += '<div><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--house-red,#9a1010);margin-bottom:4px">TRASH TALKED BY</div>'
+      + talkers.map(function(pid){var pl=state.players.find(function(p){return p.id===pid;});return pl?'<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128564; '+escHtml(pl.name.split(' ')[0])+'</span>':'';}).join('')+'</div>';
   }
   if (!html) return '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">No reactions yet.</div>';
   return html;
@@ -3815,9 +3821,7 @@ function buildHypersList(w) {
 function markAllPlayersSeen() {
   var suffix = localStorage.getItem('howlers_bin_id') || localStorage.getItem('howlers_gist_id') || '';
   var now = new Date().toISOString();
-  state.players.forEach(function(p) {
-    localStorage.setItem('howlers_seen_' + p.id + '_' + suffix, now);
-  });
+  state.players.forEach(function(p) { localStorage.setItem('howlers_seen_' + p.id + '_' + suffix, now); });
 }
 
 function renderAll() {
@@ -4569,7 +4573,7 @@ function renderHowlFeed() {
       '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
       '</div>' +
       replyTo +
-      '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message).replace(/#trashtalk/g, '<span style="font-family:Cinzel,serif;font-size:0.62rem;font-weight:700;color:#9a1010;letter-spacing:0.06em;font-style:normal;opacity:0.85">#trashtalk</span>') + '&rdquo;</div>' +
+      '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message).replace(/#trashtalk/g,'<span style="font-family:Cinzel,serif;font-size:0.62rem;font-weight:700;color:#9a1010;letter-spacing:0.06em;font-style:normal;opacity:0.85">#trashtalk</span>') + '&rdquo;</div>' +
       '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">' +
       reactionBarHTML(h, h.id, 'toggleHowlReaction') +
       '<button onclick="copyHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">⎘ Copy</button>' +
