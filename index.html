@@ -3182,6 +3182,10 @@ function checkAndPostChallengeHowls() {
       }
     } else {
       // Pack challenges
+    var activePlayers = state.players.filter(function(p){
+      return state.workouts.some(function(w){ return w.player_id===p.id && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); });
+    });
+    var enoughPlayers = activePlayers.length >= 4;
       var packWon = false;
       if (enoughPlayers && ch.id==='pack_trains') packWon=activePlayers.every(p=>(sm[p.id]||{}).trials>=ch.goal);
       else if (enoughPlayers && ['society_rising','the_rising_tide'].includes(ch.id)) packWon=activePlayers.reduce((s,p)=>s+((sm[p.id]||{}).laurels||0),0)>=ch.goal;
