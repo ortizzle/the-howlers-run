@@ -4540,13 +4540,17 @@ function renderHowlFeed() {
     const likes = h.likes || [];
     let replyTo = '';
     if (h.activity_ref) {
-      const ref = h.activity_ref;
-      replyTo = '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:8px 12px;margin-bottom:10px">' +
-        '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:4px">↩ IN RESPONSE TO</div>' +
-        '<div style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:var(--ink);margin-bottom:1px">' + escHtml(ref.player) + '</div>' +
-        '<div style="font-family:Crimson Pro,serif;font-size:0.88rem;color:var(--ink-mid)">' +
-        escHtml(ref.workout) + (ref.detail ? ' &middot; ' + ref.detail : '') + ' &middot; ' + formatDate(ref.date) +
-        '</div></div>';
+      var ref = h.activity_ref;
+      var actPlayer = state.players.find(function(p){ return p.name === ref.player; });
+      var actHc = actPlayer ? (HOUSES[actPlayer.house] || '#c8900a') : '#c8900a';
+      replyTo = '<div style="background:#ede5d5;border:1px solid ' + actHc + '33;border-left:4px solid ' + actHc + ';border-radius:4px;padding:8px 12px;margin-bottom:10px">'
+        + '<div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;margin-bottom:5px;display:flex;align-items:center;gap:6px">'
+        + '<span style="color:#8a7060">&#8629;</span>'
+        + '<span style="background:' + actHc + ';color:white;padding:1px 7px;border-radius:3px;font-size:0.48rem;font-weight:700;letter-spacing:0.08em">' + escHtml(ref.player) + '</span></div>'
+        + '<div style="font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;color:var(--ink);margin-bottom:2px">' + escHtml(ref.workout) + '</div>'
+        + '<div style="font-family:Crimson Pro,serif;font-size:0.85rem;color:var(--ink-mid)">'
+        + (ref.detail ? escHtml(ref.detail) + ' &middot; ' : '') + formatDate(ref.date)
+        + '</div></div>';
     } else if (h.reply_to_name) {
       // Look up original howl message by reply_to_id
       var origHowl = h.reply_to_id ? (state.howls||[]).find(function(x){ return x.id === h.reply_to_id; }) : null;
