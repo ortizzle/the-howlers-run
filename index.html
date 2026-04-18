@@ -52,14 +52,14 @@
 
   /* HEADER */
   .site-header {
-    background: var(--ink);
+    background: #000000;
     color: var(--amber-pale);
     padding: 0;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.4);
-    border-bottom: 3px solid var(--amber);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.6);
+    border-bottom: 3px solid #9a1010;
   }
   .header-inner {
     max-width: 1200px;
@@ -88,16 +88,27 @@
     font-size: clamp(1rem, 4vw, 1.4rem);
     font-weight: 900;
     letter-spacing: 0.08em;
-    color: var(--amber-pale);
-    text-shadow: 0 0 20px rgba(200,144,10,0.5);
+    background: linear-gradient(to right,
+      #9a1010 0%,
+      #b82010 30%,
+      #cc2a0a 45%,
+      #e07010 65%,
+      #c8900a 78%,
+      #e0a800 88%,
+      #f5c800 96%,
+      #ffd700 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     white-space: nowrap;
   }
-  .header-title span { color: var(--amber-light); }
+  .header-title span { background: inherit; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .header-subtitle {
     font-family: 'Crimson Pro', serif;
     font-style: italic;
     font-size: 0.7rem;
-    color: rgba(240,208,128,0.55);
+    color: #c8a878;
     letter-spacing: 0.03em;
     white-space: nowrap;
     overflow: hidden;
