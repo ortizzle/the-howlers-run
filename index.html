@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Howlers — Red Rising Training Tracker</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzFhMTIwOCIvPgogIDxjaXJjbGUgY3g9IjQiIGN5PSI0IiByPSIwLjUiIGZpbGw9IiNmMGU4YzAiIG9wYWNpdHk9IjAuNiIvPgogIDxjaXJjbGUgY3g9IjI4IiBjeT0iNiIgcj0iMC40IiBmaWxsPSIjZjBlOGMwIiBvcGFjaXR5PSIwLjUiLz4KICA8Y2lyY2xlIGN4PSIyNiIgY3k9IjI2IiByPSIwLjUiIGZpbGw9IiNmMGU4YzAiIG9wYWNpdHk9IjAuNCIvPgogIDxjaXJjbGUgY3g9IjUiIGN5PSIyNyIgcj0iMC40IiBmaWxsPSIjZjBlOGMwIiBvcGFjaXR5PSIwLjYiLz4KICA8Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxMSIgZmlsbD0iIzlhMmExMCIvPgogIDxlbGxpcHNlIGN4PSIxNiIgY3k9IjExIiByeD0iOSIgcnk9IjIuNSIgZmlsbD0iI2IwM2ExOCIgb3BhY2l0eT0iMC42Ii8+CiAgPGVsbGlwc2UgY3g9IjE0IiBjeT0iMTgiIHJ4PSI3IiByeT0iMiIgZmlsbD0iIzdhMWUwOCIgb3BhY2l0eT0iMC41Ii8+CiAgPGVsbGlwc2UgY3g9IjE2IiBjeT0iNiIgcng9IjQiIHJ5PSIxLjUiIGZpbGw9IiNlOGQwYzAiIG9wYWNpdHk9IjAuNSIvPgogIDxlbGxpcHNlIGN4PSIxMSIgY3k9IjEwIiByeD0iNCIgcnk9IjMiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjA4Ii8+CiAgPHBhdGggZD0iTTggMTcgUTE2IDE1IDI0IDE4IiBzdHJva2U9IiM1YTEyMDgiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjUiLz4KPC9zdmc+">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -3759,8 +3760,8 @@ function renderPlayers() {
     var isPeerless = s.laurels >= 9500;
     var houseColor = isPeerless ? PEERLESS_GOLD : (HOUSES[p.house] || '#7a5006');
     var isPrimus = p.id === primusId && s.laurels > 0;
-    var gistId = localStorage.getItem('howlers_gist_id') || '';
-    var lastSeenKey = 'howlers_seen_' + p.id + '_' + gistId;
+    var seenSuffix = localStorage.getItem('howlers_bin_id') || localStorage.getItem('howlers_gist_id') || '';
+    var lastSeenKey = 'howlers_seen_' + p.id + '_' + seenSuffix;
     var lastSeen = localStorage.getItem(lastSeenKey) || '0';
     var lastHowlSeen = localStorage.getItem('howlers_last_howl_seen_' + gistId) || '0';
     var hasUnreadHowl = (state.howls||[]).some(function(h) {
