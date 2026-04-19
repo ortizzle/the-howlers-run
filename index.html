@@ -4306,6 +4306,7 @@ function renderChallenges() {
           else if (ch.id==='the_peloton_ace') val=s.pelotons||0;
           else if (ch.id==='the_faithful') val=s.perfectWeeks||0;
           else if (ch.id==='primus_pares') val=(s.weekSet&&s.weekSet.size)||0;
+          else if (ch.id==='the_endurance') val=state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce(function(a,w){return a+(w.minutes||0);},0);
           else if (ch.id==='race_finisher') val=state.workouts.filter(w=>w.player_id===p.id&&w.workout==='race').length;
           return {name:p.name.split(' ')[0], val};
         }).sort((a,b)=>b.val-a.val);
