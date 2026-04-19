@@ -4321,6 +4321,8 @@ function renderChallenges() {
     }
     const pct = progressMax > 0 ? Math.min(100, (progress / progressMax) * 100) : 0;
     progressLabel = `${progress} / ${progressMax}`;
+    // Fallback: if challenge is recorded as won but live check missed it
+    if (won && !winner) winner = won.name || null;
     const isComplete = won || winner;
 
     // Build flip back content
