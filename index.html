@@ -2736,7 +2736,7 @@ async function sendDuelChallenge() {
     player_id: 'system',
     player_laurels: 9999,
     message: '⚔ DUEL ISSUED! ' + challenger.name + ' challenges ' + opponent.name + ' to a battle of ' + metricLabels[metric] + ' this week! Wager: ' + wager + ' Laurels. ' + opponent.name + ' - do you accept?',
-    date: new Date().toISOString().split('T')[0],
+    date: getAZDate(),
     timestamp: new Date().toISOString(),
     reactions: {},
     is_recap: true,
@@ -2757,10 +2757,10 @@ async function respondToDuel(duelId, accept) {
   var metricLabels = {miles:'Miles Run', minutes:'Peloton Minutes', laurels:'Laurels Earned'};
   if (accept) {
     duel.status = 'active';
-    state.howls.push({ id:'duel_accept_'+duelId, player_id:'system', player_laurels:9999, message:'⚔ DUEL ACCEPTED! ' + opponent.name + ' accepts the challenge from ' + challenger.name + '! Metric: ' + metricLabels[duel.metric] + ' Wager: ' + duel.wager + 'L. Let the battle begin. 🐺', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+    state.howls.push({ id:'duel_accept_'+duelId, player_id:'system', player_laurels:9999, message:'⚔ DUEL ACCEPTED! ' + opponent.name + ' accepts the challenge from ' + challenger.name + '! Metric: ' + metricLabels[duel.metric] + ' Wager: ' + duel.wager + 'L. Let the battle begin. 🐺', date:getAZDate(), timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
   } else {
     duel.status = 'declined';
-    state.howls.push({ id:'duel_decline_'+duelId, player_id:'system', player_laurels:9999, message:'😴 ' + opponent.name + ' declined the duel from ' + challenger.name + '.', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+    state.howls.push({ id:'duel_decline_'+duelId, player_id:'system', player_laurels:9999, message:'😴 ' + opponent.name + ' declined the duel from ' + challenger.name + '.', date:getAZDate(), timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
   }
   await saveState();
   renderAll();
@@ -2804,13 +2804,13 @@ function checkAndResolveDuels() {
       winVal=stats.opponent; loseVal=stats.challenger;
     } else {
       duel.status='tied';
-      state.howls.push({ id:'duel_tie_'+duel.id, player_id:'system', player_laurels:9999, message:'⚔ DUEL TIE! ' + (challenger?challenger.name:'?') + ' vs ' + (opponent?opponent.name:'?') + ' - both scored ' + stats.challenger + ' ' + metricLabels[duel.metric] + '. Honor is equal.', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+      state.howls.push({ id:'duel_tie_'+duel.id, player_id:'system', player_laurels:9999, message:'⚔ DUEL TIE! ' + (challenger?challenger.name:'?') + ' vs ' + (opponent?opponent.name:'?') + ' - both scored ' + stats.challenger + ' ' + metricLabels[duel.metric] + '. Honor is equal.', date:getAZDate(), timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
       changed=true; return;
     }
     duel.status='complete'; duel.winner_id=winnerId;
-    state.workouts.push({ id:'duel_win_'+duel.id, player_id:winnerId, workout:'duel_win', date:new Date().toISOString().split('T')[0], laurels_base:duel.wager, quote:'Victory tastes of iron. ⚔️', timestamp:new Date().toISOString(), duel_win:true });
-    state.workouts.push({ id:'duel_loss_'+duel.id, player_id:loserId, workout:'duel_loss', date:new Date().toISOString().split('T')[0], laurels_base:-duel.wager, quote:'Even in defeat, the Howler rises. 🐺', timestamp:new Date().toISOString(), duel_loss:true });
-    state.howls.push({ id:'duel_result_'+duel.id, player_id:'system', player_laurels:9999, message:'⚔ DUEL RESULT! ' + winnerName + ' defeats ' + loserName + '! ' + winVal.toFixed(1) + ' vs ' + loseVal.toFixed(1) + ' ' + metricLabels[duel.metric] + '. ' + winnerName + ' claims ' + duel.wager + ' Laurels. Per aspera ad astra. 🐺', date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+    state.workouts.push({ id:'duel_win_'+duel.id, player_id:winnerId, workout:'duel_win', date:getAZDate(), laurels_base:duel.wager, quote:'Victory tastes of iron. ⚔️', timestamp:new Date().toISOString(), duel_win:true });
+    state.workouts.push({ id:'duel_loss_'+duel.id, player_id:loserId, workout:'duel_loss', date:getAZDate(), laurels_base:-duel.wager, quote:'Even in defeat, the Howler rises. 🐺', timestamp:new Date().toISOString(), duel_loss:true });
+    state.howls.push({ id:'duel_result_'+duel.id, player_id:'system', player_laurels:9999, message:'⚔ DUEL RESULT! ' + winnerName + ' defeats ' + loserName + '! ' + winVal.toFixed(1) + ' vs ' + loseVal.toFixed(1) + ' ' + metricLabels[duel.metric] + '. ' + winnerName + ' claims ' + duel.wager + ' Laurels. Per aspera ad astra. 🐺', date:getAZDate(), timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
     changed=true;
   });
   // saveState removed — prevents race condition data loss on auto-refresh
@@ -2871,7 +2871,7 @@ function openQuickLog() {
     if (currentHowlerId) sel.value = currentHowlerId;
     else if (prev) sel.value = prev;
   }
-  var today = new Date().toISOString().split('T')[0];
+  var today = getAZDate();
   var dateEl = document.getElementById('ql-date');
   if (dateEl) { dateEl.value = today; dateEl.min = '2026-04-13'; dateEl.max = today; }
   var wt = document.getElementById('ql-workout');
@@ -2939,7 +2939,7 @@ async function qlSubmit() {
   if (!workout) { showToast('Select a workout type.'); return; }
   if (!date)    { showToast('Enter a date.'); return; }
   if (date < '2026-04-13') { showToast('No trials before April 13, 2026.'); return; }
-  if (date > new Date().toISOString().split('T')[0]) { showToast('Cannot log a future date.'); return; }
+  if (date > getAZDate()) { showToast('Cannot log a future date.'); return; }
   if (['long_run','tempo','easy_run'].includes(workout) && miles === 0) { showToast('Enter miles for this workout.'); return; }
   if (workout === 'long_run' && miles < 6) { showToast('The March requires at least 6 miles.'); return; }
   if (workout === 'peloton' && minutes === 0) { showToast('Enter minutes for Peloton ride.'); return; }
@@ -3101,7 +3101,7 @@ function retroactiveChallengePayout() {
         winnerId = bestId;
       }
       if (winnerId) {
-        state.workouts.push({ id: 'ch_reward_' + ch.id, player_id: winnerId, workout: 'milestone_bonus', date: new Date().toISOString().split('T')[0], laurels_base: ch.reward, quote: 'Retroactive glory. The laurels were always yours. ✦', timestamp: new Date().toISOString(), milestone_label: 'Challenge: ' + ch.name, milestone_bonus: ch.reward });
+        state.workouts.push({ id: 'ch_reward_' + ch.id, player_id: winnerId, workout: 'milestone_bonus', date: getAZDate(), laurels_base: ch.reward, quote: 'Retroactive glory. The laurels were always yours. ✦', timestamp: new Date().toISOString(), milestone_label: 'Challenge: ' + ch.name, milestone_bonus: ch.reward });
         changed = true;
         console.log('Retroactive payout: ' + ch.name + ' +' + ch.reward + 'L');
       }
@@ -3111,7 +3111,7 @@ function retroactiveChallengePayout() {
         var pid = 'ch_reward_' + ch.id + '_' + p.id;
         var paid = state.workouts.some(function(w){ return w.id === pid; });
         if (!paid) {
-          state.workouts.push({ id: pid, player_id: p.id, workout: 'milestone_bonus', date: new Date().toISOString().split('T')[0], laurels_base: ch.reward, quote: 'The pack rises together. ✦', timestamp: new Date().toISOString(), milestone_label: 'Challenge: ' + ch.name, milestone_bonus: ch.reward });
+          state.workouts.push({ id: pid, player_id: p.id, workout: 'milestone_bonus', date: getAZDate(), laurels_base: ch.reward, quote: 'The pack rises together. ✦', timestamp: new Date().toISOString(), milestone_label: 'Challenge: ' + ch.name, milestone_bonus: ch.reward });
           changed = true;
         }
       });
@@ -3209,13 +3209,13 @@ function checkAndPostChallengeHowls() {
         state.players.forEach(function(p) {
           var pid = 'ch_reward_' + ch.id + '_' + p.id;
           if (!state.workouts.some(w=>w.id===pid)) {
-            state.workouts.push({id:pid, player_id:p.id, workout:'milestone_bonus', date:new Date().toISOString().split('T')[0], laurels_base:ch.reward, quote:'The pack conquers together. ✦', timestamp:new Date().toISOString(), milestone_label:'⚔ Challenge: '+ch.name, milestone_bonus:ch.reward});
+            state.workouts.push({id:pid, player_id:p.id, workout:'milestone_bonus', date:getAZDate(), laurels_base:ch.reward, quote:'The pack conquers together. ✦', timestamp:new Date().toISOString(), milestone_label:'⚔ Challenge: '+ch.name, milestone_bonus:ch.reward});
           }
         });
       } else if (winner.id) {
         var rid = 'ch_reward_' + ch.id;
         if (!state.workouts.some(w=>w.id===rid)) {
-          state.workouts.push({id:rid, player_id:winner.id, workout:'milestone_bonus', date:new Date().toISOString().split('T')[0], laurels_base:ch.reward, quote:'Victory tastes of iron and laurels. ✦', timestamp:new Date().toISOString(), milestone_label:'⚔ Challenge: '+ch.name, milestone_bonus:ch.reward});
+          state.workouts.push({id:rid, player_id:winner.id, workout:'milestone_bonus', date:getAZDate(), laurels_base:ch.reward, quote:'Victory tastes of iron and laurels. ✦', timestamp:new Date().toISOString(), milestone_label:'⚔ Challenge: '+ch.name, milestone_bonus:ch.reward});
         }
       }
 
@@ -3224,7 +3224,7 @@ function checkAndPostChallengeHowls() {
         ? '🏆 PACK VICTORY: ' + ch.name + '! \n\nThe entire pack rises together. +' + ch.reward + 'L each. \n\n⚔ Per aspera ad astra. The pack endures. 🐺✨✨'
         : '🏆 CHALLENGE CONQUERED: ' + ch.name + '! \n\n@' + winner.name + ' strikes first and claims the laurels. +' + ch.reward + 'L awarded. \n\n⚔ Per aspera ad astra. Go Howler! 🐺✨';
       if (!state.howls.some(h=>h.id==='challenge_'+ch.id)) {
-        state.howls.push({id:'challenge_'+ch.id, player_id:'system', player_laurels:9999, message:msg, date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), likes:0});
+        state.howls.push({id:'challenge_'+ch.id, player_id:'system', player_laurels:9999, message:msg, date:getAZDate(), timestamp:new Date().toISOString(), likes:0});
       }
       changed = true;
       setTimeout(function(){ launchConfetti('conquest'); }, 500);
@@ -3356,7 +3356,7 @@ function launchConfetti(type, customColors) {
 
 
 function exportBackup() {
-  const filename = 'howlers-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  const filename = 'howlers-backup-' + getAZDate() + '.json';
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -3443,7 +3443,7 @@ async function openTrashTalk(workoutId, playerName) {
     id: 'h_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
     player_id: currentHowlerId, player_laurels: playerLaurels,
     message: '⚔ @' + playerName + ' — ' + taunt + ' #trashtalk',
-    date: new Date().toISOString().split('T')[0],
+    date: getAZDate(),
     timestamp: new Date().toISOString(), likes: [],
     reply_to_id: workoutId, reply_to_name: playerName,
     activity_ref: {id:workoutId,player:playerName,workout:wname,detail:detail,date:w.date}
@@ -3787,6 +3787,18 @@ function buildHowlReactionSummary(h) {
   return '<div style="font-family:Crimson Pro,serif;font-size:0.75rem;color:var(--ink-light);padding:4px 0 2px;font-style:italic">' + parts.join('') + '</div>';
 }
 
+
+function getAZDate() {
+  // Arizona is UTC-7, no DST
+  var now = new Date();
+  var az = new Date(now.getTime() - 7 * 60 * 60 * 1000);
+  return az.toISOString().split('T')[0];
+}
+
+function getAZTimestamp() {
+  return new Date().toISOString(); // timestamp stays UTC, only date display changes
+}
+
 function renderAll() {
   buildStatsCache();
   renderPackStats();
@@ -4088,7 +4100,7 @@ function renderDistanceRankings() {
   el.innerHTML = html;
 }
 function renderLogDropdown() {
-  const _dl=document.getElementById('log-date');if(_dl){const _td=new Date().toISOString().split('T')[0];_dl.min='2026-04-13';_dl.max=_td;if(!_dl.value)_dl.value=_td;}
+  const _dl=document.getElementById('log-date');if(_dl){const _td=getAZDate();_dl.min='2026-04-13';_dl.max=_td;if(!_dl.value)_dl.value=_td;}
   const sel = document.getElementById('log-player');
   const prev = sel.value;
   sel.innerHTML = '<option value="">— Select Howler —</option>';
@@ -4645,7 +4657,7 @@ async function postHowl(replyToId, replyToName, activityRef) {
     player_id: pid,
     player_laurels: stats.laurels,
     message: msg,
-    date: new Date().toISOString().split('T')[0],
+    date: getAZDate(),
     timestamp: new Date().toISOString(),
     likes: [],
     reply_to_id: replyToId || null,
@@ -4951,7 +4963,7 @@ function exportLeaderboardImage() {
     if (btn) { btn.disabled = false; btn.textContent = '📸 CAPTURE LEADERBOARD'; }
     // Download
     var link = document.createElement('a');
-    link.download = 'howlers-leaderboard-' + new Date().toISOString().split('T')[0] + '.png';
+    link.download = 'howlers-leaderboard-' + getAZDate() + '.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
     showToast('Leaderboard image saved! Share it with the pack. 🐺');
@@ -5157,7 +5169,7 @@ function openEditWorkout(wid) {
   const editDateEl = document.getElementById('edit-workout-date');
   editDateEl.value = w.date;
   editDateEl.min = '2026-04-13';
-  editDateEl.max = new Date().toISOString().split('T')[0];
+  editDateEl.max = getAZDate();
   document.getElementById('edit-workout-notes').value = w.notes || '';
   updateEditLaurelPreview();
   document.getElementById('edit-workout-modal').classList.add('open');
@@ -5177,7 +5189,7 @@ async function saveEditWorkout() {
   if (!w) return;
   const editDate = document.getElementById('edit-workout-date').value;
   if(editDate<'2026-04-13'){showToast('Cannot set before April 13, 2026.');return;}
-  if(editDate>new Date().toISOString().split('T')[0]){showToast('Cannot set a future date.');return;}
+  if(editDate>getAZDate()){showToast('Cannot set a future date.');return;}
   w.workout = document.getElementById('edit-workout-type').value;
   w.miles = parseFloat(document.getElementById('edit-workout-miles').value) || undefined;
   w.minutes = parseInt(document.getElementById('edit-workout-minutes').value) || undefined;
@@ -5261,7 +5273,7 @@ async function submitTrial() {
   if (!workout) { showToast('Select a workout type.'); return; }
   if (!date) { showToast('Enter a date.'); return; }
   if(date<'2026-04-13'){showToast('No trials before April 13, 2026.');return;}
-  if(date>new Date().toISOString().split('T')[0]){showToast('Cannot log a future date.');return;}
+  if(date>getAZDate()){showToast('Cannot log a future date.');return;}
   if (['long_run','tempo','easy_run','optional_run'].includes(workout) && miles === 0) {
     showToast('Enter miles for this workout.'); return;
   }
@@ -5364,7 +5376,7 @@ function formatDate(dateStr) {
 // ─── INIT ────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   // Set today as default date
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getAZDate();
   const logDateEl = document.getElementById('log-date');
   logDateEl.value = todayStr;
   logDateEl.min = '2026-04-13';
