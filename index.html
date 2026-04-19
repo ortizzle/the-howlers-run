@@ -10,7 +10,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root {
-    --header-height: 110px;
     --parchment: #f5efe4;
     --parchment-dark: #ede3d0;
     --parchment-mid: #e8dcc8;
@@ -169,7 +168,7 @@
     overflow-x: auto;
     scrollbar-width: none;
     position: sticky;
-    top: var(--header-height, 110px);
+    top: 110px;
     z-index: 90;
   }
   .nav-strip::-webkit-scrollbar { display: none; }
@@ -1676,33 +1675,28 @@ const QUOTES = [
 ];
 
 const HOUSE_LORE = {
-  Red:      { color:'#9a1010', icon:'&#9939;',  title:'The Miners. The Foundation.',       role:'Reds are the backbone of the Society — lowColor laborers who mine helium-3 deep in the belly of planets, believing they sacrifice for humanity\'s expansion. They are the most numerous and the most oppressed, kept ignorant of the world above them.', quote:'I would have lived in peace. But my enemies brought me war.', traits:'Fierce, loyal, stubborn, and hardened by hardship. Reds survive where others would break. They fight not for glory — but for those they love.' },
-  Obsidian: { color:'#1e3858', icon:'&#9876;',  title:'The Warriors. The Sword of Gold.',  role:'Obsidians are the deadliest fighters in the Society — massive, fearless, and bred for war. They serve as the personal guard of Golds and the shock troops of conquest. Their culture worships battle and the strength of the pack.', quote:'We do not break. We are the darkness between the stars.', traits:'Immense strength, absolute loyalty, and terrifying in combat. Obsidians live by a warrior code — honor in battle, death before surrender.' },
-  Pink:     { color:'#d44a8a', icon:'&#127800;',title:'The Companions. The Pleasers.',     role:'Pinks are trained from birth in beauty, pleasure, and the subtle arts of influence. Often underestimated, they are in truth among the most dangerous — masters of reading people and bending situations to their will without anyone noticing.', quote:'Cleverness is the armor of those who cannot afford iron.', traits:'Highly perceptive, emotionally intelligent, and deceptively strategic. Never mistake a Pink\'s grace for weakness.' },
-  Yellow:   { color:'#c8980a', icon:'&#9877;',  title:'The Healers. The Learned.',         role:'Yellows are the doctors, scientists, and intellectuals of the Society. Valued for their minds above all else, they keep the machinery of civilization running — healing the wounded, advancing technology, and preserving knowledge.', quote:'The mind is a sharper weapon than any blade.', traits:'Analytical, methodical, and quietly powerful through knowledge. Yellows outlast empires because information outlasts armies.' },
+  Red:      { color:'#9a1010', icon:'&#9939;',  title:'The Miners. The Foundation.',        role:'Reds are the backbone of the Society — lowColor laborers who mine helium-3 deep in the belly of planets, believing they sacrifice for humanity\'s expansion. They are the most numerous and the most oppressed, kept ignorant of the world above them.', quote:'I would have lived in peace. But my enemies brought me war.', traits:'Fierce, loyal, stubborn, and hardened by hardship. Reds survive where others would break. They fight not for glory — but for those they love.' },
+  Obsidian: { color:'#1e3858', icon:'&#9876;',  title:'The Warriors. The Sword of Gold.',   role:'Obsidians are the deadliest fighters in the Society — massive, fearless, and bred for war. They serve as the personal guard of Golds and the shock troops of conquest. Their culture worships battle and the strength of the pack.', quote:'We do not break. We are the darkness between the stars.', traits:'Immense strength, absolute loyalty, and terrifying in combat. Obsidians live by a warrior code — honor in battle, death before surrender.' },
+  Pink:     { color:'#d44a8a', icon:'&#127800;',title:'The Companions. The Pleasers.',      role:'Pinks are trained from birth in beauty, pleasure, and the subtle arts of influence. Often underestimated, they are in truth among the most dangerous — masters of reading people and bending situations to their will without anyone noticing.', quote:'Cleverness is the armor of those who cannot afford iron.', traits:'Highly perceptive, emotionally intelligent, and deceptively strategic. Never mistake a Pink\'s grace for weakness.' },
+  Yellow:   { color:'#c8980a', icon:'&#9877;',  title:'The Healers. The Learned.',          role:'Yellows are the doctors, scientists, and intellectuals of the Society. Valued for their minds above all else, they keep the machinery of civilization running — healing the wounded, advancing technology, and preserving knowledge.', quote:'The mind is a sharper weapon than any blade.', traits:'Analytical, methodical, and quietly powerful through knowledge. Yellows outlast empires because information outlasts armies.' },
   Green:    { color:'#2a6a28', icon:'&#128225;',title:'The Technicians. The Communicators.',role:'Greens manage the vast communication and technology networks that hold the Society together — programmers, hackers, and systems engineers. They move information, and in the Society, information is power.', quote:'Every empire runs on data. We are the ones who carry it.', traits:'Quick-thinking, resourceful, and quietly indispensable. Greens see the architecture behind everything.' },
-  Silver:   { color:'#4a5568', icon:'&#128176;',title:'The Financiers. The Economy.',      role:'Silvers control the financial systems of the Society — bankers, merchants, and economic architects. Without them, the great machine of civilization grinds to a halt. They trade in wealth and influence with equal skill.', quote:'Gold rules, but Silver counts the cost.', traits:'Calculating, patient, and always aware of leverage. A Silver never makes a move without knowing the price.' },
-  Blue:     { color:'#1a4a7a', icon:'&#128640;',title:'The Navigators. The Pilots.',       role:'Blues crew the starships and navigate the void between worlds. Born with an innate connection to space and mathematics, they are the ones who carry civilization to the stars. Without Blues, humanity stays earthbound.', quote:'The stars do not wait for the timid.', traits:'Precise, disciplined, and quietly proud. Blues see further — literally and figuratively.' },
+  Silver:   { color:'#4a5568', icon:'&#128176;',title:'The Financiers. The Economy.',       role:'Silvers control the financial systems of the Society — bankers, merchants, and economic architects. Without them, the great machine of civilization grinds to a halt. They trade in wealth and influence with equal skill.', quote:'Gold rules, but Silver counts the cost.', traits:'Calculating, patient, and always aware of leverage. A Silver never makes a move without knowing the price.' },
+  Blue:     { color:'#1a4a7a', icon:'&#128640;',title:'The Navigators. The Pilots.',        role:'Blues crew the starships and navigate the void between worlds. Born with an innate connection to space and mathematics, they are the ones who carry civilization to the stars. Without Blues, humanity stays earthbound.', quote:'The stars do not wait for the timid.', traits:'Precise, disciplined, and quietly proud. Blues see further — literally and figuratively.' },
   Copper:   { color:'#8b4513', icon:'&#128220;',title:'The Bureaucrats. The Administrators.',role:'Coppers administer the vast bureaucracy of the Society — filling roles in law, record-keeping, and civic management. They are the paper trail behind every decree, the clerks who make the empire function day to day.', quote:'The pen outlasts the sword — it signs the death warrants.', traits:'Meticulous, procedural, and often overlooked. Never underestimate those who control the records.' },
-  Violet:   { color:'#4a1878', icon:'&#127912;',title:'The Artists. The Creatives.',       role:'Violets are the artists, sculptors, and entertainers of the Society — creators of beauty and culture who serve the higher colors. Their work adorns the palaces of Golds and the screens of billions, shaping what the Society sees as beautiful.', quote:'Beauty is the most powerful weapon. It makes you lower your guard.', traits:'Deeply creative, emotionally expressive, and subtly subversive. Art has always been a form of rebellion.' },
+  Violet:   { color:'#4a1878', icon:'&#127912;',title:'The Artists. The Creatives.',        role:'Violets are the artists, sculptors, and entertainers of the Society — creators of beauty and culture who serve the higher colors. Their work adorns the palaces of Golds and the screens of billions, shaping what the Society sees as beautiful.', quote:'Beauty is the most powerful weapon. It makes you lower your guard.', traits:'Deeply creative, emotionally expressive, and subtly subversive. Art has always been a form of rebellion.' },
 };
-
 function openHouseLore(houseName) {
-  var lore = HOUSE_LORE[houseName];
-  if (!lore) return;
+  var lore = HOUSE_LORE[houseName]; if (!lore) return;
   var modal = document.getElementById('house-lore-modal');
   var content = document.getElementById('house-lore-content');
   content.style.borderTopColor = lore.color;
   var members = state.players.filter(function(p){ return p.house === houseName; });
-  var memberPills = members.map(function(p){
-    return '<span style="font-family:Cinzel,serif;font-size:0.55rem;font-weight:700;padding:3px 10px;border-radius:12px;background:' + lore.color + ';color:white;opacity:0.85">' + escHtml(p.name.split(' ')[0]) + '</span>';
-  }).join('');
+  var memberPills = members.map(function(p){ return '<span style="font-family:Cinzel,serif;font-size:0.55rem;font-weight:700;padding:3px 10px;border-radius:12px;background:' + lore.color + ';color:white;opacity:0.85">' + escHtml(p.name.split(' ')[0]) + '</span>'; }).join('');
   content.innerHTML =
     '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(122,80,6,0.15)">' +
-      '<div style="width:52px;height:52px;border-radius:50%;background:' + lore.color + ';flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem">' + lore.icon + '</div>' +
-      '<div><div style="font-family:Cinzel,serif;font-size:1.2rem;font-weight:900;color:' + lore.color + ';line-height:1;margin-bottom:4px">' + houseName + '</div>' +
-      '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light)">' + lore.title + '</div></div>' +
-    '</div>' +
+    '<div style="width:52px;height:52px;border-radius:50%;background:' + lore.color + ';flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem">' + lore.icon + '</div>' +
+    '<div><div style="font-family:Cinzel,serif;font-size:1.2rem;font-weight:900;color:' + lore.color + ';line-height:1;margin-bottom:4px">' + houseName + '</div>' +
+    '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light)">' + lore.title + '</div></div></div>' +
     '<div style="margin-bottom:14px"><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.14em;color:' + lore.color + ';opacity:0.7;text-transform:uppercase;margin-bottom:5px">Role in the Society</div>' +
     '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink);line-height:1.55">' + lore.role + '</div></div>' +
     '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:1rem;color:' + lore.color + ';border-left:3px solid ' + lore.color + ';padding:8px 12px;margin:12px 0;opacity:0.85;background:rgba(122,80,6,0.04);border-radius:0 4px 4px 0">&ldquo;' + lore.quote + '&rdquo;</div>' +
@@ -1712,10 +1706,7 @@ function openHouseLore(houseName) {
     '<button onclick="closeHouseLore()" style="width:100%;margin-top:16px;background:transparent;border:1.5px solid rgba(122,80,6,0.3);border-radius:8px;padding:12px;font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.1em;color:var(--ink-mid);cursor:pointer">&#10005; Close</button>';
   modal.classList.add('open');
 }
-
-function closeHouseLore() {
-  document.getElementById('house-lore-modal').classList.remove('open');
-}
+function closeHouseLore() { document.getElementById('house-lore-modal').classList.remove('open'); }
 
 const HOUSES = {
   Red: '#9a1010', Obsidian: '#1e3858', Violet: '#4a1878', Green: '#1a4818',
@@ -3186,11 +3177,11 @@ function checkAndPostChallengeHowls() {
         if (rw) winner = state.players.find(p=>p.id===rw.player_id);
       }
     } else {
-      // Pack challenges
-    var activePlayers = state.players.filter(function(p){
-      return state.workouts.some(function(w){ return w.player_id===p.id && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); });
-    });
-    var enoughPlayers = activePlayers.length >= 4;
+      // Pack challenges — require min 4 active players (handles late joiners)
+      var activePlayers = state.players.filter(function(p){
+        return state.workouts.some(function(w){ return w.player_id===p.id && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); });
+      });
+      var enoughPlayers = activePlayers.length >= 4;
       var packWon = false;
       if (enoughPlayers && ch.id==='pack_trains') packWon=activePlayers.every(p=>(sm[p.id]||{}).trials>=ch.goal);
       else if (enoughPlayers && ['society_rising','the_rising_tide'].includes(ch.id)) packWon=activePlayers.reduce((s,p)=>s+((sm[p.id]||{}).laurels||0),0)>=ch.goal;
@@ -3227,8 +3218,8 @@ function checkAndPostChallengeHowls() {
 
       // Post howl announcement
       var msg = isPack
-        ? '🏆 CHALLENGE CONQUERED: ' + ch.name + '! The entire pack rises together. +' + ch.reward + 'L each. Per aspera ad astra. ✦'
-        : '🏆 CHALLENGE CONQUERED: ' + ch.name + '! @' + winner.name + ' strikes first and claims victory. +' + ch.reward + 'L. ⚔ Go Howler, Go! 🐺';
+        ? '🏆 PACK VICTORY: ' + ch.name + '! \n\nThe entire pack rises together. +' + ch.reward + 'L each. \n\n⚔ Per aspera ad astra. The pack endures. 🐺✨✨'
+        : '🏆 CHALLENGE CONQUERED: ' + ch.name + '! \n\n@' + winner.name + ' strikes first and claims the laurels. +' + ch.reward + 'L awarded. \n\n⚔ Per aspera ad astra. Go Howler! 🐺✨';
       if (!state.howls.some(h=>h.id==='challenge_'+ch.id)) {
         state.howls.push({id:'challenge_'+ch.id, player_id:'system', player_laurels:9999, message:msg, date:new Date().toISOString().split('T')[0], timestamp:new Date().toISOString(), likes:0});
       }
@@ -3417,78 +3408,21 @@ function importBackup() {
 
 
 const TRASH_TALK = {
-  long_run: [
-    "{miles} miles? Bloodydamn, my grandmother marches further to the market. ☀️",
-    "The March requires at least 6 miles, not {miles}. Even a Ruster knows that. ⚔️",
-    "Call that a long run? Gorydamn pixie effort. Darrow ran the Laurel in his sleep. 😴",
-    "{miles} miles and you think you earned those Laurels? Slag work, Howler. 🐺",
-    "The Obsidians are embarrassed on your behalf. {miles} miles. Bloodydamn.",
-  ],
-  tempo: [
-    "{miles} miles at tempo pace? I've seen Grays move faster. Gorydamn. 😴",
-    "Race pace they said. {miles} miles they ran. The Reaper weeps. ☀️",
-    "Bloodydamn, even a tinsucker could hold that pace longer than {miles} miles. ⚔️",
-    "{miles} miles of tempo? The pack expects more, Ruster. Step it up. 🐺",
-    "The Charge should be fiercer than {miles} miles. Slag effort.",
-  ],
-  easy_run: [
-    "Easy run? More like a bloodydamn stroll. {miles} miles, really? 😴",
-    "{miles} miles at easy pace. Even the Pinks train harder than that. ☀️",
-    "Gorydamn, a Patrol should cover more ground than {miles} miles. 🐺",
-    "The Lowborns mine deeper than you run, Ruster. {miles} miles. Slag. ⚔️",
-    "{miles} easy miles. I suppose even a pixie needs their rest.",
-  ],
-  walk_run: [
-    "Walk/run intervals? Bloodydamn, pick a lane, Howler. 😴",
-    "{miles} miles of walk/run. The Grays march further just running errands. 🐺",
-    "Gorydamn tinsucker can't even commit to a full run. {miles} miles. ☀️",
-    "Walk/run. How very... measured of you. A real Howler runs. ⚔️",
-    "{miles} miles of intervals. The Reaper doesn't walk, pixie.",
-  ],
-  peloton: [
-    "{minutes} minutes on the Steed? My grandmother cycles longer and she's Lowborn. 😴",
-    "Bloodydamn, the Steed deserves a real rider. {minutes} minutes is a warmup. 🐺",
-    "Gorydamn {minutes} minutes. The Iron Golds would be ashamed. ☀️",
-    "{minutes} minutes on the Steed. Even a pixie rides harder than that. ⚔️",
-    "The pack runs while you pedal for {minutes} minutes. Slag effort.",
-  ],
-  strength: [
-    "Strength session? Bloodydamn, the Iron Forge demands more than that. 😴",
-    "The Iron Forge. {minutes} minutes. Gorydamn pixie weights. 🐺",
-    "A true Obsidian never leaves the Forge in {minutes} minutes. Ruster. ☀️",
-    "Strength training. Bold of you to call it that. Bloodydamn slag. ⚔️",
-    "Even a tinsucker lifts more. The pack is watching, Howler.",
-  ],
-  mobility: [
-    "Stretching. Bloodydamn, even the Pinks train harder between shows. 😴",
-    "{minutes} minutes of mobility. Gorydamn, that's barely a warmup. 🐺",
-    "Mind & Body. More mind than body based on {minutes} minutes. ☀️",
-    "A pixie move if I ever saw one. {minutes} minutes of stretching. ⚔️",
-    "The Reaper doesn't stretch. The Reaper just endures. Bloodydamn.",
-  ],
-  cardio: [
-    "{minutes} minutes of cardio? Gorydamn, the Crimson Pulse should hit harder. 😴",
-    "Bloodydamn {minutes} minutes. Even the Grays get more cardio chasing Reds. 🐺",
-    "The Crimson Pulse barely registered with {minutes} minutes. Slag effort. ☀️",
-    "{minutes} minutes? A pixie warm-up. The pack demands more, Ruster. ⚔️",
-    "Gorydamn tinsucker, {minutes} minutes of cardio won't win the Laurel.",
-  ],
-  default: [
-    "Bloodydamn, the pack expects more than that. Step it up, Howler. 😴",
-    "Gorydamn pixie effort. Darrow would be ashamed. ⚔️",
-    "The Reaper weeps. Not from sadness — from laughter. ☀️",
-    "Breaking the chains requires actually moving, Ruster. 🐺",
-    "Even a tinsucker trains harder. Bloodydamn slag.",
-    "The pack is only as strong as its slowest Howler. Guess who that is? 😴",
-  ]
+  long_run: ["{miles} miles? Bloodydamn, my grandmother marches further. ☀️","Gorydamn pixie effort. {miles} miles. Darrow ran the Laurel in his sleep. 😴","Call that a long run? Slag work, Howler. {miles} bloodydamn miles. 🐺","The Obsidians are embarrassed on your behalf. {miles} miles. Bloodydamn. ⚔️","{miles} miles and you think you earned those Laurels? Ruster. ⛓️"],
+  tempo: ["{miles} miles at tempo? I've seen Grays move faster. Gorydamn. 😴","Race pace they said. {miles} miles. The Reaper weeps. ☀️","Bloodydamn, even a tinsucker holds pace longer than {miles} miles. ⚔️","{miles} miles of tempo? The pack expects more, Ruster. 🐺","The Charge should be fiercer than {miles} miles. Slag. ⛓️"],
+  easy_run: ["Easy run? Bloodydamn stroll more like. {miles} miles. 😴","{miles} miles easy. Even the Pinks train harder. ☀️","Gorydamn Patrol should cover more than {miles} miles. 🐺","The Lowborns mine deeper than you run. {miles} slag miles. ⚔️","{miles} easy miles. I suppose even a pixie needs rest. ⛓️"],
+  walk_run: ["Walk/run? Bloodydamn, pick a lane, Howler. 😴","{miles} miles of walk/run. Grays march further just running errands. 🐺","Gorydamn tinsucker can't commit to a full run. {miles} miles. ☀️","Walk/run. How very measured. A real Howler runs. ⚔️","{miles} miles of intervals. The Reaper doesn't walk, pixie. ⛓️"],
+  peloton: ["{minutes} minutes on the Steed? My grandmother cycles longer. 😴","Bloodydamn, the Steed deserves a real rider. {minutes} minutes is a warmup. 🐺","Gorydamn {minutes} minutes. The Iron Golds would be ashamed. ☀️","{minutes} minutes on the Steed. Even a pixie rides harder. ⚔️","The pack runs while you pedal for {minutes} minutes. Slag. ⛓️"],
+  strength: ["Strength session? Bloodydamn, the Iron Forge demands more. 😴","The Iron Forge. {minutes} minutes. Gorydamn pixie weights. 🐺","A true Obsidian never leaves the Forge in {minutes} minutes. Ruster. ☀️","Strength training. Bold of you to call it that. Bloodydamn slag. ⚔️","Even a tinsucker lifts more. The pack is watching, Howler. ⛓️"],
+  mobility: ["Stretching. Bloodydamn, even Pinks train harder between shows. 😴","{minutes} minutes of mobility. Gorydamn, barely a warmup. 🐺","Mind & Body. More mind than body — {minutes} minutes. ☀️","A pixie move if I ever saw one. {minutes} minutes of stretching. ⚔️","The Reaper doesn't stretch. The Reaper endures. Bloodydamn. ⛓️"],
+  cardio: ["{minutes} minutes of cardio? Gorydamn, the Crimson Pulse should hit harder. 😴","Bloodydamn {minutes} minutes. Even Grays get more cardio chasing Reds. 🐺","The Crimson Pulse barely registered — {minutes} minutes. Slag. ☀️","{minutes} minutes? A pixie warmup. The pack demands more, Ruster. ⚔️","Gorydamn tinsucker, {minutes} minutes won't win the Laurel. ⛓️"],
+  default: ["Bloodydamn, the pack expects more. Step it up, Howler. 😴","Gorydamn pixie effort. Darrow would be ashamed. ⚔️","The Reaper weeps. Not from sadness — from laughter. ☀️","Breaking the chains requires actually moving, Ruster. 🐺","Even a tinsucker trains harder. Bloodydamn slag. ⛓️","The pack is only as strong as its slowest Howler. Guess who? 😴"]
 };
-
 function getTrashTalk(workout, miles, minutes) {
   var pool = TRASH_TALK[workout] || TRASH_TALK.default;
   var pick = pool[Math.floor(Math.random() * pool.length)];
   return pick.replace(/{miles}/g, miles||'?').replace(/{minutes}/g, minutes||'?');
 }
-
 const TAUNTS = TRASH_TALK.default;
 
 async function openTrashTalk(workoutId, playerName) {
@@ -3504,14 +3438,11 @@ async function openTrashTalk(workoutId, playerName) {
   const playerLaurels = player ? (getStats(currentHowlerId).laurels || 0) : 0;
   const howl = {
     id: 'h_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
-    player_id: currentHowlerId,
-    player_laurels: playerLaurels,
+    player_id: currentHowlerId, player_laurels: playerLaurels,
     message: '⚔ @' + playerName + ' — ' + taunt + ' #trashtalk',
     date: new Date().toISOString().split('T')[0],
-    timestamp: new Date().toISOString(),
-    likes: [],
-    reply_to_id: workoutId,
-    reply_to_name: playerName,
+    timestamp: new Date().toISOString(), likes: [],
+    reply_to_id: workoutId, reply_to_name: playerName,
     activity_ref: {id:workoutId,player:playerName,workout:wname,detail:detail,date:w.date}
   };
   state.howls.push(howl);
@@ -3950,7 +3881,7 @@ function renderPlayers() {
       +   '<div class="card-rank-left">'
       +     (hasNewActivity ? '<span class="new-activity-dot" title="New activity"></span>' : '')
       +     '<div class="card-house-dot"></div>'
-      + '<div class="card-house-label" onclick="event.stopPropagation();openHouseLore(\'' + escHtml(p.house) + '\')" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;-webkit-tap-highlight-color:transparent">' + escHtml(p.house) + '</div>'
+      +     '<div class="card-house-label">' + escHtml(p.house) + '</div>'
       +   '</div>'
       +   '<div class="card-rank-right">'
       +     (hasUnreadHowl ? '<span style="font-size:0.85rem">\ud83d\udc3a</span>' : '')
@@ -4210,7 +4141,7 @@ function renderChronicle() {
         <button onclick="event.stopPropagation();openEditWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">&#9998; Edit</button>
         <button onclick="event.stopPropagation();removeWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.4);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer">&#10005; Remove</button>
       </div>
-      <button onclick="this.closest('.ch-entry-wrap').classList.remove('flipped')" style="background:transparent;border:none;font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light);cursor:pointer;margin-top:8px;opacity:0.7">&#10005; close</button>
+      <button onclick="event.stopPropagation();this.closest('.ch-entry-wrap').classList.remove('flipped')" style="background:transparent;border:none;font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light);cursor:pointer;margin-top:8px;opacity:0.7">&#10005; close</button>
     </div>
     </div>`;
   }).join('');
@@ -4326,7 +4257,6 @@ function renderChallenges() {
     }
     const pct = progressMax > 0 ? Math.min(100, (progress / progressMax) * 100) : 0;
     progressLabel = `${progress} / ${progressMax}`;
-    // Fallback: if challenge is recorded as won but live check missed it
     if (won && !winner) winner = won.name || null;
     const isComplete = won || winner;
 
@@ -4359,7 +4289,7 @@ function renderChallenges() {
           else if (ch.id==='race_finisher') val=state.workouts.filter(w=>w.player_id===p.id&&w.workout==='race').length;
           return {name:p.name.split(' ')[0], val};
         }).sort((a,b)=>b.val-a.val);
-        backHTML = `<div style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:8px;border-bottom:1px solid var(--amber);padding-bottom:4px">⚔ RACE TO GLORY</div>` +
+        backHTML = `<div style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:8px;border-bottom:1px solid var(--amber);padding-bottom:4px">${ch.name.toUpperCase()}</div>` +
           standings.map((s,i)=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-family:'Cinzel',serif;font-size:0.7rem;${i===0?'color:var(--amber);font-weight:700':'color:var(--ink-mid)'}"><span>${i===0?'🏆':i+1+'.'} ${s.name}</span><span>${typeof s.val==='number'&&s.val%1!==0?s.val.toFixed(1):s.val} / ${ch.goal}</span></div>`).join('');
       }
     } else {
@@ -4565,7 +4495,7 @@ function renderHowlFeed() {
         + '<div style="font-family:Crimson Pro,serif;font-size:0.85rem;color:var(--ink-mid)">'
         + (ref.detail ? escHtml(ref.detail) + ' &middot; ' : '') + formatDate(ref.date)
         + '</div></div>';
-    } else if (h.reply_to_name) {
+} else if (h.reply_to_name) {
       // Look up original howl message by reply_to_id
       var origHowl = h.reply_to_id ? (state.howls||[]).find(function(x){ return x.id === h.reply_to_id; }) : null;
       var origMsg = origHowl ? origHowl.message : null;
@@ -4826,10 +4756,24 @@ function reactionBarHTML(obj, idVal, fnPrefix) {
       bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">😴 Trash talk</button>';
     }
   }
-  // Reply button on howl entries
+  // Hype + laugh (for trashtalk) + reply on howl entries
   if (fnPrefix === 'toggleHowlReaction') {
-    bar += '<button data-id="' + idVal + '" onclick="replyToHowl(this.dataset.id)" ';
-    bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">🐺 Reply</button>';
+    var howlObj = (state.howls||[]).find(function(h){ return h.id === idVal; });
+    var isTrashtalk = howlObj && howlObj.message && howlObj.message.includes('#trashtalk');
+    var howlHypes = Array.isArray(reactions['\ud83d\udd25']) ? reactions['\ud83d\udd25'] : [];
+    var howlHyped = currentHowlerId && howlHypes.indexOf(currentHowlerId) >= 0;
+    bar += '<button data-id="' + idVal + '" data-emoji="\ud83d\udd25" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
+    bar += 'style="background:' + (howlHyped?'rgba(122,80,6,0.15)':'transparent') + ';border:1.5px solid ' + (howlHyped?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
+    bar += '&#128293; Hype' + (howlHypes.length>0?' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">'+howlHypes.length+'</span>':'') + '</button>';
+    if (isTrashtalk) {
+      var laughs = Array.isArray(reactions['\ud83e\udd23']) ? reactions['\ud83e\udd23'] : [];
+      var iLaughed = currentHowlerId && laughs.indexOf(currentHowlerId) >= 0;
+      bar += '<button data-id="' + idVal + '" data-emoji="\ud83e\udd23" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
+      bar += 'style="background:' + (iLaughed?'rgba(122,80,6,0.1)':'transparent') + ';border:1.5px solid ' + (iLaughed?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
+      bar += '&#129315;' + (laughs.length>0?' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">'+laughs.length+'</span>':'') + '</button>';
+    }
+    bar += '<button data-id="' + idVal + '" onclick="event.stopPropagation();replyToHowl(this.dataset.id)" ';
+    bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">&#128062; Reply</button>';
   }
   bar += '</div>';
   return bar;
@@ -5361,7 +5305,7 @@ function switchTab(id) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach((t, i) => {
-    const ids = ['leaderboard','log','chronicle','dispatch','trials','conquests','codex'];
+    const ids = ['leaderboard','dispatch','chronicle','log','trials','conquests','codex'];
     if (ids[i] === id) t.classList.add('active');
   });
   if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
