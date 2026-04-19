@@ -3770,6 +3770,23 @@ function markAllPlayersSeen() {
   state.players.forEach(function(p) { localStorage.setItem('howlers_seen_' + p.id + '_' + suffix, now); });
 }
 
+
+function buildHowlReactionSummary(h) {
+  var reactions = h.reactions || {};
+  var parts = [];
+  ['🔥','🤣'].forEach(function(emoji) {
+    var arr = Array.isArray(reactions[emoji]) ? reactions[emoji] : [];
+    if (arr.length === 0) return;
+    var names = arr.map(function(pid) {
+      var pl = state.players.find(function(p) { return p.id === pid; });
+      return pl ? pl.name.split(' ')[0] : '';
+    }).filter(Boolean);
+    if (names.length) parts.push('<span style="margin-right:8px">' + emoji + ' ' + names.join(', ') + '</span>');
+  });
+  if (!parts.length) return '';
+  return '<div style="font-family:Crimson Pro,serif;font-size:0.75rem;color:var(--ink-light);padding:4px 0 2px;font-style:italic">' + parts.join('') + '</div>';
+}
+
 function renderAll() {
   buildStatsCache();
   renderPackStats();
@@ -3884,7 +3901,7 @@ function renderPlayers() {
       +   '<div class="card-rank-left">'
       +     (hasNewActivity ? '<span class="new-activity-dot" title="New activity"></span>' : '')
       +     '<div class="card-house-dot"></div>'
-      +     '<div class="card-house-label">' + escHtml(p.house) + '</div>'
+      + '<div class="card-house-label" onclick="event.stopPropagation();openHouseLore(\'' + escHtml(p.house) + '\')" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;-webkit-tap-highlight-color:transparent">' + escHtml(p.house) + '</div>'
       +   '</div>'
       +   '<div class="card-rank-right">'
       +     (hasUnreadHowl ? '<span style="font-size:0.85rem">\ud83d\udc3a</span>' : '')
@@ -4531,6 +4548,7 @@ function renderHowlFeed() {
       '<div style="flex:1"></div>' +
       '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
       '</div>' +
+      buildHowlReactionSummary(h) +
       '</div>';
   }).join('');
 }
@@ -4720,11 +4738,15 @@ async function toggleReaction(workoutId, emoji) {
   renderChronicle();
 }
 async function toggleHowlReaction(howlId, emoji) {
+  if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
   const h = (state.howls || []).find(function(x) { return x.id === howlId; });
   if (!h) return;
   if (!h.reactions) h.reactions = {};
-  if (!h.reactions[emoji]) h.reactions[emoji] = 0;
-  h.reactions[emoji]++;
+  if (typeof h.reactions[emoji] === 'number') h.reactions[emoji] = [];
+  if (!Array.isArray(h.reactions[emoji])) h.reactions[emoji] = [];
+  var arr = h.reactions[emoji];
+  var idx = arr.indexOf(currentHowlerId);
+  if (idx >= 0) { arr.splice(idx, 1); } else { arr.push(currentHowlerId); }
   await saveState();
   renderHowlFeed();
 }
@@ -4765,13 +4787,13 @@ function reactionBarHTML(obj, idVal, fnPrefix) {
   if (fnPrefix === 'toggleHowlReaction') {
     var howlObj = (state.howls||[]).find(function(h){ return h.id === idVal; });
     var isTrashtalk = howlObj && howlObj.message && howlObj.message.includes('#trashtalk');
-    var howlHypes = Array.isArray(reactions['🔥']) ? reactions['\ud83d\udd25'] : [];
+    var howlHypes = Array.isArray(reactions['🔥']) ? reactions['🔥'] : [];
     var howlHyped = currentHowlerId && howlHypes.indexOf(currentHowlerId) >= 0;
     bar += '<button data-id="' + idVal + '" data-emoji="🔥" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
     bar += 'style="background:' + (howlHyped?'rgba(122,80,6,0.15)':'transparent') + ';border:1.5px solid ' + (howlHyped?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
     bar += '&#128293; Hype' + (howlHypes.length>0?' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">'+howlHypes.length+'</span>':'') + '</button>';
     if (isTrashtalk) {
-      var laughs = Array.isArray(reactions['🤣']) ? reactions['\ud83e\udd23'] : [];
+      var laughs = Array.isArray(reactions['🤣']) ? reactions['🤣'] : [];
       var iLaughed = currentHowlerId && laughs.indexOf(currentHowlerId) >= 0;
       bar += '<button data-id="' + idVal + '" data-emoji="🤣" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
       bar += 'style="background:' + (iLaughed?'rgba(122,80,6,0.1)':'transparent') + ';border:1.5px solid ' + (iLaughed?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
