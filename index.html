@@ -4586,7 +4586,7 @@ function renderHowlFeed() {
       '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
       '</div>' +
       replyTo +
-      '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message).replace(/#trashtalk/g,'<span style="font-family:Cinzel,serif;font-size:0.62rem;font-weight:700;color:#9a1010;letter-spacing:0.06em;font-style:normal;opacity:0.85">#trashtalk</span>') + '&rdquo;</div>' +
+      '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message).replace(/ #trashtalk/g,'') + '&rdquo;' + (h.message.includes('#trashtalk') ? ' <span style="font-family:Cinzel,serif;font-size:0.62rem;font-weight:700;color:#9a1010;letter-spacing:0.06em;font-style:normal;opacity:0.85">#trashtalk</span>' : '') + '</div>' +
       '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">' +
       reactionBarHTML(h, h.id, 'toggleHowlReaction') +
       '<button onclick="copyHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">⎘ Copy</button>' +
