@@ -616,22 +616,25 @@
 
   /* CHRONICLE */
   .chronicle-feed { display: flex; flex-direction: column; gap: 14px; }
-  .ch-entry-wrap { margin-bottom: 12px; }
-  .ch-entry-front { position: relative; cursor: pointer; }
+  .ch-entry-wrap { perspective: 800px; cursor: pointer; margin-bottom: 12px; }
+  .ch-entry-inner { position: relative; width: 100%; transition: transform 0.45s; transform-style: preserve-3d; min-height: 120px; }
+  .ch-entry-wrap.flipped .ch-entry-inner { transform: rotateY(180deg); }
+  .ch-entry-front { position: relative; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
   .ch-entry-back {
-    display: none;
+    position: absolute; top: 0; left: 0; width: 100%; min-height: 120px;
+    transform: rotateY(180deg);
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
     background: var(--parchment-dark);
     border: 1.5px solid var(--border-strong);
     border-left: 4px solid var(--house-color, var(--amber));
     border-radius: var(--radius);
     padding: 14px 16px;
+    display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 10px;
-    margin-top: 4px;
-    animation: slideDown 0.25s ease;
   }
-  .ch-entry-wrap.flipped .ch-entry-back { display: flex; }
   @keyframes slideDown {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -4115,7 +4118,7 @@ function renderChronicle() {
     } else {
       detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
     }
-    return `<div class="ch-entry-wrap" style="--house-color:${houseColor}"><div class="ch-entry-front chronicle-entry" onclick="this.closest('.ch-entry-wrap').classList.toggle('flipped')" style="--house-color:${houseColor}">
+    return `<div class="ch-entry-wrap" onclick="this.classList.toggle('flipped')" style="--house-color:${houseColor}"><div class="ch-entry-inner"><div class="ch-entry-front chronicle-entry" style="--house-color:${houseColor}">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:2px">
         <span class="chronicle-player">${escHtml(player.name)}</span>
         <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">+${w.laurels_base}L</span>
@@ -4143,7 +4146,7 @@ function renderChronicle() {
       </div>
       <button onclick="event.stopPropagation();this.closest('.ch-entry-wrap').classList.remove('flipped')" style="background:transparent;border:none;font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light);cursor:pointer;margin-top:8px;opacity:0.7">&#10005; close</button>
     </div>
-    </div>`;
+    </div></div>`;
   }).join('');
 }
 
@@ -4507,7 +4510,7 @@ function renderHowlFeed() {
         '<span style="background:' + replyHc + ';color:white;padding:1px 7px;border-radius:3px;font-size:0.48rem;font-weight:700;letter-spacing:0.08em">' + escHtml(h.reply_to_name) + '</span>' +
         '</div>' +
         (origMsg
-          ? '<div style="font-family:Crimson Pro,serif;font-size:0.88rem;color:var(--ink-mid);font-style:italic">\"' + escHtml(origMsg.length > 120 ? origMsg.slice(0,120) + '…' : origMsg) + '\"</div>'
+          ? '<div style="font-family:Crimson Pro,serif;font-size:0.88rem;color:var(--ink-mid);font-style:italic">\"' + escHtml((origMsg.length > 120 ? origMsg.slice(0,120) + '…' : origMsg).replace(/ #trashtalk/g,'')) + '\"</div>'
           : '<div style="font-family:Crimson Pro,serif;font-size:0.82rem;color:var(--ink-light);font-style:italic">(message no longer available)</div>'
         ) +
         '</div>';
@@ -4731,19 +4734,21 @@ async function toggleHowlReaction(howlId, emoji) {
 function reactionBarHTML(obj, idVal, fnPrefix) {
   var reactions = (obj && obj.reactions) ? obj.reactions : {};
   var bar = '<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">';
-  [['🔥','Hype']].forEach(function(r) {
-    var emoji = r[0], label = r[1];
-    var raw = reactions[emoji];
-    var hypers = Array.isArray(raw) ? raw : [];
-    var count = hypers.length;
-    var iHyped = currentHowlerId && hypers.indexOf(currentHowlerId) >= 0;
-    var safeId = idVal.replace(/"/g,'');
-    bar += '<button data-id="' + safeId + '" data-emoji="' + emoji + '" data-fn="' + fnPrefix + '" onclick="handleReaction(this,event)" ';
-    bar += 'style="background:' + (iHyped ? 'rgba(122,80,6,0.15)' : 'transparent') + ';border:1.5px solid ' + (iHyped ? 'var(--amber)' : 'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
-    bar += emoji + ' ' + label;
-    if (count > 0) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + count + '</span>';
-    bar += '</button>';
-  });
+  if (fnPrefix !== 'toggleHowlReaction') {
+    [['🔥','Hype']].forEach(function(r) {
+      var emoji = r[0], label = r[1];
+      var raw = reactions[emoji];
+      var hypers = Array.isArray(raw) ? raw : [];
+      var count = hypers.length;
+      var iHyped = currentHowlerId && hypers.indexOf(currentHowlerId) >= 0;
+      var safeId = idVal.replace(/"/g,'');
+      bar += '<button data-id="' + safeId + '" data-emoji="' + emoji + '" data-fn="' + fnPrefix + '" onclick="handleReaction(this,event)" ';
+      bar += 'style="background:' + (iHyped ? 'rgba(122,80,6,0.15)' : 'transparent') + ';border:1.5px solid ' + (iHyped ? 'var(--amber)' : 'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
+      bar += emoji + ' ' + label;
+      if (count > 0) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + count + '</span>';
+      bar += '</button>';
+    });
+  }
   // Reply + trash talk on workout entries
   if (fnPrefix === 'toggleReaction') {
     var workoutPlayer = '';
@@ -4760,15 +4765,15 @@ function reactionBarHTML(obj, idVal, fnPrefix) {
   if (fnPrefix === 'toggleHowlReaction') {
     var howlObj = (state.howls||[]).find(function(h){ return h.id === idVal; });
     var isTrashtalk = howlObj && howlObj.message && howlObj.message.includes('#trashtalk');
-    var howlHypes = Array.isArray(reactions['\ud83d\udd25']) ? reactions['\ud83d\udd25'] : [];
+    var howlHypes = Array.isArray(reactions['🔥']) ? reactions['\ud83d\udd25'] : [];
     var howlHyped = currentHowlerId && howlHypes.indexOf(currentHowlerId) >= 0;
-    bar += '<button data-id="' + idVal + '" data-emoji="\ud83d\udd25" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
+    bar += '<button data-id="' + idVal + '" data-emoji="🔥" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
     bar += 'style="background:' + (howlHyped?'rgba(122,80,6,0.15)':'transparent') + ';border:1.5px solid ' + (howlHyped?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
     bar += '&#128293; Hype' + (howlHypes.length>0?' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">'+howlHypes.length+'</span>':'') + '</button>';
     if (isTrashtalk) {
-      var laughs = Array.isArray(reactions['\ud83e\udd23']) ? reactions['\ud83e\udd23'] : [];
+      var laughs = Array.isArray(reactions['🤣']) ? reactions['\ud83e\udd23'] : [];
       var iLaughed = currentHowlerId && laughs.indexOf(currentHowlerId) >= 0;
-      bar += '<button data-id="' + idVal + '" data-emoji="\ud83e\udd23" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
+      bar += '<button data-id="' + idVal + '" data-emoji="🤣" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
       bar += 'style="background:' + (iLaughed?'rgba(122,80,6,0.1)':'transparent') + ';border:1.5px solid ' + (iLaughed?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
       bar += '&#129315;' + (laughs.length>0?' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">'+laughs.length+'</span>':'') + '</button>';
     }
