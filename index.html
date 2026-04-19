@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root {
+    --header-height: 110px;
     --parchment: #f5efe4;
     --parchment-dark: #ede3d0;
     --parchment-mid: #e8dcc8;
@@ -167,6 +168,9 @@
     border-bottom: 2px solid var(--border-strong);
     overflow-x: auto;
     scrollbar-width: none;
+    position: sticky;
+    top: var(--header-height, 110px);
+    z-index: 90;
   }
   .nav-strip::-webkit-scrollbar { display: none; }
   .nav-inner {
