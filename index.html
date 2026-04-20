@@ -2093,10 +2093,7 @@ async function loadState() {
     localStorage.setItem(cvKey, 'v6');
   }
   retroactiveChallengePayout();
-  if (!window._challengesChecked) {
-    window._challengesChecked = true;
-    checkAndPostChallengeHowls();
-  }
+  checkAndPostChallengeHowls();
   checkAndPostWeeklyRecap();
   } catch(e) {
     setSyncStatus('error');
@@ -3134,6 +3131,8 @@ function checkAndPostChallengeHowls() {
 
   CHALLENGES_DEF.forEach(function(ch) {
     if (announced[ch.id]) return;
+    // Also skip if already in challenges_won (e.g. from force restore)
+    if (state.challenges_won[ch.id]) { announced[ch.id] = true; return; }
     var winner = null;
 
     if (ch.type === 'duel') {
@@ -3232,7 +3231,12 @@ function checkAndPostChallengeHowls() {
   });
 
   localStorage.setItem(announcedKey, JSON.stringify(announced));
-  // Don't auto-save — prevents race condition
+  if (changed) {
+    // Save once after all challenges processed
+    saveState().then(function() {
+      renderAll();
+    });
+  }
 }
 
 function checkAndPostWeeklyRecap() {
