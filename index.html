@@ -2158,6 +2158,23 @@ async function saveState() {
         (remoteState.howls||[]).forEach(h => {
           if (!localHowlIds.has(h.id)) state.howls.push(h);
         });
+
+        // Merge badges — union of local and remote (never lose a badge)
+        if (remoteState.badges_awarded) {
+          Object.keys(remoteState.badges_awarded).forEach(function(pid) {
+            if (!state.badges_awarded[pid]) state.badges_awarded[pid] = [];
+            (remoteState.badges_awarded[pid] || []).forEach(function(b) {
+              if (!state.badges_awarded[pid].includes(b)) state.badges_awarded[pid].push(b);
+            });
+          });
+        }
+
+        // Merge challenges_won — union of local and remote
+        if (remoteState.challenges_won) {
+          Object.keys(remoteState.challenges_won).forEach(function(cid) {
+            if (!state.challenges_won[cid]) state.challenges_won[cid] = remoteState.challenges_won[cid];
+          });
+        }
       }
       // ── END SAFE MERGE ────────────────────────────────────────────────────
 
