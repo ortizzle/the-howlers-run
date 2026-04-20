@@ -1297,6 +1297,7 @@
     <div class="tabs-header-flex">
       <div class="section-title" style="margin-bottom:0">The Annals — Recent Trials</div>
     </div>
+    <div id="annals-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 16px"></div>
     <div class="chronicle-feed" id="chronicle-feed">
       <div class="empty-state"><span class="empty-icon">📜</span>No trials logged yet. The pack awaits its first march.</div>
     </div>
@@ -4304,19 +4305,49 @@ function renderLogDropdown() {
   autoFillHowlerDropdowns();
 }
 
+var _annalsFilter = null; // null = all, player id = filtered
+
+function renderAnnalsFilter() {
+  var el = document.getElementById('annals-filter');
+  if (!el) return;
+  var pills = '<button onclick="setAnnalsFilter(null)" style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;padding:5px 12px;border-radius:20px;border:1.5px solid ' + (_annalsFilter===null?'var(--amber)':'var(--border)') + ';background:' + (_annalsFilter===null?'var(--amber)':'transparent') + ';color:' + (_annalsFilter===null?'var(--parchment)':'var(--ink-light)') + ';cursor:pointer;transition:all 0.15s">All</button>';
+  state.players.forEach(function(p) {
+    var hc = HOUSES[p.house] || 'var(--amber)';
+    var active = _annalsFilter === p.id;
+    pills += '<button onclick="setAnnalsFilter(\'' + p.id + '\')" style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;padding:5px 12px;border-radius:20px;border:1.5px solid ' + (active ? hc : 'var(--border)') + ';background:' + (active ? hc : 'transparent') + ';color:' + (active ? '#fff' : 'var(--ink-light)') + ';cursor:pointer;transition:all 0.15s">' + escHtml(p.name.split(' ')[0]) + '</button>';
+  });
+  el.innerHTML = pills;
+}
+
+function setAnnalsFilter(pid) {
+  _annalsFilter = pid;
+  renderChronicle();
+}
+
 function renderChronicle() {
+  renderAnnalsFilter();
   const feed = document.getElementById('chronicle-feed');
-  if (state.workouts.length === 0) {
+  const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss'];
+  var allWorkouts = state.workouts.filter(w => !SYSTEM_WK.includes(w.workout));
+  if (allWorkouts.length === 0) {
     feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📜</span>No trials logged yet. The pack awaits its first march.</div>';
     return;
   }
-  const sorted = [...state.workouts].filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).sort((a,b) => {
+  // Apply player filter
+  var filtered = _annalsFilter ? allWorkouts.filter(w => w.player_id === _annalsFilter) : allWorkouts;
+  if (filtered.length === 0) {
+    feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📜</span>No trials logged for this Howler yet.</div>';
+    return;
+  }
+  const sorted = filtered.slice().sort((a,b) => {
     if (b.date !== a.date) return b.date > a.date ? 1 : -1;
     const ta = a.timestamp ? new Date(a.timestamp) : 0;
     const tb = b.timestamp ? new Date(b.timestamp) : 0;
     return tb - ta;
   });
-  feed.innerHTML = sorted.slice(0, 50).map(w => {
+  // Show all when filtered to one player, cap at 50 for pack view
+  const limit = _annalsFilter ? sorted.length : 50;
+  feed.innerHTML = sorted.slice(0, limit).map(w => {
     const player = state.players.find(p => p.id === w.player_id);
     if (!player) return '';
     const playerStats = getStats(player.id);
@@ -5732,7 +5763,7 @@ function switchTab(id) {
     if (ids[i] === id) t.classList.add('active');
   });
   if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
-  if (id === 'chronicle') { markAnnalsSeen(); }
+  if (id === 'chronicle') { if (_annalsFilter === null && currentHowlerId) _annalsFilter = currentHowlerId; renderChronicle(); markAnnalsSeen(); }
   if (id === 'leaderboard') { renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard(); }
   if (id === 'trials') { renderChallenges(); }
   if (id === 'conquests') { renderTimeline(); }
