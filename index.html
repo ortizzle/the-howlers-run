@@ -972,6 +972,73 @@
   .badge-card-name { font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
   .badge-card-cond { font-size: 0.8rem; color: var(--ink-light); font-style: italic; }
 
+  /* PACK PULSE — GONE DARK */
+  .gone-dark-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.44rem;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: #8a6030;
+    background: rgba(138,96,48,0.10);
+    border: 1px solid rgba(138,96,48,0.30);
+    border-radius: 3px;
+    padding: 1px 6px;
+    animation: gone-dark-pulse 3s infinite;
+  }
+  @keyframes gone-dark-pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .player-card.gone-dark .card-summary { opacity: 0.82; }
+  .player-card.gone-dark { border-left-color: #b8986040 !important; }
+
+  /* SOVEREIGN BUTTON */
+  .sovereign-btn {
+    background: linear-gradient(135deg, #1a1410, #2a1a10);
+    border: 1.5px solid rgba(154,16,16,0.6);
+    color: #f0d080;
+    border-radius: 4px;
+    padding: 5px 11px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .sovereign-btn:hover {
+    background: linear-gradient(135deg, #2a1010, #3a1a10);
+    border-color: #9a1010;
+    box-shadow: 0 0 8px rgba(154,16,16,0.4);
+  }
+  .sovereign-btn:disabled { opacity: 0.5; cursor: wait; }
+
+  /* AI TRASH TALK PANEL */
+  .sovereign-panel {
+    background: var(--parchment-dark);
+    border: 1.5px solid rgba(154,16,16,0.3);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .sovereign-output {
+    background: #1a1410;
+    color: #f0d080;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.95rem;
+    font-style: italic;
+    line-height: 1.7;
+    min-height: 80px;
+    border: 1px solid rgba(154,16,16,0.4);
+    margin: 10px 0;
+    white-space: pre-wrap;
+  }
+
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-track { background: var(--parchment-dark); }
@@ -1266,6 +1333,24 @@
         </div>
       </div>
       <button class="btn-primary" onclick="postHowl()" id="howl-submit-btn">🐺 SEND THE HOWL</button>
+    </div>
+
+    <!-- SUMMON THE SOVEREIGN -->
+    <div class="sovereign-panel" style="margin-bottom:28px">
+      <div class="section-title" style="font-size:0.95rem;margin-bottom:10px;border-bottom-color:rgba(154,16,16,0.3)">⚔ Summon the Sovereign</div>
+      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.88rem;color:var(--ink-light);margin-bottom:12px">AI-forged Red Rising trash talk, seeded with real pack stats. Review, then send as your own howl with #trashtalk.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+        <div style="flex:1;min-width:140px">
+          <label class="form-label">Target Howler</label>
+          <select class="form-select" id="sovereign-target"></select>
+        </div>
+        <button class="sovereign-btn" onclick="summonSovereign()" id="sovereign-btn" style="padding:10px 18px;font-size:0.65rem;margin-bottom:1px">⚔ SUMMON THE SOVEREIGN</button>
+      </div>
+      <div class="sovereign-output" id="sovereign-output" style="display:none"></div>
+      <div id="sovereign-actions" style="display:none;gap:8px;margin-top:6px">
+        <button class="btn-primary" onclick="sendSovereignHowl()" style="flex:1;max-width:none;font-size:0.65rem;padding:9px">🐺 SEND AS HOWL</button>
+        <button onclick="summonSovereign()" style="background:transparent;border:1.5px solid var(--border-strong);border-radius:3px;padding:9px 14px;font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">↻ Reforge</button>
+      </div>
     </div>
 
     <div class="section-title" style="font-size:1rem">Recent Howls</div>
@@ -2002,11 +2087,12 @@ function setCurrentHowler(pid) {
 
 
 function autoFillHowlerDropdowns() {
-  // Auto-select current howler in all dropdowns
+  // Auto-select current howler in howl composer dropdown
   ['log-player', 'howl-player'].forEach(function(id) {
     const sel = document.getElementById(id);
     if (sel && currentHowlerId) sel.value = currentHowlerId;
   });
+  // Leave sovereign-target blank — it's a deliberate targeting choice
 }
 
 function updateCurrentHowlerSelect() {
@@ -3945,11 +4031,27 @@ function renderPlayers() {
       return w.player_id === p.id && (w.timestamp||w.date) > lastSeen;
     });
 
+    // ── PACK PULSE: Gone Dark detection ──
+    var SYSTEM_WK_TYPES = ['milestone_bonus','duel_win','duel_loss'];
+    var realWorkouts = state.workouts.filter(function(w) {
+      return w.player_id === p.id && !SYSTEM_WK_TYPES.includes(w.workout);
+    });
+    var goneDarkDays = 0;
+    var isGoneDark = false;
+    if (realWorkouts.length > 0) {
+      var lastWk = realWorkouts.slice().sort(function(a,b) {
+        return new Date(b.timestamp||b.date+'T12:00:00') - new Date(a.timestamp||a.date+'T12:00:00');
+      })[0];
+      var lastDate = new Date((lastWk.timestamp || lastWk.date+'T12:00:00'));
+      goneDarkDays = Math.floor((new Date() - lastDate) / (1000*60*60*24));
+      isGoneDark = goneDarkDays >= 5;
+    }
+
     var badges = buildBadges(s);
     var books  = buildBooks(p);
     var extras = buildExtras(s);
 
-    var cardClass = 'player-card' + (isPrimus ? ' primus' : '') + (isPeerless ? ' peerless-gold' : '');
+    var cardClass = 'player-card' + (isPrimus ? ' primus' : '') + (isPeerless ? ' peerless-gold' : '') + (isGoneDark ? ' gone-dark' : '');
 
     html += '<div class="pcard-wrap">'
       + '<div class="' + cardClass + '" style="--house-color:' + houseColor + '">'
@@ -3963,6 +4065,7 @@ function renderPlayers() {
       +   '</div>'
       +   '<div class="card-rank-right">'
       +     (hasUnreadHowl ? '<span style="font-size:0.85rem">\ud83d\udc3a</span>' : '')
+      +     (isGoneDark ? '<span class="gone-dark-badge">🌑 ' + goneDarkDays + 'd DARK</span>' : '')
       +     '<div class="card-rank-pill">' + escHtml(s.rank.name) + '</div>'
       +     (isPrimus ? '<div class="card-arch-badge">\u265b ARCHPRIMUS</div>' : '')
       +   '</div>'
@@ -4001,6 +4104,7 @@ function renderPlayers() {
       +     books
       +     extras
       +     '<div style="display:flex;gap:6px;margin-top:8px">'
+      +       (isGoneDark ? '<button onclick="event.stopPropagation();summonGoneDark(\'' + p.id + '\')" class="sovereign-btn" style="flex:1;font-size:0.58rem">🌑 Nudge ' + p.name.split(' ')[0] + '</button>' : '')
       +       '<button onclick="event.stopPropagation();openEditModal(\'' + p.id + '\')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:6px 8px;font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">\u270e Edit</button>'
       +       '<button onclick="event.stopPropagation();removePlayer(\'' + p.id + '\',\'' + p.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:6px 8px;font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer">\u2715 Remove</button>'
       +     '</div>'
@@ -4505,7 +4609,7 @@ function renderTimeline() {
   tl.innerHTML = MILESTONES_DEF.map(m => {
     const done = checkMilestone(m.id);
     return `<div class="timeline-item ${done?'done':''}">
-      <div class="timeline-dot">${done?'✦':'${m.num}'}</div>
+      <div class="timeline-dot">${done ? '✦' : m.num}</div>
       <div class="timeline-card">
         <div class="timeline-num">Milestone ${m.num}</div>
         <div class="timeline-title">${m.title}</div>
@@ -4513,12 +4617,7 @@ function renderTimeline() {
         ${done ? '<div class="timeline-conquered">✦ CONQUERED</div>' : ''}
       </div>
     </div>`;
-  }).join('').replace(/\$\{m\.num\}/g, '');
-
-  // Fix dot numbers for non-done items
-  tl.querySelectorAll('.timeline-item:not(.done) .timeline-dot').forEach((dot, i) => {
-    dot.textContent = MILESTONES_DEF[i] ? MILESTONES_DEF[i].num : i+1;
-  });
+  }).join('');
 }
 
 function renderDispatch() {
@@ -4535,6 +4634,19 @@ function renderDispatch() {
     });
     if (prev) sel.value = prev;
     autoFillHowlerDropdowns();
+  }
+  // Populate sovereign target dropdown
+  const stgt = document.getElementById('sovereign-target');
+  if (stgt) {
+    const prevT = stgt.value;
+    stgt.innerHTML = '<option value="">— Choose your target —</option>';
+    state.players.forEach(function(p) {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name + ' · ' + p.house;
+      stgt.appendChild(opt);
+    });
+    if (prevT) stgt.value = prevT;
   }
   renderHowlFeed();
 }
@@ -4817,7 +4929,7 @@ async function toggleHowlReaction(howlId, emoji) {
   var idx = arr.indexOf(currentHowlerId);
   if (idx >= 0) { arr.splice(idx, 1); } else { arr.push(currentHowlerId); }
   await saveState();
-  renderHowlFeed();
+  renderDispatch();
 }
 
 
@@ -4925,6 +5037,97 @@ async function removeHowl(howlId) {
   await saveState();
   showToast('Howl silenced.');
   renderHowlFeed();
+}
+
+// ─── SUMMON THE SOVEREIGN — AI TRASH TALK ────────────────────────────────────
+var _sovereignDraft = '';
+
+async function summonSovereign(targetPid) {
+  const tgt = document.getElementById('sovereign-target');
+  if (targetPid) {
+    switchTab('dispatch');
+    if (tgt) tgt.value = targetPid;
+  }
+  const pid = tgt ? tgt.value : targetPid;
+  if (!pid) { showToast('Choose a target first, Sovereign.'); return; }
+
+  const player = state.players.find(function(p) { return p.id === pid; });
+  if (!player) return;
+  const s = calcPlayerStats(pid);
+
+  // Who is the caller? (current howler or pack leader)
+  const caller = currentHowlerId ? state.players.find(function(p) { return p.id === currentHowlerId; }) : null;
+
+  // Build context string
+  const ctx = [
+    'Target: ' + player.name + ' (' + player.house + ' House, rank: ' + s.rank.name + ')',
+    'Their stats: ' + s.laurels + ' Laurels, ' + s.miles + ' miles run, ' + s.trials + ' trials logged, ' + s.streak + ' week streak',
+    s.perfectWeeks > 0 ? 'Perfect weeks: ' + s.perfectWeeks : '',
+    s.maxSingleRun > 0 ? 'Longest single run: ' + s.maxSingleRun + ' mi' : '',
+    s.pelotons > 0 ? 'Peloton rides: ' + s.pelotons : '',
+    caller ? 'The one trash talking: ' + caller.name + ' (' + caller.house + ' House)' : 'Trash talk from the pack',
+  ].filter(Boolean).join('\n');
+
+  const btn = document.getElementById('sovereign-btn');
+  const out = document.getElementById('sovereign-output');
+  const actions = document.getElementById('sovereign-actions');
+  if (btn) { btn.disabled = true; btn.textContent = '⚔ Forging…'; }
+  if (out) { out.style.display = 'block'; out.textContent = '🌑 The Sovereign stirs in the dark…'; }
+  if (actions) actions.style.display = 'none';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'You are the Sovereign of the Red Rising universe — cunning, poetic, merciless. You write devastating, darkly funny trash talk in the voice of the Red Rising books. Use House color references, Latin phrases, rank names, and the imagery of the Society. Keep it to 2–4 sentences. Always end with a short iconic closer (like a motto or challenge). Never be generic. Use the specific stats provided to make the insult personal and pointed. Output ONLY the trash talk, no preamble, no quotes around it.',
+        messages: [{
+          role: 'user',
+          content: 'Write a Red Rising-style trash talk howl targeting this pack member based on their actual training stats:\n\n' + ctx + '\n\nMake it feel like something Cassius or the Jackal would say — elegant, cutting, referencing their actual numbers. End with #trashtalk.'
+        }]
+      })
+    });
+    const data = await res.json();
+    const text = (data.content && data.content[0] && data.content[0].text) || 'The Sovereign was silent. Try again.';
+    _sovereignDraft = text.trim();
+    if (out) out.textContent = _sovereignDraft;
+    if (actions) actions.style.display = 'flex';
+  } catch(e) {
+    if (out) out.textContent = '⚠️ The Sovereign could not be reached: ' + e.message;
+    _sovereignDraft = '';
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⚔ SUMMON THE SOVEREIGN'; }
+  }
+}
+
+async function sendSovereignHowl() {
+  if (!_sovereignDraft) { showToast('No trash talk forged yet.'); return; }
+  if (!currentHowlerId) { showToast('Select your Howler identity first.'); return; }
+  const msg = document.getElementById('howl-message');
+  const howlSel = document.getElementById('howl-player');
+  if (msg) msg.value = _sovereignDraft;
+  if (howlSel && currentHowlerId) howlSel.value = currentHowlerId;
+  // Clear sovereign panel
+  const out = document.getElementById('sovereign-output');
+  const actions = document.getElementById('sovereign-actions');
+  if (out) { out.style.display = 'none'; out.textContent = ''; }
+  if (actions) actions.style.display = 'none';
+  _sovereignDraft = '';
+  // Scroll to composer and focus
+  msg && msg.focus();
+  showToast('⚔ Trash talk loaded — review and send the howl, Sovereign.');
+}
+
+function summonGoneDark(pid) {
+  const player = state.players.find(function(p) { return p.id === pid; });
+  if (!player) return;
+  switchTab('dispatch');
+  const stgt = document.getElementById('sovereign-target');
+  if (stgt) stgt.value = pid;
+  summonSovereign(pid);
+  showToast('🌑 Summoning the Sovereign on ' + player.name.split(' ')[0] + '…');
 }
 
 function copyHowl(howlId) {
