@@ -3481,7 +3481,7 @@ async function openTrashTalk(workoutId, playerName) {
 }
 
 
-function showBadgeEarners(badgeId, badgeName) {
+window.showBadgeEarners = function showBadgeEarners(badgeId, badgeName) {
   const def = BADGES_DEF.find(b => b.id === badgeId);
   if (!def) return;
   const lines = def.tiers.map(t => {
@@ -3506,7 +3506,7 @@ function showBadgeEarners(badgeId, badgeName) {
     '</div>' + lines + '</div>';
   overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
   document.body.appendChild(overlay);
-}
+};
 
 
 function renderWeeklyLeaderboard() {
@@ -3907,7 +3907,7 @@ function renderPlayers() {
       var col = TIER_COLORS[tier];
       var lbl = TIER_ROMAN[tier];
       var tip = def.name + ' \u2014 ' + TIER_LABELS[tier];
-      var onclick = 'event.stopPropagation();showBadgeEarners(' + JSON.stringify(def.id) + ',' + JSON.stringify(def.name) + ')';
+      var onclick = 'event.stopPropagation();event.preventDefault();showBadgeEarners(' + JSON.stringify(def.id) + ',' + JSON.stringify(def.name) + ');';
       return '<span class="badge-pill" style="border:2px solid ' + col + ';background:' + col + '15;color:' + col + ';padding:2px 6px;font-size:0.8rem;cursor:pointer" onclick="' + onclick + '" title="' + tip + '">' + def.icon + '<sup style="font-size:0.55rem;font-family:Cinzel,serif;font-weight:700">' + lbl + '</sup></span>';
     }).join('');
   }
