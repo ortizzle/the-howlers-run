@@ -2997,6 +2997,10 @@ async function qlSubmit() {
     var baseId = tier ? newBadges[0].slice(0,-(tier.length+1)) : newBadges[0];
     var bd = BADGES_DEF.find(function(b){ return b.id===baseId; });
     if (bd && tier) msg += ' ' + {bronze:'I',silver:'II',gold:'III'}[tier] + ' Badge: ' + bd.icon + ' ' + bd.name + '!';
+    // Post badge howl
+    newBadges.forEach(function(badgeKey) {
+      postBadgeHowl(pid, badgeKey);
+    });
   }
   showToast(msg);
   if (btn) { btn.disabled = false; btn.textContent = '✦ RECORD TRIAL ✦'; }
@@ -3484,23 +3488,21 @@ function showBadgeEarners(badgeId, badgeName) {
     const key = badgeId + '_' + t.tier;
     const earners = state.players.filter(p => (state.badges_awarded[p.id]||[]).includes(key));
     const color = TIER_COLORS[t.tier];
-    const hc = earners.map(p => {
+    const names = earners.map(p => {
       const pc = HOUSES[p.house] || '#7a5006';
       return '<span style="color:'+pc+';font-weight:600">'+p.name.split(' ')[0]+'</span>';
     }).join(', ') || '<span style="color:var(--ink-light);font-style:italic">None yet</span>';
     return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">' +
       '<span style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:'+color+';min-width:28px">'+TIER_ROMAN[t.tier]+'</span>' +
       '<span style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink-light);flex:1">'+t.desc+'</span>' +
-      '<span style="font-family:Crimson Pro,serif;font-size:0.82rem">'+hc+'</span></div>';
+      '<span style="font-family:Crimson Pro,serif;font-size:0.82rem">'+names+'</span></div>';
   }).join('');
-  showToast(def.icon + ' ' + badgeName + ' — tap profile to see details');
-  // Build a mini modal using existing toast — or use a quick overlay
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(26,20,16,0.7);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
   overlay.innerHTML = '<div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:20px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.5)">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
     '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + def.icon + ' ' + badgeName + '</div>' +
-    '<button onclick="this.parentNode.parentNode.remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>' +
+    '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>' +
     '</div>' + lines + '</div>';
   overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
   document.body.appendChild(overlay);
@@ -3818,6 +3820,34 @@ function getAZDate() {
 
 function getAZTimestamp() {
   return new Date().toISOString(); // timestamp stays UTC, only date display changes
+}
+
+
+function postBadgeHowl(pid, badgeKey) {
+  var tier = ['bronze','silver','gold'].find(function(t){ return badgeKey.endsWith('_'+t); });
+  if (!tier) return;
+  var baseId = tier ? badgeKey.slice(0,-(tier.length+1)) : badgeKey;
+  var def = BADGES_DEF.find(function(b){ return b.id===baseId; });
+  if (!def) return;
+  var player = state.players.find(function(p){ return p.id===pid; });
+  if (!player) return;
+  var tierLabel = {bronze:'I',silver:'II',gold:'III'}[tier];
+  var tierWord = {bronze:'Bronze','silver':'Silver','gold':'Gold'}[tier];
+  var howlId = 'badge_' + pid + '_' + badgeKey;
+  if ((state.howls||[]).some(function(h){ return h.id===howlId; })) return; // already posted
+  var msg = def.icon + ' BADGE EARNED: ' + def.name + ' ' + tierLabel + ' (' + tierWord + ')!\n\n' +
+    '@' + player.name + ' has earned the ' + def.name + ' badge — ' +
+    def.tiers.find(function(t){ return t.tier===tier; }).desc + '.\n\n' +
+    '\u2694 Per aspera ad astra. \ud83d\udc3a';
+  state.howls.push({
+    id: howlId,
+    player_id: 'system',
+    player_laurels: 9999,
+    message: msg,
+    date: getAZDate(),
+    timestamp: new Date().toISOString(),
+    likes: 0
+  });
 }
 
 function renderAll() {
@@ -5348,6 +5378,7 @@ async function submitTrial() {
     const baseId = tier ? firstKey.slice(0,-(tier.length+1)) : firstKey;
     const bd = BADGES_DEF.find(b => b.id === baseId);
     if (bd && tier) toastMsg += ` ${TIER_ROMAN[tier]} Badge: ${bd.icon} ${bd.name}!`;
+    newBadges.forEach(function(badgeKey) { postBadgeHowl(pid, badgeKey); });
   }
   showToast(toastMsg);
   if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✦ RECORD TRIAL ✦'; }
