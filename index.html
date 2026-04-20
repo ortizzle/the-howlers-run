@@ -616,25 +616,22 @@
 
   /* CHRONICLE */
   .chronicle-feed { display: flex; flex-direction: column; gap: 14px; }
-  .ch-entry-wrap { perspective: 800px; cursor: pointer; margin-bottom: 12px; }
-  .ch-entry-inner { position: relative; width: 100%; transition: transform 0.45s; transform-style: preserve-3d; min-height: 120px; }
-  .ch-entry-wrap.flipped .ch-entry-inner { transform: rotateY(180deg); }
-  .ch-entry-front { position: relative; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .ch-entry-wrap { margin-bottom: 12px; }
+  .ch-entry-front { position: relative; cursor: pointer; }
   .ch-entry-back {
-    position: absolute; top: 0; left: 0; width: 100%; min-height: 120px;
-    transform: rotateY(180deg);
-    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    display: none;
     background: var(--parchment-dark);
     border: 1.5px solid var(--border-strong);
     border-left: 4px solid var(--house-color, var(--amber));
     border-radius: var(--radius);
     padding: 14px 16px;
-    display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     gap: 10px;
+    margin-top: 4px;
+    animation: slideDown 0.25s ease;
   }
+  .ch-entry-wrap.flipped .ch-entry-back { display: flex; }
   @keyframes slideDown {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -2093,7 +2090,10 @@ async function loadState() {
     localStorage.setItem(cvKey, 'v6');
   }
   retroactiveChallengePayout();
-  checkAndPostChallengeHowls();
+  if (!window._challengesChecked) {
+    window._challengesChecked = true;
+    checkAndPostChallengeHowls();
+  }
   checkAndPostWeeklyRecap();
   } catch(e) {
     setSyncStatus('error');
@@ -2159,11 +2159,11 @@ async function saveState() {
           if (!localHowlIds.has(h.id)) state.howls.push(h);
         });
 
-        // Merge badges — union of local and remote (never lose a badge)
+        // Merge badges — union of local and remote
         if (remoteState.badges_awarded) {
           Object.keys(remoteState.badges_awarded).forEach(function(pid) {
             if (!state.badges_awarded[pid]) state.badges_awarded[pid] = [];
-            (remoteState.badges_awarded[pid] || []).forEach(function(b) {
+            (remoteState.badges_awarded[pid]||[]).forEach(function(b){
               if (!state.badges_awarded[pid].includes(b)) state.badges_awarded[pid].push(b);
             });
           });
@@ -2997,10 +2997,7 @@ async function qlSubmit() {
     var baseId = tier ? newBadges[0].slice(0,-(tier.length+1)) : newBadges[0];
     var bd = BADGES_DEF.find(function(b){ return b.id===baseId; });
     if (bd && tier) msg += ' ' + {bronze:'I',silver:'II',gold:'III'}[tier] + ' Badge: ' + bd.icon + ' ' + bd.name + '!';
-    // Post badge howl
-    newBadges.forEach(function(badgeKey) {
-      postBadgeHowl(pid, badgeKey);
-    });
+    newBadges.forEach(function(bk){ postBadgeHowl(pid, bk); });
   }
   showToast(msg);
   if (btn) { btn.disabled = false; btn.textContent = '✦ RECORD TRIAL ✦'; }
@@ -3138,22 +3135,17 @@ function retroactiveChallengePayout() {
   // saveState removed — prevents race condition
 }
 
-function checkAndPostChallengeHowls() {
+async function checkAndPostChallengeHowls() {
   if (!state.players || state.players.length === 0) return;
   if (!state.howls) state.howls = [];
   if (!state.challenges_won) state.challenges_won = {};
-  // Use gist_id key so it works with new backend
-  var syncKey = localStorage.getItem('howlers_gist_id') || localStorage.getItem('howlers_bin_id') || 'local';
-  var announcedKey = 'howlers_announced_' + syncKey;
-  var announced = JSON.parse(localStorage.getItem(announcedKey) || '{}');
   buildStatsCache();
   var sm = _statsCache;
-  var changed = false;
 
-  CHALLENGES_DEF.forEach(function(ch) {
-    if (announced[ch.id]) return;
-    // Also skip if already in challenges_won (e.g. from force restore)
-    if (state.challenges_won[ch.id]) { announced[ch.id] = true; return; }
+  for (var ci = 0; ci < CHALLENGES_DEF.length; ci++) {
+    var ch = CHALLENGES_DEF[ci];
+    if (state.challenges_won[ch.id]) continue;
+
     var winner = null;
 
     if (ch.type === 'duel') {
@@ -3163,100 +3155,88 @@ function checkAndPostChallengeHowls() {
       } else if (ch.id==='the_faithful') {
         winner = state.players.find(p=>(sm[p.id]||{}).perfectWeeks>=1);
       } else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) {
-        var bestL=0, bestLP=null;
+        var bestL=0,bestLP=null;
         state.players.forEach(p=>{var l=(sm[p.id]||{}).laurels||0;if(l>bestL&&l>=ch.goal){bestL=l;bestLP=p;}});
-        winner = bestLP;
+        winner=bestLP;
       } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
-        var bwArr = state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date));
-        var bw = bwArr.length > 0 ? bwArr[0] : null;
-        if (bw) winner = state.players.find(p=>p.id===bw.player_id);
+        var bwArr=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date));
+        if (bwArr.length>0) winner=state.players.find(p=>p.id===bwArr[0].player_id);
       } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
-        winner = state.players.find(p=>(sm[p.id]||{}).streak>=ch.goal);
+        winner=state.players.find(p=>(sm[p.id]||{}).streak>=ch.goal);
       } else if (ch.id==='the_swift') {
         var wt={};
         state.workouts.filter(w=>w.workout==='tempo').forEach(w=>{var k=getWeekKey(w.date)+'|'+w.player_id;wt[k]=(wt[k]||0)+1;});
-        var wk=Object.keys(wt).find(k=>wt[k]>=3);
-        if (wk) winner = state.players.find(p=>p.id===wk.split('|')[1]);
+        var swk=Object.keys(wt).find(k=>wt[k]>=3);
+        if (swk) winner=state.players.find(p=>p.id===swk.split('|')[1]);
       } else if (ch.id==='primus_pares') {
-        winner = state.players.find(p=>(sm[p.id]&&sm[p.id].weekSet&&sm[p.id].weekSet.size>=ch.goal));
+        winner=state.players.find(p=>(sm[p.id]&&sm[p.id].weekSet&&sm[p.id].weekSet.size>=ch.goal));
       } else if (ch.id==='iron_league') {
-        winner = state.players.find(p=>(sm[p.id]||{}).miles>=ch.goal);
+        winner=state.players.find(p=>(sm[p.id]||{}).miles>=ch.goal);
       } else if (ch.id==='the_tireless') {
-        winner = state.players.find(p=>(sm[p.id]||{}).trials>=ch.goal);
+        winner=state.players.find(p=>(sm[p.id]||{}).trials>=ch.goal);
       } else if (ch.id==='the_dancer') {
-        var danP=null; state.players.forEach(p=>{if(state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length>=ch.goal) danP=p;});
-        winner = danP;
+        var danP=null;state.players.forEach(p=>{if(state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length>=ch.goal)danP=p;});
+        winner=danP;
       } else if (ch.id==='the_ironborn') {
-        winner = state.players.find(p=>(sm[p.id]||{}).strength>=ch.goal);
+        winner=state.players.find(p=>(sm[p.id]||{}).strength>=ch.goal);
       } else if (ch.id==='the_sage') {
-        winner = state.players.find(p=>(sm[p.id]||{}).mobility>=ch.goal);
+        winner=state.players.find(p=>(sm[p.id]||{}).mobility>=ch.goal);
       } else if (ch.id==='the_endurance') {
-        var endP=null; state.players.forEach(p=>{var mins=state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((s,w)=>s+(w.minutes||0),0);if(mins>=ch.goal)endP=p;});
-        winner = endP;
+        var endP=null;state.players.forEach(p=>{var mins=state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((s,w)=>s+(w.minutes||0),0);if(mins>=ch.goal)endP=p;});
+        winner=endP;
       } else if (ch.id==='the_peloton_ace') {
-        winner = state.players.find(p=>(sm[p.id]||{}).pelotons>=ch.goal);
+        winner=state.players.find(p=>(sm[p.id]||{}).pelotons>=ch.goal);
       } else if (ch.id==='race_finisher') {
         var rw=state.workouts.find(w=>w.workout==='race');
-        if (rw) winner = state.players.find(p=>p.id===rw.player_id);
+        if (rw) winner=state.players.find(p=>p.id===rw.player_id);
       }
     } else {
-      // Pack challenges — require min 4 active players (handles late joiners)
-      var activePlayers = state.players.filter(function(p){
-        return state.workouts.some(function(w){ return w.player_id===p.id && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); });
-      });
-      var enoughPlayers = activePlayers.length >= 4;
-      var packWon = false;
-      if (enoughPlayers && ch.id==='pack_trains') packWon=activePlayers.every(p=>(sm[p.id]||{}).trials>=ch.goal);
-      else if (enoughPlayers && ['society_rising','the_rising_tide'].includes(ch.id)) packWon=activePlayers.reduce((s,p)=>s+((sm[p.id]||{}).laurels||0),0)>=ch.goal;
-      else if (enoughPlayers && ch.id==='the_iron_pack') packWon=activePlayers.every(p=>(sm[p.id]||{}).strength>=ch.goal);
-      else if (enoughPlayers && ch.id==='warriors_all') packWon=activePlayers.every(p=>(state.badges_awarded[p.id]||[]).length>=1);
-      else if (enoughPlayers && ch.id==='the_full_march') packWon=activePlayers.every(p=>(sm[p.id]||{}).maxSingleRun>=ch.goal);
-      else if (enoughPlayers && ch.id==='cardio_pack') packWon=activePlayers.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
-      else if (enoughPlayers && ch.id==='mobile_pack') packWon=activePlayers.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility'));
-      else if (enoughPlayers && ch.id==='iron_pack_hard') packWon=activePlayers.every(p=>(sm[p.id]||{}).strength>=ch.goal);
-      else if (enoughPlayers && ch.id==='pack_endurance') packWon=activePlayers.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0),0)>=ch.goal;
-      if (packWon) winner = {name:'The Pack', id:null};
+      var activePlayers=state.players.filter(function(p){return state.workouts.some(function(w){return w.player_id===p.id&&!['milestone_bonus','duel_win','duel_loss'].includes(w.workout);});});
+      var enoughPlayers=activePlayers.length>=4;
+      var packWon=false;
+      if (enoughPlayers&&ch.id==='pack_trains') packWon=activePlayers.every(p=>(sm[p.id]||{}).trials>=ch.goal);
+      else if (enoughPlayers&&['society_rising','the_rising_tide'].includes(ch.id)) packWon=activePlayers.reduce((s,p)=>s+((sm[p.id]||{}).laurels||0),0)>=ch.goal;
+      else if (enoughPlayers&&ch.id==='the_iron_pack') packWon=activePlayers.every(p=>(sm[p.id]||{}).strength>=ch.goal);
+      else if (enoughPlayers&&ch.id==='warriors_all') packWon=activePlayers.every(p=>(state.badges_awarded[p.id]||[]).length>=1);
+      else if (enoughPlayers&&ch.id==='the_full_march') packWon=activePlayers.every(p=>(sm[p.id]||{}).maxSingleRun>=ch.goal);
+      else if (enoughPlayers&&ch.id==='cardio_pack') packWon=activePlayers.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
+      else if (enoughPlayers&&ch.id==='mobile_pack') packWon=activePlayers.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility'));
+      else if (enoughPlayers&&ch.id==='iron_pack_hard') packWon=activePlayers.every(p=>(sm[p.id]||{}).strength>=ch.goal);
+      else if (enoughPlayers&&ch.id==='pack_endurance') packWon=activePlayers.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0),0)>=ch.goal;
+      if (packWon) winner={name:'The Pack',id:null};
     }
 
-    if (winner) {
-      var isPack = winner.name === 'The Pack';
-      // Record in challenges_won
-      state.challenges_won[ch.id] = isPack ? {name:'The Pack'} : {id:winner.id, name:winner.name};
-      announced[ch.id] = true;
+    if (!winner) continue;
 
-      // Pay out Laurels
-      if (isPack) {
-        state.players.forEach(function(p) {
-          var pid = 'ch_reward_' + ch.id + '_' + p.id;
-          if (!state.workouts.some(w=>w.id===pid)) {
-            state.workouts.push({id:pid, player_id:p.id, workout:'milestone_bonus', date:getAZDate(), laurels_base:ch.reward, quote:'The pack conquers together. ✦', timestamp:new Date().toISOString(), milestone_label:'⚔ Challenge: '+ch.name, milestone_bonus:ch.reward});
-          }
-        });
-      } else if (winner.id) {
-        var rid = 'ch_reward_' + ch.id;
-        if (!state.workouts.some(w=>w.id===rid)) {
-          state.workouts.push({id:rid, player_id:winner.id, workout:'milestone_bonus', date:getAZDate(), laurels_base:ch.reward, quote:'Victory tastes of iron and laurels. ✦', timestamp:new Date().toISOString(), milestone_label:'⚔ Challenge: '+ch.name, milestone_bonus:ch.reward});
+    var isPack = winner.name === 'The Pack';
+    state.challenges_won[ch.id] = isPack ? {name:'The Pack'} : {id:winner.id,name:winner.name};
+
+    if (isPack) {
+      state.players.forEach(function(p){
+        var pid='ch_reward_'+ch.id+'_'+p.id;
+        if (!state.workouts.some(w=>w.id===pid)) {
+          state.workouts.push({id:pid,player_id:p.id,workout:'milestone_bonus',date:getAZDate(),laurels_base:ch.reward,quote:'The pack conquers together. \u2726',timestamp:new Date().toISOString(),milestone_label:'\u2694 Challenge: '+ch.name,milestone_bonus:ch.reward});
         }
+      });
+    } else if (winner.id) {
+      var rid='ch_reward_'+ch.id;
+      if (!state.workouts.some(w=>w.id===rid)) {
+        state.workouts.push({id:rid,player_id:winner.id,workout:'milestone_bonus',date:getAZDate(),laurels_base:ch.reward,quote:'Victory tastes of iron and laurels. \u2726',timestamp:new Date().toISOString(),milestone_label:'\u2694 Challenge: '+ch.name,milestone_bonus:ch.reward});
       }
-
-      // Post howl announcement
-      var msg = isPack
-        ? '🏆 PACK VICTORY: ' + ch.name + '! \n\nThe entire pack rises together. +' + ch.reward + 'L each. \n\n⚔ Per aspera ad astra. The pack endures. 🐺✨✨'
-        : '🏆 CHALLENGE CONQUERED: ' + ch.name + '! \n\n@' + winner.name + ' strikes first and claims the laurels. +' + ch.reward + 'L awarded. \n\n⚔ Per aspera ad astra. Go Howler! 🐺✨';
-      if (!state.howls.some(h=>h.id==='challenge_'+ch.id)) {
-        state.howls.push({id:'challenge_'+ch.id, player_id:'system', player_laurels:9999, message:msg, date:getAZDate(), timestamp:new Date().toISOString(), likes:0});
-      }
-      changed = true;
-      setTimeout(function(){ launchConfetti('conquest'); }, 500);
     }
-  });
 
-  localStorage.setItem(announcedKey, JSON.stringify(announced));
-  if (changed) {
-    // Save once after all challenges processed
-    saveState().then(function() {
-      renderAll();
-    });
+    var msg = isPack
+      ? '&#127942; PACK VICTORY: '+ch.name+'! The entire pack rises together. +'+ch.reward+'L each. &#9876; Per aspera ad astra. &#128058;&#10024;'
+      : '&#127942; CHALLENGE CONQUERED: '+ch.name+'! @'+winner.name+' strikes first. +'+ch.reward+'L awarded. &#9876; Per aspera ad astra. &#128058;&#10024;';
+
+    if (!state.howls.some(h=>h.id==='challenge_'+ch.id)) {
+      state.howls.push({id:'challenge_'+ch.id,player_id:'system',player_laurels:9999,message:msg,date:getAZDate(),timestamp:new Date().toISOString(),likes:0});
+    }
+
+    try { await saveState(); } catch(e) { console.error('Challenge save failed:',ch.id,e); }
+    setTimeout(function(){ launchConfetti('conquest'); }, 500);
+    showToast('&#127942; '+ch.name+' conquered! '+(isPack?'+'+ch.reward+'L for the pack!':'Go '+winner.name+'!'));
+    renderAll();
   }
 }
 
@@ -3481,32 +3461,34 @@ async function openTrashTalk(workoutId, playerName) {
 }
 
 
-window.showBadgeEarners = function showBadgeEarners(badgeId, badgeName) {
+function showBadgeEarners(badgeId, badgeName) {
   const def = BADGES_DEF.find(b => b.id === badgeId);
   if (!def) return;
   const lines = def.tiers.map(t => {
     const key = badgeId + '_' + t.tier;
     const earners = state.players.filter(p => (state.badges_awarded[p.id]||[]).includes(key));
     const color = TIER_COLORS[t.tier];
-    const names = earners.map(p => {
+    const hc = earners.map(p => {
       const pc = HOUSES[p.house] || '#7a5006';
       return '<span style="color:'+pc+';font-weight:600">'+p.name.split(' ')[0]+'</span>';
     }).join(', ') || '<span style="color:var(--ink-light);font-style:italic">None yet</span>';
     return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">' +
       '<span style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:'+color+';min-width:28px">'+TIER_ROMAN[t.tier]+'</span>' +
       '<span style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink-light);flex:1">'+t.desc+'</span>' +
-      '<span style="font-family:Crimson Pro,serif;font-size:0.82rem">'+names+'</span></div>';
+      '<span style="font-family:Crimson Pro,serif;font-size:0.82rem">'+hc+'</span></div>';
   }).join('');
+  showToast(def.icon + ' ' + badgeName + ' — tap profile to see details');
+  // Build a mini modal using existing toast — or use a quick overlay
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(26,20,16,0.7);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
   overlay.innerHTML = '<div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:20px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.5)">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
     '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + def.icon + ' ' + badgeName + '</div>' +
-    '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>' +
+    '<button onclick="this.parentNode.parentNode.remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>' +
     '</div>' + lines + '</div>';
   overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
   document.body.appendChild(overlay);
-};
+}
 
 
 function renderWeeklyLeaderboard() {
@@ -3794,6 +3776,59 @@ function markAllPlayersSeen() {
 }
 
 
+function getAZDate() {
+  var now = new Date();
+  var az = new Date(now.getTime() - 7 * 60 * 60 * 1000);
+  return az.toISOString().split('T')[0];
+}
+
+
+window.showBadgeEarners = function(badgeId, badgeName) {
+  const def = BADGES_DEF.find(b => b.id === badgeId);
+  if (!def) return;
+  const lines = def.tiers.map(t => {
+    const key = badgeId + '_' + t.tier;
+    const earners = state.players.filter(p => (state.badges_awarded[p.id]||[]).includes(key));
+    const color = TIER_COLORS[t.tier];
+    const names = earners.map(p => {
+      const pc = HOUSES[p.house] || '#7a5006';
+      return '<span style="color:'+pc+';font-weight:600">'+p.name.split(' ')[0]+'</span>';
+    }).join(', ') || '<span style="color:var(--ink-light);font-style:italic">None yet</span>';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">' +
+      '<span style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:'+color+';min-width:28px">'+TIER_ROMAN[t.tier]+'</span>' +
+      '<span style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink-light);flex:1">'+t.desc+'</span>' +
+      '<span style="font-family:Crimson Pro,serif;font-size:0.82rem">'+names+'</span></div>';
+  }).join('');
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(26,20,16,0.7);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = '<div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:20px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.5)">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
+    '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + def.icon + ' ' + badgeName + '</div>' +
+    '<button onclick="this.closest(\'div\').parentNode.remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">&#10005;</button>' +
+    '</div>' + lines + '</div>';
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+};
+
+
+function postBadgeHowl(pid, badgeKey) {
+  var tier = ['bronze','silver','gold'].find(function(t){ return badgeKey.endsWith('_'+t); });
+  if (!tier) return;
+  var baseId = tier ? badgeKey.slice(0,-(tier.length+1)) : badgeKey;
+  var def = BADGES_DEF.find(function(b){ return b.id===baseId; });
+  if (!def) return;
+  var player = state.players.find(function(p){ return p.id===pid; });
+  if (!player) return;
+  var tierLabel = {bronze:'I',silver:'II',gold:'III'}[tier];
+  var tierWord = {bronze:'Bronze',silver:'Silver',gold:'Gold'}[tier];
+  var howlId = 'badge_' + pid + '_' + badgeKey;
+  if ((state.howls||[]).some(function(h){ return h.id===howlId; })) return;
+  var tierDef = def.tiers.find(function(t){ return t.tier===tier; });
+  var msg = def.icon + ' BADGE EARNED: ' + def.name + ' ' + tierLabel + ' (' + tierWord + ')! @' + player.name + ' — ' + (tierDef ? tierDef.desc : '') + '. &#9876; Per aspera ad astra. &#128058;';
+  state.howls.push({id:howlId, player_id:'system', player_laurels:9999, message:msg, date:getAZDate(), timestamp:new Date().toISOString(), likes:0});
+}
+
+
 function buildHowlReactionSummary(h) {
   var reactions = h.reactions || {};
   var parts = [];
@@ -3808,46 +3843,6 @@ function buildHowlReactionSummary(h) {
   });
   if (!parts.length) return '';
   return '<div style="font-family:Crimson Pro,serif;font-size:0.75rem;color:var(--ink-light);padding:4px 0 2px;font-style:italic">' + parts.join('') + '</div>';
-}
-
-
-function getAZDate() {
-  // Arizona is UTC-7, no DST
-  var now = new Date();
-  var az = new Date(now.getTime() - 7 * 60 * 60 * 1000);
-  return az.toISOString().split('T')[0];
-}
-
-function getAZTimestamp() {
-  return new Date().toISOString(); // timestamp stays UTC, only date display changes
-}
-
-
-function postBadgeHowl(pid, badgeKey) {
-  var tier = ['bronze','silver','gold'].find(function(t){ return badgeKey.endsWith('_'+t); });
-  if (!tier) return;
-  var baseId = tier ? badgeKey.slice(0,-(tier.length+1)) : badgeKey;
-  var def = BADGES_DEF.find(function(b){ return b.id===baseId; });
-  if (!def) return;
-  var player = state.players.find(function(p){ return p.id===pid; });
-  if (!player) return;
-  var tierLabel = {bronze:'I',silver:'II',gold:'III'}[tier];
-  var tierWord = {bronze:'Bronze','silver':'Silver','gold':'Gold'}[tier];
-  var howlId = 'badge_' + pid + '_' + badgeKey;
-  if ((state.howls||[]).some(function(h){ return h.id===howlId; })) return; // already posted
-  var msg = def.icon + ' BADGE EARNED: ' + def.name + ' ' + tierLabel + ' (' + tierWord + ')!\n\n' +
-    '@' + player.name + ' has earned the ' + def.name + ' badge — ' +
-    def.tiers.find(function(t){ return t.tier===tier; }).desc + '.\n\n' +
-    '\u2694 Per aspera ad astra. \ud83d\udc3a';
-  state.howls.push({
-    id: howlId,
-    player_id: 'system',
-    player_laurels: 9999,
-    message: msg,
-    date: getAZDate(),
-    timestamp: new Date().toISOString(),
-    likes: 0
-  });
 }
 
 function renderAll() {
@@ -3907,6 +3902,7 @@ function renderPlayers() {
       var col = TIER_COLORS[tier];
       var lbl = TIER_ROMAN[tier];
       var tip = def.name + ' \u2014 ' + TIER_LABELS[tier];
+
       return '<span class="badge-pill" data-badge-id="' + def.id + '" data-badge-name="' + escHtml(def.name) + '" style="border:2px solid ' + col + ';background:' + col + '15;color:' + col + ';padding:2px 6px;font-size:0.8rem;cursor:pointer" title="' + tip + '">' + def.icon + '<sup style="font-size:0.55rem;font-family:Cinzel,serif;font-weight:700">' + lbl + '</sup></span>';
     }).join('');
   }
@@ -4029,8 +4025,6 @@ function renderPlayers() {
     + '</div>';
 
   grid.innerHTML = html;
-
-  // Badge click delegation
   grid.querySelectorAll('.badge-pill').forEach(function(pill) {
     pill.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -4208,7 +4202,7 @@ function renderChronicle() {
     } else {
       detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
     }
-    return `<div class="ch-entry-wrap" onclick="this.classList.toggle('flipped')" style="--house-color:${houseColor}"><div class="ch-entry-inner"><div class="ch-entry-front chronicle-entry" style="--house-color:${houseColor}">
+    return `<div class="ch-entry-wrap" style="--house-color:${houseColor}"><div class="ch-entry-front chronicle-entry" onclick="this.closest('.ch-entry-wrap').classList.toggle('flipped')" style="--house-color:${houseColor}">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:2px">
         <span class="chronicle-player">${escHtml(player.name)}</span>
         <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">+${w.laurels_base}L</span>
@@ -4236,7 +4230,7 @@ function renderChronicle() {
       </div>
       <button onclick="event.stopPropagation();this.closest('.ch-entry-wrap').classList.remove('flipped')" style="background:transparent;border:none;font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light);cursor:pointer;margin-top:8px;opacity:0.7">&#10005; close</button>
     </div>
-    </div></div>`;
+    </div>`;
   }).join('');
 }
 
@@ -4350,6 +4344,7 @@ function renderChallenges() {
     }
     const pct = progressMax > 0 ? Math.min(100, (progress / progressMax) * 100) : 0;
     progressLabel = `${progress} / ${progressMax}`;
+    if (won && !winner) winner = won.name || null;
     if (won && !winner) winner = won.name || null;
     const isComplete = won || winner;
 
@@ -4601,7 +4596,7 @@ function renderHowlFeed() {
         '<span style="background:' + replyHc + ';color:white;padding:1px 7px;border-radius:3px;font-size:0.48rem;font-weight:700;letter-spacing:0.08em">' + escHtml(h.reply_to_name) + '</span>' +
         '</div>' +
         (origMsg
-          ? '<div style="font-family:Crimson Pro,serif;font-size:0.88rem;color:var(--ink-mid);font-style:italic">\"' + escHtml((origMsg.length > 120 ? origMsg.slice(0,120) + '…' : origMsg).replace(/ #trashtalk/g,'')) + '\"</div>'
+          ? '<div style="font-family:Crimson Pro,serif;font-size:0.88rem;color:var(--ink-mid);font-style:italic">\"' + escHtml(origMsg.length > 120 ? origMsg.slice(0,120) + '…' : origMsg) + '\"</div>'
           : '<div style="font-family:Crimson Pro,serif;font-size:0.82rem;color:var(--ink-light);font-style:italic">(message no longer available)</div>'
         ) +
         '</div>';
@@ -4830,21 +4825,19 @@ async function toggleHowlReaction(howlId, emoji) {
 function reactionBarHTML(obj, idVal, fnPrefix) {
   var reactions = (obj && obj.reactions) ? obj.reactions : {};
   var bar = '<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">';
-  if (fnPrefix !== 'toggleHowlReaction') {
-    [['🔥','Hype']].forEach(function(r) {
-      var emoji = r[0], label = r[1];
-      var raw = reactions[emoji];
-      var hypers = Array.isArray(raw) ? raw : [];
-      var count = hypers.length;
-      var iHyped = currentHowlerId && hypers.indexOf(currentHowlerId) >= 0;
-      var safeId = idVal.replace(/"/g,'');
-      bar += '<button data-id="' + safeId + '" data-emoji="' + emoji + '" data-fn="' + fnPrefix + '" onclick="handleReaction(this,event)" ';
-      bar += 'style="background:' + (iHyped ? 'rgba(122,80,6,0.15)' : 'transparent') + ';border:1.5px solid ' + (iHyped ? 'var(--amber)' : 'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
-      bar += emoji + ' ' + label;
-      if (count > 0) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + count + '</span>';
-      bar += '</button>';
-    });
-  }
+  if (fnPrefix !== 'toggleHowlReaction') { [['🔥','Hype']].forEach(function(r) {
+    var emoji = r[0], label = r[1];
+    var raw = reactions[emoji];
+    var hypers = Array.isArray(raw) ? raw : [];
+    var count = hypers.length;
+    var iHyped = currentHowlerId && hypers.indexOf(currentHowlerId) >= 0;
+    var safeId = idVal.replace(/"/g,'');
+    bar += '<button data-id="' + safeId + '" data-emoji="' + emoji + '" data-fn="' + fnPrefix + '" onclick="handleReaction(this,event)" ';
+    bar += 'style="background:' + (iHyped ? 'rgba(122,80,6,0.15)' : 'transparent') + ';border:1.5px solid ' + (iHyped ? 'var(--amber)' : 'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
+    bar += emoji + ' ' + label;
+    if (count > 0) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + count + '</span>';
+    bar += '</button>';
+  }); } // end non-howl emoji loop
   // Reply + trash talk on workout entries
   if (fnPrefix === 'toggleReaction') {
     var workoutPlayer = '';
@@ -4861,15 +4854,15 @@ function reactionBarHTML(obj, idVal, fnPrefix) {
   if (fnPrefix === 'toggleHowlReaction') {
     var howlObj = (state.howls||[]).find(function(h){ return h.id === idVal; });
     var isTrashtalk = howlObj && howlObj.message && howlObj.message.includes('#trashtalk');
-    var howlHypes = Array.isArray(reactions['🔥']) ? reactions['🔥'] : [];
+    var howlHypes = Array.isArray(reactions['\ud83d\udd25']) ? reactions['\ud83d\udd25'] : [];
     var howlHyped = currentHowlerId && howlHypes.indexOf(currentHowlerId) >= 0;
-    bar += '<button data-id="' + idVal + '" data-emoji="🔥" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
+    bar += '<button data-id="' + idVal + '" data-emoji="\ud83d\udd25" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
     bar += 'style="background:' + (howlHyped?'rgba(122,80,6,0.15)':'transparent') + ';border:1.5px solid ' + (howlHyped?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
     bar += '&#128293; Hype' + (howlHypes.length>0?' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">'+howlHypes.length+'</span>':'') + '</button>';
     if (isTrashtalk) {
-      var laughs = Array.isArray(reactions['🤣']) ? reactions['🤣'] : [];
+      var laughs = Array.isArray(reactions['\ud83e\udd23']) ? reactions['\ud83e\udd23'] : [];
       var iLaughed = currentHowlerId && laughs.indexOf(currentHowlerId) >= 0;
-      bar += '<button data-id="' + idVal + '" data-emoji="🤣" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
+      bar += '<button data-id="' + idVal + '" data-emoji="\ud83e\udd23" data-fn="toggleHowlReaction" onclick="handleReaction(this,event)" ';
       bar += 'style="background:' + (iLaughed?'rgba(122,80,6,0.1)':'transparent') + ';border:1.5px solid ' + (iLaughed?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
       bar += '&#129315;' + (laughs.length>0?' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">'+laughs.length+'</span>':'') + '</button>';
     }
@@ -5388,7 +5381,7 @@ async function submitTrial() {
     const baseId = tier ? firstKey.slice(0,-(tier.length+1)) : firstKey;
     const bd = BADGES_DEF.find(b => b.id === baseId);
     if (bd && tier) toastMsg += ` ${TIER_ROMAN[tier]} Badge: ${bd.icon} ${bd.name}!`;
-    newBadges.forEach(function(badgeKey) { postBadgeHowl(pid, badgeKey); });
+    newBadges.forEach(function(bk){ postBadgeHowl(pid, bk); });
   }
   showToast(toastMsg);
   if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✦ RECORD TRIAL ✦'; }
