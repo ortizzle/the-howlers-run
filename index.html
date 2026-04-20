@@ -3907,8 +3907,7 @@ function renderPlayers() {
       var col = TIER_COLORS[tier];
       var lbl = TIER_ROMAN[tier];
       var tip = def.name + ' \u2014 ' + TIER_LABELS[tier];
-      var onclick = 'event.stopPropagation();event.preventDefault();showBadgeEarners(' + JSON.stringify(def.id) + ',' + JSON.stringify(def.name) + ');';
-      return '<span class="badge-pill" style="border:2px solid ' + col + ';background:' + col + '15;color:' + col + ';padding:2px 6px;font-size:0.8rem;cursor:pointer" onclick="' + onclick + '" title="' + tip + '">' + def.icon + '<sup style="font-size:0.55rem;font-family:Cinzel,serif;font-weight:700">' + lbl + '</sup></span>';
+      return '<span class="badge-pill" data-badge-id="' + def.id + '" data-badge-name="' + escHtml(def.name) + '" style="border:2px solid ' + col + ';background:' + col + '15;color:' + col + ';padding:2px 6px;font-size:0.8rem;cursor:pointer" title="' + tip + '">' + def.icon + '<sup style="font-size:0.55rem;font-family:Cinzel,serif;font-weight:700">' + lbl + '</sup></span>';
     }).join('');
   }
 
@@ -4030,6 +4029,17 @@ function renderPlayers() {
     + '</div>';
 
   grid.innerHTML = html;
+
+  // Badge click delegation
+  grid.querySelectorAll('.badge-pill').forEach(function(pill) {
+    pill.addEventListener('click', function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      var id = pill.dataset.badgeId;
+      var name = pill.dataset.badgeName;
+      if (id && name) showBadgeEarners(id, name);
+    });
+  });
 }
 
 function renderPackStats() {
