@@ -1404,15 +1404,16 @@
           <tr><td>The Charge — Tempo / Race Pace</td><td>12 per mile</td></tr>
           <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
           <tr><td>Walk/Run Intervals</td><td>8 per mile</td></tr>
-          <tr><td>The Steed — Peloton Ride</td><td>8L per 10 min (24L / 30 min)</td></tr>
-          <tr><td>The Crimson Pulse — Cardio</td><td>8L per 10 min (24L / 30 min)</td></tr>
+          <tr><td>The Steed — Peloton Ride <em style="font-size:0.8rem;color:var(--ink-light)">(15 min min to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
+          <tr><td>The Crimson Pulse — Cardio <em style="font-size:0.8rem;color:var(--ink-light)">(15 min min to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
           <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
-          <tr><td>The Iron Forge — Strength</td><td>15 flat</td></tr>
-          <tr><td>Mind & Body — Mobility/Yoga</td><td>10 flat</td></tr>
+          <tr><td>The Iron Forge — Strength <em style="font-size:0.8rem;color:var(--ink-light)">(15 min min to count)</em></td><td>15 flat</td></tr>
+          <tr><td>Mind & Body — Mobility/Yoga <em style="font-size:0.8rem;color:var(--ink-light)">(15 min min to count)</em></td><td>10 flat</td></tr>
           <tr><td>Perfect Week Bonus</td><td>+25</td></tr>
           <tr><td>Streak Bonus</td><td>+10 per consecutive week (from week 2)</td></tr>
           <tr><td>Underdog Bonus</td><td>+20% when 300+ Laurels behind leader</td></tr>
           <tr><td>Weekly Mile Bonus</td><td>First time hitting 10/15/20/25/30 mi in a week: +30/50/75/100/150L</td></tr>
+          <tr><td>🏅 Badge Earned</td><td>Bronze +25L · Silver +50L · Gold +100L</td></tr>
           <tr><td>📚 Book Read (books 1–6)</td><td>+25 each (max 150L)</td></tr>
           <tr><td>📚 Red God ✦ (unreleased)</td><td>+200 flat</td></tr>
         </tbody>
@@ -1839,84 +1840,85 @@ const BADGE_TIERS = ['bronze','silver','gold'];
 const TIER_COLORS = {bronze:'#b87333', silver:'#a0a0b0', gold:'#c8900a'};
 const TIER_LABELS = {bronze:'Bronze', silver:'Silver', gold:'Gold'};
 const TIER_ROMAN = {bronze:'I', silver:'II', gold:'III'};
+const BADGE_LAURELS = {bronze:25, silver:50, gold:100};
 const BADGES_DEF = [
   {id:'first_step', icon:'👟', name:'First Step',
     tiers:[
-      {tier:'bronze', desc:'Log 1 workout',    check:(s)=>s.trials>=1},
-      {tier:'silver', desc:'Log 40 workouts',  check:(s)=>s.trials>=40},
-      {tier:'gold',   desc:'Log 100 workouts', check:(s)=>s.trials>=100}
+      {tier:'bronze', desc:'Log 1 workout',     check:(s)=>s.trials>=1},
+      {tier:'silver', desc:'Log 75 workouts',   check:(s)=>s.trials>=75},
+      {tier:'gold',   desc:'Log 200 workouts',  check:(s)=>s.trials>=200}
     ]},
   {id:'week_warrior', icon:'⚔️', name:'Week Warrior',
     tiers:[
-      {tier:'bronze', desc:'1 perfect week (4 core days)', check:(s)=>s.perfectWeeks>=1},
-      {tier:'silver', desc:'8 perfect weeks',              check:(s)=>s.perfectWeeks>=8},
-      {tier:'gold',   desc:'20 perfect weeks',             check:(s)=>s.perfectWeeks>=20}
+      {tier:'bronze', desc:'1 perfect week (4 core days)',  check:(s)=>s.perfectWeeks>=1},
+      {tier:'silver', desc:'18 perfect weeks',              check:(s)=>s.perfectWeeks>=18},
+      {tier:'gold',   desc:'32 perfect weeks',              check:(s)=>s.perfectWeeks>=32}
     ]},
   {id:'steed_master', icon:'🚴', name:'Steed Master',
     tiers:[
-      {tier:'bronze', desc:'5 Peloton rides',  check:(s)=>s.pelotons>=5},
-      {tier:'silver', desc:'20 Peloton rides', check:(s)=>s.pelotons>=20},
-      {tier:'gold',   desc:'50 Peloton rides', check:(s)=>s.pelotons>=50}
+      {tier:'bronze', desc:'5 Peloton rides',   check:(s)=>s.pelotons>=5},
+      {tier:'silver', desc:'30 Peloton rides',  check:(s)=>s.pelotons>=30},
+      {tier:'gold',   desc:'75 Peloton rides',  check:(s)=>s.pelotons>=75}
     ]},
   {id:'the_runner', icon:'🏃', name:'The Runner',
     tiers:[
-      {tier:'bronze', desc:'50 total miles',  check:(s)=>s.miles>=50},
-      {tier:'silver', desc:'100 total miles', check:(s)=>s.miles>=100},
-      {tier:'gold',   desc:'200 total miles', check:(s)=>s.miles>=200}
+      {tier:'bronze', desc:'75 total miles',   check:(s)=>s.miles>=75},
+      {tier:'silver', desc:'175 total miles',  check:(s)=>s.miles>=175},
+      {tier:'gold',   desc:'350 total miles',  check:(s)=>s.miles>=350}
     ]},
   {id:'iron_forged', icon:'🦵', name:'Iron Forged',
     tiers:[
-      {tier:'bronze', desc:'10 strength sessions', check:(s)=>s.strength>=10},
-      {tier:'silver', desc:'25 strength sessions', check:(s)=>s.strength>=25},
-      {tier:'gold',   desc:'60 strength sessions', check:(s)=>s.strength>=60}
+      {tier:'bronze', desc:'10 strength sessions (15 min min)',  check:(s)=>s.strength>=10},
+      {tier:'silver', desc:'50 strength sessions (15 min min)',  check:(s)=>s.strength>=50},
+      {tier:'gold',   desc:'100 strength sessions (15 min min)', check:(s)=>s.strength>=100}
     ]},
   {id:'mind_body', icon:'🧘', name:'Mind & Body',
     tiers:[
-      {tier:'bronze', desc:'5 mobility sessions',  check:(s)=>s.mobility>=5},
-      {tier:'silver', desc:'15 mobility sessions', check:(s)=>s.mobility>=15},
-      {tier:'gold',   desc:'40 mobility sessions', check:(s)=>s.mobility>=40}
+      {tier:'bronze', desc:'5 mobility sessions (15 min min)',   check:(s)=>s.mobility>=5},
+      {tier:'silver', desc:'25 mobility sessions (15 min min)',  check:(s)=>s.mobility>=25},
+      {tier:'gold',   desc:'60 mobility sessions (15 min min)',  check:(s)=>s.mobility>=60}
     ]},
   {id:'long_march', icon:'🗺️', name:'The Long March',
     tiers:[
-      {tier:'bronze', desc:'Run 6 miles in one session',    check:(s)=>s.maxSingleRun>=6},
-      {tier:'silver', desc:'Run 10 miles in one session',   check:(s)=>s.maxSingleRun>=10},
+      {tier:'bronze', desc:'Run 5 miles in one session',    check:(s)=>s.maxSingleRun>=5},
+      {tier:'silver', desc:'Run 8 miles in one session',    check:(s)=>s.maxSingleRun>=8},
       {tier:'gold',   desc:'Run 13.1 miles in one session', check:(s)=>s.maxSingleRun>=13.1}
     ]},
   {id:'unbroken', icon:'🔥', name:'Unbroken',
     tiers:[
-      {tier:'bronze', desc:'4-week streak',  check:(s)=>s.streak>=4},
-      {tier:'silver', desc:'10-week streak', check:(s)=>s.streak>=10},
-      {tier:'gold',   desc:'20-week streak', check:(s)=>s.streak>=20}
+      {tier:'bronze', desc:'6-week streak',   check:(s)=>s.streak>=6},
+      {tier:'silver', desc:'18-week streak',  check:(s)=>s.streak>=18},
+      {tier:'gold',   desc:'35-week streak',  check:(s)=>s.streak>=35}
     ]},
   {id:'extra_mile', icon:'⭐', name:'Extra Mile',
     tiers:[
-      {tier:'bronze', desc:'10 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=10},
-      {tier:'silver', desc:'25 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=25},
-      {tier:'gold',   desc:'60 Crimson Pulse or Walk/Run sessions', check:(s)=>s.optionals>=60}
+      {tier:'bronze', desc:'10 Crimson Pulse or Walk/Run sessions',  check:(s)=>s.optionals>=10},
+      {tier:'silver', desc:'40 Crimson Pulse or Walk/Run sessions',  check:(s)=>s.optionals>=40},
+      {tier:'gold',   desc:'90 Crimson Pulse or Walk/Run sessions',  check:(s)=>s.optionals>=90}
     ]},
   {id:'centurion', icon:'💯', name:'Centurion',
     tiers:[
-      {tier:'bronze', desc:'1,000 Laurels', check:(s)=>s.laurels>=1000},
-      {tier:'silver', desc:'3,500 Laurels', check:(s)=>s.laurels>=3500},
-      {tier:'gold',   desc:'7,500 Laurels', check:(s)=>s.laurels>=7500}
+      {tier:'bronze', desc:'1,500 Laurels',   check:(s)=>s.laurels>=1500},
+      {tier:'silver', desc:'6,000 Laurels',   check:(s)=>s.laurels>=6000},
+      {tier:'gold',   desc:'12,000 Laurels',  check:(s)=>s.laurels>=12000}
     ]},
   {id:'peerless', icon:'🌟', name:'Peerless',
     tiers:[
-      {tier:'bronze', desc:'Run 10 miles in one session',   check:(s)=>s.maxSingleRun>=10},
-      {tier:'silver', desc:'Run 12 miles in one session',   check:(s)=>s.maxSingleRun>=12},
-      {tier:'gold',   desc:'Run 13.1 miles — the full half!', check:(s)=>s.maxSingleRun>=13.1}
+      {tier:'bronze', desc:'Run 10 miles in one session',      check:(s)=>s.maxSingleRun>=10},
+      {tier:'silver', desc:'Run 12 miles in one session',      check:(s)=>s.maxSingleRun>=12},
+      {tier:'gold',   desc:'Run 13.1 miles — the full half!',  check:(s)=>s.maxSingleRun>=13.1}
     ]},
   {id:'the_reaper', icon:'☀️', name:'The Reaper',
     tiers:[
-      {tier:'bronze', desc:'5,000 Laurels',  check:(s)=>s.laurels>=5000},
-      {tier:'silver', desc:'9,500 Laurels',  check:(s)=>s.laurels>=9500},
-      {tier:'gold',   desc:'13,500 Laurels', check:(s)=>s.laurels>=13500}
+      {tier:'bronze', desc:'5,000 Laurels',   check:(s)=>s.laurels>=5000},
+      {tier:'silver', desc:'9,500 Laurels',   check:(s)=>s.laurels>=9500},
+      {tier:'gold',   desc:'20,000 Laurels',  check:(s)=>s.laurels>=20000}
     ]},
   {id:'race_day', icon:'🏆', name:'Race Day',
     tiers:[
-      {tier:'bronze', desc:'Complete your first race', check:(s)=>s.races>=1},
-      {tier:'silver', desc:'Complete 3 races',         check:(s)=>s.races>=3},
-      {tier:'gold',   desc:'Complete 5+ races',        check:(s)=>s.races>=5}
+      {tier:'bronze', desc:'Complete your first race',  check:(s)=>s.races>=1},
+      {tier:'silver', desc:'Complete 3 races',          check:(s)=>s.races>=3},
+      {tier:'gold',   desc:'Complete 5+ races',         check:(s)=>s.races>=5}
     ]}
 ];
 const CHALLENGES_DEF = [
@@ -2371,7 +2373,15 @@ function calcPlayerStats(pid) {
   const player = state.players.find(p => p.id === pid);
   let laurels = (player && player.book_laurels) ? player.book_laurels : 0;
   const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss'];
-  let miles = 0, pelotonMiles = 0, trials = works.filter(w => !SYSTEM_WK.includes(w.workout)).length;
+  const TIMED_WK = ['peloton','cardio','strength','mobility']; // require 15-min minimum
+  const RUN_WK = ['long_run','easy_run','tempo','walk_run','race','optional_run'];
+  // Trials = real workouts; timed ones must meet 15-min minimum
+  let trials = works.filter(w => {
+    if (SYSTEM_WK.includes(w.workout)) return false;
+    if (TIMED_WK.includes(w.workout)) return (w.minutes||0) >= 15;
+    return true; // runs count regardless (gated by miles)
+  }).length;
+  let miles = 0, pelotonMiles = 0;
   let pelotons = 0, strength = 0, mobility = 0, optionals = 0, races = 0;
   let maxSingleRun = 0;
   const weekSet = new Set();
@@ -2379,19 +2389,25 @@ function calcPlayerStats(pid) {
 
   works.forEach(w => {
     laurels += w.laurels_base || 0;
-    if (w.workout === 'peloton') { pelotonMiles += w.miles || 0; } else if (['long_run','easy_run','tempo','walk_run','race','optional_run'].includes(w.workout)) { miles += w.miles || 0; }
-    if (w.workout === 'peloton') pelotons++;
+    if (w.workout === 'peloton') { pelotonMiles += w.miles || 0; } else if (RUN_WK.includes(w.workout)) { miles += w.miles || 0; }
+    if (w.workout === 'peloton' && (w.minutes||0) >= 15) pelotons++;
     if (w.workout === 'race') races++;
-    if (w.workout === 'strength') strength++;
-    if (w.workout === 'mobility') mobility++;
-    if (w.workout === 'cardio' || w.workout === 'walk_run') optionals++;
-    if (['long_run','easy_run','tempo','optional_run','walk_run','race'].includes(w.workout) && w.miles) {
+    if (w.workout === 'strength' && (w.minutes||0) >= 15) strength++;
+    if (w.workout === 'mobility' && (w.minutes||0) >= 15) mobility++;
+    if ((w.workout === 'cardio' || w.workout === 'walk_run') && (w.minutes||0) >= 15) optionals++;
+    if (RUN_WK.includes(w.workout) && w.miles) {
       if (w.miles > maxSingleRun) maxSingleRun = w.miles;
     }
-    const wk = getWeekKey(w.date);
-    weekSet.add(wk);
-    if (!weekWorkouts[wk]) weekWorkouts[wk] = 0;
-    weekWorkouts[wk]++;
+    // Only count toward weeks if the workout qualifies
+    const qualifies = SYSTEM_WK.includes(w.workout) ? false
+      : TIMED_WK.includes(w.workout) ? (w.minutes||0) >= 15
+      : true;
+    if (qualifies) {
+      const wk = getWeekKey(w.date);
+      weekSet.add(wk);
+      if (!weekWorkouts[wk]) weekWorkouts[wk] = 0;
+      weekWorkouts[wk]++;
+    }
   });
 
   // Perfect week bonuses
@@ -3910,7 +3926,22 @@ function postBadgeHowl(pid, badgeKey) {
   var howlId = 'badge_' + pid + '_' + badgeKey;
   if ((state.howls||[]).some(function(h){ return h.id===howlId; })) return;
   var tierDef = def.tiers.find(function(t){ return t.tier===tier; });
-  var msg = def.icon + ' BADGE EARNED: ' + def.name + ' ' + tierLabel + ' (' + tierWord + ')! @' + player.name + ' — ' + (tierDef ? tierDef.desc : '') + '. &#9876; Per aspera ad astra. &#128058;';
+  var laurelReward = BADGE_LAURELS[tier] || 0;
+  // Grant laurel reward as a milestone workout
+  var rewardId = 'badge_reward_' + pid + '_' + badgeKey;
+  if (!state.workouts.some(function(w){ return w.id===rewardId; })) {
+    state.workouts.push({
+      id: rewardId,
+      player_id: pid,
+      workout: 'milestone_bonus',
+      date: getAZDate(),
+      laurels_base: laurelReward,
+      timestamp: new Date().toISOString(),
+      milestone_label: def.icon + ' Badge: ' + def.name + ' ' + tierLabel,
+      milestone_bonus: laurelReward
+    });
+  }
+  var msg = def.icon + ' BADGE EARNED: ' + def.name + ' ' + tierLabel + ' (' + tierWord + ')! @' + player.name + ' — ' + (tierDef ? tierDef.desc : '') + '. +' + laurelReward + 'L awarded. &#9876; Per aspera ad astra. &#128058;';
   state.howls.push({id:howlId, player_id:'system', player_laurels:9999, message:msg, date:getAZDate(), timestamp:new Date().toISOString(), likes:0});
 }
 
