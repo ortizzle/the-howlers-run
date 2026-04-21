@@ -1230,7 +1230,7 @@
       <div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;padding:12px">Loading...</div>
     </div>
     <button id="export-week-btn" onclick="exportWeeklyImage()" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--ink-mid);cursor:pointer;margin-bottom:8px">📸 CAPTURE THIS WEEK</button>
-    <div id="weekly-snapshot" style="display:none;background:#f5efe4;padding:28px;font-family:Cinzel,serif;border-radius:8px"></div>
+    <div id="weekly-snapshot" style="display:none;position:absolute;top:-9999px;left:0;width:600px;background:#f5efe4;padding:28px;font-family:Cinzel,serif;border-radius:8px"></div>
     <div class="section-title" style="margin-top:28px;font-size:1rem">🏃 Distance Rankings</div>
     <div id="distance-rankings" style="display:flex;flex-direction:column;gap:8px;max-width:560px"></div>
 
@@ -1366,7 +1366,7 @@
     </div>
 
     <!-- Hidden snapshot canvas target -->
-    <div id="leaderboard-snapshot" style="display:none;position:fixed;top:-9999px;left:-9999px;width:600px;background:#f5efe4;padding:28px;font-family:Cinzel,serif"></div>
+    <div id="leaderboard-snapshot" style="display:none;position:absolute;top:-9999px;left:0;width:600px;background:#f5efe4;padding:28px;font-family:Cinzel,serif"></div>
   </div>
 
     <!-- TAB: CODEX -->
@@ -3365,10 +3365,12 @@ function checkAndPostWeeklyRecap() {
     return d >= lastMonday && d <= lastSunday;
   });
   if (lastWeekWorkouts.length === 0) return;
-  // Who ran the most miles
+  // Who ran the most miles — running workouts only, not Peloton
+  const RUN_TYPES = ['long_run','easy_run','tempo','walk_run','race','optional_run'];
   const milesByPlayer = {};
   lastWeekWorkouts.forEach(function(w) {
-    if (w.miles) milesByPlayer[w.player_id] = (milesByPlayer[w.player_id]||0) + w.miles;
+    if (RUN_TYPES.includes(w.workout) && w.miles)
+      milesByPlayer[w.player_id] = (milesByPlayer[w.player_id]||0) + w.miles;
   });
   const topRunnerId = Object.keys(milesByPlayer).sort(function(a,b){return milesByPlayer[b]-milesByPlayer[a];})[0];
   const topRunner = state.players.find(function(p){return p.id===topRunnerId;});
@@ -4725,22 +4727,90 @@ function renderHowlFeed() {
     const player = state.players.find(function(p) { return p.id === h.player_id; });
     // System recap howls
     if (h.is_recap || h.player_id === 'system') {
-      const likes = h.likes || [];
       const isConquest = h.id && h.id.startsWith('challenge_');
-      const conquestBg = isConquest ? 'linear-gradient(135deg,rgba(139,0,0,0.12),rgba(200,144,10,0.1),var(--parchment))' : 'linear-gradient(135deg,rgba(200,144,10,0.08),var(--parchment))';
-      const conquestBorder = isConquest ? '2px solid var(--amber)' : '1.5px solid var(--border)';
-      return '<div class="chronicle-entry" style="--house-color:var(--amber);background:' + conquestBg + ';border:' + conquestBorder + ';' + (isConquest?'box-shadow:0 0 16px rgba(200,144,10,0.2);':'') + '">' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
-        '<span style="font-size:1.2rem">📊</span>' +
-        '<span style="font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--amber)">THE PACK REPORT</span>' +
-        '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
+      const isDuel = h.id && (h.id.startsWith('duel_'));
+      const isBadge = h.id && h.id.startsWith('badge_');
+
+      // Conquest / duel / badge howls keep existing minimal style
+      if (isConquest || isDuel || isBadge) {
+        const conquestBg = isConquest ? 'linear-gradient(135deg,rgba(139,0,0,0.12),rgba(200,144,10,0.1),var(--parchment))' : 'linear-gradient(135deg,rgba(200,144,10,0.08),var(--parchment))';
+        const conquestBorder = isConquest ? '2px solid var(--amber)' : '1.5px solid var(--border)';
+        return '<div class="chronicle-entry" style="--house-color:var(--amber);background:' + conquestBg + ';border:' + conquestBorder + ';' + (isConquest?'box-shadow:0 0 16px rgba(200,144,10,0.2);':'') + '">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+          '<span style="font-size:1.2rem">' + (isConquest?'⚔️':isBadge?'🏅':'⚔') + '</span>' +
+          '<span style="font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--amber)">THE PACK REPORT</span>' +
+          '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
+          '</div>' +
+          '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);white-space:pre-line">' + renderMentions(h.message) + '</div>' +
+          '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">' +
+          reactionBarHTML(h, h.id, 'toggleHowlReaction') +
+          '<div style="flex:1"></div>' +
+          '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
+          '</div></div>';
+      }
+
+      // Weekly recap — structured card
+      var msg = h.message || '';
+      // Parse out stats lines from message
+      var lines = msg.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+      var trialLine = lines.find(function(l){ return l.startsWith('The pack logged'); }) || '';
+      var primusLine = lines.find(function(l){ return l.includes('Weekly Primus'); }) || '';
+      var marchLine = lines.find(function(l){ return l.includes('Longest march'); }) || '';
+      var perfectLine = lines.find(function(l){ return l.includes('Perfect Week'); }) || '';
+
+      // Extract values
+      var trialCount = (trialLine.match(/(\d+) trial/) || [])[1] || '';
+      var primusName = primusLine.replace(/.*Weekly Primus:\s*/,'').replace(/\s*—.*/, '').trim();
+      var primusLaurels = (primusLine.match(/\+(\d+) Laurels/) || [])[1] || '';
+      var marchName = marchLine.replace(/.*Longest march:\s*/,'').replace(/\s*·.*/, '').trim();
+      var marchMiles = (marchLine.match(/([\d.]+) miles/) || [])[1] || '';
+      var perfectNames = perfectLine.replace(/.*Perfect Week:\s*/,'').replace(/\..*/, '').trim();
+
+      // Week label from timestamp
+      var weekDate = h.date ? new Date(h.date + 'T12:00:00') : new Date();
+      var weekLabel = weekDate.toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'});
+
+      function statRow(icon, label, value) {
+        if (!value) return '';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">' +
+          '<span style="font-size:1rem;flex-shrink:0">' + icon + '</span>' +
+          '<span style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light);flex-shrink:0;min-width:80px">' + label + '</span>' +
+          '<span style="font-family:Crimson Pro,serif;font-size:0.92rem;color:var(--ink-mid);flex:1">' + value + '</span>' +
+          '</div>';
+      }
+
+      var statsHTML =
+        statRow('⚔️', 'TRIALS', trialCount ? trialCount + ' logged by the pack' : '') +
+        statRow('🏅', 'WEEKLY PRIMUS', primusName ? primusName + (primusLaurels ? ' &nbsp;·&nbsp; +' + primusLaurels + 'L' : '') : '') +
+        statRow('🏃', 'LONGEST MARCH', marchName ? marchName + (marchMiles ? ' &nbsp;·&nbsp; ' + marchMiles + ' mi' : '') : '') +
+        statRow('⭐', 'PERFECT WEEK', perfectNames || '');
+
+      return '<div class="chronicle-entry" style="--house-color:var(--amber);background:linear-gradient(135deg,rgba(26,20,16,0.97),rgba(42,26,16,0.95));border:1.5px solid rgba(200,144,10,0.4);box-shadow:0 4px 20px rgba(0,0,0,0.3),0 0 0 1px rgba(200,144,10,0.15);border-radius:8px;padding:0;overflow:hidden">' +
+        // Header bar
+        '<div style="background:linear-gradient(90deg,#1a1410,#2a1a10);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(200,144,10,0.3)">' +
+          '<div style="display:flex;align-items:center;gap:8px">' +
+            '<span style="font-size:1rem">📊</span>' +
+            '<div>' +
+              '<div style="font-family:Cinzel,serif;font-size:0.72rem;font-weight:900;letter-spacing:0.15em;color:#f0d080">WEEKLY PACK REPORT</div>' +
+              '<div style="font-family:Crimson Pro,serif;font-size:0.7rem;font-style:italic;color:rgba(240,208,128,0.5);margin-top:1px">Rock \'n\' Roll Arizona · Jan 17, 2027</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="text-align:right">' +
+            '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:rgba(240,208,128,0.7)">' + weekLabel + '</div>' +
+          '</div>' +
         '</div>' +
-        '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);white-space:pre-line">' + renderMentions(h.message) + '</div>' +
-        '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">' +
-        reactionBarHTML(h, h.id, 'toggleHowlReaction') +
-        '<div style="flex:1"></div>' +
-        '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
-        '</div></div>';
+        // Stats body
+        '<div style="padding:10px 14px;background:var(--parchment)">' +
+          statsHTML +
+          '<div style="font-family:Crimson Pro,serif;font-size:0.78rem;font-style:italic;color:var(--amber);padding-top:8px;text-align:right">Per aspera ad astra 🐺</div>' +
+        '</div>' +
+        // Actions
+        '<div style="display:flex;gap:6px;padding:8px 14px;border-top:1px solid var(--border);background:var(--parchment-dark)">' +
+          reactionBarHTML(h, h.id, 'toggleHowlReaction') +
+          '<div style="flex:1"></div>' +
+          '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
+        '</div>' +
+        '</div>';
     }
     if (!player) return '';
     const hc = (h.player_laurels >= 9500) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
