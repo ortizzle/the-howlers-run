@@ -2795,10 +2795,12 @@ function calcLaurels(workout, miles, minutes) {
 
 // ─── DUELS ───────────────────────────────────────────────────────────────────
 function getThisWeekKey() {
+  // Use AZ time (UTC-7) to avoid UTC rollover causing wrong week date
   var now = new Date();
-  var monday = new Date(now);
-  monday.setDate(now.getDate() - ((now.getDay()+6)%7));
-  monday.setHours(0,0,0,0);
+  var az = new Date(now.getTime() - 7 * 60 * 60 * 1000);
+  var dayOfWeek = az.getUTCDay(); // 0=Sun, 1=Mon...
+  var monday = new Date(az);
+  monday.setUTCDate(az.getUTCDate() - ((dayOfWeek + 6) % 7));
   return monday.toISOString().split('T')[0];
 }
 
