@@ -3331,8 +3331,8 @@ async function checkAndPostChallengeHowls() {
     }
 
     var msg = isPack
-      ? '&#127942; PACK VICTORY: '+ch.name+'! The entire pack rises together. +'+ch.reward+'L each. &#9876; Per aspera ad astra. &#128058;&#10024;'
-      : '&#127942; CHALLENGE CONQUERED: '+ch.name+'! @'+winner.name+' strikes first. +'+ch.reward+'L awarded. &#9876; Per aspera ad astra. &#128058;&#10024;';
+      ? '🏆 PACK VICTORY: '+ch.name+'! The entire pack rises together. +'+ch.reward+'L each. ⚔ Per aspera ad astra. 🐺✨'
+      : '🏆 CHALLENGE CONQUERED: '+ch.name+'! @'+winner.name+' strikes first. +'+ch.reward+'L awarded. ⚔ Per aspera ad astra. 🐺✨';
 
     if (!state.howls.some(h=>h.id==='challenge_'+ch.id)) {
       state.howls.push({id:'challenge_'+ch.id,player_id:'system',player_laurels:9999,message:msg,date:getAZDate(),timestamp:new Date().toISOString(),likes:0});
@@ -3340,7 +3340,7 @@ async function checkAndPostChallengeHowls() {
 
     try { await saveState(); } catch(e) { console.error('Challenge save failed:',ch.id,e); }
     setTimeout(function(){ launchConfetti('conquest'); }, 500);
-    showToast('&#127942; '+ch.name+' conquered! '+(isPack?'+'+ch.reward+'L for the pack!':'Go '+winner.name+'!'));
+    showToast('🏆 '+ch.name+' conquered! '+(isPack?'+'+ch.reward+'L for the pack!':'Go '+winner.name+'!'));
     renderAll();
   }
 }
@@ -3946,7 +3946,7 @@ function postBadgeHowl(pid, badgeKey) {
       milestone_bonus: laurelReward
     });
   }
-  var msg = def.icon + ' BADGE EARNED: ' + def.name + ' ' + tierLabel + ' (' + tierWord + ')! @' + player.name + ' — ' + (tierDef ? tierDef.desc : '') + '. +' + laurelReward + 'L awarded. &#9876; Per aspera ad astra. &#128058;';
+  var msg = def.icon + ' BADGE EARNED: ' + def.name + ' ' + tierLabel + ' (' + tierWord + ')! @' + player.name + ' — ' + (tierDef ? tierDef.desc : '') + '. +' + laurelReward + 'L awarded. ⚔ Per aspera ad astra. 🐺';
   state.howls.push({id:howlId, player_id:'system', player_laurels:9999, message:msg, date:getAZDate(), timestamp:new Date().toISOString(), likes:0});
 }
 
@@ -4743,7 +4743,7 @@ function renderHowlFeed() {
           '<span style="font-family:Cinzel,serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--amber)">THE PACK REPORT</span>' +
           '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
           '</div>' +
-          '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);white-space:pre-line">' + renderMentions(h.message) + '</div>' +
+          '<div style="font-family:Crimson Pro,serif;font-size:0.95rem;color:var(--ink-mid);white-space:pre-line">' + h.message + '</div>' +
           '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">' +
           reactionBarHTML(h, h.id, 'toggleHowlReaction') +
           '<div style="flex:1"></div>' +
