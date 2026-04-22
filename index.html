@@ -2258,10 +2258,22 @@ async function saveState() {
           });
         }
 
-        // Merge challenges_won — union of local and remote
+        // Merge challenges_won — union winners arrays, support both old {id,name} and new [{id,name,place}] format
         if (remoteState.challenges_won) {
           Object.keys(remoteState.challenges_won).forEach(function(cid) {
-            if (!state.challenges_won[cid]) state.challenges_won[cid] = remoteState.challenges_won[cid];
+            var remote = remoteState.challenges_won[cid];
+            var local = state.challenges_won[cid];
+            // Normalize both to arrays
+            var remoteArr = Array.isArray(remote) ? remote : (remote ? [remote] : []);
+            var localArr = Array.isArray(local) ? local : (local ? [local] : []);
+            // Union by place number
+            remoteArr.forEach(function(rw) {
+              var place = rw.place || 1;
+              if (!localArr.some(function(lw){ return (lw.place||1) === place; })) {
+                localArr.push(rw);
+              }
+            });
+            state.challenges_won[cid] = localArr.length === 1 ? localArr[0] : localArr;
           });
         }
       }
@@ -3191,39 +3203,56 @@ function retroactiveChallengePayout() {
   CHALLENGES_DEF.forEach(function(ch) {
     var wonEntry = state.challenges_won[ch.id];
     if (!wonEntry) return; // not won
-    // Check if reward already paid
+
+    // Check if reward already paid — handle both old (ch_reward_X) and new (ch_reward_X_p1) IDs
     var alreadyPaid = state.workouts.some(function(w) {
-      return w.id && w.id.indexOf('ch_reward_' + ch.id) === 0;
+      return w.id && (
+        w.id === 'ch_reward_' + ch.id ||        // old single-winner format
+        w.id === 'ch_reward_' + ch.id + '_p1'   // new tiered format
+      );
     });
     if (alreadyPaid) return;
-    // Find winner — check challenges_won stored value first
-    var winnerId = null;
-    var _sw = state.challenges_won[ch.id];
-    if (_sw && _sw.id) { winnerId = _sw.id; }
-    else if (_sw && _sw.name) { var _mp=state.players.find(function(p){return p.name===_sw.name;}); if(_mp) winnerId=_mp.id; }
-    if (!winnerId && ch.type === 'duel') {
-      if (ch.id === 'first_blood') {
-        var first = state.workouts.filter(function(w){ return !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); }).slice().sort(function(a,b){ return new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date); })[0];
-        if (first) winnerId = first.player_id;
-      } else {
-        // For other duel challenges, find player with highest relevant stat
-        var best = 0, bestId = null;
-        state.players.forEach(function(p) {
-          var s = getStats(p.id);
-          var val = 0;
-          if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) val = s.laurels;
-          else if (ch.id === 'iron_league') val = s.miles;
-          else if (ch.id === 'the_tireless') val = s.trials;
-          else if (['the_unbroken','unbreakable'].includes(ch.id)) val = s.streak;
-          else if (ch.id === 'primus_pares') val = s.weekSet ? s.weekSet.size : 0;
-          if (val > best) { best = val; bestId = p.id; }
-        });
-        winnerId = bestId;
+
+    // Normalize wonEntry to array
+    var wonArr = Array.isArray(wonEntry) ? wonEntry : [Object.assign({place:1}, wonEntry)];
+    var firstWinner = wonArr[0];
+
+    // Find winner ID from stored data or fallback detection
+    var winnerId = firstWinner.id || null;
+    if (!winnerId && firstWinner.name && firstWinner.name !== 'The Pack') {
+      var _mp = state.players.find(function(p){ return p.name === firstWinner.name; });
+      if (_mp) winnerId = _mp.id;
+    }
+
+    if (ch.type === 'duel') {
+      // Fallback detection if no winner ID stored
+      if (!winnerId) {
+        if (ch.id === 'first_blood') {
+          var first = state.workouts.filter(function(w){ return !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); }).slice().sort(function(a,b){ return new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date); })[0];
+          if (first) winnerId = first.player_id;
+        } else {
+          var best = 0, bestId = null;
+          state.players.forEach(function(p) {
+            var s = getStats(p.id);
+            var val = 0;
+            if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) val = s.laurels;
+            else if (ch.id === 'iron_league') val = s.miles;
+            else if (ch.id === 'the_tireless') val = s.trials;
+            else if (['the_unbroken','unbreakable'].includes(ch.id)) val = s.streak;
+            else if (ch.id === 'primus_pares') val = s.weekSet ? s.weekSet.size : 0;
+            if (val > best) { best = val; bestId = p.id; }
+          });
+          winnerId = bestId;
+        }
       }
       if (winnerId) {
-        state.workouts.push({ id: 'ch_reward_' + ch.id, player_id: winnerId, workout: 'milestone_bonus', date: getAZDate(), laurels_base: ch.reward, quote: 'Retroactive glory. The laurels were always yours. ✦', timestamp: new Date().toISOString(), milestone_label: 'Challenge: ' + ch.name, milestone_bonus: ch.reward });
-        changed = true;
-        console.log('Retroactive payout: ' + ch.name + ' +' + ch.reward + 'L');
+        // Use new _p1 reward ID to avoid future double-pay
+        var rewardId = 'ch_reward_' + ch.id + '_p1';
+        if (!state.workouts.some(function(w){ return w.id === rewardId; })) {
+          state.workouts.push({ id: rewardId, player_id: winnerId, workout: 'milestone_bonus', date: getAZDate(), laurels_base: ch.reward, quote: 'Retroactive glory. The laurels were always yours. ✦', timestamp: new Date().toISOString(), milestone_label: '⚔ Challenge 1ST: ' + ch.name, milestone_bonus: ch.reward });
+          changed = true;
+          console.log('Retroactive payout: ' + ch.name + ' +' + ch.reward + 'L');
+        }
       }
     } else {
       // Pack challenge — pay everyone
@@ -3247,100 +3276,132 @@ async function checkAndPostChallengeHowls() {
   buildStatsCache();
   var sm = _statsCache;
 
+  // Helper: normalize challenges_won entry to array
+  function getChallengeWinners(cid) {
+    var w = state.challenges_won[cid];
+    if (!w) return [];
+    if (Array.isArray(w)) return w;
+    return [Object.assign({place:1}, w)];
+  }
+
+  var PLACE_MULT  = {1:1.0, 2:0.5, 3:0.25};
+  var PLACE_LABEL = {1:'1ST', 2:'2ND', 3:'3RD'};
+  var PLACE_QUOTE = {1:'Victory tastes of iron and laurels. ✦', 2:'Second to the laurel — but the march is not over. ✦', 3:'Bronze in the conquest. Rise further, Howler. ✦'};
+
+  // ── Duel challenges — tiered podium ──────────────────────────────────────
   for (var ci = 0; ci < CHALLENGES_DEF.length; ci++) {
     var ch = CHALLENGES_DEF[ci];
+    if (ch.type !== 'duel') continue;
+    var winners = getChallengeWinners(ch.id);
+    if (winners.length >= 3) continue;
+
+    // Build ordered list of all players who've achieved the goal
+    var achievers = [];
+    if (ch.id==='first_blood') {
+      var s1=state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date));
+      var seen1=new Set(); s1.forEach(function(w){if(!seen1.has(w.player_id)){seen1.add(w.player_id);var p=state.players.find(p=>p.id===w.player_id);if(p)achievers.push(p);}});
+    } else if (ch.id==='the_faithful') {
+      achievers=state.players.filter(p=>(sm[p.id]||{}).perfectWeeks>=ch.goal);
+    } else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) {
+      achievers=state.players.filter(p=>(sm[p.id]||{}).laurels>=ch.goal);
+    } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
+      var qr=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date));
+      var seenR=new Set(); qr.forEach(function(w){if(!seenR.has(w.player_id)){seenR.add(w.player_id);var p=state.players.find(p=>p.id===w.player_id);if(p)achievers.push(p);}});
+    } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
+      achievers=state.players.filter(p=>(sm[p.id]||{}).streak>=ch.goal);
+    } else if (ch.id==='the_swift') {
+      var wt={};state.workouts.filter(w=>w.workout==='tempo').forEach(w=>{var k=getWeekKey(w.date)+'|'+w.player_id;wt[k]=(wt[k]||0)+1;});
+      Object.keys(wt).filter(k=>wt[k]>=ch.goal).forEach(function(k){var p=state.players.find(p=>p.id===k.split('|')[1]);if(p)achievers.push(p);});
+    } else if (ch.id==='primus_pares') {
+      achievers=state.players.filter(p=>(sm[p.id]&&sm[p.id].weekSet&&sm[p.id].weekSet.size>=ch.goal));
+    } else if (ch.id==='iron_league') {
+      achievers=state.players.filter(p=>(sm[p.id]||{}).miles>=ch.goal);
+    } else if (ch.id==='the_tireless') {
+      achievers=state.players.filter(p=>(sm[p.id]||{}).trials>=ch.goal);
+    } else if (ch.id==='the_dancer') {
+      achievers=state.players.filter(p=>state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length>=ch.goal);
+    } else if (ch.id==='the_ironborn') {
+      achievers=state.players.filter(p=>(sm[p.id]||{}).strength>=ch.goal);
+    } else if (ch.id==='the_sage') {
+      achievers=state.players.filter(p=>(sm[p.id]||{}).mobility>=ch.goal);
+    } else if (ch.id==='the_endurance') {
+      achievers=state.players.filter(p=>state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((s,w)=>s+(w.minutes||0),0)>=ch.goal);
+    } else if (ch.id==='the_peloton_ace') {
+      achievers=state.players.filter(p=>(sm[p.id]||{}).pelotons>=ch.goal);
+    } else if (ch.id==='race_finisher') {
+      var rws=state.workouts.filter(w=>w.workout==='race').slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date));
+      var seenRace=new Set(); rws.forEach(function(w){if(!seenRace.has(w.player_id)){seenRace.add(w.player_id);var p=state.players.find(p=>p.id===w.player_id);if(p)achievers.push(p);}});
+    }
+    achievers=achievers.filter(Boolean);
+    if (achievers.length===0) continue;
+
+    var awardedIds=new Set(winners.map(function(w){return w.id;}));
+    var newWinners=[];
+    for (var ai=0;ai<achievers.length&&(winners.length+newWinners.length)<3;ai++) {
+      var a=achievers[ai];
+      if (awardedIds.has(a.id)||newWinners.some(function(w){return w.id===a.id;})) continue;
+      var place=winners.length+newWinners.length+1;
+      newWinners.push({id:a.id,name:a.name,place:place,date:getAZDate()});
+    }
+    if (newWinners.length===0) continue;
+
+    state.challenges_won[ch.id]=winners.concat(newWinners);
+
+    for (var wi=0;wi<newWinners.length;wi++) {
+      var nw=newWinners[wi];
+      var reward=Math.round(ch.reward*(PLACE_MULT[nw.place]||0.25));
+      var rewardId='ch_reward_'+ch.id+'_p'+nw.place;
+      if (!state.workouts.some(function(w){return w.id===rewardId;})) {
+        state.workouts.push({id:rewardId,player_id:nw.id,workout:'milestone_bonus',date:getAZDate(),laurels_base:reward,quote:PLACE_QUOTE[nw.place],timestamp:new Date().toISOString(),milestone_label:'⚔ Challenge '+PLACE_LABEL[nw.place]+': '+ch.name,milestone_bonus:reward});
+      }
+      var howlId='challenge_'+ch.id+'_p'+nw.place;
+      if (!state.howls.some(function(h){return h.id===howlId;})) {
+        var msg=nw.place===1
+          ?'🏆 CHALLENGE CONQUERED: '+ch.name+'! @'+nw.name+' strikes first. +'+reward+'L awarded. ⚔ Per aspera ad astra. 🐺✨'
+          :nw.place===2
+          ?'⚔ 2ND STRIKE: '+ch.name+'! @'+nw.name+' claims the silver laurel. +'+reward+'L awarded. Not first — but still standing. 🐺'
+          :'🛡 3RD STRIKE: '+ch.name+'! @'+nw.name+' earns the bronze laurel. +'+reward+'L awarded. The march continues. 🐺';
+        state.howls.push({id:howlId,player_id:'system',player_laurels:9999,message:msg,date:getAZDate(),timestamp:new Date().toISOString(),likes:0});
+      }
+      try { await saveState(); } catch(e) { console.error('Challenge save failed:',ch.id,nw.place,e); }
+      if (nw.place===1) setTimeout(function(){launchConfetti('conquest');},500);
+      showToast((nw.place===1?'🏆':nw.place===2?'⚔':'🛡')+' '+PLACE_LABEL[nw.place]+' — '+ch.name+': '+nw.name+' +'+reward+'L!');
+      renderAll();
+    }
+  }
+
+  // ── Pack challenges — all-or-nothing (unchanged) ─────────────────────────
+  for (var pci=0;pci<CHALLENGES_DEF.length;pci++) {
+    var ch=CHALLENGES_DEF[pci];
+    if (ch.type!=='pack') continue;
     if (state.challenges_won[ch.id]) continue;
-
-    var winner = null;
-
-    if (ch.type === 'duel') {
-      if (ch.id==='first_blood') {
-        var fw = state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
-        if (fw) winner = state.players.find(p=>p.id===fw.player_id);
-      } else if (ch.id==='the_faithful') {
-        winner = state.players.find(p=>(sm[p.id]||{}).perfectWeeks>=1);
-      } else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) {
-        var bestL=0,bestLP=null;
-        state.players.forEach(p=>{var l=(sm[p.id]||{}).laurels||0;if(l>bestL&&l>=ch.goal){bestL=l;bestLP=p;}});
-        winner=bestLP;
-      } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
-        var bwArr=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date));
-        if (bwArr.length>0) winner=state.players.find(p=>p.id===bwArr[0].player_id);
-      } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
-        winner=state.players.find(p=>(sm[p.id]||{}).streak>=ch.goal);
-      } else if (ch.id==='the_swift') {
-        var wt={};
-        state.workouts.filter(w=>w.workout==='tempo').forEach(w=>{var k=getWeekKey(w.date)+'|'+w.player_id;wt[k]=(wt[k]||0)+1;});
-        var swk=Object.keys(wt).find(k=>wt[k]>=3);
-        if (swk) winner=state.players.find(p=>p.id===swk.split('|')[1]);
-      } else if (ch.id==='primus_pares') {
-        winner=state.players.find(p=>(sm[p.id]&&sm[p.id].weekSet&&sm[p.id].weekSet.size>=ch.goal));
-      } else if (ch.id==='iron_league') {
-        winner=state.players.find(p=>(sm[p.id]||{}).miles>=ch.goal);
-      } else if (ch.id==='the_tireless') {
-        winner=state.players.find(p=>(sm[p.id]||{}).trials>=ch.goal);
-      } else if (ch.id==='the_dancer') {
-        var danP=null;state.players.forEach(p=>{if(state.workouts.filter(w=>w.player_id===p.id&&w.workout==='cardio').length>=ch.goal)danP=p;});
-        winner=danP;
-      } else if (ch.id==='the_ironborn') {
-        winner=state.players.find(p=>(sm[p.id]||{}).strength>=ch.goal);
-      } else if (ch.id==='the_sage') {
-        winner=state.players.find(p=>(sm[p.id]||{}).mobility>=ch.goal);
-      } else if (ch.id==='the_endurance') {
-        var endP=null;state.players.forEach(p=>{var mins=state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((s,w)=>s+(w.minutes||0),0);if(mins>=ch.goal)endP=p;});
-        winner=endP;
-      } else if (ch.id==='the_peloton_ace') {
-        winner=state.players.find(p=>(sm[p.id]||{}).pelotons>=ch.goal);
-      } else if (ch.id==='race_finisher') {
-        var rw=state.workouts.find(w=>w.workout==='race');
-        if (rw) winner=state.players.find(p=>p.id===rw.player_id);
+    var activePlayers=state.players.filter(function(p){return state.workouts.some(function(w){return w.player_id===p.id&&!['milestone_bonus','duel_win','duel_loss'].includes(w.workout);});});
+    var enoughPlayers=activePlayers.length>=4;
+    var packWon=false;
+    if (enoughPlayers&&ch.id==='pack_trains') packWon=activePlayers.every(p=>(sm[p.id]||{}).trials>=ch.goal);
+    else if (enoughPlayers&&['society_rising','the_rising_tide'].includes(ch.id)) packWon=activePlayers.reduce((s,p)=>s+((sm[p.id]||{}).laurels||0),0)>=ch.goal;
+    else if (enoughPlayers&&ch.id==='the_iron_pack') packWon=activePlayers.every(p=>(sm[p.id]||{}).strength>=ch.goal);
+    else if (enoughPlayers&&ch.id==='warriors_all') packWon=activePlayers.every(p=>(state.badges_awarded[p.id]||[]).length>=1);
+    else if (enoughPlayers&&ch.id==='the_full_march') packWon=activePlayers.every(p=>(sm[p.id]||{}).maxSingleRun>=ch.goal);
+    else if (enoughPlayers&&ch.id==='cardio_pack') packWon=activePlayers.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
+    else if (enoughPlayers&&ch.id==='mobile_pack') packWon=activePlayers.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility'));
+    else if (enoughPlayers&&ch.id==='iron_pack_hard') packWon=activePlayers.every(p=>(sm[p.id]||{}).strength>=ch.goal);
+    else if (enoughPlayers&&ch.id==='pack_endurance') packWon=activePlayers.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0),0)>=ch.goal;
+    if (!packWon) continue;
+    state.challenges_won[ch.id]={name:'The Pack',place:1};
+    state.players.forEach(function(p){
+      var pid='ch_reward_'+ch.id+'_'+p.id;
+      if (!state.workouts.some(w=>w.id===pid)) {
+        state.workouts.push({id:pid,player_id:p.id,workout:'milestone_bonus',date:getAZDate(),laurels_base:ch.reward,quote:'The pack conquers together. ✦',timestamp:new Date().toISOString(),milestone_label:'⚔ Challenge: '+ch.name,milestone_bonus:ch.reward});
       }
-    } else {
-      var activePlayers=state.players.filter(function(p){return state.workouts.some(function(w){return w.player_id===p.id&&!['milestone_bonus','duel_win','duel_loss'].includes(w.workout);});});
-      var enoughPlayers=activePlayers.length>=4;
-      var packWon=false;
-      if (enoughPlayers&&ch.id==='pack_trains') packWon=activePlayers.every(p=>(sm[p.id]||{}).trials>=ch.goal);
-      else if (enoughPlayers&&['society_rising','the_rising_tide'].includes(ch.id)) packWon=activePlayers.reduce((s,p)=>s+((sm[p.id]||{}).laurels||0),0)>=ch.goal;
-      else if (enoughPlayers&&ch.id==='the_iron_pack') packWon=activePlayers.every(p=>(sm[p.id]||{}).strength>=ch.goal);
-      else if (enoughPlayers&&ch.id==='warriors_all') packWon=activePlayers.every(p=>(state.badges_awarded[p.id]||[]).length>=1);
-      else if (enoughPlayers&&ch.id==='the_full_march') packWon=activePlayers.every(p=>(sm[p.id]||{}).maxSingleRun>=ch.goal);
-      else if (enoughPlayers&&ch.id==='cardio_pack') packWon=activePlayers.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='cardio'));
-      else if (enoughPlayers&&ch.id==='mobile_pack') packWon=activePlayers.every(p=>state.workouts.some(w=>w.player_id===p.id&&w.workout==='mobility'));
-      else if (enoughPlayers&&ch.id==='iron_pack_hard') packWon=activePlayers.every(p=>(sm[p.id]||{}).strength>=ch.goal);
-      else if (enoughPlayers&&ch.id==='pack_endurance') packWon=activePlayers.reduce((s,p)=>s+state.workouts.filter(w=>w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes).reduce((a,w)=>a+(w.minutes||0),0),0)>=ch.goal;
-      if (packWon) winner={name:'The Pack',id:null};
+    });
+    var packHowlId='challenge_'+ch.id+'_p1';
+    if (!state.howls.some(h=>h.id===packHowlId)&&!state.howls.some(h=>h.id==='challenge_'+ch.id)) {
+      state.howls.push({id:packHowlId,player_id:'system',player_laurels:9999,message:'🏆 PACK VICTORY: '+ch.name+'! The entire pack rises together. +'+ch.reward+'L each. ⚔ Per aspera ad astra. 🐺✨',date:getAZDate(),timestamp:new Date().toISOString(),likes:0});
     }
-
-    if (!winner) continue;
-
-    var isPack = winner.name === 'The Pack';
-    state.challenges_won[ch.id] = isPack ? {name:'The Pack'} : {id:winner.id,name:winner.name};
-
-    if (isPack) {
-      state.players.forEach(function(p){
-        var pid='ch_reward_'+ch.id+'_'+p.id;
-        if (!state.workouts.some(w=>w.id===pid)) {
-          state.workouts.push({id:pid,player_id:p.id,workout:'milestone_bonus',date:getAZDate(),laurels_base:ch.reward,quote:'The pack conquers together. \u2726',timestamp:new Date().toISOString(),milestone_label:'\u2694 Challenge: '+ch.name,milestone_bonus:ch.reward});
-        }
-      });
-    } else if (winner.id) {
-      var rid='ch_reward_'+ch.id;
-      if (!state.workouts.some(w=>w.id===rid)) {
-        state.workouts.push({id:rid,player_id:winner.id,workout:'milestone_bonus',date:getAZDate(),laurels_base:ch.reward,quote:'Victory tastes of iron and laurels. \u2726',timestamp:new Date().toISOString(),milestone_label:'\u2694 Challenge: '+ch.name,milestone_bonus:ch.reward});
-      }
-    }
-
-    var msg = isPack
-      ? '🏆 PACK VICTORY: '+ch.name+'! The entire pack rises together. +'+ch.reward+'L each. ⚔ Per aspera ad astra. 🐺✨'
-      : '🏆 CHALLENGE CONQUERED: '+ch.name+'! @'+winner.name+' strikes first. +'+ch.reward+'L awarded. ⚔ Per aspera ad astra. 🐺✨';
-
-    if (!state.howls.some(h=>h.id==='challenge_'+ch.id)) {
-      state.howls.push({id:'challenge_'+ch.id,player_id:'system',player_laurels:9999,message:msg,date:getAZDate(),timestamp:new Date().toISOString(),likes:0});
-    }
-
-    try { await saveState(); } catch(e) { console.error('Challenge save failed:',ch.id,e); }
-    setTimeout(function(){ launchConfetti('conquest'); }, 500);
-    showToast('🏆 '+ch.name+' conquered! '+(isPack?'+'+ch.reward+'L for the pack!':'Go '+winner.name+'!'));
+    try { await saveState(); } catch(e) { console.error('Pack challenge save failed:',ch.id,e); }
+    setTimeout(function(){launchConfetti('conquest');},500);
+    showToast('🏆 '+ch.name+' conquered! +'+ch.reward+'L for the pack!');
     renderAll();
   }
 }
@@ -4414,6 +4475,8 @@ function renderChallenges() {
   grid.innerHTML = CHALLENGES_DEF.map(ch => {
     let progress = 0, progressMax = ch.goal, progressLabel = '', winner = null;
     const won = state.challenges_won[ch.id];
+    // Normalize won to array for display
+    const wonArr = won ? (Array.isArray(won) ? won : [Object.assign({place:1},won)]) : [];
     if (ch.type === 'duel') {
       if (ch.id==='first_blood') {
         const first=state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
@@ -4514,20 +4577,35 @@ function renderChallenges() {
     }
     const pct = progressMax > 0 ? Math.min(100, (progress / progressMax) * 100) : 0;
     progressLabel = `${progress} / ${progressMax}`;
-    if (won && !winner) winner = won.name || null;
-    if (won && !winner) winner = won.name || null;
-    const isComplete = won || winner;
+    if (won && !winner) winner = Array.isArray(won) ? won[0]?.name : (won.name || null);
+    if (won && !winner) winner = Array.isArray(won) ? won[0]?.name : (won.name || null);
+    const isComplete = wonArr.length >= 3 || (wonArr.length > 0 && wonArr[0].name === 'The Pack');
 
     // Build flip back content
     let backHTML = '';
     if (ch.type === 'duel') {
-      if (isComplete && won) {
-        const winDate = won.date ? new Date(won.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-        backHTML = `<div style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:8px;border-bottom:1px solid var(--amber);padding-bottom:4px">⚔ CONQUEST RECORD</div>
-          <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:4px">★ ${won.name||winner}</div>
-          ${winDate ? `<div style="font-family:'Crimson Pro',serif;font-size:0.82rem;color:var(--ink-light);margin-bottom:8px">${winDate}</div>` : ''}
-          <div style="font-family:'Crimson Pro',serif;font-size:0.82rem;font-style:italic;color:var(--ink-mid)">"Victory tastes of iron and laurels."</div>
-          <div style="margin-top:8px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;color:var(--amber)">+${ch.reward}L AWARDED</div>`;
+      const wonArr = won ? (Array.isArray(won) ? won : [Object.assign({place:1},won)]) : [];
+      if (isComplete && wonArr.length > 0) {
+        const placeIcon = {1:'🏆',2:'⚔',3:'🛡'};
+        const placeLabel = {1:'1ST',2:'2ND',3:'3RD'};
+        const placeMult = {1:1.0,2:0.5,3:0.25};
+        backHTML = `<div style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:8px;border-bottom:1px solid var(--amber);padding-bottom:4px">⚔ CONQUEST RECORD</div>` +
+          wonArr.map(function(w) {
+            var reward = Math.round(ch.reward * (placeMult[w.place||1]||0.25));
+            var wDate = w.date ? new Date(w.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+            return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+              <span style="font-size:0.9rem">${placeIcon[w.place||1]}</span>
+              <div style="flex:1">
+                <div style="font-family:'Cinzel',serif;font-size:0.72rem;font-weight:700;color:var(--ink)">${w.name||'?'}</div>
+                ${wDate?`<div style="font-family:'Crimson Pro',serif;font-size:0.7rem;color:var(--ink-light)">${wDate}</div>`:''}
+              </div>
+              <div style="text-align:right">
+                <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:700;color:var(--amber)">${placeLabel[w.place||1]}</div>
+                <div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--amber)">+${reward}L</div>
+              </div>
+            </div>`;
+          }).join('') +
+          (wonArr.length < 3 ? `<div style="font-family:'Crimson Pro',serif;font-size:0.75rem;font-style:italic;color:var(--ink-light);margin-top:6px">${3-wonArr.length} place${wonArr.length<2?'s':''} remaining on the podium.</div>` : '');
       } else {
         const standings = state.players.map(p => {
           const s = statsMap[p.id];
@@ -4635,11 +4713,12 @@ function renderChallenges() {
             <div class="progress-bar-fill" style="width:${pct}%"></div>
           </div>
           <div class="progress-label"><span>${progressLabel}</span><span>${Math.round(pct)}%</span></div>
-          ${winner ? `<div class="challenge-winner" style="display:flex;align-items:center;gap:6px">
-            <span style="color:${winnerColor}">★</span>
-            <span style="color:var(--ink-light)">Won by:</span>
-            <strong style="color:${winnerColor}">${winner}</strong>
-            <span style="margin-left:auto;font-family:'Cinzel',serif;font-size:0.7rem;font-weight:700;color:${winnerColor}">+${ch.reward}L</span>
+          ${wonArr.length > 0 ? `<div class="challenge-winner" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="color:${winnerColor}">🏆</span>
+            <strong style="color:${winnerColor}">${wonArr[0].name||winner}</strong>
+            <span style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;color:${winnerColor}">+${ch.reward}L</span>
+            ${wonArr.length>1?`<span style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--ink-light);margin-left:4px">+${wonArr.length-1} more on podium</span>`:''}
+            ${wonArr.length<3?`<span style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--ink-light);font-style:normal">(${3-wonArr.length} place${wonArr.length===2?'':'s'} open)</span>`:''}
           </div>` : ''}
         </div>
         <div class="ch-flip-back">${backHTML}</div>
