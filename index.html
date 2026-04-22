@@ -4585,7 +4585,7 @@ function renderChallenges() {
     let backHTML = '';
     if (ch.type === 'duel') {
       const wonArr = won ? (Array.isArray(won) ? won : [Object.assign({place:1},won)]) : [];
-      if (isComplete && wonArr.length > 0) {
+      if (wonArr.length > 0) {
         const placeIcon = {1:'🏆',2:'⚔',3:'🛡'};
         const placeLabel = {1:'1ST',2:'2ND',3:'3RD'};
         const placeMult = {1:1.0,2:0.5,3:0.25};
