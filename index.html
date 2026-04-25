@@ -3,7 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Howlers — Red Rising Training Tracker</title>
+<title>The Howlers</title>
+
+<!-- PWA Meta -->
+<meta name="application-name" content="The Howlers">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The Howlers">
+<meta name="theme-color" content="#0d0a08">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Inline SVG icon as data URI — wolf head in red/gold on dark -->
+<link rel="apple-touch-icon" sizes="180x180" id="pwa-apple-icon">
+<link rel="icon" type="image/svg+xml" id="pwa-favicon">
+
+<!-- Inline PWA Manifest -->
+<script>
+(function() {
+  var svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <defs>
+      <linearGradient id="dbg" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#120a06"/>
+        <stop offset="100%" stop-color="#0d0808"/>
+      </linearGradient>
+      <linearGradient id="dshield" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#2a0808"/>
+        <stop offset="100%" stop-color="#1a0606"/>
+      </linearGradient>
+      <linearGradient id="dh" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#ff4040"/>
+        <stop offset="30%" stop-color="#d46010"/>
+        <stop offset="100%" stop-color="#f0d040"/>
+      </linearGradient>
+    </defs>
+    <!-- Background -->
+    <rect width="512" height="512" fill="url(#dbg)"/>
+    <!-- Shield shape -->
+    <path d="M256,480 Q80,400 80,240 L80,90 Q168,70 256,50 Q344,70 432,90 L432,240 Q432,400 256,480 Z" fill="url(#dshield)" stroke="#9a1010" stroke-width="8"/>
+    <!-- Shield inner border -->
+    <path d="M256,450 Q108,378 108,240 L108,112 Q180,95 256,78 Q332,95 404,112 L404,240 Q404,378 256,450 Z" fill="none" stroke="#c8900a" stroke-width="3" opacity="0.5"/>
+    <!-- H letterform -->
+    <text x="256" y="345" font-family="Georgia, 'Times New Roman', serif" font-size="270" font-weight="700" text-anchor="middle" fill="url(#dh)">H</text>
+  </svg>`;
+
+  var encoded = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgIcon)));
+
+  document.getElementById('pwa-favicon').href = encoded;
+  document.getElementById('pwa-apple-icon').href = encoded;
+
+  var manifest = {
+    name: "The Howlers",
+    short_name: "The Howlers",
+    description: "Red Rising Half Marathon Training Tracker",
+    start_url: "/the-howlers-run/",
+    display: "standalone",
+    background_color: "#0d0a08",
+    theme_color: "#0d0a08",
+    orientation: "portrait",
+    icons: [
+      { src: encoded, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+    ]
+  };
+
+  var blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = url;
+  document.head.appendChild(link);
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -114,16 +183,16 @@
     font-size: 0.45rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(240,208,128,0.45);
+    color: rgba(240,208,128,0.85);
     display: block;
   }
   .countdown-days {
     font-size: clamp(0.9rem, 2vw, 1.15rem);
     font-weight: 700;
-    color: var(--amber-pale);
+    color: #f0d080;
     letter-spacing: 0.04em;
   }
-  .countdown-days span { color: var(--amber-light); font-size: 0.7em; margin-left: 3px; }
+  .countdown-days span { color: #f0d080; font-size: 0.7em; margin-left: 3px; }
   .sync-bar {
     display: flex;
     align-items: center;
