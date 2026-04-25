@@ -5914,7 +5914,7 @@ function switchTab(id) {
     if (ids[i] === id) t.classList.add('active');
   });
   if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
-  if (id === 'chronicle') { if (_annalsFilter === null && currentHowlerId) _annalsFilter = currentHowlerId; renderChronicle(); markAnnalsSeen(); }
+  if (id === 'chronicle') { renderChronicle(); markAnnalsSeen(); }
   if (id === 'leaderboard') { renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard(); }
   if (id === 'trials') { renderChallenges(); }
   if (id === 'conquests') { renderTimeline(); }
