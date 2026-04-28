@@ -1449,9 +1449,9 @@
           <tr><td><strong>Training Start</strong></td><td>Monday, April 13, 2026</td></tr>
           <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
           <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
-          <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum</td></tr>
+          <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum (any activity, 15 min min)</td></tr>
           
-          <tr><td><strong>Perfect Week Bonus</strong></td><td>Complete all 4 core days → +25 Laurels</td></tr>
+          <tr><td><strong>Perfect Week Bonus</strong></td><td>Log activity on 4+ different days in a week (15 min min each) → +25 Laurels</td></tr>
           <tr><td><strong>Streak Bonus</strong></td><td>+10 Laurels per consecutive week after week 1</td></tr>
           <tr><td><strong>Book Bonus</strong></td><td>+25 Laurels per Red Rising book read (max 150)</td></tr>
           <tr><td><strong>Primus</strong></td><td>Player with most Laurels leads the pack ★</td></tr>
@@ -1920,7 +1920,7 @@ const BADGES_DEF = [
     ]},
   {id:'week_warrior', icon:'⚔️', name:'Week Warrior',
     tiers:[
-      {tier:'bronze', desc:'1 perfect week (4 core days)',  check:(s)=>s.perfectWeeks>=1},
+      {tier:'bronze', desc:'1 perfect week (4 days, 15 min min each)',  check:(s)=>s.perfectWeeks>=1},
       {tier:'silver', desc:'18 perfect weeks',              check:(s)=>s.perfectWeeks>=18},
       {tier:'gold',   desc:'32 perfect weeks',              check:(s)=>s.perfectWeeks>=32}
     ]},
@@ -2495,8 +2495,32 @@ function calcPlayerStats(pid) {
   // Perfect week bonuses
   Object.values(weekWorkouts).forEach(cnt => { if (cnt >= 4) laurels += 25; });
 
-  // Streak bonus
-  const streak = weekSet.size;
+  // Streak bonus — consecutive weeks with no gaps, ending at current or last active week
+  const allWeekKeys = Array.from(weekSet).sort();
+  let streak = 0;
+  if (allWeekKeys.length > 0) {
+    // Walk backwards from the most recent week, count consecutive weeks
+    const thisWeek = getThisWeekKey();
+    // Start from most recent week the player has activity in (could be current or prior)
+    let cursor = allWeekKeys[allWeekKeys.length - 1];
+    // If the most recent week is more than 1 week behind current, streak is already broken
+    // Allow current week to count even if not yet complete
+    const cursorDate = new Date(cursor + 'T12:00:00');
+    const thisDate = new Date(thisWeek + 'T12:00:00');
+    const weeksBehind = Math.round((thisDate - cursorDate) / (7 * 24 * 60 * 60 * 1000));
+    if (weeksBehind <= 1) {
+      // Walk backwards counting consecutive weeks
+      streak = 1;
+      let prev = cursor;
+      for (let i = allWeekKeys.length - 2; i >= 0; i--) {
+        const curr = allWeekKeys[i];
+        const prevDate = new Date(prev + 'T12:00:00');
+        const currDate = new Date(curr + 'T12:00:00');
+        const gap = Math.round((prevDate - currDate) / (7 * 24 * 60 * 60 * 1000));
+        if (gap === 1) { streak++; prev = curr; } else break;
+      }
+    }
+  }
   if (streak >= 2) laurels += (streak - 1) * 10;
 
   const rank = getRank(laurels);
