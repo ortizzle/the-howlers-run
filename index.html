@@ -1429,6 +1429,7 @@
         <button class="btn-primary" onclick="sendSovereignHowl()" style="flex:1;max-width:none;font-size:0.65rem;padding:9px">🐺 SEND AS HOWL</button>
         <button onclick="summonSovereign()" style="background:transparent;border:1.5px solid var(--border-strong);border-radius:3px;padding:9px 14px;font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">↻ Reforge</button>
       </div>
+      <div id="sovereign-error" style="display:none;font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.06em;color:#c8a030;margin-top:6px;padding:4px 0"></div>
     </div>
 
     <div class="section-title" style="font-size:1rem">Recent Howls</div>
@@ -5542,6 +5543,8 @@ function summonSovereign(targetPid) {
     if (btn) { btn.disabled = true; btn.textContent = '⚔ Forging…'; }
     if (out) { out.style.display = 'block'; out.textContent = '🌑 The Sovereign stirs in the dark…'; }
     if (actions) actions.style.display = 'none';
+    var errEl = document.getElementById('sovereign-error');
+    if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
 
     var ctx = [
       'Target: ' + player.name + ' (' + player.house + ' House, rank: ' + s.rank.name + ')',
@@ -5558,7 +5561,7 @@ function summonSovereign(targetPid) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 200,
         system: 'You are the Sovereign — cunning, poetic, merciless, in the voice of the Red Rising books. Write 2–4 sentences of devastating, darkly funny trash talk using the target\'s real stats. Reference their House, rank, and specific numbers. Speak like Cassius or the Jackal — elegant and cutting. End with #trashtalk. Output only the trash talk, no preamble.',
         messages: [{ role: 'user', content: 'Write Red Rising trash talk for this pack member:\n\n' + ctx }]
@@ -5574,13 +5577,10 @@ function summonSovereign(targetPid) {
       _sovereignDraft = generateSovereignTemplate(player, s, caller);
       if (out) {
         out.textContent = _sovereignDraft;
-        out.style.borderColor = 'rgba(180,140,20,0.4)';
-        // Show fallback notice
-        var notice = document.createElement('div');
-        notice.style.cssText = 'font-family:Cinzel,serif;font-size:0.55rem;color:#c8a030;margin-top:6px;opacity:0.8';
-        notice.textContent = '⚠ API unreachable — template used. Error: ' + e.message;
-        out.appendChild(notice);
+        out.style.borderColor = '';
       }
+      var errEl = document.getElementById('sovereign-error');
+      if (errEl) { errEl.textContent = '⚠ API error — template used: ' + e.message; errEl.style.display = 'block'; }
       if (actions) actions.style.display = 'flex';
     }).finally(function() {
       if (btn) { btn.disabled = false; btn.textContent = '⚔ SUMMON THE SOVEREIGN'; }
@@ -5669,7 +5669,7 @@ async function aiGenerate(systemPrompt, userPrompt, maxTokens) {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: maxTokens || 200,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
