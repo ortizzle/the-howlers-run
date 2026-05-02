@@ -3838,7 +3838,28 @@ async function checkAndPostDailyRecap() {
     timestamp: now.toISOString(),
     likes: [],
     is_recap: true,
-    is_daily: true
+    is_daily: true,
+    daily_data: {
+      narrative: finalMsg.replace(/^📋 DAILY DISPATCH[^\n]*\n\n?/, '').trim(),
+      players: activePlayers.map(function(p) {
+        var works = byPlayer[p.id];
+        var laurels = laurelsByPlayer[p.id] || 0;
+        var WK_LABELS_D = {long_run:'Long Run',easy_run:'Easy Run',tempo:'Tempo Run',walk_run:'Walk/Run',peloton:'Peloton',strength:'Iron Forge',mobility:'Mobility',cardio:'Cardio',race:'Race'};
+        return {
+          id: p.id,
+          name: p.name,
+          house: p.house,
+          dark: !works,
+          activity: works ? works.map(function(w){ var l=WK_LABELS_D[w.workout]||w.workout; var e=w.miles?' · '+w.miles+' mi':w.minutes?' · '+w.minutes+' min':''; return l+e; }).join(', ') : null,
+          laurels: laurels,
+          isTop: topYesterdayPlayer && p.id === topYesterdayPlayer.id
+        };
+      }),
+      activeCount: activeYesterday.size,
+      totalCount: activePlayers.length,
+      packLaurels: Object.values(laurelsByPlayer).reduce(function(s,l){ return s+l; }, 0),
+      darkCount: darkPlayers.length
+    }
   });
 
   localStorage.setItem(lastDailyKey, todayAZ);
@@ -5259,23 +5280,86 @@ function renderHowlFeed() {
 
       // Daily dispatch — compact activity card
       if (isDaily) {
-        var msg = h.message || '';
-        var lines = msg.split('\n').filter(Boolean);
-        var headerLine = lines[0] || '📋 DAILY DISPATCH';
-        var bodyLines = lines.slice(1).filter(Boolean);
-        var dayDate = h.date ? new Date(h.date + 'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '';
+        var dd = h.daily_data;
+        var dayDate = h.date ? new Date(h.date + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}) : '';
 
-        return '<div class="chronicle-entry" style="--house-color:var(--amber);background:linear-gradient(135deg,rgba(16,18,26,0.97),rgba(20,24,36,0.95));border:1.5px solid rgba(80,100,180,0.35);border-radius:8px;padding:0;overflow:hidden">' +
-          '<div style="background:linear-gradient(90deg,#0e1018,#14182a);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(80,100,180,0.25)">' +
-            '<div style="display:flex;align-items:center;gap:7px">' +
-              '<span style="font-size:0.95rem">📋</span>' +
-              '<span style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:900;letter-spacing:0.15em;color:#a0b8f0">DAILY DISPATCH</span>' +
+        // Narrative — strip the header line if present
+        var narrative = dd ? dd.narrative : (h.message || '').replace(/^📋 DAILY DISPATCH[^\n]*\n\n?/, '').trim();
+
+        // Player rows — from structured data if available, fallback to parsing message
+        var playerRows = '';
+        if (dd && dd.players) {
+          // Sort: active first (by laurels desc), dark last
+          var sorted = dd.players.slice().sort(function(a,b){
+            if (a.dark && !b.dark) return 1;
+            if (!a.dark && b.dark) return -1;
+            return b.laurels - a.laurels;
+          });
+          var houseColors = {Red:'#c84040',Pink:'#d060a0',Obsidian:'#6080c0',Yellow:'#c8a010',Green:'#40a060',Blue:'#4080c0',Orange:'#c86020',White:'#a0a0a0'};
+          sorted.forEach(function(p) {
+            var hc = houseColors[p.house] || '#c8900a';
+            if (p.dark) {
+              playerRows += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;background:rgba(0,0,0,0.03);opacity:0.45;margin-bottom:4px">' +
+                '<div style="width:3px;height:28px;border-radius:2px;background:#888;flex-shrink:0"></div>' +
+                '<div style="flex:1">' +
+                  '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:var(--ink-mid)">' + escHtml(p.name.split(' ')[0]) + '</div>' +
+                  '<div style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink-light);font-style:italic">🌑 went dark</div>' +
+                '</div>' +
+                '<div style="font-family:Cinzel,serif;font-size:0.65rem;color:#aaa">—</div>' +
+              '</div>';
+            } else {
+              playerRows += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;background:rgba(255,255,255,0.55);margin-bottom:4px">' +
+                '<div style="width:3px;height:28px;border-radius:2px;background:' + hc + ';flex-shrink:0"></div>' +
+                '<div style="flex:1;min-width:0">' +
+                  '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escHtml(p.name.split(' ')[0]) + (p.isTop ? ' <span style="color:var(--amber);font-size:0.5rem">★ TOP</span>' : '') + '</div>' +
+                  '<div style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink-mid)">' + escHtml(p.activity || '') + '</div>' +
+                '</div>' +
+                '<div style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--amber);flex-shrink:0">+' + p.laurels + 'L</div>' +
+              '</div>';
+            }
+          });
+        }
+
+        // Stats strip
+        var statsHTML = '';
+        if (dd) {
+          statsHTML = '<div style="display:flex;border-top:1px solid var(--border);background:var(--parchment-dark)">' +
+            '<div style="flex:1;text-align:center;padding:8px 4px;border-right:1px solid var(--border)">' +
+              '<div style="font-family:Cinzel,serif;font-size:0.85rem;font-weight:700;color:var(--amber)">' + dd.activeCount + '</div>' +
+              '<div style="font-family:Cinzel,serif;font-size:0.48rem;letter-spacing:0.1em;color:var(--ink-light);text-transform:uppercase">Active</div>' +
             '</div>' +
-            '<span style="font-family:Cinzel,serif;font-size:0.6rem;color:rgba(160,184,240,0.6)">' + dayDate + '</span>' +
+            '<div style="flex:1;text-align:center;padding:8px 4px;border-right:1px solid var(--border)">' +
+              '<div style="font-family:Cinzel,serif;font-size:0.85rem;font-weight:700;color:var(--amber)">' + dd.packLaurels + 'L</div>' +
+              '<div style="font-family:Cinzel,serif;font-size:0.48rem;letter-spacing:0.1em;color:var(--ink-light);text-transform:uppercase">Pack Total</div>' +
+            '</div>' +
+            '<div style="flex:1;text-align:center;padding:8px 4px">' +
+              '<div style="font-family:Cinzel,serif;font-size:0.85rem;font-weight:700;color:' + (dd.darkCount > 0 ? '#c84040' : 'var(--amber)') + '">' + dd.darkCount + '</div>' +
+              '<div style="font-family:Cinzel,serif;font-size:0.48rem;letter-spacing:0.1em;color:var(--ink-light);text-transform:uppercase">Dark</div>' +
+            '</div>' +
+          '</div>';
+        }
+
+        return '<div class="chronicle-entry" style="--house-color:var(--amber);background:var(--parchment);border:1.5px solid rgba(200,144,10,0.25);border-radius:8px;padding:0;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.12)">' +
+          // Header
+          '<div style="background:linear-gradient(90deg,#1a1410,#2a1a10);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(200,144,10,0.2)">' +
+            '<div style="display:flex;align-items:center;gap:8px">' +
+              '<span style="font-size:1rem">📋</span>' +
+              '<div>' +
+                '<div style="font-family:Cinzel,serif;font-size:0.68rem;font-weight:900;letter-spacing:0.15em;color:#f0d080">DAILY DISPATCH</div>' +
+                '<div style="font-family:Crimson Pro,serif;font-size:0.68rem;font-style:italic;color:rgba(240,208,128,0.45);margin-top:1px">Yesterday\'s trials recorded</div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.06em;color:rgba(240,208,128,0.4);text-align:right">' + dayDate + '</div>' +
           '</div>' +
-          '<div style="padding:10px 14px;background:var(--parchment)">' +
-            '<div style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.7;white-space:pre-line">' + bodyLines.join('\n') + '</div>' +
-          '</div>' +
+          // AI Narrative
+          (narrative ? '<div style="padding:12px 14px;border-bottom:1px solid var(--border);background:var(--parchment)">' +
+            '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.92rem;color:var(--ink-mid);line-height:1.65">' + escHtml(narrative) + '</div>' +
+          '</div>' : '') +
+          // Player rows
+          (playerRows ? '<div style="padding:10px 14px;background:var(--parchment-dark)">' + playerRows + '</div>' : '') +
+          // Stats strip
+          statsHTML +
+          // Actions
           '<div style="display:flex;gap:6px;padding:7px 14px;border-top:1px solid var(--border);background:var(--parchment-dark)">' +
             reactionBarHTML(h, h.id, 'toggleHowlReaction') +
             '<div style="flex:1"></div>' +
