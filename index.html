@@ -5562,8 +5562,8 @@ function summonSovereign(targetPid) {
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 200,
-        system: 'You are the Sovereign — cunning, poetic, merciless, in the voice of the Red Rising books. Write 2–4 sentences of devastating, darkly funny trash talk using the target\'s real stats. Reference their House, rank, and specific numbers. Speak like Cassius or the Jackal — elegant and cutting. End with #trashtalk. Output only the trash talk, no preamble.',
+        max_tokens: 120,
+        system: 'You are the Sovereign — cunning, poetic, merciless, in the voice of the Red Rising books. Write trash talk using the target\'s real stats. Reference their House, rank, and specific numbers. Speak like Cassius or the Jackal — elegant and cutting. Vary your length: sometimes a single devastating line, sometimes 2–3 sentences, rarely more. Brevity can cut deeper than prose. End with #trashtalk. Output only the trash talk, no preamble.',
         messages: [{ role: 'user', content: 'Write Red Rising trash talk for this pack member:\n\n' + ctx }]
       })
     }).then(function(res) { return res.json(); }).then(function(data) {
