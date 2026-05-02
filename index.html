@@ -1415,11 +1415,11 @@
     <!-- SUMMON THE SOVEREIGN -->
     <div class="sovereign-panel" style="margin-bottom:28px">
       <div class="section-title" style="font-size:0.95rem;margin-bottom:6px;border-bottom-color:rgba(154,16,16,0.3)">⚔ Summon the Sovereign</div>
-      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);margin-bottom:10px">AI-forged howls seeded with real pack stats. Review before sending.</div>
-      <div id="sovereign-mode-badge" style="display:inline-flex;align-items:center;gap:5px;font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.1em;padding:3px 8px;border-radius:3px;margin-bottom:12px"></div>
-      <div style="margin-bottom:12px">
-        <label class="form-label">Target Howler</label>
-        <select class="form-select" id="sovereign-target"></select>
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px">
+        <div style="flex:1">
+          <label class="form-label">Target Howler</label>
+          <select class="form-select" id="sovereign-target"></select>
+        </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
         <button class="sovereign-btn" onclick="summonSovereign('trash')" id="sovereign-btn-trash" style="padding:11px 8px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;gap:5px">
@@ -5134,15 +5134,6 @@ function renderDispatch() {
     });
     if (prevT) stgt.value = prevT;
   }
-  // Update sovereign mode badge
-  var badge = document.getElementById('sovereign-mode-badge');
-  if (badge) {
-    var hasKey = getAnthropicKey().startsWith('sk-ant');
-    badge.textContent = hasKey ? '🧠 AI MODE — LIVE' : '📜 TEMPLATE MODE';
-    badge.style.background = hasKey ? 'rgba(16,100,16,0.15)' : 'rgba(100,80,16,0.15)';
-    badge.style.border = '1px solid ' + (hasKey ? 'rgba(16,160,16,0.3)' : 'rgba(180,140,20,0.3)');
-    badge.style.color = hasKey ? '#40c040' : '#c8a030';
-  }
   renderHowlFeed();
 }
 
@@ -5843,43 +5834,55 @@ function summonSovereign(mode, targetPid) {
       var text = (data.content && data.content[0] && data.content[0].text) || '';
       if (!text) throw new Error('Empty response');
       _sovereignDraft = text.trim();
-      if (out) out.textContent = _sovereignDraft;
-      if (actions) actions.style.display = 'flex';
+      _applyOutput(out, actions, _sovereignDraft, mode);
     }).catch(function(e) {
       console.warn('Sovereign API failed, using templates:', e.message);
       _sovereignDraft = generateSovereignTemplate(player, s, caller, mode);
-      if (out) out.textContent = _sovereignDraft;
+      _applyOutput(out, actions, _sovereignDraft, mode);
       if (errEl) { errEl.textContent = '⚠ API error — template used'; errEl.style.display = 'block'; }
-      if (actions) actions.style.display = 'flex';
     }).finally(resetBtns);
 
   } else {
     _sovereignDraft = generateSovereignTemplate(player, s, caller, mode);
-    if (out) out.textContent = _sovereignDraft;
-    if (actions) actions.style.display = 'flex';
+    _applyOutput(out, actions, _sovereignDraft, mode);
     resetBtns();
   }
+}
+
+function _applyOutput(out, actions, text, mode) {
+  if (out) {
+    out.style.display = 'block';
+    out.textContent = text;
+    out.style.borderColor = mode === 'motivate' ? 'rgba(60,160,80,0.5)' : 'rgba(154,16,16,0.4)';
+    out.style.boxShadow = mode === 'motivate' ? '0 0 12px rgba(60,160,80,0.15)' : 'none';
+  }
+  if (actions) actions.style.display = 'flex';
 }
 
 function reforgesovereign() {
   summonSovereign(_sovereignMode);
 }
 function sendSovereignHowl() {
-  if (!_sovereignDraft) { showToast('No trash talk forged yet.'); return; }
+  if (!_sovereignDraft) { showToast('No howl forged yet.'); return; }
   if (!currentHowlerId) { showToast('Select your Howler identity first.'); return; }
   const msg = document.getElementById('howl-message');
   const howlSel = document.getElementById('howl-player');
   if (msg) msg.value = _sovereignDraft;
   if (howlSel && currentHowlerId) howlSel.value = currentHowlerId;
+  // Fanfare for motivate
+  if (_sovereignMode === 'motivate') {
+    setTimeout(function(){ launchConfetti('trial'); }, 100);
+    showToast('🐺 The pack rises! Review and send the howl.');
+  } else {
+    showToast('⚔ Loaded — review and send the howl.');
+  }
   // Clear sovereign panel
   const out = document.getElementById('sovereign-output');
   const actions = document.getElementById('sovereign-actions');
-  if (out) { out.style.display = 'none'; out.textContent = ''; }
+  if (out) { out.style.display = 'none'; out.textContent = ''; out.style.boxShadow = 'none'; }
   if (actions) actions.style.display = 'none';
   _sovereignDraft = '';
-  // Scroll to composer and focus
   msg && msg.focus();
-  showToast('⚔ Trash talk loaded — review and send the howl, Sovereign.');
 }
 
 function summonGoneDark(pid) {
