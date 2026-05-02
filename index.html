@@ -5433,9 +5433,41 @@ function renderHowlFeed() {
     }
     if (!player) return '';
     const hc = (h.player_laurels >= 9500) ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
+    const isSovereign = !!(h.sovereign_mode);
+    const isMotivate = h.sovereign_mode === 'motivate';
+    const isTrash = h.sovereign_mode === 'trash';
+    const targetName = h.sovereign_target || null;
+    const targetHouse = h.sovereign_target_house || null;
+    const targetHc = targetHouse ? (HOUSES[targetHouse] || '#c8900a') : null;
     const likes = h.likes || [];
+
+    // Avatar — sovereign icon or nothing
+    const avatarHTML = isSovereign
+      ? '<div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;background:' +
+        (isMotivate ? 'rgba(64,160,96,0.12)' : 'rgba(200,64,64,0.12)') + ';border:1.5px solid ' +
+        (isMotivate ? 'rgba(64,160,96,0.35)' : 'rgba(200,64,64,0.35)') + '">' +
+        (isMotivate ? '🐺' : '⚔') + '</div>'
+      : '';
+
+    // Recipient bubble for sovereign howls
+    var recipientBubble = '';
+    if (isSovereign && targetName && targetHc) {
+      recipientBubble = '<div style="border-left:3px solid ' + targetHc + ';border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:10px;background:' + targetHc + '10">' +
+        '<div style="display:inline-flex;align-items:center;gap:4px;font-family:Cinzel,serif;font-size:0.55rem;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:20px;background:' + targetHc + ';color:#fff;margin-bottom:6px">' +
+        '<div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.7)"></div>' +
+        escHtml(targetName) + '</div>' +
+        '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.92rem;color:var(--ink-mid);line-height:1.6">' +
+        renderMentions(h.message).replace(/ #trashtalk[\w#]*/g,'').replace(/ #howlermotivation[\w#]*/g,'') +
+        '</div>' +
+        '<div style="margin-top:4px">' +
+        (isTrash ? '<span style="font-family:Cinzel,serif;font-size:0.58rem;font-weight:700;color:#c84040;letter-spacing:0.06em">' + (h.message.includes('#jackalstyle') ? '#trashtalk #jackalstyle' : '#trashtalk') + '</span>' : '') +
+        (isMotivate ? '<span style="font-family:Cinzel,serif;font-size:0.58rem;font-weight:700;color:#40a060;letter-spacing:0.06em">' + (h.message.includes('#sevrostyle') ? '#howlermotivation #sevrostyle' : '#howlermotivation') + '</span>' : '') +
+        '</div>' +
+      '</div>';
+    }
+
     let replyTo = '';
-    if (h.activity_ref) {
+    if (!isSovereign && h.activity_ref) {
       var ref = h.activity_ref;
       var actPlayer = state.players.find(function(p){ return p.name === ref.player; });
       var actHc = actPlayer ? (HOUSES[actPlayer.house] || '#c8900a') : '#c8900a';
@@ -5447,7 +5479,7 @@ function renderHowlFeed() {
         + '<div style="font-family:Crimson Pro,serif;font-size:0.85rem;color:var(--ink-mid)">'
         + (ref.detail ? escHtml(ref.detail) + ' &middot; ' : '') + formatDate(ref.date)
         + '</div></div>';
-} else if (h.reply_to_name) {
+    } else if (!isSovereign && h.reply_to_name) {
       // Look up original howl message by reply_to_id
       var origHowl = h.reply_to_id ? (state.howls||[]).find(function(x){ return x.id === h.reply_to_id; }) : null;
       var origMsg = origHowl ? origHowl.message : null;
@@ -5467,13 +5499,23 @@ function renderHowlFeed() {
     const rank = (function(l){ var r=RANKS[0]; RANKS.forEach(function(rk){if(l>=rk.min)r=rk;}); return r; })(h.player_laurels||0);
     return '<div class="chronicle-entry" style="--house-color:' + hc + ';background:linear-gradient(135deg,' + hc + '18,' + hc + '08,var(--parchment))">' +
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">' +
+      avatarHTML +
+      '<div style="flex:1;min-width:0">' +
+      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
       '<span style="font-family:Cinzel,serif;font-size:0.95rem;font-weight:700;color:' + hc + '">' + escHtml(player.name) + '</span>' +
       '<span style="font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.1em;font-weight:700;color:#fff;background:' + hc + ';padding:2px 7px;border-radius:3px">' + escHtml(player.house) + '</span>' +
       '<span style="font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.08em;font-weight:700;color:' + hc + ';background:' + hc + '22;padding:2px 7px;border-radius:3px;border:1px solid ' + hc + '55">' + rank.name + '</span>' +
-      '<span class="chronicle-meta" style="margin-left:auto">' + formatDate(h.date) + '</span>' +
+      '</div>' +
+      '</div>' +
+      '<span class="chronicle-meta">' + formatDate(h.date) + '</span>' +
       '</div>' +
       replyTo +
-      '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message).replace(/ #trashtalk/g,'') + '&rdquo;' + (h.message.includes('#trashtalk') ? ' <span style="font-family:Cinzel,serif;font-size:0.62rem;font-weight:700;color:#9a1010;letter-spacing:0.06em;font-style:normal;opacity:0.85">#trashtalk</span>' : '') + '</div>' +
+      recipientBubble +
+      (isSovereign && targetName ? '' :
+        '<div style="font-family:Crimson Pro,serif;font-size:1.05rem;color:var(--ink-mid);margin:4px 0;font-style:italic;padding:8px 0">🐺 &ldquo;' + escHtml(h.message).replace(/ #trashtalk[\w#]*/g,'').replace(/ #howlermotivation[\w#]*/g,'') + '&rdquo;' +
+        (h.message.includes('#trashtalk') ? ' <span style="font-family:Cinzel,serif;font-size:0.62rem;font-weight:700;color:#9a1010;letter-spacing:0.06em;font-style:normal;opacity:0.85">' + (h.message.includes('#jackalstyle') ? '#trashtalk #jackalstyle' : '#trashtalk') + '</span>' : '') +
+        (h.message.includes('#howlermotivation') ? ' <span style="font-family:Cinzel,serif;font-size:0.62rem;font-weight:700;color:#40a060;letter-spacing:0.06em;font-style:normal;opacity:0.85">' + (h.message.includes('#sevrostyle') ? '#howlermotivation #sevrostyle' : '#howlermotivation') + '</span>' : '') +
+        '</div>') +
       '<div style="display:flex;gap:6px;margin-top:8px;padding-top:6px;border-top:1px solid var(--border);align-items:center">' +
       reactionBarHTML(h, h.id, 'toggleHowlReaction') +
       '<button onclick="copyHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">⎘ Copy</button>' +
@@ -5565,32 +5607,43 @@ async function postHowl(replyToId, replyToName, activityRef) {
   const btn = document.getElementById('howl-submit-btn');
   if (btn && btn.disabled) return;
   const pid = document.getElementById('howl-player').value;
-  const msg = document.getElementById('howl-message').value.trim();
+  const msgEl = document.getElementById('howl-message');
+  const msgText = msgEl ? msgEl.value.trim() : '';
   if (!pid) { showToast('Select a Howler first.'); return; }
-  if (!msg) { showToast('Say something, Howler.'); return; }
+  if (!msgText) { showToast('Say something, Howler.'); return; }
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Howling…'; }
   const player = state.players.find(function(p) { return p.id === pid; });
   const stats = calcPlayerStats(pid);
+  const sovereignMode = msgEl ? msgEl.dataset.sovereignMode : null;
+  const sovereignTarget = msgEl ? msgEl.dataset.sovereignTarget : null;
+  const sovereignTargetHouse = msgEl ? msgEl.dataset.sovereignTargetHouse : null;
   const howl = {
     id: 'h_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
     player_id: pid,
     player_laurels: stats.laurels,
-    message: msg,
+    message: msgText,
     date: getAZDate(),
     timestamp: new Date().toISOString(),
     likes: [],
     reply_to_id: replyToId || null,
     reply_to_name: replyToName || null,
-    activity_ref: activityRef || null
+    activity_ref: activityRef || null,
+    sovereign_mode: sovereignMode || null,
+    sovereign_target: sovereignTarget || null,
+    sovereign_target_house: sovereignTargetHouse || null
   };
+  if (msgEl) { delete msgEl.dataset.sovereignMode; delete msgEl.dataset.sovereignTarget; delete msgEl.dataset.sovereignTargetHouse; }
   if (!state.howls) state.howls = [];
   state.howls.push(howl);
   await saveState();
-  document.getElementById('howl-message').value = '';
+  if (msgEl) msgEl.value = '';
   if (btn) { btn.disabled = false; btn.textContent = '🐺 SEND THE HOWL'; }
-  // Fanfare for @pack howls
-  var mentionCount = (msg.match(/@/g)||[]).length;
-  if (mentionCount >= state.players.length - 1) {
+  // Fanfare
+  var mentionCount = (msgText.match(/@/g)||[]).length;
+  if (sovereignMode === 'motivate') {
+    setTimeout(function(){ launchConfetti('trial'); }, 200);
+    showToast('🐺 The pack rises! Howl sent.');
+  } else if (mentionCount >= state.players.length - 1) {
     launchConfetti('conquest');
     showToast('🐺 THE PACK HOWLS! Everyone has been summoned. ⛓️‍💥');
   } else {
@@ -5908,14 +5961,17 @@ function _pickFlavor(mode) {
 }
 
 function _buildCtx(player, s, caller, mode) {
+  var first = player.name.split(' ')[0];
   var lines = [
-    'Name: ' + player.name + ' (' + player.house + ' House, rank: ' + s.rank.name + ')',
+    'Target: ' + first + ' (' + player.house + ' House, rank: ' + s.rank.name + ')',
     'Miles run: ' + s.miles,
     'Laurels: ' + s.laurels,
     'Trials logged: ' + s.trials,
     s.maxSingleRun > 0 ? 'Longest single run: ' + s.maxSingleRun + ' mi' : 'No runs yet',
     s.pelotons > 0 ? 'Peloton rides: ' + s.pelotons : '',
-    caller && mode === 'trash' ? 'Trash talking as: ' + caller.name + ' (' + caller.house + ' House, ' + calcPlayerStats(caller.id).miles + ' miles, ' + calcPlayerStats(caller.id).laurels + 'L)' : '',
+    caller && mode === 'trash' ? 'Trash talking as: ' + caller.name.split(' ')[0] + ' (' + caller.house + ' House, ' + calcPlayerStats(caller.id).miles + ' mi, ' + calcPlayerStats(caller.id).laurels + 'L)' : '',
+    caller && mode === 'motivate' ? 'Motivating as: ' + caller.name.split(' ')[0] + ' (' + caller.house + ' House)' : '',
+    'IMPORTANT: Address the target by their first name (' + first + ') in your howl.',
   ];
   return lines.filter(Boolean).join('\n');
 }
@@ -6038,12 +6094,14 @@ function sendSovereignHowl() {
   const howlSel = document.getElementById('howl-player');
   if (msg) msg.value = _sovereignDraft;
   if (howlSel && currentHowlerId) howlSel.value = currentHowlerId;
-  // Fanfare for motivate
-  if (_sovereignMode === 'motivate') {
-    setTimeout(function(){ launchConfetti('trial'); }, 100);
-    showToast('🐺 The pack rises! Review and send the howl.');
-  } else {
-    showToast('⚔ Loaded — review and send the howl.');
+  // Store sovereign metadata for rendering
+  const tgt = document.getElementById('sovereign-target');
+  const targetPid = tgt ? tgt.value : null;
+  const targetPlayer = targetPid ? state.players.find(function(p){ return p.id === targetPid; }) : null;
+  if (msg) {
+    msg.dataset.sovereignMode = _sovereignMode;
+    msg.dataset.sovereignTarget = targetPlayer ? targetPlayer.name : '';
+    msg.dataset.sovereignTargetHouse = targetPlayer ? targetPlayer.house : '';
   }
   // Clear sovereign panel
   const out = document.getElementById('sovereign-output');
@@ -6052,6 +6110,7 @@ function sendSovereignHowl() {
   if (actions) actions.style.display = 'none';
   _sovereignDraft = '';
   msg && msg.focus();
+  showToast(_sovereignMode === 'motivate' ? '🐺 Loaded — send the howl!' : '⚔ Loaded — send the howl.');
 }
 
 function summonGoneDark(pid) {
