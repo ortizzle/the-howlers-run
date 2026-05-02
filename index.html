@@ -1414,20 +1414,25 @@
 
     <!-- SUMMON THE SOVEREIGN -->
     <div class="sovereign-panel" style="margin-bottom:28px">
-      <div class="section-title" style="font-size:0.95rem;margin-bottom:10px;border-bottom-color:rgba(154,16,16,0.3)">⚔ Summon the Sovereign</div>
-      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.88rem;color:var(--ink-light);margin-bottom:8px">AI-forged Red Rising trash talk, seeded with real pack stats. Review, then send as your own howl with #trashtalk.</div>
-      <div id="sovereign-mode-badge" style="display:inline-flex;align-items:center;gap:5px;font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.1em;padding:3px 8px;border-radius:3px;margin-bottom:10px"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-        <div style="flex:1;min-width:140px">
-          <label class="form-label">Target Howler</label>
-          <select class="form-select" id="sovereign-target"></select>
-        </div>
-        <button class="sovereign-btn" onclick="summonSovereign()" id="sovereign-btn" style="padding:10px 18px;font-size:0.65rem;margin-bottom:1px">⚔ SUMMON THE SOVEREIGN</button>
+      <div class="section-title" style="font-size:0.95rem;margin-bottom:6px;border-bottom-color:rgba(154,16,16,0.3)">⚔ Summon the Sovereign</div>
+      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);margin-bottom:10px">AI-forged howls seeded with real pack stats. Review before sending.</div>
+      <div id="sovereign-mode-badge" style="display:inline-flex;align-items:center;gap:5px;font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.1em;padding:3px 8px;border-radius:3px;margin-bottom:12px"></div>
+      <div style="margin-bottom:12px">
+        <label class="form-label">Target Howler</label>
+        <select class="form-select" id="sovereign-target"></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+        <button class="sovereign-btn" onclick="summonSovereign('trash')" id="sovereign-btn-trash" style="padding:11px 8px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;gap:5px">
+          ⚔ TRASH TALK
+        </button>
+        <button class="sovereign-btn" onclick="summonSovereign('motivate')" id="sovereign-btn-motivate" style="padding:11px 8px;font-size:0.6rem;background:linear-gradient(135deg,#0a1410,#0d1e14);border-color:rgba(60,140,80,0.5);color:#80d4a0;display:flex;align-items:center;justify-content:center;gap:5px">
+          🐺 MOTIVATE
+        </button>
       </div>
       <div class="sovereign-output" id="sovereign-output" style="display:none"></div>
       <div id="sovereign-actions" style="display:none;gap:8px;margin-top:6px">
         <button class="btn-primary" onclick="sendSovereignHowl()" style="flex:1;max-width:none;font-size:0.65rem;padding:9px">🐺 SEND AS HOWL</button>
-        <button onclick="summonSovereign()" style="background:transparent;border:1.5px solid var(--border-strong);border-radius:3px;padding:9px 14px;font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">↻ Reforge</button>
+        <button onclick="reforgesovereign()" style="background:transparent;border:1.5px solid var(--border-strong);border-radius:3px;padding:9px 14px;font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">↻ Reforge</button>
       </div>
       <div id="sovereign-error" style="display:none;font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.06em;color:#c8a030;margin-top:6px;padding:4px 0"></div>
     </div>
@@ -5626,109 +5631,118 @@ async function removeHowl(howlId) {
   renderHowlFeed();
 }
 
-// ─── SUMMON THE SOVEREIGN — AI TRASH TALK ────────────────────────────────────
+// ─── SUMMON THE SOVEREIGN ────────────────────────────────────────────────────
 var _sovereignDraft = '';
+var _sovereignMode = 'trash'; // 'trash' or 'motivate'
 
-// ── SOVEREIGN TRASH TALK TEMPLATES ───────────────────────────────────────────
-// Each template is a function(player, s, caller) → string
-// s = calcPlayerStats result, caller = current howler player obj or null
+// ── PROMPTS ───────────────────────────────────────────────────────────────────
+var SOVEREIGN_PROMPTS = {
+
+  trash_standard: 'You are writing Red Rising-style trash talk targeting a pack member training for a half marathon. Speak like Cassius au Bellona — elegant, precise, devastating. Pick ONE stat (miles or Laurels) and cut deep with it. Do NOT mention streaks, mobility, or strength. Max 2 sentences. End with #trashtalk. Output only the howl, nothing else.',
+
+  trash_jackal: 'You are the Jackal — cold, surgical, intellectually cruel. Write one line of Red Rising trash talk targeting this pack member. Reference their miles or Laurels with surgical precision. No warmth, no exclamation marks, just a scalpel. End with #trashtalk #jackalstyle. Output only the howl.',
+
+  motivate_standard: 'You are a Red Rising lore narrator writing fierce pack motivation. Reference the race (Rock \'n\' Roll Arizona Half Marathon, Jan 17 2027, Tempe Beach Park), the target\'s House color, and one specific stat that shows progress. Keep it under 2 sentences. Fierce, not gentle. End with #howlermotivation. Output only the howl.',
+
+  motivate_sevro: 'You are Sevro au Barca — chaotic, loyal, unhinged, fiercely protective of his pack. Write Sevro-style motivation for this Howler. Use "boyo" at least once. Caps for emphasis. Reference their House and one real stat. Short, punchy, like he\'s screaming across the arena. End with #howlermotivation #sevrostyle. Output only the howl.'
+};
+
+// ── FALLBACK TEMPLATES ────────────────────────────────────────────────────────
 var SOVEREIGN_TEMPLATES = [
-  // 0 — Low trials
+  // TRASH 0 — miles jab
   function(p,s,c) {
     var first = p.name.split(' ')[0];
-    var cname = c ? c.name.split(' ')[0] : 'The pack';
-    return '@' + first + ', a ' + p.house + ' with ' + s.trials + ' trials to their name — the Golds who built this Society logged more miles weeping than you have running. ' + (c ? cname + ' has already lapped you twice.' : 'The pack watches. And waits.') + ' Prove you are more than a footnote in someone else\'s annals. #trashtalk';
+    if (s.miles === 0) return first + ' of ' + p.house + ' has logged zero running miles. The race is 13.1. #trashtalk';
+    var diff = c ? (calcPlayerStats(c.id).miles - s.miles).toFixed(1) : null;
+    if (diff && diff > 0) return c.name.split(' ')[0] + ' has put ' + diff + ' miles between you and them, ' + first + '. That gap doesn\'t close itself. #trashtalk';
+    return first + ' peaked at ' + s.maxSingleRun + ' miles in one session. The finish line is 13.1. #trashtalk';
   },
-  // 1 — Low miles
-  function(p,s,c) {
-    var first = p.name.split(' ')[0];
-    return 'They say the road to the laurel is paved in suffering. ' + first + ' of ' + p.house + ' has found ' + s.miles + ' miles of it — barely enough to cross the Citadel courtyard. The half marathon is 13.1 miles. Do the math, Howler. Per aspera ad astra — emphasis on the aspera. #trashtalk';
-  },
-  // 2 — No streak
-  function(p,s,c) {
-    var first = p.name.split(' ')[0];
-    return 'Consistency is the currency of champions. ' + first + ' of ' + p.house + ' House spent ' + (s.streak <= 1 ? 'exactly one week' : s.streak + ' weeks') + ' in the arena before going quiet. Even the lowliest Pink in the Society dances more consistently than that. The wolves do not rest, ' + first + '. Neither should you. #trashtalk';
-  },
-  // 3 — Mock rank
-  function(p,s,c) {
-    var first = p.name.split(' ')[0];
-    return first + ' stands at ' + s.rank.name + ' with ' + s.laurels + ' Laurels — a rank that inspires neither fear nor envy, only mild sympathy. ' + (c ? c.name.split(' ')[0] + ' sends their regards from considerably higher ground.' : 'The leaderboard sends its regards.') + ' The Reaper does not wait for the comfortable. Rise, or be forgotten. #trashtalk';
-  },
-  // 4 — Miles comparison (with caller)
-  function(p,s,c) {
-    var first = p.name.split(' ')[0];
-    if (!c) {
-      return 'The pack has marched. The pack has bled. ' + first + ' of ' + p.house + ' has logged ' + s.miles + ' miles — a commendable start for someone who only just discovered their legs. The laurel awaits those who want it badly enough. Do you? #trashtalk';
-    }
-    var cs = calcPlayerStats(c.id);
-    var diff = (cs.miles - s.miles).toFixed(1);
-    if (diff <= 0) return SOVEREIGN_TEMPLATES[1](p,s,c);
-    return '@' + first + ' — ' + c.name.split(' ')[0] + ' has put ' + diff + ' more miles between you and them since you last laced up. That gap does not close itself. ' + p.house + ' deserves better than a ghost. #trashtalk';
-  },
-  // 5 — Perfect weeks jab
-  function(p,s,c) {
-    var first = p.name.split(' ')[0];
-    if (s.perfectWeeks > 2) {
-      return 'Oh look — ' + first + ' has ' + s.perfectWeeks + ' perfect weeks. How adorable. ' + (c ? c.name.split(' ')[0] : 'Others') + ' have perfect weeks AND the Laurels to prove it means something. Consistency without dominance is just habit. Aim higher, ' + p.house + '. #trashtalk';
-    }
-    return first + ' of ' + p.house + ' has managed ' + (s.perfectWeeks === 0 ? 'zero perfect weeks' : s.perfectWeeks + ' perfect week' + (s.perfectWeeks>1?'s':'')) + '. In the Institute they called that a liability. In the pack we call it an opportunity — for everyone else. #trashtalk';
-  },
-  // 6 — Longest run mock
-  function(p,s,c) {
-    var first = p.name.split(' ')[0];
-    if (s.maxSingleRun === 0) {
-      return 'Rumor has it ' + first + ' of ' + p.house + ' has yet to log a single running mile. Remarkable. The race is 13.1 of them. Perhaps they are saving themselves for a dramatic entrance. The Sovereign is not impressed. #trashtalk';
-    }
-    if (s.maxSingleRun < 4) {
-      return first + '\'s longest run is ' + s.maxSingleRun + ' miles. The finish line is 13.1. That is not a training gap — that is a chasm. Even a Copper bureaucrat walks further to fetch their morning reports. #trashtalk';
-    }
-    return first + ' peaked at ' + s.maxSingleRun + ' miles on their longest run and apparently decided that was sufficient. The half marathon disagrees. So does ' + (c ? c.name.split(' ')[0] : 'the leaderboard') + '. #trashtalk';
-  },
-  // 7 — Peloton only jab
-  function(p,s,c) {
-    var first = p.name.split(' ')[0];
-    if (s.pelotons > 0 && s.miles < 3) {
-      return first + ' of ' + p.house + ' has logged ' + s.pelotons + ' Peloton ride' + (s.pelotons>1?'s':'') + ' and ' + s.miles + ' miles of actual running. A bold strategy — training for a cycling race that does not exist. The finish line at Tempe Beach Park does not have a seat. #trashtalk';
-    }
-    return SOVEREIGN_TEMPLATES[3](p,s,c);
-  },
-  // 8 — Fallen behind the pack
+  // TRASH 1 — laurels jab
   function(p,s,c) {
     var first = p.name.split(' ')[0];
     var sorted = state.players.slice().sort(function(a,b){ return calcPlayerStats(b.id).laurels - calcPlayerStats(a.id).laurels; });
     var pos = sorted.findIndex(function(x){ return x.id === p.id; }) + 1;
     var suffix = pos===1?'st':pos===2?'nd':pos===3?'rd':'th';
-    return first + ' of ' + p.house + ' sits ' + pos + suffix + ' in the pack with ' + s.laurels + ' Laurels. ' + (pos === sorted.length ? 'Dead last. The view from the back must be humbling.' : 'Not last — but close enough to smell it.') + ' The laurel grows only at the top of the mountain. Start climbing. #trashtalk';
+    if (pos === sorted.length) return first + ' sits dead last with ' + s.laurels + ' Laurels. The view from the back must be humbling. #trashtalk';
+    return first + ' of ' + p.house + ' — ' + pos + suffix + ' place, ' + s.laurels + ' Laurels. ' + (c ? c.name.split(' ')[0] + ' sends their regards from above.' : 'The pack noticed.') + ' #trashtalk';
   },
-  // 9 — General Jackal-style sophistication
+  // TRASH 2 — Jackal cold
   function(p,s,c) {
     var first = p.name.split(' ')[0];
-    return 'I do not mock ' + first + ' of ' + p.house + '. Mockery implies they are worth the effort. ' + s.laurels + ' Laurels, ' + s.trials + ' trials — the numbers speak a quiet, disappointing truth. ' + (c ? c.name.split(' ')[0] + ' will be waiting at the finish line.' : 'The pack will be waiting.') + ' Eo would be faster. #trashtalk';
+    return 'I don\'t mock ' + first + '. ' + s.laurels + ' Laurels speaks for itself. #trashtalk #jackalstyle';
   },
-  // 10 — Cassius elegance
+  // TRASH 3 — Peloton jab
   function(p,s,c) {
     var first = p.name.split(' ')[0];
-    return 'You know what they say about ' + p.house + 's, ' + first + '? Nothing memorable — and neither are ' + s.trials + ' trials and ' + s.miles + ' miles. Darrow carved a legend from less. You have all the tools and have built nothing but excuses. The blade is sharp. Use it. #trashtalk';
+    if (s.pelotons > 0 && s.miles < 3) return first + ' has logged ' + s.pelotons + ' Peloton rides and ' + s.miles + ' running miles. The finish line doesn\'t have a seat. #trashtalk';
+    return SOVEREIGN_TEMPLATES[0](p,s,c);
   },
-  // 11 — Gone dark specific
+  // MOTIVATE 0 — general lore
   function(p,s,c) {
     var first = p.name.split(' ')[0];
-    var SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss'];
-    var lastWk = state.workouts.filter(function(w){ return w.player_id===p.id && !SYSTEM_WK.includes(w.workout); }).slice().sort(function(a,b){ return new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date); })[0];
-    var days = lastWk ? Math.floor((new Date()-new Date(lastWk.timestamp||lastWk.date+'T12:00:00'))/(1000*60*60*24)) : '?';
-    return '@' + first + ' — the pack has not heard your footsteps in ' + days + ' days. ' + days + ' days of silence while others march. The annals do not record excuses. ' + (c ? c.name.split(' ')[0] + ' has not stopped.' : 'The wolves have not stopped.') + ' Rise, or the laurel passes to someone who wants it more. #trashtalk';
+    if (s.miles > 0) return first + ' of ' + p.house + ' has put ' + s.miles + ' miles between themselves and who they were. Tempe Beach is waiting. #howlermotivation';
+    return 'Every trial logged is a debt the finish line owes you, ' + first + '. Collect. #howlermotivation';
   },
-  // 12 — Strength/mobility gap
+  // MOTIVATE 1 — Sevro
   function(p,s,c) {
     var first = p.name.split(' ')[0];
-    if (s.strength === 0 && s.mobility === 0) {
-      return first + ' of ' + p.house + ' has logged zero strength sessions and zero mobility work. A runner with no iron in their legs and no bend in their body is a runner who meets the road at mile 10 and weeps. The Iron Forge exists for a reason, Howler. #trashtalk';
-    }
-    return SOVEREIGN_TEMPLATES[4](p,s,c);
+    if (s.laurels > 0) return 'OI ' + first + ' BOYO — ' + s.laurels + ' Laurels and STILL going. That\'s a ' + p.house + ' for you. DON\'T STOP. #howlermotivation #sevrostyle';
+    return 'BOYO. ' + first + '. The pack needs you. GET UP AND RUN. #howlermotivation #sevrostyle';
+  },
+  // MOTIVATE 2 — race focus
+  function(p,s,c) {
+    var first = p.name.split(' ')[0];
+    return 'January 17, 2027. Tempe Beach Park. ' + first + ' will be ready. ' + (s.miles > 0 ? s.miles + ' miles already in the legs.' : 'The march starts now.') + ' #howlermotivation';
   },
 ];
 
-function summonSovereign(targetPid) {
+function _pickFlavor(mode) {
+  // 25% chance of special flavor
+  var roll = Math.random();
+  if (mode === 'trash') return roll < 0.25 ? 'trash_jackal' : 'trash_standard';
+  if (mode === 'motivate') return roll < 0.25 ? 'motivate_sevro' : 'motivate_standard';
+  return 'trash_standard';
+}
+
+function _buildCtx(player, s, caller, mode) {
+  var lines = [
+    'Name: ' + player.name + ' (' + player.house + ' House, rank: ' + s.rank.name + ')',
+    'Miles run: ' + s.miles,
+    'Laurels: ' + s.laurels,
+    'Trials logged: ' + s.trials,
+    s.maxSingleRun > 0 ? 'Longest single run: ' + s.maxSingleRun + ' mi' : 'No runs yet',
+    s.pelotons > 0 ? 'Peloton rides: ' + s.pelotons : '',
+    caller && mode === 'trash' ? 'Trash talking as: ' + caller.name + ' (' + caller.house + ' House, ' + calcPlayerStats(caller.id).miles + ' miles, ' + calcPlayerStats(caller.id).laurels + 'L)' : '',
+  ];
+  return lines.filter(Boolean).join('\n');
+}
+
+function generateSovereignTemplate(player, s, caller, mode) {
+  mode = mode || 'trash';
+  var roll = Math.random();
+  if (mode === 'trash') {
+    if (s.pelotons > 0 && s.miles < 3) return SOVEREIGN_TEMPLATES[3](player, s, caller);
+    if (roll < 0.15) return SOVEREIGN_TEMPLATES[2](player, s, caller); // Jackal
+    if (s.laurels < 500 || roll < 0.5) return SOVEREIGN_TEMPLATES[1](player, s, caller);
+    return SOVEREIGN_TEMPLATES[0](player, s, caller);
+  } else {
+    if (roll < 0.25) return SOVEREIGN_TEMPLATES[5](player, s, caller); // Sevro
+    if (roll < 0.55) return SOVEREIGN_TEMPLATES[6](player, s, caller); // Race focus
+    return SOVEREIGN_TEMPLATES[4](player, s, caller);
+  }
+}
+
+function summonSovereign(mode, targetPid) {
+  // mode = 'trash' or 'motivate' (from button click)
+  // targetPid = optional pre-set target (from gone-dark nudge)
+  if (typeof mode === 'string' && (mode === 'trash' || mode === 'motivate')) {
+    _sovereignMode = mode;
+  } else if (typeof mode === 'string' && mode.startsWith('p_')) {
+    // called as summonSovereign(pid) from old code paths
+    targetPid = mode;
+    mode = _sovereignMode || 'trash';
+  }
+
   var tgt = document.getElementById('sovereign-target');
   if (targetPid) {
     switchTab('dispatch');
@@ -5742,40 +5756,40 @@ function summonSovereign(targetPid) {
   var s = calcPlayerStats(pid);
   var caller = currentHowlerId ? state.players.find(function(p) { return p.id === currentHowlerId; }) : null;
 
-  var btn = document.getElementById('sovereign-btn');
+  var btnT = document.getElementById('sovereign-btn-trash');
+  var btnM = document.getElementById('sovereign-btn-motivate');
   var out = document.getElementById('sovereign-output');
   var actions = document.getElementById('sovereign-actions');
+  var errEl = document.getElementById('sovereign-error');
+
+  // Visual active state
+  if (btnT) { btnT.style.opacity = mode === 'trash' ? '1' : '0.5'; btnT.disabled = true; }
+  if (btnM) { btnM.style.opacity = mode === 'motivate' ? '1' : '0.5'; btnM.disabled = true; }
+  if (out) { out.style.display = 'block'; out.textContent = mode === 'trash' ? '⚔ The Sovereign sharpens the blade…' : '🐺 The pack stirs…'; }
+  if (actions) actions.style.display = 'none';
+  if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
 
   var apiKey = getAnthropicKey();
   var validKey = apiKey && apiKey.startsWith('sk-ant') && apiKey.length > 20;
 
-  if (validKey) {
-    // ── Live AI mode ──────────────────────────────────────────────────────
-    if (btn) { btn.disabled = true; btn.textContent = '⚔ Forging…'; }
-    if (out) { out.style.display = 'block'; out.textContent = '🌑 The Sovereign stirs in the dark…'; }
-    if (actions) actions.style.display = 'none';
-    var errEl = document.getElementById('sovereign-error');
-    if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+  function resetBtns() {
+    if (btnT) { btnT.disabled = false; btnT.style.opacity = '1'; }
+    if (btnM) { btnM.disabled = false; btnM.style.opacity = '1'; }
+  }
 
-    var ctx = [
-      'Target: ' + player.name + ' (' + player.house + ' House, rank: ' + s.rank.name + ')',
-      'Stats: ' + s.laurels + ' Laurels, ' + s.miles + ' miles run, ' + s.trials + ' trials, ' + s.streak + '-week streak',
-      s.perfectWeeks > 0 ? 'Perfect weeks: ' + s.perfectWeeks : 'Perfect weeks: 0',
-      s.maxSingleRun > 0 ? 'Longest single run: ' + s.maxSingleRun + ' mi' : 'No runs logged yet',
-      s.pelotons > 0 ? 'Peloton rides: ' + s.pelotons : '',
-      s.strength > 0 ? 'Strength sessions: ' + s.strength : '',
-      s.mobility > 0 ? 'Mobility sessions: ' + s.mobility : '',
-      caller ? 'Trash talking as: ' + caller.name + ' (' + caller.house + ' House)' : '',
-    ].filter(Boolean).join('\n');
+  if (validKey) {
+    var flavor = _pickFlavor(mode);
+    var systemPrompt = SOVEREIGN_PROMPTS[flavor];
+    var ctx = _buildCtx(player, s, caller, mode);
 
     fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 120,
-        system: 'You are the Sovereign — cunning, poetic, merciless, in the voice of the Red Rising books. Write trash talk using the target\'s real stats. Reference their House, rank, and specific numbers. Speak like Cassius or the Jackal — elegant and cutting. Vary your length: sometimes a single devastating line, sometimes 2–3 sentences, rarely more. Brevity can cut deeper than prose. End with #trashtalk. Output only the trash talk, no preamble.',
-        messages: [{ role: 'user', content: 'Write Red Rising trash talk for this pack member:\n\n' + ctx }]
+        max_tokens: 100,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: ctx }]
       })
     }).then(function(res) { return res.json(); }).then(function(data) {
       var text = (data.content && data.content[0] && data.content[0].text) || '';
@@ -5785,59 +5799,23 @@ function summonSovereign(targetPid) {
       if (actions) actions.style.display = 'flex';
     }).catch(function(e) {
       console.warn('Sovereign API failed, using templates:', e.message);
-      _sovereignDraft = generateSovereignTemplate(player, s, caller);
-      if (out) {
-        out.textContent = _sovereignDraft;
-        out.style.borderColor = '';
-      }
-      var errEl = document.getElementById('sovereign-error');
-      if (errEl) { errEl.textContent = '⚠ API error — template used: ' + e.message; errEl.style.display = 'block'; }
+      _sovereignDraft = generateSovereignTemplate(player, s, caller, mode);
+      if (out) out.textContent = _sovereignDraft;
+      if (errEl) { errEl.textContent = '⚠ API error — template used'; errEl.style.display = 'block'; }
       if (actions) actions.style.display = 'flex';
-    }).finally(function() {
-      if (btn) { btn.disabled = false; btn.textContent = '⚔ SUMMON THE SOVEREIGN'; }
-    });
+    }).finally(resetBtns);
 
   } else {
-    // ── Template mode (no API key) ────────────────────────────────────────
-    _sovereignDraft = generateSovereignTemplate(player, s, caller);
-    if (out) { out.style.display = 'block'; out.textContent = _sovereignDraft; }
+    _sovereignDraft = generateSovereignTemplate(player, s, caller, mode);
+    if (out) out.textContent = _sovereignDraft;
     if (actions) actions.style.display = 'flex';
+    resetBtns();
   }
 }
 
-function generateSovereignTemplate(player, s, caller) {
-  var pid = player.id;
-  var pool = [];
-  // Always eligible
-  pool.push(3, 9, 10);
-  // Low trials
-  if (s.trials < 5) pool.push(0, 0);
-  // Low miles
-  if (s.miles < 5) pool.push(1, 1, 6);
-  // No streak
-  if (s.streak <= 1) pool.push(2, 2);
-  // Perfect weeks jab
-  pool.push(5);
-  // Long run specific
-  if (s.maxSingleRun < 5) pool.push(6, 6);
-  // Peloton without running
-  if (s.pelotons > 0 && s.miles < 3) pool.push(7, 7);
-  // Pack position
-  pool.push(8);
-  // Caller miles comparison
-  if (caller && caller.id !== pid) pool.push(4, 4);
-  // Gone dark
-  var SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss'];
-  var lastWk = state.workouts.filter(function(w){ return w.player_id===pid && !SYSTEM_WK.includes(w.workout); }).slice().sort(function(a,b){ return new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date); })[0];
-  var daysDark = lastWk ? Math.floor((new Date()-new Date(lastWk.timestamp||lastWk.date+'T12:00:00'))/(1000*60*60*24)) : 99;
-  if (daysDark >= 3) pool.push(11, 11);
-  // Strength/mobility gap
-  if (s.strength === 0 || s.mobility === 0) pool.push(12);
-
-  var chosen = pool[Math.floor(Math.random() * pool.length)];
-  return SOVEREIGN_TEMPLATES[chosen](player, s, caller);
+function reforgesovereign() {
+  summonSovereign(_sovereignMode);
 }
-
 function sendSovereignHowl() {
   if (!_sovereignDraft) { showToast('No trash talk forged yet.'); return; }
   if (!currentHowlerId) { showToast('Select your Howler identity first.'); return; }
@@ -5859,10 +5837,11 @@ function sendSovereignHowl() {
 function summonGoneDark(pid) {
   const player = state.players.find(function(p) { return p.id === pid; });
   if (!player) return;
+  _sovereignMode = 'trash';
   switchTab('dispatch');
   const stgt = document.getElementById('sovereign-target');
   if (stgt) stgt.value = pid;
-  summonSovereign(pid);
+  summonSovereign('trash', pid);
   showToast('🌑 Summoning the Sovereign on ' + player.name.split(' ')[0] + '…');
 }
 
