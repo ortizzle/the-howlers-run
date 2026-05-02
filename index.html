@@ -1108,6 +1108,30 @@
     white-space: pre-wrap;
   }
 
+  /* MOTIVATION WORD BURST */
+  .howl-burst-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    overflow: hidden;
+  }
+  .howl-burst-word {
+    position: absolute;
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    pointer-events: none;
+    text-shadow: 0 0 20px rgba(240,208,128,0.9), 0 0 40px rgba(240,208,128,0.4);
+    opacity: 0;
+    letter-spacing: 0.05em;
+  }
+  @keyframes howl-word-burst {
+    0%   { transform: translate(-50%,-50%) scale(0.2); opacity: 0; }
+    25%  { transform: translate(-50%,-50%) scale(1.15); opacity: 1; }
+    65%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(0.85); opacity: 0; }
+  }
+
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-track { background: var(--parchment-dark); }
@@ -5137,6 +5161,54 @@ function renderDispatch() {
   renderHowlFeed();
 }
 
+// ─── MOTIVATION WORD BURST ───────────────────────────────────────────────────
+var _burstSeenHowls = new Set();
+
+function launchHowlBurst() {
+  var WORDS = [
+    { text: 'RISE!',    color: '#f0d080', size: '2.4rem', x: 50,  y: 45 },
+    { text: '🐺',       color: '#f0d080', size: '2.8rem', x: 50,  y: 50 },
+    { text: 'HOWL!',    color: '#ff9060', size: '2rem',   x: 22,  y: 38 },
+    { text: '⛓️\u200d💥', color: '#f0d080', size: '2.2rem', x: 78,  y: 38 },
+    { text: 'RUN!',     color: '#80d4a0', size: '1.7rem', x: 18,  y: 62 },
+    { text: 'GO!',      color: '#f0d080', size: '1.5rem', x: 82,  y: 62 },
+  ];
+
+  var overlay = document.createElement('div');
+  overlay.className = 'howl-burst-overlay';
+  document.body.appendChild(overlay);
+
+  WORDS.forEach(function(w, i) {
+    setTimeout(function() {
+      var el = document.createElement('div');
+      el.className = 'howl-burst-word';
+      el.textContent = w.text;
+      el.style.fontSize = w.size;
+      el.style.color = w.color;
+      el.style.left = w.x + 'vw';
+      el.style.top = w.y + 'vh';
+      el.style.animation = 'howl-word-burst 0.9s ease-out forwards';
+      overlay.appendChild(el);
+    }, i * 110);
+  });
+
+  setTimeout(function() { overlay.remove(); }, 1800);
+}
+
+function checkAndFireMotivationBurst() {
+  if (!currentHowlerId) return;
+  var lastSeen = localStorage.getItem('howlers_last_howl_seen_' + (localStorage.getItem('howlers_gist_id') || localStorage.getItem('howlers_bin_id') || '')) || '0';
+  var unseen = (state.howls || []).filter(function(h) {
+    return (h.message || '').includes('#howlermotivation')
+      && (h.timestamp || h.date) > lastSeen
+      && !_burstSeenHowls.has(h.id);
+  });
+  if (unseen.length > 0) {
+    unseen.forEach(function(h) { _burstSeenHowls.add(h.id); });
+    setTimeout(launchHowlBurst, 400);
+  }
+}
+
 function renderHowlFeed() {
   const feed = document.getElementById('howl-feed');
   if (!feed) return;
@@ -6544,7 +6616,7 @@ function switchTab(id) {
     const ids = ['leaderboard','dispatch','chronicle','log','trials','conquests','codex'];
     if (ids[i] === id) t.classList.add('active');
   });
-  if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
+  if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); checkAndFireMotivationBurst(); }
   if (id === 'chronicle') { renderChronicle(); markAnnalsSeen(); }
   if (id === 'leaderboard') {
     renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard();
