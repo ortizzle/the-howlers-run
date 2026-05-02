@@ -2273,6 +2273,7 @@ async function loadState() {
     checkAndPostChallengeHowls();
   }
   checkAndPostWeeklyRecap();
+  checkAndPostDailyRecap();
   } catch(e) {
     setSyncStatus('error');
     console.error('Load error:', e);
@@ -2384,6 +2385,7 @@ async function saveState() {
     }
     setSyncStatus('live');
     checkAndPostWeeklyRecap();
+    checkAndPostDailyRecap();
   } catch(e) {
     setSyncStatus('error');
     console.error('Save error:', e);
@@ -3630,7 +3632,187 @@ async function checkAndPostWeeklyRecap() {
   localStorage.setItem(lastRecapKey, weekKey);
 }
 
-// ─── RENDER ──────────────────────────────────────────────────────────────────
+// ─── DAILY RECAP ─────────────────────────────────────────────────────────────
+async function checkAndPostDailyRecap() {
+  if (!state.players || state.players.length === 0) return;
+  if (!state.workouts || state.workouts.length === 0) return;
+
+  const gistKey = localStorage.getItem('howlers_gist_id') || localStorage.getItem('howlers_bin_id') || '';
+  const lastDailyKey = 'howlers_last_daily_' + gistKey;
+  const lastDaily = localStorage.getItem(lastDailyKey);
+  const now = new Date();
+
+  // AZ date for today
+  const todayAZ = getAZDate();
+
+  // Only post once per day, and only after 6am AZ
+  const azHour = parseInt(new Date(now.getTime() - 7*60*60*1000).toISOString().substr(11,2));
+  if (azHour < 6) return;
+  if (lastDaily === todayAZ) return;
+
+  // Get yesterday's date
+  const yesterday = new Date(now.getTime() - 7*60*60*1000);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  // Already posted for today?
+  const recapId = 'daily_' + todayAZ;
+  if ((state.howls || []).some(function(h) { return h.id === recapId; })) {
+    localStorage.setItem(lastDailyKey, todayAZ);
+    return;
+  }
+
+  // Get yesterday's workouts (exclude system)
+  const SYSTEM_WK = ['milestone_bonus', 'duel_win', 'duel_loss'];
+  const TIMED_WK = ['peloton', 'cardio', 'strength', 'mobility'];
+  const yesterdayWorkouts = state.workouts.filter(function(w) {
+    return w.date === yesterdayStr && !SYSTEM_WK.includes(w.workout);
+  });
+
+  // Minimum 3 active pack members to post
+  const activeYesterday = new Set(yesterdayWorkouts.map(function(w) { return w.player_id; }));
+  if (activeYesterday.size < 3) {
+    localStorage.setItem(lastDailyKey, todayAZ);
+    return;
+  }
+
+  // Build activity by player
+  const WK_LABELS = {
+    long_run:'Long Run', easy_run:'Easy Run', tempo:'Tempo Run', walk_run:'Walk/Run',
+    peloton:'Peloton', strength:'Iron Forge', mobility:'Mobility', cardio:'Cardio', race:'Race'
+  };
+  const byPlayer = {};
+  yesterdayWorkouts.forEach(function(w) {
+    if (!byPlayer[w.player_id]) byPlayer[w.player_id] = [];
+    byPlayer[w.player_id].push(w);
+  });
+
+  // Who went dark (active players who didn't train)
+  const activePlayers = state.players.filter(function(p) {
+    return state.workouts.some(function(w) { return w.player_id === p.id && !SYSTEM_WK.includes(w.workout); });
+  });
+  const darkPlayers = activePlayers.filter(function(p) { return !byPlayer[p.id]; });
+
+  // Who earned most yesterday
+  const laurelsByPlayer = {};
+  yesterdayWorkouts.forEach(function(w) {
+    laurelsByPlayer[w.player_id] = (laurelsByPlayer[w.player_id] || 0) + (w.laurels_base || 0);
+  });
+  const topYesterdayId = Object.keys(laurelsByPlayer).sort(function(a,b) { return laurelsByPlayer[b] - laurelsByPlayer[a]; })[0];
+  const topYesterdayPlayer = topYesterdayId ? state.players.find(function(p) { return p.id === topYesterdayId; }) : null;
+
+  // Streak at risk — active players who haven't logged this week yet (and it's Wed+)
+  const dayOfWeek = parseInt(new Date(now.getTime() - 7*60*60*1000).toUTCDay ? 0 : new Date().getDay());
+  const thisWeekKey = getThisWeekKey();
+  const atRisk = dayOfWeek >= 3 ? activePlayers.filter(function(p) {
+    return !state.workouts.some(function(w) {
+      return w.player_id === p.id && !SYSTEM_WK.includes(w.workout) && getWeekKey(w.date) === thisWeekKey;
+    });
+  }) : [];
+
+  // Challenge progress — find any duel challenge that moved yesterday
+  const challengeUpdates = [];
+  if (state.challenges_won) {
+    CHALLENGES_DEF.filter(function(ch) { return ch.type === 'duel' && ch.goal; }).forEach(function(ch) {
+      var winners = state.challenges_won[ch.id];
+      var wonArr = winners ? (Array.isArray(winners) ? winners : [winners]) : [];
+      if (wonArr.length >= 3) return;
+      // Check if any player moved significantly toward goal yesterday
+      yesterdayWorkouts.forEach(function(w) {
+        var s = calcPlayerStats(w.player_id);
+        var player = state.players.find(function(p) { return p.id === w.player_id; });
+        if (!player) return;
+        var val = 0;
+        if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) val = s.laurels;
+        else if (ch.id === 'iron_league') val = s.miles;
+        else if (ch.id === 'the_tireless') val = s.trials;
+        var pct = ch.goal > 0 ? Math.round((val / ch.goal) * 100) : 0;
+        if (pct >= 10 && pct < 100 && pct % 10 < 5) {
+          challengeUpdates.push(ch.name + ': ' + player.name.split(' ')[0] + ' at ' + pct + '%');
+        }
+      });
+    });
+  }
+
+  // Build the structured data for AI or fallback
+  var activityLines = activePlayers.map(function(p) {
+    var works = byPlayer[p.id];
+    if (!works) return p.name.split(' ')[0] + ' · went dark';
+    var details = works.map(function(w) {
+      var label = WK_LABELS[w.workout] || w.workout;
+      var detail = w.miles ? w.miles + ' mi' : w.minutes ? w.minutes + ' min' : '';
+      return label + (detail ? ' ' + detail : '');
+    }).join(', ');
+    var laurels = laurelsByPlayer[p.id] || 0;
+    return p.name.split(' ')[0] + ' (' + p.house + ') · ' + details + ' · +' + laurels + 'L';
+  }).join('\n');
+
+  var recapData = {
+    date: yesterdayStr,
+    activeCount: activeYesterday.size,
+    totalCount: activePlayers.length,
+    topPlayer: topYesterdayPlayer,
+    topLaurels: topYesterdayId ? (laurelsByPlayer[topYesterdayId] || 0) : 0,
+    darkPlayers: darkPlayers,
+    atRisk: atRisk,
+    challengeUpdates: challengeUpdates,
+    activityLines: activityLines
+  };
+
+  // Try AI narrative
+  var finalMsg = null;
+  if (getAnthropicKey()) {
+    var aiPrompt = 'Yesterday\'s training data for The Howlers pack:\n\n' + activityLines +
+      '\n\nTop earner: ' + (recapData.topPlayer ? recapData.topPlayer.name + ' +' + recapData.topLaurels + 'L' : 'none') +
+      (darkPlayers.length ? '\nWent dark: ' + darkPlayers.map(function(p) { return p.name.split(' ')[0]; }).join(', ') : '') +
+      (atRisk.length ? '\nStreak at risk: ' + atRisk.map(function(p) { return p.name.split(' ')[0]; }).join(', ') : '') +
+      (challengeUpdates.length ? '\nChallenge updates: ' + challengeUpdates.join('; ') : '');
+
+    var aiText = await aiGenerate(
+      'You are the morning scribe of The Howlers pack — warriors training for the Rock \'n\' Roll Arizona Half Marathon. Write a sharp, punchy daily morning dispatch covering yesterday\'s training. Call out who worked hard, who went dark, any streak at risk. Use Red Rising House colors and first names. Keep it under 4 sentences. End with one short provocative line targeting whoever went dark or underperformed. No hashtags. Output only the dispatch.',
+      aiPrompt, 200
+    );
+    if (aiText) finalMsg = '📋 DAILY DISPATCH\n\n' + aiText;
+  }
+
+  // Fallback structured message
+  if (!finalMsg) {
+    var msg = '📋 DAILY DISPATCH — ' + new Date(yesterdayStr + 'T12:00:00').toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'}) + '\n\n';
+    activePlayers.forEach(function(p) {
+      var works = byPlayer[p.id];
+      if (works) {
+        var details = works.map(function(w) {
+          var label = WK_LABELS[w.workout] || w.workout;
+          var extra = w.miles ? ' · ' + w.miles + ' mi' : w.minutes ? ' · ' + w.minutes + ' min' : '';
+          return label + extra;
+        }).join(', ');
+        msg += '✦ ' + p.name.split(' ')[0] + ' — ' + details + ' (+' + (laurelsByPlayer[p.id]||0) + 'L)\n';
+      } else {
+        msg += '🌑 ' + p.name.split(' ')[0] + ' — dark\n';
+      }
+    });
+    if (topYesterdayPlayer) msg += '\n🏅 Top earner: ' + topYesterdayPlayer.name.split(' ')[0] + ' +' + recapData.topLaurels + 'L';
+    if (atRisk.length) msg += '\n⚠ Streak at risk: ' + atRisk.map(function(p) { return p.name.split(' ')[0]; }).join(', ');
+    if (challengeUpdates.length) msg += '\n⚔ ' + challengeUpdates[0];
+    msg += '\nPer aspera ad astra. 🐺';
+    finalMsg = msg;
+  }
+
+  if (!state.howls) state.howls = [];
+  state.howls.push({
+    id: recapId,
+    player_id: 'system',
+    player_laurels: 9999,
+    message: finalMsg,
+    date: todayAZ,
+    timestamp: now.toISOString(),
+    likes: [],
+    is_recap: true,
+    is_daily: true
+  });
+
+  localStorage.setItem(lastDailyKey, todayAZ);
+}
 // Stats cache — computed once per render cycle, shared by all render fns
 let _statsCache = {};
 function buildStatsCache() {
@@ -4974,6 +5156,8 @@ function renderHowlFeed() {
       const isConquest = h.id && h.id.startsWith('challenge_');
       const isDuel = h.id && (h.id.startsWith('duel_'));
       const isBadge = h.id && h.id.startsWith('badge_');
+      const isDaily = h.is_daily || (h.id && h.id.startsWith('daily_'));
+      const isWeeklyRecap = h.id && h.id.startsWith('recap_');
 
       // Conquest / duel / badge howls keep existing minimal style
       if (isConquest || isDuel || isBadge) {
@@ -4991,6 +5175,33 @@ function renderHowlFeed() {
           '<div style="flex:1"></div>' +
           '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
           '</div></div>';
+      }
+
+      // Daily dispatch — compact activity card
+      if (isDaily) {
+        var msg = h.message || '';
+        var lines = msg.split('\n').filter(Boolean);
+        var headerLine = lines[0] || '📋 DAILY DISPATCH';
+        var bodyLines = lines.slice(1).filter(Boolean);
+        var dayDate = h.date ? new Date(h.date + 'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '';
+
+        return '<div class="chronicle-entry" style="--house-color:var(--amber);background:linear-gradient(135deg,rgba(16,18,26,0.97),rgba(20,24,36,0.95));border:1.5px solid rgba(80,100,180,0.35);border-radius:8px;padding:0;overflow:hidden">' +
+          '<div style="background:linear-gradient(90deg,#0e1018,#14182a);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(80,100,180,0.25)">' +
+            '<div style="display:flex;align-items:center;gap:7px">' +
+              '<span style="font-size:0.95rem">📋</span>' +
+              '<span style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:900;letter-spacing:0.15em;color:#a0b8f0">DAILY DISPATCH</span>' +
+            '</div>' +
+            '<span style="font-family:Cinzel,serif;font-size:0.6rem;color:rgba(160,184,240,0.6)">' + dayDate + '</span>' +
+          '</div>' +
+          '<div style="padding:10px 14px;background:var(--parchment)">' +
+            '<div style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.7;white-space:pre-line">' + bodyLines.join('\n') + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;padding:7px 14px;border-top:1px solid var(--border);background:var(--parchment-dark)">' +
+            reactionBarHTML(h, h.id, 'toggleHowlReaction') +
+            '<div style="flex:1"></div>' +
+            '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
+          '</div>' +
+        '</div>';
       }
 
       // Weekly recap — structured card
@@ -6183,225 +6394,4 @@ function updateLaurelPreview() {
     milesGroup.style.display = 'block';
     if (milesLabel) milesLabel.textContent = 'Miles';
     minsGroup.style.display = 'none';
-  } else if (['strength','mobility'].includes(workout)) {
-    milesGroup.style.display = 'none';
-    minsGroup.style.display = 'block';
-    const minsLabel = minsGroup ? minsGroup.querySelector('label') : null;
-    if (minsLabel) minsLabel.textContent = 'Minutes (optional)';
-  } else {
-    milesGroup.style.display = 'none';
-    minsGroup.style.display = 'none';
-  }
-
-  if (!workout) { preview.style.display = 'none'; return; }
-  const base = calcLaurels(workout, miles, minutes);
-  if (base > 0 || workout) {
-    preview.style.display = 'flex';
-    previewVal.textContent = `+${base}`;
-    previewNote.textContent = base === 0 ? 'Enter miles or minutes above' : 'Base laurels (bonuses calculated on save)';
-  } else {
-    preview.style.display = 'none';
-  }
-}
-
-async function submitTrial() {
-  const submitBtn = document.querySelector('#tab-log .btn-primary');
-  if (submitBtn && submitBtn.disabled) return; // prevent double-submit
-  const pid = document.getElementById('log-player').value;
-  const workout = document.getElementById('log-workout').value;
-  const date = document.getElementById('log-date').value;
-  const miles = parseFloat(document.getElementById('log-miles').value) || 0;
-  const minutes = parseInt(document.getElementById('log-minutes').value) || 0;
-  const notes = document.getElementById('log-notes').value.trim();
-
-  if (!pid) { showToast('Select a Howler first.'); return; }
-  if (!workout) { showToast('Select a workout type.'); return; }
-  if (!date) { showToast('Enter a date.'); return; }
-  if(date<'2026-04-13'){showToast('No trials before April 13, 2026.');return;}
-  if(date>getAZDate()){showToast('Cannot log a future date.');return;}
-  if (['long_run','tempo','easy_run','optional_run'].includes(workout) && miles === 0) {
-    showToast('Enter miles for this workout.'); return;
-  }
-  if (workout === 'long_run' && miles < 6) {
-    showToast('⚔️ The March requires at least 6 miles. Log it as an Easy Run instead?'); return;
-  }
-  if (workout === 'peloton' && minutes === 0) {
-    showToast('Enter minutes for Peloton ride.'); return;
-  }
-  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ RECORDING…'; }
-
-  const laurels_base = calcLaurels(workout, miles, minutes);
-  // Underdog bonus — if 200+ Laurels behind the current leader, earn 20% extra
-  buildStatsCache();
-  const allLaurels = state.players.map(function(p){ return (_statsCache[p.id]||{}).laurels||0; });
-  const leaderLaurels = allLaurels.length > 0 ? Math.max(...allLaurels) : 0;
-  const myCurrentLaurels = (_statsCache[pid]||{}).laurels||0;
-  const isUnderdog = leaderLaurels - myCurrentLaurels >= 300;
-  const underdogBonus = isUnderdog ? Math.round(laurels_base * 0.2) : 0;
-  const laurels_total = laurels_base + underdogBonus;
-  const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-  const workoutId = 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
-
-  // Check new badges before adding
-  const prevBadges = [...(state.badges_awarded[pid] || [])];
-
-  const entry = { id: workoutId, player_id: pid, workout, date, miles: miles||undefined, minutes: minutes||undefined, notes, laurels_base: laurels_total, laurels_earned: laurels_base, underdog_bonus: underdogBonus, quote, timestamp: new Date().toISOString() };
-  state.workouts.push(entry);
-
-  // Recalc to find new badges
-  calcPlayerStats(pid); // mutates state.badges_awarded
-  const allNewBadges = (state.badges_awarded[pid] || []).filter(b => !prevBadges.includes(b));
-  if (allNewBadges.length > 0) entry.badge_earned = allNewBadges[0];
-  const newBadges = allNewBadges;
-
-  await saveState();
-
-  // Reset form
-  document.getElementById('log-workout').value = '';
-  document.getElementById('log-miles').value = '';
-  document.getElementById('log-minutes').value = '';
-  document.getElementById('log-notes').value = '';
-  document.getElementById('laurel-preview').style.display = 'none';
-
-  const player = state.players.find(p => p.id === pid);
-  let toastMsg = `✦ Trial recorded! +${laurels_total} Laurels for ${player?.name||'the Howler'}.`;
-  if (underdogBonus > 0) toastMsg += ` (includes +${underdogBonus} Underdog bonus 🐺)`;
-  if (newBadges.length > 0) {
-    const firstKey = newBadges[0];
-    const tier = BADGE_TIERS.find(t => firstKey.endsWith('_'+t));
-    const baseId = tier ? firstKey.slice(0,-(tier.length+1)) : firstKey;
-    const bd = BADGES_DEF.find(b => b.id === baseId);
-    if (bd && tier) toastMsg += ` ${TIER_ROMAN[tier]} Badge: ${bd.icon} ${bd.name}!`;
-    newBadges.forEach(function(bk){ postBadgeHowl(pid, bk); });
-  }
-  showToast(toastMsg);
-  if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✦ RECORD TRIAL ✦'; }
-  // House-colored confetti burst
-  var trialPlayer2 = state.players.find(function(p){ return p.id===pid; });
-  var houseCol2 = trialPlayer2 ? (HOUSES[trialPlayer2.house] || '#c8900a') : '#c8900a';
-  var trialColors2 = [houseCol2, houseCol2+'cc', houseCol2+'99', '#f0c040', '#ffffff'];
-  setTimeout(function(){ launchConfetti('trial', trialColors2); }, 100);
-  renderAll();
-  // AI Feature 1: post-workout commentary (fire-and-forget)
-  var lastWorkout = state.workouts[state.workouts.length - 1];
-  if (lastWorkout && getAnthropicKey()) {
-    postWorkoutCommentary(pid, lastWorkout).then(function() {
-      return saveState();
-    }).then(function() {
-      renderAll();
-    }).catch(function(){});
-  }
-  switchTab('chronicle');
-}
-
-// ─── TABS ────────────────────────────────────────────────────────────────────
-function switchTab(id) {
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach((t, i) => {
-    const ids = ['leaderboard','dispatch','chronicle','log','trials','conquests','codex'];
-    if (ids[i] === id) t.classList.add('active');
-  });
-  if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
-  if (id === 'chronicle') { renderChronicle(); markAnnalsSeen(); }
-  if (id === 'leaderboard') {
-    renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard();
-    // AI Feature 3: coaching nudge
-    if (currentHowlerId && getAnthropicKey()) {
-      generateCoachingNudge(currentHowlerId).then(function(text) {
-        var card = document.getElementById('coaching-nudge-card');
-        var el = document.getElementById('coaching-nudge-text');
-        if (text && card && el) { el.textContent = text; card.style.display = 'block'; }
-      }).catch(function(){});
-    }
-  }
-  if (id === 'trials') { renderChallenges(); }
-  if (id === 'conquests') { renderTimeline(); }
-}
-
-// ─── UTILS ───────────────────────────────────────────────────────────────────
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 4000);
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T12:00:00');
-  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-}
-
-// ─── INIT ────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  // Set today as default date
-  const todayStr = getAZDate();
-  const logDateEl = document.getElementById('log-date');
-  logDateEl.value = todayStr;
-  logDateEl.min = '2026-04-13';
-  logDateEl.max = todayStr;
-  updateCountdown();
-  setInterval(updateCountdown, 60000);
-
-  // Close modal on overlay click
-  document.getElementById('induct-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal('induct-modal');
-  });
-  document.getElementById('edit-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal('edit-modal');
-  });
-  document.getElementById('edit-workout-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal('edit-workout-modal');
-  });
-  document.getElementById('books-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal('books-modal');
-  });
-  document.getElementById('profile-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal('profile-modal');
-  });
-  document.getElementById('quick-log-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal('quick-log-modal');
-  });
-  document.getElementById('duel-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal('duel-modal');
-  });
-
-  // Dispatch custom input
-  document.getElementById('induct-books').addEventListener('change', () => {
-    const checked = [...document.querySelectorAll('#induct-books input:checked')].map(cb => cb.value);
-    const total = checked.reduce((sum, bid) => sum + (bid === 'red_god' ? RED_GOD_LAURELS : BOOK_LAURELS), 0);
-    document.getElementById('induct-book-preview').textContent = `+${total} Laurels from books`;
-  });
-
-  // Workout change -> update preview
-  document.getElementById('log-workout').addEventListener('change', updateLaurelPreview);
-
-  updateNotifBtn();
-  // Pause auto-refresh when app is hidden (saves rate limit)
-  document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'visible') {
-      // Resume: refresh immediately then restart interval
-      loadState();
-    }
-  });
-
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('#mention-dropdown') && e.target.id !== 'howl-message') {
-      const dd = document.getElementById('mention-dropdown');
-      if (dd) dd.style.display = 'none';
-    }
-  });
-  switchTab('leaderboard');
-  loadState().then(function() { autoFillHowlerDropdowns(); });
-  refreshInterval = setInterval(function(){ if(document.visibilityState !== "hidden") loadState(); }, 300000);
-  renderCodex();
-});
-</script>
-</body>
-</html>
+  } else if (['strength','mobility'].include
