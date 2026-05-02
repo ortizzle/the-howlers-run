@@ -1260,7 +1260,7 @@
         <span id="sync-label" style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.08em;color:rgba(240,208,128,0.5)" title="Auto-refreshes every 5 minutes">SYNC</span>
       </div>
       <button class="refresh-btn" onclick="manualRefresh()" style="padding:4px 9px;font-size:0.6rem">↻ Refresh</button>
-      <button class="refresh-btn" onclick="openSetup()" style="border-color:rgba(240,208,128,0.4);color:rgba(240,208,128,0.75);padding:4px 9px;font-size:0.6rem">⚙ Setup</button>
+      <button class="refresh-btn" onclick="openSetup()" style="border-color:rgba(240,208,128,0.4);color:rgba(240,208,128,0.75);padding:4px 9px;font-size:0.6rem;position:relative;z-index:600">⚙ Setup</button>
       <button class="refresh-btn" id="notif-btn" onclick="requestNotifications()" title="Enable notifications" style="border-color:rgba(240,208,128,0.4);color:rgba(240,208,128,0.75);padding:4px 9px;font-size:0.6rem">🔔</button>
     </div>
   </div>
@@ -6394,4 +6394,230 @@ function updateLaurelPreview() {
     milesGroup.style.display = 'block';
     if (milesLabel) milesLabel.textContent = 'Miles';
     minsGroup.style.display = 'none';
-  } else if (['strength','mobility'].include
+  } else if (['strength','mobility'].includes(workout)) {
+    milesGroup.style.display = 'none';
+    minsGroup.style.display = 'block';
+    const minsLabel = minsGroup ? minsGroup.querySelector('label') : null;
+    if (minsLabel) minsLabel.textContent = 'Minutes (optional)';
+  } else {
+    milesGroup.style.display = 'none';
+    minsGroup.style.display = 'none';
+  }
+
+  if (!workout) { preview.style.display = 'none'; return; }
+  const base = calcLaurels(workout, miles, minutes);
+  if (base > 0 || workout) {
+    preview.style.display = 'flex';
+    previewVal.textContent = `+${base}`;
+    previewNote.textContent = base === 0 ? 'Enter miles or minutes above' : 'Base laurels (bonuses calculated on save)';
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+async function submitTrial() {
+  const submitBtn = document.querySelector('#tab-log .btn-primary');
+  if (submitBtn && submitBtn.disabled) return; // prevent double-submit
+  const pid = document.getElementById('log-player').value;
+  const workout = document.getElementById('log-workout').value;
+  const date = document.getElementById('log-date').value;
+  const miles = parseFloat(document.getElementById('log-miles').value) || 0;
+  const minutes = parseInt(document.getElementById('log-minutes').value) || 0;
+  const notes = document.getElementById('log-notes').value.trim();
+
+  if (!pid) { showToast('Select a Howler first.'); return; }
+  if (!workout) { showToast('Select a workout type.'); return; }
+  if (!date) { showToast('Enter a date.'); return; }
+  if(date<'2026-04-13'){showToast('No trials before April 13, 2026.');return;}
+  if(date>getAZDate()){showToast('Cannot log a future date.');return;}
+  if (['long_run','tempo','easy_run','optional_run'].includes(workout) && miles === 0) {
+    showToast('Enter miles for this workout.'); return;
+  }
+  if (workout === 'long_run' && miles < 6) {
+    showToast('⚔️ The March requires at least 6 miles. Log it as an Easy Run instead?'); return;
+  }
+  if (workout === 'peloton' && minutes === 0) {
+    showToast('Enter minutes for Peloton ride.'); return;
+  }
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ RECORDING…'; }
+
+  const laurels_base = calcLaurels(workout, miles, minutes);
+  // Underdog bonus — if 200+ Laurels behind the current leader, earn 20% extra
+  buildStatsCache();
+  const allLaurels = state.players.map(function(p){ return (_statsCache[p.id]||{}).laurels||0; });
+  const leaderLaurels = allLaurels.length > 0 ? Math.max(...allLaurels) : 0;
+  const myCurrentLaurels = (_statsCache[pid]||{}).laurels||0;
+  const isUnderdog = leaderLaurels - myCurrentLaurels >= 300;
+  const underdogBonus = isUnderdog ? Math.round(laurels_base * 0.2) : 0;
+  const laurels_total = laurels_base + underdogBonus;
+  const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  const workoutId = 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+
+  // Check new badges before adding
+  const prevBadges = [...(state.badges_awarded[pid] || [])];
+
+  const entry = { id: workoutId, player_id: pid, workout, date, miles: miles||undefined, minutes: minutes||undefined, notes, laurels_base: laurels_total, laurels_earned: laurels_base, underdog_bonus: underdogBonus, quote, timestamp: new Date().toISOString() };
+  state.workouts.push(entry);
+
+  // Recalc to find new badges
+  calcPlayerStats(pid); // mutates state.badges_awarded
+  const allNewBadges = (state.badges_awarded[pid] || []).filter(b => !prevBadges.includes(b));
+  if (allNewBadges.length > 0) entry.badge_earned = allNewBadges[0];
+  const newBadges = allNewBadges;
+
+  await saveState();
+
+  // Reset form
+  document.getElementById('log-workout').value = '';
+  document.getElementById('log-miles').value = '';
+  document.getElementById('log-minutes').value = '';
+  document.getElementById('log-notes').value = '';
+  document.getElementById('laurel-preview').style.display = 'none';
+
+  const player = state.players.find(p => p.id === pid);
+  let toastMsg = `✦ Trial recorded! +${laurels_total} Laurels for ${player?.name||'the Howler'}.`;
+  if (underdogBonus > 0) toastMsg += ` (includes +${underdogBonus} Underdog bonus 🐺)`;
+  if (newBadges.length > 0) {
+    const firstKey = newBadges[0];
+    const tier = BADGE_TIERS.find(t => firstKey.endsWith('_'+t));
+    const baseId = tier ? firstKey.slice(0,-(tier.length+1)) : firstKey;
+    const bd = BADGES_DEF.find(b => b.id === baseId);
+    if (bd && tier) toastMsg += ` ${TIER_ROMAN[tier]} Badge: ${bd.icon} ${bd.name}!`;
+    newBadges.forEach(function(bk){ postBadgeHowl(pid, bk); });
+  }
+  showToast(toastMsg);
+  if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✦ RECORD TRIAL ✦'; }
+  // House-colored confetti burst
+  var trialPlayer2 = state.players.find(function(p){ return p.id===pid; });
+  var houseCol2 = trialPlayer2 ? (HOUSES[trialPlayer2.house] || '#c8900a') : '#c8900a';
+  var trialColors2 = [houseCol2, houseCol2+'cc', houseCol2+'99', '#f0c040', '#ffffff'];
+  setTimeout(function(){ launchConfetti('trial', trialColors2); }, 100);
+  renderAll();
+  // AI Feature 1: post-workout commentary (fire-and-forget)
+  var lastWorkout = state.workouts[state.workouts.length - 1];
+  if (lastWorkout && getAnthropicKey()) {
+    postWorkoutCommentary(pid, lastWorkout).then(function() {
+      return saveState();
+    }).then(function() {
+      renderAll();
+    }).catch(function(){});
+  }
+  switchTab('chronicle');
+}
+
+// ─── TABS ────────────────────────────────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach((t, i) => {
+    const ids = ['leaderboard','dispatch','chronicle','log','trials','conquests','codex'];
+    if (ids[i] === id) t.classList.add('active');
+  });
+  if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
+  if (id === 'chronicle') { renderChronicle(); markAnnalsSeen(); }
+  if (id === 'leaderboard') {
+    renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard();
+    // AI Feature 3: coaching nudge
+    if (currentHowlerId && getAnthropicKey()) {
+      generateCoachingNudge(currentHowlerId).then(function(text) {
+        var card = document.getElementById('coaching-nudge-card');
+        var el = document.getElementById('coaching-nudge-text');
+        if (text && card && el) { el.textContent = text; card.style.display = 'block'; }
+      }).catch(function(){});
+    }
+  }
+  if (id === 'trials') { renderChallenges(); }
+  if (id === 'conquests') { renderTimeline(); }
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Set today as default date
+  const todayStr = getAZDate();
+  const logDateEl = document.getElementById('log-date');
+  logDateEl.value = todayStr;
+  logDateEl.min = '2026-04-13';
+  logDateEl.max = todayStr;
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+
+  // Close modal on overlay click
+  document.getElementById('induct-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('induct-modal');
+  });
+  document.getElementById('edit-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('edit-modal');
+  });
+  document.getElementById('edit-workout-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('edit-workout-modal');
+  });
+  document.getElementById('books-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('books-modal');
+  });
+  document.getElementById('profile-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('profile-modal');
+  });
+  document.getElementById('quick-log-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('quick-log-modal');
+  });
+  document.getElementById('duel-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('duel-modal');
+  });
+
+  // Dispatch custom input
+  document.getElementById('induct-books').addEventListener('change', () => {
+    const checked = [...document.querySelectorAll('#induct-books input:checked')].map(cb => cb.value);
+    const total = checked.reduce((sum, bid) => sum + (bid === 'red_god' ? RED_GOD_LAURELS : BOOK_LAURELS), 0);
+    document.getElementById('induct-book-preview').textContent = `+${total} Laurels from books`;
+  });
+
+  // Workout change -> update preview
+  document.getElementById('log-workout').addEventListener('change', updateLaurelPreview);
+
+  updateNotifBtn();
+  // Pause auto-refresh when app is hidden (saves rate limit)
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+      // Resume: refresh immediately then restart interval
+      loadState();
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#mention-dropdown') && e.target.id !== 'howl-message') {
+      const dd = document.getElementById('mention-dropdown');
+      if (dd) dd.style.display = 'none';
+    }
+  });
+  switchTab('leaderboard');
+  // Immediately show Setup if no credentials found — don't wait for loadState
+  if (!hasConfig()) {
+    showSetupScreen();
+  } else {
+    loadState().then(function() { autoFillHowlerDropdowns(); });
+  }
+  refreshInterval = setInterval(function(){ if(document.visibilityState !== "hidden") loadState(); }, 300000);
+  renderCodex();
+});
+</script>
+</body>
+</html>
