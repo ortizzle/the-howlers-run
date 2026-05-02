@@ -1284,6 +1284,13 @@
 
   <!-- TAB: LEADERBOARD -->
   <div class="tab-content active" id="tab-leaderboard">
+    <div id="coaching-nudge-card" style="display:none;background:linear-gradient(135deg,rgba(26,20,16,0.97),rgba(42,26,16,0.95));border:1.5px solid rgba(200,144,10,0.35);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span style="font-size:0.9rem">🎯</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;font-weight:700;color:#f0d080">YOUR SOVEREIGN COACH</span>
+      </div>
+      <div id="coaching-nudge-text" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.9rem;color:rgba(240,208,128,0.9);line-height:1.6"></div>
+    </div>
     <div id="active-duels-section"></div>
     <div class="section-title">The Pack — Leaderboard</div>
     <div class="player-grid" id="player-grid">
@@ -2964,17 +2971,26 @@ async function sendDuelChallenge() {
     metric: metric,
     wager: wager,
     week: weekKey,
-    status: 'pending', // pending, active, complete
+    status: 'pending',
     created: new Date().toISOString()
   };
   if (!state.duels) state.duels = [];
   state.duels.push(duel);
-  // Announce in howl
+
+  // AI Feature 4: duel opening salvo
+  var salvoText = null;
+  if (getAnthropicKey()) {
+    salvoText = await generateDuelSalvo(challengerId, opponentId, metric, wager);
+  }
+  var duelMsg = salvoText
+    ? '⚔ DUEL ISSUED! ' + challenger.name + ' challenges ' + opponent.name + ' — ' + metricLabels[metric] + ' · ' + wager + 'L wager.\n\n🐺 ' + salvoText
+    : '⚔ DUEL ISSUED! ' + challenger.name + ' challenges ' + opponent.name + ' to a battle of ' + metricLabels[metric] + ' this week! Wager: ' + wager + ' Laurels. ' + opponent.name + ' — do you accept?';
+
   state.howls.push({
     id: 'duel_challenge_' + duel.id,
     player_id: 'system',
     player_laurels: 9999,
-    message: '⚔ DUEL ISSUED! ' + challenger.name + ' challenges ' + opponent.name + ' to a battle of ' + metricLabels[metric] + ' this week! Wager: ' + wager + ' Laurels. ' + opponent.name + ' - do you accept?',
+    message: duelMsg,
     date: getAZDate(),
     timestamp: new Date().toISOString(),
     reactions: {},
@@ -3464,11 +3480,21 @@ async function checkAndPostChallengeHowls() {
       }
       var howlId='challenge_'+ch.id+'_p'+nw.place;
       if (!state.howls.some(function(h){return h.id===howlId;})) {
-        var msg=nw.place===1
-          ?'🏆 CHALLENGE CONQUERED: '+ch.name+'! @'+nw.name+' strikes first. +'+reward+'L awarded. ⚔ Per aspera ad astra. 🐺✨'
-          :nw.place===2
-          ?'⚔ 2ND STRIKE: '+ch.name+'! @'+nw.name+' claims the silver laurel. +'+reward+'L awarded. Not first — but still standing. 🐺'
-          :'🛡 3RD STRIKE: '+ch.name+'! @'+nw.name+' earns the bronze laurel. +'+reward+'L awarded. The march continues. 🐺';
+        var msg;
+        // AI Feature 5: victory speech for 1st place
+        var victoryText = null;
+        if (nw.place === 1 && getAnthropicKey()) {
+          try { victoryText = await generateVictorySpeech(nw.id, ch.name, 1, reward); } catch(e) {}
+        }
+        if (nw.place===1) {
+          msg = victoryText
+            ? '🏆 CHALLENGE CONQUERED: ' + ch.name + '!\n\n🐺 ' + victoryText
+            : '🏆 CHALLENGE CONQUERED: '+ch.name+'! @'+nw.name+' strikes first. +'+reward+'L awarded. ⚔ Per aspera ad astra. 🐺✨';
+        } else if (nw.place===2) {
+          msg='⚔ 2ND STRIKE: '+ch.name+'! @'+nw.name+' claims the silver laurel. +'+reward+'L awarded. Not first — but still standing. 🐺';
+        } else {
+          msg='🛡 3RD STRIKE: '+ch.name+'! @'+nw.name+' earns the bronze laurel. +'+reward+'L awarded. The march continues. 🐺';
+        }
         state.howls.push({id:howlId,player_id:'system',player_laurels:9999,message:msg,date:getAZDate(),timestamp:new Date().toISOString(),likes:0});
       }
       try { await saveState(); } catch(e) { console.error('Challenge save failed:',ch.id,nw.place,e); }
@@ -3514,7 +3540,7 @@ async function checkAndPostChallengeHowls() {
   }
 }
 
-function checkAndPostWeeklyRecap() {
+async function checkAndPostWeeklyRecap() {
   if (state.players.length === 0 || state.workouts.length === 0) return;
   const lastRecapKey = 'howlers_last_recap_' + (localStorage.getItem('howlers_gist_id')||localStorage.getItem('howlers_bin_id')||'');
   const lastRecap = localStorage.getItem(lastRecapKey);
@@ -3568,13 +3594,32 @@ function checkAndPostWeeklyRecap() {
     recap += '\n⭐ Perfect Week: ' + perfectHowlers.map(function(p){return p.name;}).join(' & ') + '. ';
   }
   recap += '\nPer aspera ad astra. 🐺';
+
+  // Try AI narrative if key available
+  var aiRecap = null;
+  try {
+    if (getAnthropicKey()) {
+      aiRecap = await generateAIWeeklyRecap({
+        trials: lastWeekWorkouts.length,
+        weekPrimus: weekPrimus,
+        primusLaurels: weekPrimusId ? (laurelsByPlayer[weekPrimusId]||0) : 0,
+        topRunner: topRunner,
+        topMiles: topRunnerId ? milesByPlayer[topRunnerId] : 0,
+        perfectHowlers: perfectHowlers,
+        laurelsByPlayer: laurelsByPlayer,
+        weekDate: lastMonday.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})
+      });
+    }
+  } catch(e) { aiRecap = null; }
+
+  var finalRecap = aiRecap ? ('📊 WEEKLY RECAP\n\n' + aiRecap) : recap;
   // Post as a system howl
   if (!state.howls) state.howls = [];
   state.howls.push({
     id: 'recap_' + weekKey,
     player_id: 'system',
     player_laurels: 9999,
-    message: recap,
+    message: finalRecap,
     date: now.toISOString().split('T')[0],
     timestamp: now.toISOString(),
     likes: [],
@@ -4968,14 +5013,14 @@ function renderHowlFeed() {
       var weekDate = h.date ? new Date(h.date + 'T12:00:00') : new Date();
       var weekLabel = weekDate.toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'});
 
-      function statRow(icon, label, value) {
+      var statRow = function(icon, label, value) {
         if (!value) return '';
         return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">' +
           '<span style="font-size:1rem;flex-shrink:0">' + icon + '</span>' +
           '<span style="font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light);flex-shrink:0;min-width:80px">' + label + '</span>' +
           '<span style="font-family:Crimson Pro,serif;font-size:0.92rem;color:var(--ink-mid);flex:1">' + value + '</span>' +
           '</div>';
-      }
+      };
 
       var statsHTML =
         statRow('⚔️', 'TRIALS', trialCount ? trialCount + ' logged by the pack' : '') +
@@ -5610,6 +5655,169 @@ function summonGoneDark(pid) {
   showToast('🌑 Summoning the Sovereign on ' + player.name.split(' ')[0] + '…');
 }
 
+// ─── AI ENGINE — CENTRAL HELPER ──────────────────────────────────────────────
+async function aiGenerate(systemPrompt, userPrompt, maxTokens) {
+  var key = getAnthropicKey();
+  if (!key || !key.startsWith('sk-ant') || key.length < 20) return null;
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: maxTokens || 200,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    var data = await res.json();
+    return (data.content && data.content[0] && data.content[0].text) ? data.content[0].text.trim() : null;
+  } catch(e) {
+    console.warn('AI generate failed:', e.message);
+    return null;
+  }
+}
+
+// ─── AI FEATURE 1: POST-WORKOUT COMMENTARY ───────────────────────────────────
+async function postWorkoutCommentary(pid, workout) {
+  var player = state.players.find(function(p){ return p.id === pid; });
+  if (!player) return;
+  var s = calcPlayerStats(pid);
+  var workoutLabels = {
+    long_run:'Long Run', easy_run:'Easy Run', tempo:'Tempo Run', walk_run:'Walk/Run',
+    peloton:'Peloton Ride', strength:'Strength Session', mobility:'Mobility Session',
+    cardio:'Cardio Session', race:'Race'
+  };
+  var label = workoutLabels[workout.workout] || workout.workout;
+  var detail = workout.miles ? workout.miles + ' miles' : workout.minutes ? workout.minutes + ' min' : '';
+  var prompt = 'Pack member just logged a workout:\n' +
+    'Name: ' + player.name + ' (' + player.house + ' House, rank: ' + s.rank.name + ')\n' +
+    'Workout: ' + label + (detail ? ' — ' + detail : '') + '\n' +
+    'Season stats: ' + s.laurels + 'L, ' + s.miles + ' miles, ' + s.trials + ' trials, ' + s.streak + '-week streak\n' +
+    'Pack position: ' + (state.players.slice().sort(function(a,b){ return calcPlayerStats(b.id).laurels - calcPlayerStats(a.id).laurels; }).findIndex(function(p){ return p.id===pid; }) + 1) + ' of ' + state.players.length;
+
+  var text = await aiGenerate(
+    'You are the narrator of the Red Rising universe — poetic, vivid, fierce. Write 1–2 sentences reacting to this pack member\'s workout in Red Rising style. Reference their House color, rank, and specific activity. Make it feel like a war dispatch or arena announcement. No hashtags. No preamble. Output only the commentary.',
+    prompt, 120
+  );
+  if (!text) return;
+  var howlId = 'ai_workout_' + workout.id;
+  if (state.howls.some(function(h){ return h.id === howlId; })) return;
+  state.howls.push({
+    id: howlId,
+    player_id: 'system',
+    player_laurels: 9999,
+    message: '🐺 ' + text,
+    date: getAZDate(),
+    timestamp: new Date().toISOString(),
+    reactions: {},
+    is_recap: false,
+    ai_generated: true
+  });
+}
+
+// ─── AI FEATURE 2: WEEKLY RECAP NARRATIVE ────────────────────────────────────
+async function generateAIWeeklyRecap(stats) {
+  // stats = { trials, weekPrimus, primusLaurels, topRunner, topMiles, perfectHowlers, weekDate }
+  var packSummary = state.players.map(function(p) {
+    var s = calcPlayerStats(p.id);
+    var weekLaurels = stats.laurelsByPlayer[p.id] || 0;
+    return p.name + ' (' + p.house + '): +' + weekLaurels + 'L this week, ' + s.trials + ' total trials, ' + s.miles + ' total miles';
+  }).join('\n');
+
+  var prompt = 'Weekly pack training data:\n' +
+    'Week of: ' + stats.weekDate + '\n' +
+    'Total trials logged: ' + stats.trials + '\n' +
+    'Weekly Primus (most Laurels): ' + (stats.weekPrimus ? stats.weekPrimus.name + ' +' + stats.primusLaurels + 'L' : 'none') + '\n' +
+    'Longest march: ' + (stats.topRunner ? stats.topRunner.name + ' ' + stats.topMiles + ' miles' : 'none') + '\n' +
+    'Perfect weeks: ' + (stats.perfectHowlers.length > 0 ? stats.perfectHowlers.map(function(p){ return p.name; }).join(', ') : 'none') + '\n\n' +
+    'Individual:\n' + packSummary;
+
+  var text = await aiGenerate(
+    'You are a scribe of the Society recording the weekly training dispatch of The Howlers pack — warriors training for the Rock \'n\' Roll Arizona Half Marathon. Write a 3–5 sentence Red Rising-flavored narrative recap: who rose, who fell behind, rivalries forming, who deserves praise or shame. Use their House colors and ranks. Write in past tense as a formal dispatch. End with "Per aspera ad astra." Output only the narrative, no headers.',
+    prompt, 300
+  );
+  return text;
+}
+
+// ─── AI FEATURE 3: COACHING NUDGE ────────────────────────────────────────────
+var _lastNudgePid = null;
+var _lastNudgeText = null;
+
+async function generateCoachingNudge(pid) {
+  if (_lastNudgePid === pid && _lastNudgeText) return _lastNudgeText;
+  var player = state.players.find(function(p){ return p.id === pid; });
+  if (!player) return null;
+  var s = calcPlayerStats(pid);
+  var sorted = state.players.slice().sort(function(a,b){ return calcPlayerStats(b.id).laurels - calcPlayerStats(a.id).laurels; });
+  var pos = sorted.findIndex(function(p){ return p.id === pid; }) + 1;
+  var leader = sorted[0];
+  var leaderStats = calcPlayerStats(leader.id);
+  var gap = leaderStats.laurels - s.laurels;
+  var thisWeekKey = getThisWeekKey();
+  var thisWeekTrials = state.workouts.filter(function(w){ return w.player_id === pid && getWeekKey(w.date) === thisWeekKey && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); }).length;
+
+  var prompt = 'Howler profile:\n' +
+    'Name: ' + player.name + ' (' + player.house + ' House, rank: ' + s.rank.name + ')\n' +
+    'Season: ' + s.laurels + 'L, ' + s.miles + ' miles, ' + s.trials + ' trials, ' + s.streak + '-week streak, ' + s.perfectWeeks + ' perfect weeks\n' +
+    'Pack position: ' + pos + ' of ' + state.players.length + ' (' + (gap > 0 ? gap + 'L behind ' + leader.name : 'LEADING the pack') + ')\n' +
+    'This week so far: ' + thisWeekTrials + ' workouts logged\n' +
+    'Race: Rock \'n\' Roll Arizona Half Marathon, Jan 17 2027 (' + Math.ceil((new Date('2027-01-17') - new Date()) / (1000*60*60*24)) + ' days away)';
+
+  var text = await aiGenerate(
+    'You are a fierce but loyal Red Rising training coach speaking directly to a Howler pack member. Give them 1–2 sentences of personalized, specific coaching advice based on their current stats and pack position. Reference their rank, gap to leader, or weekly progress. Be direct and motivating — not generic. No hashtags. Output only the coaching message.',
+    prompt, 100
+  );
+  if (text) { _lastNudgePid = pid; _lastNudgeText = text; }
+  return text;
+}
+
+// ─── AI FEATURE 4: DUEL OPENING SALVO ────────────────────────────────────────
+async function generateDuelSalvo(challengerId, opponentId, metric, wager) {
+  var challenger = state.players.find(function(p){ return p.id === challengerId; });
+  var opponent = state.players.find(function(p){ return p.id === opponentId; });
+  if (!challenger || !opponent) return null;
+  var cs = calcPlayerStats(challengerId);
+  var os = calcPlayerStats(opponentId);
+  var metricLabels = {miles:'miles run', minutes:'Peloton minutes', laurels:'Laurels earned'};
+
+  var prompt = 'A duel has been issued:\n' +
+    'Challenger: ' + challenger.name + ' (' + challenger.house + ' House, rank: ' + cs.rank.name + ', ' + cs.laurels + 'L, ' + cs.miles + ' miles)\n' +
+    'Opponent: ' + opponent.name + ' (' + opponent.house + ' House, rank: ' + os.rank.name + ', ' + os.laurels + 'L, ' + os.miles + ' miles)\n' +
+    'Battle metric: ' + metricLabels[metric] + '\n' +
+    'Wager: ' + wager + ' Laurels';
+
+  return await aiGenerate(
+    'You are writing the opening trash talk from the challenger to the opponent in a Red Rising duel. Write 2–3 sentences in the challenger\'s voice — bold, cutting, specific to their stats and Houses. End with a challenge line. Output only the salvo text, no preamble. Add #duel at the end.',
+    prompt, 150
+  );
+}
+
+// ─── AI FEATURE 5: VICTORY SPEECH ────────────────────────────────────────────
+async function generateVictorySpeech(winnerId, challengeName, place, reward) {
+  var winner = state.players.find(function(p){ return p.id === winnerId; });
+  if (!winner) return null;
+  var s = calcPlayerStats(winnerId);
+  var placeWord = {1:'first', 2:'second', 3:'third'}[place] || 'first';
+
+  var prompt = 'Challenge conquered:\n' +
+    'Winner: ' + winner.name + ' (' + winner.house + ' House, rank: ' + s.rank.name + ')\n' +
+    'Challenge: ' + challengeName + '\n' +
+    'Placement: ' + placeWord + ' to conquer\n' +
+    'Reward: +' + reward + ' Laurels\n' +
+    'Season stats: ' + s.laurels + 'L total, ' + s.miles + ' miles, ' + s.trials + ' trials';
+
+  return await aiGenerate(
+    'Write a 2–3 sentence Red Rising-style victory speech in the winner\'s voice upon conquering a training challenge. Reference their House, the challenge, and their placement. Make it feel like a arena victory moment — fierce, proud, brief. Add #conquered at the end. Output only the speech.',
+    prompt, 150
+  );
+}
+
 function copyHowl(howlId) {
   const h = (state.howls || []).find(function(x) { return x.id === howlId; });
   if (!h) return;
@@ -6074,6 +6282,15 @@ async function submitTrial() {
   var trialColors2 = [houseCol2, houseCol2+'cc', houseCol2+'99', '#f0c040', '#ffffff'];
   setTimeout(function(){ launchConfetti('trial', trialColors2); }, 100);
   renderAll();
+  // AI Feature 1: post-workout commentary (fire-and-forget)
+  var lastWorkout = state.workouts[state.workouts.length - 1];
+  if (lastWorkout && getAnthropicKey()) {
+    postWorkoutCommentary(pid, lastWorkout).then(function() {
+      return saveState();
+    }).then(function() {
+      renderAll();
+    }).catch(function(){});
+  }
   switchTab('chronicle');
 }
 
@@ -6088,7 +6305,17 @@ function switchTab(id) {
   });
   if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); }
   if (id === 'chronicle') { renderChronicle(); markAnnalsSeen(); }
-  if (id === 'leaderboard') { renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard(); }
+  if (id === 'leaderboard') {
+    renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard();
+    // AI Feature 3: coaching nudge
+    if (currentHowlerId && getAnthropicKey()) {
+      generateCoachingNudge(currentHowlerId).then(function(text) {
+        var card = document.getElementById('coaching-nudge-card');
+        var el = document.getElementById('coaching-nudge-text');
+        if (text && card && el) { el.textContent = text; card.style.display = 'block'; }
+      }).catch(function(){});
+    }
+  }
   if (id === 'trials') { renderChallenges(); }
   if (id === 'conquests') { renderTimeline(); }
 }
