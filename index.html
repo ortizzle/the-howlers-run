@@ -1567,6 +1567,11 @@
       <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:5px">GitHub Token (ghp_...)</label>
       <input id="setup-gist-token" type="password" placeholder="ghp_..." style="font-family:monospace" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink);box-sizing:border-box">
     </div>
+    <div style="margin-bottom:16px;padding:12px;background:rgba(154,16,16,0.06);border:1px solid rgba(154,16,16,0.2);border-radius:var(--radius)">
+      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:4px">⚔ Anthropic API Key (optional)</label>
+      <div style="font-family:'Crimson Pro',serif;font-size:0.75rem;font-style:italic;color:var(--ink-light);margin-bottom:8px">Powers AI trash talk in Summon the Sovereign. Stored in your private Gist — not in the HTML.</div>
+      <input id="setup-anthropic-key" type="password" placeholder="sk-ant-..." style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:monospace;font-size:0.75rem;color:var(--ink);box-sizing:border-box">
+    </div>
     
     <button onclick="submitSetup()" style="width:100%;background:var(--ink);color:var(--amber-pale);border:2px solid var(--ink);border-radius:var(--radius);padding:12px 20px;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer">
       ✦ CONNECT THE PACK ✦</button>
@@ -2088,6 +2093,12 @@ function getGistConfig() {
 function hasGistConfig() {
   return !!(localStorage.getItem('howlers_gist_id') && localStorage.getItem('howlers_gist_token'));
 }
+function getAnthropicKey() {
+  return localStorage.getItem('howlers_anthropic_key') || '';
+}
+function saveAnthropicKey(key) {
+  if (key) localStorage.setItem('howlers_anthropic_key', key.trim());
+}
 let currentHowlerId = localStorage.getItem('howlers_current_player') || '';
 let _skipMerge = false; // set true for force restore
 let _deletedWorkoutIds = new Set(); // IDs deleted this session — never merge back
@@ -2417,6 +2428,8 @@ function submitSetup() {
     return;
   }
   saveGistConfig(gistId.trim(), gistToken.trim());
+  const anthropicKey = (document.getElementById('setup-anthropic-key')||{}).value||'';
+  if (anthropicKey.trim() && !anthropicKey.startsWith('•')) saveAnthropicKey(anthropicKey.trim());
   hideSetupScreen();
   loadState();
 }
@@ -2424,9 +2437,10 @@ function openSetup() {
   const gc = getGistConfig();
   const gi = document.getElementById('setup-gist-id');
   const gt = document.getElementById('setup-gist-token');
+  const ak = document.getElementById('setup-anthropic-key');
   if (gi) gi.value = gc.gistId;
   if (gt) gt.value = gc.token;
-
+  if (ak) ak.value = getAnthropicKey() ? '••••••••••••••••' : '';
   showSetupScreen();
 }
 
@@ -5465,7 +5479,60 @@ function summonSovereign(targetPid) {
   var out = document.getElementById('sovereign-output');
   var actions = document.getElementById('sovereign-actions');
 
-  // Pick a template — weight toward contextually relevant ones
+  var apiKey = getAnthropicKey();
+
+  if (apiKey) {
+    // ── Live AI mode ──────────────────────────────────────────────────────
+    if (btn) { btn.disabled = true; btn.textContent = '⚔ Forging…'; }
+    if (out) { out.style.display = 'block'; out.textContent = '🌑 The Sovereign stirs in the dark…'; }
+    if (actions) actions.style.display = 'none';
+
+    var ctx = [
+      'Target: ' + player.name + ' (' + player.house + ' House, rank: ' + s.rank.name + ')',
+      'Stats: ' + s.laurels + ' Laurels, ' + s.miles + ' miles run, ' + s.trials + ' trials, ' + s.streak + '-week streak',
+      s.perfectWeeks > 0 ? 'Perfect weeks: ' + s.perfectWeeks : 'Perfect weeks: 0',
+      s.maxSingleRun > 0 ? 'Longest single run: ' + s.maxSingleRun + ' mi' : 'No runs logged yet',
+      s.pelotons > 0 ? 'Peloton rides: ' + s.pelotons : '',
+      s.strength > 0 ? 'Strength sessions: ' + s.strength : '',
+      s.mobility > 0 ? 'Mobility sessions: ' + s.mobility : '',
+      caller ? 'Trash talking as: ' + caller.name + ' (' + caller.house + ' House)' : '',
+    ].filter(Boolean).join('\n');
+
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        system: 'You are the Sovereign — cunning, poetic, merciless, in the voice of the Red Rising books. Write 2–4 sentences of devastating, darkly funny trash talk using the target\'s real stats. Reference their House, rank, and specific numbers. Speak like Cassius or the Jackal — elegant and cutting. End with #trashtalk. Output only the trash talk, no preamble.',
+        messages: [{ role: 'user', content: 'Write Red Rising trash talk for this pack member:\n\n' + ctx }]
+      })
+    }).then(function(res) { return res.json(); }).then(function(data) {
+      var text = (data.content && data.content[0] && data.content[0].text) || '';
+      if (!text) throw new Error('Empty response');
+      _sovereignDraft = text.trim();
+      if (out) out.textContent = _sovereignDraft;
+      if (actions) actions.style.display = 'flex';
+    }).catch(function(e) {
+      // Fall back to templates on error
+      console.warn('Sovereign API failed, using templates:', e);
+      _sovereignDraft = generateSovereignTemplate(player, s, caller);
+      if (out) out.textContent = _sovereignDraft;
+      if (actions) actions.style.display = 'flex';
+    }).finally(function() {
+      if (btn) { btn.disabled = false; btn.textContent = '⚔ SUMMON THE SOVEREIGN'; }
+    });
+
+  } else {
+    // ── Template mode (no API key) ────────────────────────────────────────
+    _sovereignDraft = generateSovereignTemplate(player, s, caller);
+    if (out) { out.style.display = 'block'; out.textContent = _sovereignDraft; }
+    if (actions) actions.style.display = 'flex';
+  }
+}
+
+function generateSovereignTemplate(player, s, caller) {
+  var pid = player.id;
   var pool = [];
   // Always eligible
   pool.push(3, 9, 10);
@@ -5494,12 +5561,7 @@ function summonSovereign(targetPid) {
   if (s.strength === 0 || s.mobility === 0) pool.push(12);
 
   var chosen = pool[Math.floor(Math.random() * pool.length)];
-  var text = SOVEREIGN_TEMPLATES[chosen](player, s, caller);
-
-  _sovereignDraft = text;
-  if (out) { out.style.display = 'block'; out.textContent = text; }
-  if (actions) actions.style.display = 'flex';
-  if (btn) btn.textContent = '⚔ SUMMON THE SOVEREIGN';
+  return SOVEREIGN_TEMPLATES[chosen](player, s, caller);
 }
 
 function sendSovereignHowl() {
