@@ -2140,6 +2140,7 @@ function saveAnthropicKey(key) {
 let currentHowlerId = localStorage.getItem('howlers_current_player') || '';
 let _skipMerge = false; // set true for force restore
 let _deletedWorkoutIds = new Set(); // IDs deleted this session — never merge back
+let _deletedHowlIds = new Set();    // Howl IDs deleted this session — never merge back
 
 // ─── NOTIFICATION TRACKING ───────────────────────────────────────────────────
 function getLastHowlSeen() {
@@ -2361,10 +2362,10 @@ async function saveState() {
           showToast('🔄 Merged ' + wouldHaveLost + ' new workout(s) from pack before saving.');
         }
 
-        // Also merge howls we might be missing
+        // Also merge howls — but never resurrect deleted ones
         const localHowlIds = new Set((state.howls||[]).map(h => h.id));
         (remoteState.howls||[]).forEach(h => {
-          if (!localHowlIds.has(h.id)) state.howls.push(h);
+          if (!localHowlIds.has(h.id) && !_deletedHowlIds.has(h.id)) state.howls.push(h);
         });
 
         // Merge badges — union of local and remote
@@ -5688,6 +5689,7 @@ function handleReaction(btn, evt) {
 
 async function removeHowl(howlId) {
   if (!confirm('Delete this Howl from the pack?')) return;
+  _deletedHowlIds.add(howlId);
   state.howls = (state.howls || []).filter(function(h) { return h.id !== howlId; });
   await saveState();
   showToast('Howl silenced.');
