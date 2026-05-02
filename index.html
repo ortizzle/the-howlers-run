@@ -5638,13 +5638,17 @@ var _sovereignMode = 'trash'; // 'trash' or 'motivate'
 // ── PROMPTS ───────────────────────────────────────────────────────────────────
 var SOVEREIGN_PROMPTS = {
 
-  trash_standard: 'You are writing Red Rising-style trash talk targeting a pack member training for a half marathon. Speak like Cassius au Bellona — elegant, precise, devastating. Pick ONE stat (miles or Laurels) and cut deep with it. Do NOT mention streaks, mobility, or strength. Max 2 sentences. End with #trashtalk. Output only the howl, nothing else.',
+  trash_standard: 'You are writing Red Rising-style trash talk. Speak like Cassius au Bellona — elegant, precise, devastating. Pick ONE stat (miles or Laurels only) and make one clean cut. Maximum 2 short sentences. No monologues. End with #trashtalk. Output only the howl.',
 
-  trash_jackal: 'You are the Jackal — cold, surgical, intellectually cruel. Write one line of Red Rising trash talk targeting this pack member. Reference their miles or Laurels with surgical precision. No warmth, no exclamation marks, just a scalpel. End with #trashtalk #jackalstyle. Output only the howl.',
+  trash_jackal: 'You are the Jackal — cold, surgical, one thought only. Write a single sentence of Red Rising trash talk. Reference miles or Laurels. No warmth, no exclamation marks. End with #trashtalk #jackalstyle. Output only the howl.',
 
-  motivate_standard: 'You are a Red Rising lore narrator writing fierce pack motivation. Reference the race (Rock \'n\' Roll Arizona Half Marathon, Jan 17 2027, Tempe Beach Park), the target\'s House color, and one specific stat that shows progress. Keep it under 2 sentences. Fierce, not gentle. End with #howlermotivation. Output only the howl.',
+  motivate_standard: 'You are a Red Rising lore narrator. Write 1–2 sentences of fierce pack motivation referencing the race (Rock \'n\' Roll Arizona Half Marathon, Jan 17 2027) and one real stat. Short and fierce, not gentle. End with #howlermotivation. Output only the howl.',
 
-  motivate_sevro: 'You are Sevro au Barca — chaotic, loyal, unhinged, fiercely protective of his pack. Write Sevro-style motivation for this Howler. Use "boyo" at least once. Caps for emphasis. Reference their House and one real stat. Short, punchy, like he\'s screaming across the arena. End with #howlermotivation #sevrostyle. Output only the howl.'
+  motivate_sevro: 'You are Sevro au Barca — loud, loyal, unhinged. Write 2–3 SHORT punchy sentences of motivation. Use "boyo" once. One stat. All-caps for one word only. End with #howlermotivation #sevrostyle. Output only the howl. Do NOT write a paragraph.',
+
+  motivate_sevro_unhinged: 'You are Sevro au Barca at full chaos — screaming across the arena at your pack. Write a short Sevro monologue (3–5 sentences max) of fierce motivation. Use "boyo" at least once. Caps for emphasis on key words. Reference their real stats. End with #howlermotivation #sevrostyle. Output only the howl.',
+
+  trash_cassius_long: 'You are Cassius au Bellona — elegant, cutting, enjoying himself a little too much. Write a 3–4 sentence Red Rising trash talk that builds to a devastating finish. Reference one or two real stats. No streaks. End with #trashtalk. Output only the howl.'
 };
 
 // ── FALLBACK TEMPLATES ────────────────────────────────────────────────────────
@@ -5729,10 +5733,17 @@ var SOVEREIGN_TEMPLATES = [
 ];
 
 function _pickFlavor(mode) {
-  // 25% chance of special flavor
   var roll = Math.random();
-  if (mode === 'trash') return roll < 0.25 ? 'trash_jackal' : 'trash_standard';
-  if (mode === 'motivate') return roll < 0.25 ? 'motivate_sevro' : 'motivate_standard';
+  if (mode === 'trash') {
+    if (roll < 0.20) return 'trash_jackal';          // 20% Jackal one-liner
+    if (roll < 0.35) return 'trash_cassius_long';    // 15% Cassius monologue (rare)
+    return 'trash_standard';                          // 65% standard Cassius
+  }
+  if (mode === 'motivate') {
+    if (roll < 0.20) return 'motivate_sevro_unhinged'; // 20% full Sevro chaos
+    if (roll < 0.45) return 'motivate_sevro';          // 25% punchy Sevro
+    return 'motivate_standard';                        // 55% lore narrator
+  }
   return 'trash_standard';
 }
 
@@ -5824,7 +5835,7 @@ function summonSovereign(mode, targetPid) {
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 100,
+        max_tokens: 150,
         system: systemPrompt,
         messages: [{ role: 'user', content: ctx }]
       })
