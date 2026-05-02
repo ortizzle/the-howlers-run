@@ -1408,7 +1408,8 @@
     <!-- SUMMON THE SOVEREIGN -->
     <div class="sovereign-panel" style="margin-bottom:28px">
       <div class="section-title" style="font-size:0.95rem;margin-bottom:10px;border-bottom-color:rgba(154,16,16,0.3)">⚔ Summon the Sovereign</div>
-      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.88rem;color:var(--ink-light);margin-bottom:12px">AI-forged Red Rising trash talk, seeded with real pack stats. Review, then send as your own howl with #trashtalk.</div>
+      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.88rem;color:var(--ink-light);margin-bottom:8px">AI-forged Red Rising trash talk, seeded with real pack stats. Review, then send as your own howl with #trashtalk.</div>
+      <div id="sovereign-mode-badge" style="display:inline-flex;align-items:center;gap:5px;font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.1em;padding:3px 8px;border-radius:3px;margin-bottom:10px"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
         <div style="flex:1;min-width:140px">
           <label class="form-label">Target Howler</label>
@@ -4900,6 +4901,15 @@ function renderDispatch() {
     });
     if (prevT) stgt.value = prevT;
   }
+  // Update sovereign mode badge
+  var badge = document.getElementById('sovereign-mode-badge');
+  if (badge) {
+    var hasKey = getAnthropicKey().startsWith('sk-ant');
+    badge.textContent = hasKey ? '🧠 AI MODE — LIVE' : '📜 TEMPLATE MODE';
+    badge.style.background = hasKey ? 'rgba(16,100,16,0.15)' : 'rgba(100,80,16,0.15)';
+    badge.style.border = '1px solid ' + (hasKey ? 'rgba(16,160,16,0.3)' : 'rgba(180,140,20,0.3)');
+    badge.style.color = hasKey ? '#40c040' : '#c8a030';
+  }
   renderHowlFeed();
 }
 
@@ -5480,8 +5490,9 @@ function summonSovereign(targetPid) {
   var actions = document.getElementById('sovereign-actions');
 
   var apiKey = getAnthropicKey();
+  var validKey = apiKey && apiKey.startsWith('sk-ant') && apiKey.length > 20;
 
-  if (apiKey) {
+  if (validKey) {
     // ── Live AI mode ──────────────────────────────────────────────────────
     if (btn) { btn.disabled = true; btn.textContent = '⚔ Forging…'; }
     if (out) { out.style.display = 'block'; out.textContent = '🌑 The Sovereign stirs in the dark…'; }
@@ -5514,10 +5525,17 @@ function summonSovereign(targetPid) {
       if (out) out.textContent = _sovereignDraft;
       if (actions) actions.style.display = 'flex';
     }).catch(function(e) {
-      // Fall back to templates on error
-      console.warn('Sovereign API failed, using templates:', e);
+      console.warn('Sovereign API failed, using templates:', e.message);
       _sovereignDraft = generateSovereignTemplate(player, s, caller);
-      if (out) out.textContent = _sovereignDraft;
+      if (out) {
+        out.textContent = _sovereignDraft;
+        out.style.borderColor = 'rgba(180,140,20,0.4)';
+        // Show fallback notice
+        var notice = document.createElement('div');
+        notice.style.cssText = 'font-family:Cinzel,serif;font-size:0.55rem;color:#c8a030;margin-top:6px;opacity:0.8';
+        notice.textContent = '⚠ API unreachable — template used. Error: ' + e.message;
+        out.appendChild(notice);
+      }
       if (actions) actions.style.display = 'flex';
     }).finally(function() {
       if (btn) { btn.disabled = false; btn.textContent = '⚔ SUMMON THE SOVEREIGN'; }
