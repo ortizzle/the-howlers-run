@@ -5649,33 +5649,50 @@ var SOVEREIGN_PROMPTS = {
 
 // ── FALLBACK TEMPLATES ────────────────────────────────────────────────────────
 var SOVEREIGN_TEMPLATES = [
-  // TRASH 0 — miles jab
+  // TRASH 0 — miles jab (Cassius)
   function(p,s,c) {
     var first = p.name.split(' ')[0];
     if (s.miles === 0) return first + ' of ' + p.house + ' has logged zero running miles. The race is 13.1. #trashtalk';
-    var diff = c ? (calcPlayerStats(c.id).miles - s.miles).toFixed(1) : null;
-    if (diff && diff > 0) return c.name.split(' ')[0] + ' has put ' + diff + ' miles between you and them, ' + first + '. That gap doesn\'t close itself. #trashtalk';
-    return first + ' peaked at ' + s.maxSingleRun + ' miles in one session. The finish line is 13.1. #trashtalk';
+    if (c) { var diff = (calcPlayerStats(c.id).miles - s.miles).toFixed(1); if (diff > 0) return c.name.split(' ')[0] + ' has put ' + diff + ' miles between you and them, ' + first + '. That gap doesn\'t close itself. #trashtalk'; }
+    return first + '\'s longest run is ' + s.maxSingleRun + ' miles. The finish line is 13.1. Do the math. #trashtalk';
   },
-  // TRASH 1 — laurels jab
+  // TRASH 1 — laurels / pack position (Cassius)
   function(p,s,c) {
     var first = p.name.split(' ')[0];
     var sorted = state.players.slice().sort(function(a,b){ return calcPlayerStats(b.id).laurels - calcPlayerStats(a.id).laurels; });
     var pos = sorted.findIndex(function(x){ return x.id === p.id; }) + 1;
     var suffix = pos===1?'st':pos===2?'nd':pos===3?'rd':'th';
-    if (pos === sorted.length) return first + ' sits dead last with ' + s.laurels + ' Laurels. The view from the back must be humbling. #trashtalk';
-    return first + ' of ' + p.house + ' — ' + pos + suffix + ' place, ' + s.laurels + ' Laurels. ' + (c ? c.name.split(' ')[0] + ' sends their regards from above.' : 'The pack noticed.') + ' #trashtalk';
+    if (pos === sorted.length) return first + ' — dead last with ' + s.laurels + ' Laurels. The view from the back must be humbling. #trashtalk';
+    return first + ' of ' + p.house + ': ' + pos + suffix + ' place, ' + s.laurels + ' Laurels. ' + (c ? c.name.split(' ')[0] + ' sends their regards from above.' : 'The pack noticed.') + ' #trashtalk';
   },
-  // TRASH 2 — Jackal cold
+  // TRASH 2 — Jackal one-liner
   function(p,s,c) {
     var first = p.name.split(' ')[0];
+    if (s.miles === 0) return first + ' hasn\'t run a mile. I\'m not sure that counts as training. #trashtalk #jackalstyle';
     return 'I don\'t mock ' + first + '. ' + s.laurels + ' Laurels speaks for itself. #trashtalk #jackalstyle';
   },
-  // TRASH 3 — Peloton jab
+  // TRASH 3 — Peloton jab (Cassius)
   function(p,s,c) {
     var first = p.name.split(' ')[0];
-    if (s.pelotons > 0 && s.miles < 3) return first + ' has logged ' + s.pelotons + ' Peloton rides and ' + s.miles + ' running miles. The finish line doesn\'t have a seat. #trashtalk';
+    if (s.pelotons > 0 && s.miles < 3) return first + ' has logged ' + s.pelotons + ' Peloton ride' + (s.pelotons>1?'s':'') + ' and ' + s.miles + ' miles of actual running. The finish line at Tempe Beach doesn\'t have a seat. #trashtalk';
     return SOVEREIGN_TEMPLATES[0](p,s,c);
+  },
+  // TRASH 4 — no runs yet (Cassius)
+  function(p,s,c) {
+    var first = p.name.split(' ')[0];
+    if (s.maxSingleRun === 0) return 'Rumor has it ' + first + ' of ' + p.house + ' has yet to log a single running mile. The race is 13.1 of them. Perhaps they\'re saving themselves for a dramatic entrance. #trashtalk';
+    return SOVEREIGN_TEMPLATES[1](p,s,c);
+  },
+  // TRASH 5 — mobility jab (Cassius)
+  function(p,s,c) {
+    var first = p.name.split(' ')[0];
+    if (s.mobility === 0) return first + ' has logged zero mobility sessions. A runner with no bend in their body meets the road at mile 10 and weeps. #trashtalk';
+    return first + ' has done ' + s.mobility + ' mobility session' + (s.mobility>1?'s':'') + '. The legs still have to carry them 13.1 miles. #trashtalk';
+  },
+  // TRASH 6 — Jackal surgical (Laurels)
+  function(p,s,c) {
+    var first = p.name.split(' ')[0];
+    return first + ': ' + s.laurels + ' Laurels. ' + (c ? calcPlayerStats(c.id).laurels + ' for ' + c.name.split(' ')[0] + '.' : 'The leaderboard is unimpressed.') + ' #trashtalk #jackalstyle';
   },
   // MOTIVATE 0 — general lore
   function(p,s,c) {
@@ -5686,13 +5703,28 @@ var SOVEREIGN_TEMPLATES = [
   // MOTIVATE 1 — Sevro
   function(p,s,c) {
     var first = p.name.split(' ')[0];
-    if (s.laurels > 0) return 'OI ' + first + ' BOYO — ' + s.laurels + ' Laurels and STILL going. That\'s a ' + p.house + ' for you. DON\'T STOP. #howlermotivation #sevrostyle';
+    if (s.laurels > 0) return 'OI ' + first + ' BOYO — ' + s.laurels + ' Laurels and STILL going. That\'s a ' + p.house + ' for you. DON\'T STOP NOW. #howlermotivation #sevrostyle';
     return 'BOYO. ' + first + '. The pack needs you. GET UP AND RUN. #howlermotivation #sevrostyle';
   },
   // MOTIVATE 2 — race focus
   function(p,s,c) {
     var first = p.name.split(' ')[0];
     return 'January 17, 2027. Tempe Beach Park. ' + first + ' will be ready. ' + (s.miles > 0 ? s.miles + ' miles already in the legs.' : 'The march starts now.') + ' #howlermotivation';
+  },
+  // MOTIVATE 3 — miles progress
+  function(p,s,c) {
+    var first = p.name.split(' ')[0];
+    if (s.miles >= 10) return first + ' of ' + p.house + ' has run ' + s.miles + ' miles. The race is 13.1. The gap is closing. #howlermotivation';
+    return 'The road to Tempe Beach is built one mile at a time, ' + first + '. ' + (s.miles > 0 ? s.miles + ' down.' : 'Start the clock.') + ' #howlermotivation';
+  },
+  // MOTIVATE 4 — Sevro vs rival
+  function(p,s,c) {
+    var first = p.name.split(' ')[0];
+    var sorted = state.players.slice().sort(function(a,b){ return calcPlayerStats(b.id).laurels - calcPlayerStats(a.id).laurels; });
+    var pos = sorted.findIndex(function(x){ return x.id === p.id; }) + 1;
+    if (pos === 1) return 'OI ' + first + ' BOYO — you\'re LEADING this pack. Don\'t you dare let up. #howlermotivation #sevrostyle';
+    var ahead = sorted[pos-2];
+    return 'BOYO — ' + ahead.name.split(' ')[0] + ' is right there, ' + first + '. ' + calcPlayerStats(ahead.id).laurels + ' Laurels. CLOSE THE GAP. #howlermotivation #sevrostyle';
   },
 ];
 
@@ -5722,13 +5754,18 @@ function generateSovereignTemplate(player, s, caller, mode) {
   var roll = Math.random();
   if (mode === 'trash') {
     if (s.pelotons > 0 && s.miles < 3) return SOVEREIGN_TEMPLATES[3](player, s, caller);
-    if (roll < 0.15) return SOVEREIGN_TEMPLATES[2](player, s, caller); // Jackal
-    if (s.laurels < 500 || roll < 0.5) return SOVEREIGN_TEMPLATES[1](player, s, caller);
-    return SOVEREIGN_TEMPLATES[0](player, s, caller);
+    if (s.maxSingleRun === 0) return SOVEREIGN_TEMPLATES[4](player, s, caller);
+    if (roll < 0.20) return SOVEREIGN_TEMPLATES[2](player, s, caller); // Jackal
+    if (roll < 0.30) return SOVEREIGN_TEMPLATES[6](player, s, caller); // Jackal laurels
+    if (roll < 0.40 && s.mobility === 0) return SOVEREIGN_TEMPLATES[5](player, s, caller); // mobility
+    if (roll < 0.65) return SOVEREIGN_TEMPLATES[1](player, s, caller); // laurels/position
+    return SOVEREIGN_TEMPLATES[0](player, s, caller); // miles
   } else {
-    if (roll < 0.25) return SOVEREIGN_TEMPLATES[5](player, s, caller); // Sevro
-    if (roll < 0.55) return SOVEREIGN_TEMPLATES[6](player, s, caller); // Race focus
-    return SOVEREIGN_TEMPLATES[4](player, s, caller);
+    if (roll < 0.25) return SOVEREIGN_TEMPLATES[8](player, s, caller);  // Sevro
+    if (roll < 0.40) return SOVEREIGN_TEMPLATES[11](player, s, caller); // Sevro vs rival
+    if (roll < 0.65) return SOVEREIGN_TEMPLATES[9](player, s, caller);  // race focus
+    if (roll < 0.85) return SOVEREIGN_TEMPLATES[10](player, s, caller); // miles progress
+    return SOVEREIGN_TEMPLATES[7](player, s, caller); // general lore
   }
 }
 
