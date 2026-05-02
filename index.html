@@ -2555,7 +2555,7 @@ function calcPlayerStats(pid) {
   let streak = 0;
   if (allWeekKeys.length > 0) {
     // Walk backwards from the most recent week, count consecutive weeks
-    const thisWeek = getThisWeekKey();
+    const thisWeek = getWeekKey(getAZDate());
     // Start from most recent week the player has activity in (could be current or prior)
     let cursor = allWeekKeys[allWeekKeys.length - 1];
     // If the most recent week is more than 1 week behind current, streak is already broken
@@ -3733,7 +3733,7 @@ async function checkAndPostDailyRecap() {
 
   // Streak at risk — active players who haven't logged this week yet (and it's Wed+)
   const dayOfWeek = parseInt(new Date(now.getTime() - 7*60*60*1000).toUTCDay ? 0 : new Date().getDay());
-  const thisWeekKey = getThisWeekKey();
+  const thisWeekKey = getWeekKey(getAZDate());
   const atRisk = dayOfWeek >= 3 ? activePlayers.filter(function(p) {
     return !state.workouts.some(function(w) {
       return w.player_id === p.id && !SYSTEM_WK.includes(w.workout) && getWeekKey(w.date) === thisWeekKey;
@@ -6085,7 +6085,7 @@ async function generateCoachingNudge(pid) {
   var leader = sorted[0];
   var leaderStats = calcPlayerStats(leader.id);
   var gap = leaderStats.laurels - s.laurels;
-  var thisWeekKey = getThisWeekKey();
+  var thisWeekKey = getWeekKey(getAZDate()); // use same format as workout week keys
   var thisWeekTrials = state.workouts.filter(function(w){ return w.player_id === pid && getWeekKey(w.date) === thisWeekKey && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); }).length;
 
   var prompt = 'Howler profile:\n' +
