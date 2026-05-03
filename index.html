@@ -3697,6 +3697,15 @@ async function checkAndPostWeeklyRecap() {
     player_id: 'system',
     player_laurels: 9999,
     message: finalRecap,
+    weekly_data: {
+      narrative: aiRecap || null,
+      trialCount: lastWeekWorkouts.length,
+      weekPrimus: weekPrimus ? weekPrimus.name : null,
+      primusLaurels: weekPrimusId ? (laurelsByPlayer[weekPrimusId] || 0) : 0,
+      topRunner: topRunner ? topRunner.name : null,
+      topMiles: topRunnerId ? (milesByPlayer[topRunnerId] || 0) : 0,
+      perfectHowlers: perfectHowlers.map(function(p){ return p.name; })
+    },
     date: now.toISOString().split('T')[0],
     timestamp: now.toISOString(),
     likes: [],
@@ -5536,20 +5545,32 @@ function renderHowlFeed() {
 
       // Weekly recap — structured card
       var msg = h.message || '';
-      // Parse out stats lines from message
-      var lines = msg.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
-      var trialLine = lines.find(function(l){ return l.startsWith('The pack logged'); }) || '';
-      var primusLine = lines.find(function(l){ return l.includes('Weekly Primus'); }) || '';
-      var marchLine = lines.find(function(l){ return l.includes('Longest march'); }) || '';
-      var perfectLine = lines.find(function(l){ return l.includes('Perfect Week'); }) || '';
+      var wd = h.weekly_data;
 
-      // Extract values
-      var trialCount = (trialLine.match(/(\d+) trial/) || [])[1] || '';
-      var primusName = primusLine.replace(/.*Weekly Primus:\s*/,'').replace(/\s*—.*/, '').trim();
-      var primusLaurels = (primusLine.match(/\+(\d+) Laurels/) || [])[1] || '';
-      var marchName = marchLine.replace(/.*Longest march:\s*/,'').replace(/\s*·.*/, '').trim();
-      var marchMiles = (marchLine.match(/([\d.]+) miles/) || [])[1] || '';
-      var perfectNames = perfectLine.replace(/.*Perfect Week:\s*/,'').replace(/\..*/, '').trim();
+      // Prefer structured weekly_data; fall back to parsing message string for old howls
+      var trialCount, primusName, primusLaurels, marchName, marchMiles, perfectNames, aiNarrative;
+      if (wd) {
+        trialCount   = wd.trialCount || '';
+        primusName   = wd.weekPrimus || '';
+        primusLaurels = wd.primusLaurels || '';
+        marchName    = wd.topRunner || '';
+        marchMiles   = wd.topMiles ? wd.topMiles.toFixed(1) : '';
+        perfectNames = wd.perfectHowlers && wd.perfectHowlers.length ? wd.perfectHowlers.join(' & ') : '';
+        aiNarrative  = wd.narrative || null;
+      } else {
+        var lines = msg.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+        var trialLine   = lines.find(function(l){ return l.startsWith('The pack logged'); }) || '';
+        var primusLine  = lines.find(function(l){ return l.includes('Weekly Primus'); }) || '';
+        var marchLine   = lines.find(function(l){ return l.includes('Longest march'); }) || '';
+        var perfectLine = lines.find(function(l){ return l.includes('Perfect Week'); }) || '';
+        trialCount    = (trialLine.match(/(\d+) trial/) || [])[1] || '';
+        primusName    = primusLine.replace(/.*Weekly Primus:\s*/,'').replace(/\s*—.*/,'').trim();
+        primusLaurels = (primusLine.match(/\+(\d+) Laurels/) || [])[1] || '';
+        marchName     = marchLine.replace(/.*Longest march:\s*/,'').replace(/\s*·.*/,'').trim();
+        marchMiles    = (marchLine.match(/([\d.]+) miles/) || [])[1] || '';
+        perfectNames  = perfectLine.replace(/.*Perfect Week:\s*/,'').replace(/\..*/,'').trim();
+        aiNarrative   = null;
+      }
 
       // Week label from timestamp
       var weekDate = h.date ? new Date(h.date + 'T12:00:00') : new Date();
@@ -5584,8 +5605,9 @@ function renderHowlFeed() {
             '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:rgba(240,208,128,0.7)">' + weekLabel + '</div>' +
           '</div>' +
         '</div>' +
-        // Stats body
+        // Stats + narrative body
         '<div style="padding:10px 14px;background:var(--parchment)">' +
+          (aiNarrative ? '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.92rem;color:var(--ink-mid);line-height:1.65;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:8px">' + escHtml(aiNarrative) + '</div>' : '') +
           statsHTML +
           '<div style="font-family:Crimson Pro,serif;font-size:0.78rem;font-style:italic;color:var(--amber);padding-top:8px;text-align:right">Per aspera ad astra 🐺</div>' +
         '</div>' +
