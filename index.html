@@ -1581,56 +1581,46 @@
 
 
 <!-- SETUP OVERLAY -->
-<div id="setup-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">
-  <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:32px;width:100%;max-width:480px;box-shadow:0 8px 48px rgba(0,0,0,0.5);position:relative">
+<div id="setup-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);overflow-y:auto">
+  <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:28px 24px;width:100%;max-width:460px;box-shadow:0 8px 48px rgba(0,0,0,0.5);position:relative;margin:auto">
     <button onclick="hideSetupScreen()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid);line-height:1;padding:4px">✕</button>
-    <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;letter-spacing:0.1em;color:var(--ink);margin-bottom:8px;text-align:center">⚙ Pack Setup</div>
-    <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-light);text-align:center;margin-bottom:24px">The march begins here. Connect your pack.</div>
-    
-    <div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.7">
-      <strong style="font-family:'Cinzel',serif;font-siz<div style="background:linear-gradient(135deg,var(--parchment-dark),rgba(122,80,6,0.08));border:1px solid var(--amber);border-radius:var(--radius);padding:16px;margin-bottom:18px;text-align:center">
-      <div style="font-family:'Cinzel',serif;font-size:0.95rem;font-weight:700;color:var(--amber);letter-spacing:0.08em;margin-bottom:8px">⚔ Welcome to the Institute ⚔</div>
-      <div style="font-family:'Crimson Pro',serif;font-size:0.9rem;font-style:italic;color:var(--ink-mid);line-height:1.7">
-        You have been chosen, Howler.<br>
-        The pack runs together — or not at all.<br>
-        <span style="font-size:0.78rem;color:var(--ink-light);font-style:normal">Enter your Gist credentials below to join the march.</span>
+
+    <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;letter-spacing:0.1em;color:var(--ink);margin-bottom:20px;text-align:center">⚙ Pack Setup</div>
+
+    <!-- CORE CREDENTIALS -->
+    <div style="margin-bottom:10px">
+      <label class="form-label">GitHub Gist ID</label>
+      <input id="setup-gist-id" type="text" class="form-input" placeholder="Paste your Gist ID here" style="font-family:monospace;letter-spacing:0.05em">
+    </div>
+    <div style="margin-bottom:10px">
+      <label class="form-label">GitHub Token (ghp_...)</label>
+      <input id="setup-gist-token" type="password" class="form-input" placeholder="ghp_..." style="font-family:monospace">
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="form-label">Anthropic API Key <span style="font-weight:400;color:var(--ink-light)">(optional · powers AI howls)</span></label>
+      <input id="setup-anthropic-key" type="password" class="form-input" placeholder="sk-ant-..." style="font-family:monospace">
+    </div>
+
+    <button onclick="submitSetup()" style="width:100%;background:var(--ink);color:var(--amber-pale);border:2px solid var(--ink);border-radius:var(--radius);padding:12px 20px;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;letter-spacing:0.15em;cursor:pointer">✦ CONNECT THE PACK ✦</button>
+
+    <!-- ADVANCED -->
+    <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+      <div onclick="document.getElementById('setup-advanced').style.display=document.getElementById('setup-advanced').style.display==='none'?'block':'none'" style="font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.14em;color:var(--ink-light);cursor:pointer;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span>ADVANCED</span><span style="font-size:0.8rem">▾</span>
+      </div>
+      <div id="setup-advanced" style="display:none">
+        <button onclick="testGistConnection()" style="width:100%;margin-bottom:6px;background:transparent;border:1.5px solid var(--amber);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);cursor:pointer">🔍 TEST CONNECTION</button>
+        <div id="test-result" style="margin-bottom:8px;font-family:monospace;font-size:0.72rem;color:var(--ink-mid);word-break:break-all;display:none"></div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <button onclick="exportBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--ink-mid);cursor:pointer">⬇ Export</button>
+          <button onclick="importBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--ink-mid);cursor:pointer">⬆ Restore</button>
+        </div>
+        <button onclick="forceRestore()" style="width:100%;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">⚠️ Force Restore (bypasses merge)</button>
       </div>
     </div>
 
-    <div style="margin-bottom:12px">
-      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:5px">GitHub Gist ID</label>
-      <input id="setup-gist-id" type="text" placeholder="Paste your Gist ID here" style="font-family:monospace;letter-spacing:0.05em" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink);box-sizing:border-box">
-    </div>
-    <div style="margin-bottom:16px">
-      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:5px">GitHub Token (ghp_...)</label>
-      <input id="setup-gist-token" type="password" placeholder="ghp_..." style="font-family:monospace" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink);box-sizing:border-box">
-    </div>
-    <div style="margin-bottom:16px;padding:12px;background:rgba(154,16,16,0.06);border:1px solid rgba(154,16,16,0.2);border-radius:var(--radius)">
-      <label style="display:block;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:4px">⚔ Anthropic API Key (optional)</label>
-      <div style="font-family:'Crimson Pro',serif;font-size:0.75rem;font-style:italic;color:var(--ink-light);margin-bottom:8px">Powers AI trash talk in Summon the Sovereign. Stored in your private Gist — not in the HTML.</div>
-      <input id="setup-anthropic-key" type="password" placeholder="sk-ant-..." style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:monospace;font-size:0.75rem;color:var(--ink);box-sizing:border-box">
-    </div>
-    
-    <button onclick="submitSetup()" style="width:100%;background:var(--ink);color:var(--amber-pale);border:2px solid var(--ink);border-radius:var(--radius);padding:12px 20px;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer">
-      ✦ CONNECT THE PACK ✦</button>
-      <button onclick="testGistConnection()" style="width:100%;margin-top:8px;background:transparent;border:1.5px solid var(--amber);border-radius:var(--radius);padding:14px;font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;letter-spacing:0.12em;color:var(--amber);cursor:pointer">🔍 TEST CONNECTION</button>
-      <div id="test-result" style="margin-top:10px;font-family:monospace;font-size:0.75rem;color:var(--ink-mid);word-break:break-all;display:none"></div>
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-        <div style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.12em;color:var(--amber);margin-bottom:10px">📦 DATA BACKUP</div>
-        <div style="display:flex;gap:8px">
-          <button onclick="exportBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.68rem;font-weight:700;color:var(--ink-mid);cursor:pointer;letter-spacing:0.06em">⬇ Export Backup</button>
-          <button onclick="importBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.68rem;font-weight:700;color:var(--ink-mid);cursor:pointer;letter-spacing:0.06em">⬆ Restore Backup</button>
-          </div>
-          <button onclick="forceRestore()" style="width:100%;margin-top:6px;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.06em">⚠️ Force Restore (bypasses merge)</button>
-          <button onclick="purgeWorkoutById('w_1776175000000_kat3')" style="width:100%;margin-top:6px;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.06em">🗑 Purge Fake Kat Tempo</button>
-          <div style="display:none">
-        </div>
-        <div style="font-family:'Crimson Pro',serif;font-size:0.78rem;font-style:italic;color:var(--ink-light);margin-top:8px">Export saves a local JSON file. Restore imports it back to the Gist.</div>
-      </div>
-      <button style="display:none
-    </button>
-    <div style="text-align:center;margin-top:12px">
-      <span onclick="hideSetupScreen()" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);cursor:pointer;text-decoration:underline">dismiss (credentials already saved)</span>
+    <div style="text-align:center;margin-top:14px">
+      <span onclick="hideSetupScreen()" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);cursor:pointer;text-decoration:underline">dismiss</span>
     </div>
   </div>
 </div>
@@ -3661,36 +3651,20 @@ async function checkAndPostWeeklyRecap() {
   // saveState removed — let next user action save (prevents race condition)
   localStorage.setItem(lastRecapKey, weekKey);
 }
-
-// ─── DAILY RECAP ─────────────────────────────────────────────────────────────
 async function checkAndPostDailyRecap() {
   if (!state.players || state.players.length === 0) return;
   if (!state.workouts || state.workouts.length === 0) return;
 
-  const gistKey = localStorage.getItem('howlers_gist_id') || localStorage.getItem('howlers_bin_id') || '';
-  const lastDailyKey = 'howlers_last_daily_' + gistKey;
-  const lastDaily = localStorage.getItem(lastDailyKey);
   const now = new Date();
-
-  // AZ date for today
   const todayAZ = getAZDate();
+  const recapId = 'daily_' + todayAZ;
 
-  // Only post once per day, and only after 6am AZ
+  // Only post after 6am AZ
   const azHour = parseInt(new Date(now.getTime() - 7*60*60*1000).toISOString().substr(11,2));
   if (azHour < 6) return;
-  if (lastDaily === todayAZ) return;
 
-  // Get yesterday's date
-  const yesterday = new Date(now.getTime() - 7*60*60*1000);
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-  // Already posted for today?
-  const recapId = 'daily_' + todayAZ;
-  if ((state.howls || []).some(function(h) { return h.id === recapId; })) {
-    localStorage.setItem(lastDailyKey, todayAZ);
-    return;
-  }
+  // Check Gist state — if today's dispatch already exists, skip
+  if ((state.howls || []).some(function(h) { return h.id === recapId; })) return;
 
   // Get yesterday's workouts (exclude system)
   const SYSTEM_WK = ['milestone_bonus', 'duel_win', 'duel_loss'];
@@ -3702,7 +3676,6 @@ async function checkAndPostDailyRecap() {
   // Minimum 3 active pack members to post
   const activeYesterday = new Set(yesterdayWorkouts.map(function(w) { return w.player_id; }));
   if (activeYesterday.size < 3) {
-    localStorage.setItem(lastDailyKey, todayAZ);
     return;
   }
 
@@ -3862,7 +3835,6 @@ async function checkAndPostDailyRecap() {
     }
   });
 
-  localStorage.setItem(lastDailyKey, todayAZ);
 }
 // Stats cache — computed once per render cycle, shared by all render fns
 let _statsCache = {};
@@ -6228,8 +6200,15 @@ async function generateCoachingNudge(pid) {
   var leader = sorted[0];
   var leaderStats = calcPlayerStats(leader.id);
   var gap = leaderStats.laurels - s.laurels;
+  var TIMED_WK_C = ['peloton','cardio','strength','mobility'];
   var thisWeekKey = getWeekKey(getAZDate()); // use same format as workout week keys
-  var thisWeekTrials = state.workouts.filter(function(w){ return w.player_id === pid && getWeekKey(w.date) === thisWeekKey && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); }).length;
+  var thisWeekTrials = state.workouts.filter(function(w){
+    if (w.player_id !== pid) return false;
+    if (['milestone_bonus','duel_win','duel_loss'].includes(w.workout)) return false;
+    if (getWeekKey(w.date) !== thisWeekKey) return false;
+    if (TIMED_WK_C.includes(w.workout) && (w.minutes||0) < 15) return false;
+    return true;
+  }).length;
 
   var prompt = 'Howler profile:\n' +
     'Name: ' + player.name + ' (' + player.house + ' House, rank: ' + s.rank.name + ')\n' +
