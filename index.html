@@ -5344,6 +5344,36 @@ function renderHowlFeed() {
       const isBadge = h.id && h.id.startsWith('badge_');
       const isDaily = h.is_daily || (h.id && h.id.startsWith('daily_'));
       const isWeeklyRecap = h.id && h.id.startsWith('recap_');
+      const isCoach = h.id && h.id.startsWith('coach_');
+
+      // Coach howl — Option B card style
+      if (isCoach) {
+        var coachDef = (typeof COACHES !== 'undefined' ? COACHES : []).find(function(c){ return c.id === h.coach_id; });
+        var recipient = h.coach_recipient_id ? state.players.find(function(p){ return p.id === h.coach_recipient_id; }) : null;
+        var recipientName = recipient ? recipient.name.split(' ')[0] : 'A Howler';
+        var borderCol   = coachDef ? coachDef.borderColor : 'rgba(122,80,6,0.25)';
+        var headerBg    = coachDef ? coachDef.headerBg    : 'rgba(122,80,6,0.06)';
+        var labelCol    = coachDef ? coachDef.labelColor  : 'var(--amber)';
+        var coachIcon   = coachDef ? coachDef.icon        : '🎯';
+        var coachTitle  = coachDef ? coachDef.title       : 'COUNCIL OF COACHES';
+        var coachName   = coachDef ? (coachDef.name + ' · House ' + coachDef.house) : '';
+        return '<div style="border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08);border:1.5px solid ' + borderCol + ';margin-bottom:0">' +
+          '<div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,0.06);background:' + headerBg + '">' +
+            '<span style="font-size:1.1rem">' + coachIcon + '</span>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div style="font-family:Cinzel,serif;font-size:0.6rem;font-weight:900;letter-spacing:0.15em;text-transform:uppercase;color:' + labelCol + '">' + coachTitle + '</div>' +
+              '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.72rem;color:var(--ink-light);margin-top:1px">' + escHtml(coachName) + ' — to ' + escHtml(recipientName) + '</div>' +
+            '</div>' +
+            '<span style="font-family:Crimson Pro,serif;font-size:0.75rem;color:var(--ink-light);flex-shrink:0">' + formatDate(h.date) + '</span>' +
+          '</div>' +
+          '<div style="background:var(--parchment);padding:12px 14px;font-family:Crimson Pro,serif;font-style:italic;font-size:0.95rem;color:var(--ink-mid);line-height:1.65">' + escHtml(h.message) + '</div>' +
+          '<div style="background:var(--parchment);padding:4px 14px 10px;display:flex;align-items:center;gap:6px;border-top:1px solid var(--border)">' +
+            reactionBarHTML(h, h.id, 'toggleHowlReaction') +
+            '<div style="flex:1"></div>' +
+            '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
+          '</div>' +
+        '</div>';
+      }
 
       // Conquest / duel / badge howls keep existing minimal style
       if (isConquest || isDuel || isBadge) {
@@ -6421,10 +6451,27 @@ async function generateCoachingNudge(pid, forceRefresh) {
     'This week so far: ' + thisWeekTrials + ' workouts logged\n' +
     'Race: Rock\'n\'Roll Arizona Half Marathon, Jan 17 2027 (' + Math.ceil((new Date('2027-01-17') - new Date()) / (1000*60*60*24)) + ' days away)';
 
-  var text = await aiGenerate(coach.systemPrompt, prompt, 120);
+  var text = await aiGenerate(coach.systemPrompt, prompt, 200);
   if (text) {
     setCachedNudge(pid, text, coach.id);
     applyCoachUI(coach);
+    // Post to feed once per player per day
+    var howlId = 'coach_' + coach.id + '_' + pid + '_' + getAZDate().replace(/-/g,'');
+    if (state.howls && !state.howls.some(function(h){ return h.id === howlId; })) {
+      state.howls.push({
+        id: howlId,
+        player_id: 'system',
+        player_laurels: 9999,
+        message: text,
+        coach_id: coach.id,
+        coach_recipient_id: pid,
+        date: getAZDate(),
+        timestamp: new Date().toISOString(),
+        reactions: {},
+        is_recap: true
+      });
+      saveState().catch(function(e){ console.error('Coach howl save failed:', e); });
+    }
   }
   return text;
 }
