@@ -1311,7 +1311,8 @@
     <div id="coaching-nudge-card" style="display:none;background:linear-gradient(135deg,rgba(26,20,16,0.97),rgba(42,26,16,0.95));border:1.5px solid rgba(200,144,10,0.35);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
         <span style="font-size:0.9rem">🎯</span>
-        <span style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;font-weight:700;color:#f0d080">YOUR SOVEREIGN COACH</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;font-weight:700;color:#f0d080;flex:1">YOUR SOVEREIGN COACH</span>
+        <button onclick="refreshCoachingNudge()" style="background:transparent;border:1px solid rgba(240,208,128,0.2);border-radius:3px;padding:2px 7px;font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.08em;color:rgba(240,208,128,0.5);cursor:pointer" id="nudge-refresh-btn">↻ Refresh</button>
       </div>
       <div id="coaching-nudge-text" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.9rem;color:rgba(240,208,128,0.9);line-height:1.6"></div>
     </div>
@@ -6190,39 +6191,83 @@ async function generateAIWeeklyRecap(stats) {
 var _lastNudgePid = null;
 var _lastNudgeText = null;
 
-async function generateCoachingNudge(pid) {
-  if (_lastNudgePid === pid && _lastNudgeText) return _lastNudgeText;
+function getNudgeCacheKey(pid) {
+  return 'howlers_nudge_' + pid + '_' + (localStorage.getItem('howlers_gist_id') || '');
+}
+
+function getCachedNudge(pid) {
+  try {
+    var raw = localStorage.getItem(getNudgeCacheKey(pid));
+    if (!raw) return null;
+    var obj = JSON.parse(raw);
+    if (obj.date === getAZDate()) return obj.text;
+  } catch(e) {}
+  return null;
+}
+
+function setCachedNudge(pid, text) {
+  try {
+    localStorage.setItem(getNudgeCacheKey(pid), JSON.stringify({ date: getAZDate(), text: text }));
+  } catch(e) {}
+}
+
+async function generateCoachingNudge(pid, forceRefresh) {
   var player = state.players.find(function(p){ return p.id === pid; });
   if (!player) return null;
+
+  // Return cache unless forcing refresh
+  if (!forceRefresh) {
+    var cached = getCachedNudge(pid);
+    if (cached) return cached;
+  }
+
   var s = calcPlayerStats(pid);
   var sorted = state.players.slice().sort(function(a,b){ return calcPlayerStats(b.id).laurels - calcPlayerStats(a.id).laurels; });
   var pos = sorted.findIndex(function(p){ return p.id === pid; }) + 1;
   var leader = sorted[0];
   var leaderStats = calcPlayerStats(leader.id);
   var gap = leaderStats.laurels - s.laurels;
+
+  // Week count — use Mon-Sun date range, not week-number keys (avoids formula bugs)
+  var todayAZ = getAZDate();
+  var todayD = new Date(todayAZ + 'T12:00:00');
+  var dayOfWeek = todayD.getDay(); // 0=Sun
+  var mondayD = new Date(todayD);
+  mondayD.setDate(todayD.getDate() - ((dayOfWeek + 6) % 7));
+  var mondayStr = mondayD.toISOString().split('T')[0];
   var TIMED_WK_C = ['peloton','cardio','strength','mobility'];
-  var thisWeekKey = getWeekKey(getAZDate()); // use same format as workout week keys
   var thisWeekTrials = state.workouts.filter(function(w){
     if (w.player_id !== pid) return false;
     if (['milestone_bonus','duel_win','duel_loss'].includes(w.workout)) return false;
-    if (getWeekKey(w.date) !== thisWeekKey) return false;
+    if (w.date < mondayStr || w.date > todayAZ) return false;
     if (TIMED_WK_C.includes(w.workout) && (w.minutes||0) < 15) return false;
     return true;
   }).length;
 
   var prompt = 'Howler profile:\n' +
-    'Name: ' + player.name + ' (' + player.house + ' House, rank: ' + s.rank.name + ')\n' +
-    'Season: ' + s.laurels + 'L, ' + s.miles + ' miles, ' + s.trials + ' trials, ' + s.streak + '-week streak, ' + s.perfectWeeks + ' perfect weeks\n' +
-    'Pack position: ' + pos + ' of ' + state.players.length + ' (' + (gap > 0 ? gap + 'L behind ' + leader.name : 'LEADING the pack') + ')\n' +
+    'Name: ' + player.name.split(' ')[0] + ' (' + player.house + ' House, rank: ' + s.rank.name + ')\n' +
+    'Season: ' + s.laurels + 'L, ' + s.miles + ' miles, ' + s.trials + ' trials, ' + s.perfectWeeks + ' perfect weeks\n' +
+    'Pack position: ' + pos + ' of ' + state.players.length + ' (' + (gap > 0 ? gap + 'L behind ' + leader.name.split(' ')[0] : 'LEADING the pack') + ')\n' +
     'This week so far: ' + thisWeekTrials + ' workouts logged\n' +
     'Race: Rock \'n\' Roll Arizona Half Marathon, Jan 17 2027 (' + Math.ceil((new Date('2027-01-17') - new Date()) / (1000*60*60*24)) + ' days away)';
 
   var text = await aiGenerate(
-    'You are a fierce but loyal Red Rising training coach speaking directly to a Howler pack member. Give them 1–2 sentences of personalized, specific coaching advice based on their current stats and pack position. Reference their rank, gap to leader, or weekly progress. Be direct and motivating — not generic. No hashtags. Output only the coaching message.',
+    'You are a fierce but loyal Red Rising training coach speaking directly to a Howler pack member. Give them 1–2 sentences of personalized, specific coaching advice based on their current stats and pack position. Address them by first name. Be direct and motivating — not generic. No hashtags. Output only the coaching message.',
     prompt, 100
   );
-  if (text) { _lastNudgePid = pid; _lastNudgeText = text; }
+  if (text) { setCachedNudge(pid, text); }
   return text;
+}
+
+async function refreshCoachingNudge() {
+  if (!currentHowlerId) return;
+  var btn = document.getElementById('nudge-refresh-btn');
+  var el = document.getElementById('coaching-nudge-text');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  var text = await generateCoachingNudge(currentHowlerId, true);
+  var card = document.getElementById('coaching-nudge-card');
+  if (text && card && el) { el.textContent = text; card.style.display = 'block'; }
+  if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh'; }
 }
 
 // ─── AI FEATURE 4: DUEL OPENING SALVO ────────────────────────────────────────
@@ -6755,13 +6800,19 @@ function switchTab(id) {
   if (id === 'chronicle') { renderChronicle(); markAnnalsSeen(); }
   if (id === 'leaderboard') {
     renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard();
-    // AI Feature 3: coaching nudge
+    // Show coaching nudge — use cache if available, fire AI only if no cache for today
     if (currentHowlerId && getAnthropicKey()) {
-      generateCoachingNudge(currentHowlerId).then(function(text) {
-        var card = document.getElementById('coaching-nudge-card');
-        var el = document.getElementById('coaching-nudge-text');
-        if (text && card && el) { el.textContent = text; card.style.display = 'block'; }
-      }).catch(function(){});
+      var card = document.getElementById('coaching-nudge-card');
+      var el = document.getElementById('coaching-nudge-text');
+      var cached = getCachedNudge(currentHowlerId);
+      if (cached && card && el) {
+        el.textContent = cached;
+        card.style.display = 'block';
+      } else {
+        generateCoachingNudge(currentHowlerId).then(function(text) {
+          if (text && card && el) { el.textContent = text; card.style.display = 'block'; }
+        }).catch(function(){});
+      }
     }
   }
   if (id === 'trials') { renderChallenges(); }
