@@ -3274,6 +3274,7 @@ async function qlSubmit() {
   setTimeout(function(){ launchConfetti('trial', trialColors); }, 100);
   renderAll();
   checkArchprimusChange();
+  generateAndPostCoachHowl(pid).catch(function(){});
   switchTab('chronicle');
 }
 
@@ -6455,23 +6456,6 @@ async function generateCoachingNudge(pid, forceRefresh) {
   if (text) {
     setCachedNudge(pid, text, coach.id);
     applyCoachUI(coach);
-    // Post to feed once per player per day
-    var howlId = 'coach_' + coach.id + '_' + pid + '_' + getAZDate().replace(/-/g,'');
-    if (state.howls && !state.howls.some(function(h){ return h.id === howlId; })) {
-      state.howls.push({
-        id: howlId,
-        player_id: 'system',
-        player_laurels: 9999,
-        message: text,
-        coach_id: coach.id,
-        coach_recipient_id: pid,
-        date: getAZDate(),
-        timestamp: new Date().toISOString(),
-        reactions: {},
-        is_recap: true
-      });
-      saveState().catch(function(e){ console.error('Coach howl save failed:', e); });
-    }
   }
   return text;
 }
@@ -6485,6 +6469,55 @@ async function refreshCoachingNudge() {
   var text = await generateCoachingNudge(currentHowlerId, true);
   if (text && card && el) { el.textContent = text; card.style.display = 'block'; }
   if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh'; }
+}
+
+// ─── POST-TRIAL COACH HOWL (feed, per player, once per trial log) ─────────────
+async function generateAndPostCoachHowl(pid) {
+  if (!getAnthropicKey()) return;
+  var player = state.players.find(function(p){ return p.id === pid; });
+  if (!player) return;
+
+  // Only post once per player per workout log — key off trial count to allow multiple per day
+  var trialCount = state.workouts.filter(function(w){ return w.player_id === pid && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); }).length;
+  var howlId = 'coach_trial_' + pid + '_' + trialCount;
+  if (!state.howls) state.howls = [];
+  if (state.howls.some(function(h){ return h.id === howlId; })) return;
+
+  // Pick a random coach — different pool from the leaderboard (could be same or different)
+  var coach = COACHES[Math.floor(Math.random() * COACHES.length)];
+
+  var s = calcPlayerStats(pid);
+  var sorted = state.players.slice().sort(function(a,b){ return calcPlayerStats(b.id).laurels - calcPlayerStats(a.id).laurels; });
+  var pos = sorted.findIndex(function(p){ return p.id === pid; }) + 1;
+  var leader = sorted[0];
+  var gap = calcPlayerStats(leader.id).laurels - s.laurels;
+
+  var lastWorkout = state.workouts.filter(function(w){ return w.player_id === pid && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout); }).slice(-1)[0];
+  var workoutDesc = lastWorkout ? (lastWorkout.workout.replace(/_/g,' ') + (lastWorkout.miles ? ' (' + lastWorkout.miles + ' mi)' : '') + (lastWorkout.minutes ? ' (' + lastWorkout.minutes + ' min)' : '')) : 'a trial';
+
+  var prompt = 'Howler profile:\n' +
+    'Name: ' + player.name.split(' ')[0] + ' (' + player.house + ' House, rank: ' + s.rank.name + ')\n' +
+    'Just logged: ' + workoutDesc + '\n' +
+    'Season: ' + s.laurels + 'L, ' + s.miles + ' miles, ' + s.trials + ' trials, ' + s.perfectWeeks + ' perfect weeks\n' +
+    'Pack position: ' + pos + ' of ' + state.players.length + ' (' + (gap > 0 ? gap + 'L behind ' + leader.name.split(' ')[0] : 'LEADING the pack') + ')\n' +
+    'Race: Rock\'n\'Roll Arizona Half Marathon, Jan 17 2027 (' + Math.ceil((new Date('2027-01-17') - new Date()) / (1000*60*60*24)) + ' days away)';
+
+  var text = await aiGenerate(coach.systemPrompt, prompt, 200);
+  if (!text) return;
+
+  state.howls.push({
+    id: howlId,
+    player_id: 'system',
+    player_laurels: 9999,
+    message: text,
+    coach_id: coach.id,
+    coach_recipient_id: pid,
+    date: getAZDate(),
+    timestamp: new Date().toISOString(),
+    reactions: {},
+    is_recap: true
+  });
+  saveState().catch(function(e){ console.error('Coach trial howl save failed:', e); });
 }
 
 // ─── AI FEATURE 4: DUEL OPENING SALVO ────────────────────────────────────────
