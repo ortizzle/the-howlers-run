@@ -1310,8 +1310,11 @@
   <div class="tab-content active" id="tab-leaderboard">
     <div id="coaching-nudge-card" style="display:none;background:linear-gradient(135deg,rgba(26,20,16,0.97),rgba(42,26,16,0.95));border:1.5px solid rgba(200,144,10,0.35);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <span style="font-size:0.9rem">🎯</span>
-        <span style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;font-weight:700;color:#f0d080;flex:1">YOUR SOVEREIGN COACH</span>
+        <span id="nudge-coach-icon" style="font-size:0.9rem">🎯</span>
+        <div style="flex:1;min-width:0">
+          <div id="nudge-coach-label" style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;font-weight:700;color:#f0d080">COUNCIL OF COACHES</div>
+          <div id="nudge-coach-name" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.72rem;color:rgba(240,208,128,0.6);margin-top:1px"></div>
+        </div>
         <button onclick="refreshCoachingNudge()" style="background:transparent;border:1px solid rgba(240,208,128,0.2);border-radius:3px;padding:2px 7px;font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.08em;color:rgba(240,208,128,0.5);cursor:pointer" id="nudge-refresh-btn">↻ Refresh</button>
       </div>
       <div id="coaching-nudge-text" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.9rem;color:rgba(240,208,128,0.9);line-height:1.6"></div>
@@ -6297,6 +6300,43 @@ async function generateAIWeeklyRecap(stats) {
 }
 
 // ─── AI FEATURE 3: COACHING NUDGE ────────────────────────────────────────────
+// ─── COUNCIL OF COACHES ───────────────────────────────────────────────────────
+const COACHES = [
+  {
+    id: 'mickey',
+    name: 'Mickey au Valii-Ven',
+    title: 'THE CARVER SPEAKS',
+    icon: '🎭',
+    house: 'Violet',
+    borderColor: 'rgba(120,60,180,0.55)',
+    nameColor: 'rgba(180,120,255,0.75)',
+    labelColor: '#d0a0ff',
+    systemPrompt: 'You are Mickey, a Violet Carver from Red Rising — an eccentric, vain, and brilliant artist who physically sculpted Darrow into a Gold. You now coach a training pack member. Your obsession is form, output, and physical perfection. You speak theatrically, with flair and precision — occasionally self-referential, always exacting. You notice every flaw like a sculptor noticing a crooked line. Give 1–2 sentences of personalized coaching based on their stats. Address them by first name. Be specific to their numbers. No hashtags. Output only the coaching message.'
+  },
+  {
+    id: 'matteo',
+    name: 'Matteo',
+    title: 'MATTEO ADVISES',
+    icon: '🌸',
+    house: 'Pink',
+    borderColor: 'rgba(180,60,120,0.5)',
+    nameColor: 'rgba(255,140,200,0.7)',
+    labelColor: '#ffb0d8',
+    systemPrompt: 'You are Matteo, a Pink from Red Rising who spent three months teaching Darrow the manners, accent, and cultural nuances of High Golds. You are refined, precise, and deeply attentive to social position and optics. You coach a training pack member on their standing within the pack — positioning, perception, and strategy. Give 1–2 sentences of personalized coaching based on their stats and pack rank. Address them by first name. Be specific. Speak with elegant precision. No hashtags. Output only the coaching message.'
+  },
+  {
+    id: 'dancer',
+    name: 'Dancer',
+    title: 'DANCER COMMANDS',
+    icon: '⚒',
+    house: 'Red',
+    borderColor: 'rgba(154,16,16,0.6)',
+    nameColor: 'rgba(255,100,80,0.8)',
+    labelColor: '#ff9070',
+    systemPrompt: 'You are Dancer, a Red and leader of the Sons of Ares from Red Rising — the one who prepares Darrow mentally for what lies ahead. You are blunt, ideological, and deeply purposeful. You do not coddle. You remind people why they fight. Coach this training pack member with direct, no-nonsense motivation grounded in their actual stats and situation. 1–2 sentences. Address them by first name. Be specific to their numbers. No hashtags. Output only the coaching message.'
+  }
+];
+
 var _lastNudgePid = null;
 var _lastNudgeText = null;
 
@@ -6309,15 +6349,27 @@ function getCachedNudge(pid) {
     var raw = localStorage.getItem(getNudgeCacheKey(pid));
     if (!raw) return null;
     var obj = JSON.parse(raw);
-    if (obj.date === getAZDate()) return obj.text;
+    if (obj.date === getAZDate()) return obj;
   } catch(e) {}
   return null;
 }
 
-function setCachedNudge(pid, text) {
+function setCachedNudge(pid, text, coachId) {
   try {
-    localStorage.setItem(getNudgeCacheKey(pid), JSON.stringify({ date: getAZDate(), text: text }));
+    localStorage.setItem(getNudgeCacheKey(pid), JSON.stringify({ date: getAZDate(), text: text, coachId: coachId }));
   } catch(e) {}
+}
+
+function applyCoachUI(coach) {
+  var card = document.getElementById('coaching-nudge-card');
+  var icon = document.getElementById('nudge-coach-icon');
+  var label = document.getElementById('nudge-coach-label');
+  var nameEl = document.getElementById('nudge-coach-name');
+  if (!card || !coach) return;
+  card.style.borderColor = coach.borderColor;
+  if (icon) icon.textContent = coach.icon;
+  if (label) { label.textContent = coach.title; label.style.color = coach.labelColor; }
+  if (nameEl) { nameEl.textContent = coach.name + ' · House ' + coach.house; nameEl.style.color = coach.nameColor; }
 }
 
 async function generateCoachingNudge(pid, forceRefresh) {
@@ -6327,8 +6379,15 @@ async function generateCoachingNudge(pid, forceRefresh) {
   // Return cache unless forcing refresh
   if (!forceRefresh) {
     var cached = getCachedNudge(pid);
-    if (cached) return cached;
+    if (cached) {
+      var cachedCoach = COACHES.find(function(c){ return c.id === cached.coachId; }) || COACHES[0];
+      applyCoachUI(cachedCoach);
+      return cached.text;
+    }
   }
+
+  // Pick a random coach
+  var coach = COACHES[Math.floor(Math.random() * COACHES.length)];
 
   var s = calcPlayerStats(pid);
   var sorted = state.players.slice().sort(function(a,b){ return calcPlayerStats(b.id).laurels - calcPlayerStats(a.id).laurels; });
@@ -6337,10 +6396,9 @@ async function generateCoachingNudge(pid, forceRefresh) {
   var leaderStats = calcPlayerStats(leader.id);
   var gap = leaderStats.laurels - s.laurels;
 
-  // Week count — use Mon-Sun date range, not week-number keys (avoids formula bugs)
   var todayAZ = getAZDate();
   var todayD = new Date(todayAZ + 'T12:00:00');
-  var dayOfWeek = todayD.getDay(); // 0=Sun
+  var dayOfWeek = todayD.getDay();
   var mondayD = new Date(todayD);
   mondayD.setDate(todayD.getDate() - ((dayOfWeek + 6) % 7));
   var mondayStr = mondayD.toISOString().split('T')[0];
@@ -6358,13 +6416,13 @@ async function generateCoachingNudge(pid, forceRefresh) {
     'Season: ' + s.laurels + 'L, ' + s.miles + ' miles, ' + s.trials + ' trials, ' + s.perfectWeeks + ' perfect weeks\n' +
     'Pack position: ' + pos + ' of ' + state.players.length + ' (' + (gap > 0 ? gap + 'L behind ' + leader.name.split(' ')[0] : 'LEADING the pack') + ')\n' +
     'This week so far: ' + thisWeekTrials + ' workouts logged\n' +
-    'Race: Rock \'n\' Roll Arizona Half Marathon, Jan 17 2027 (' + Math.ceil((new Date('2027-01-17') - new Date()) / (1000*60*60*24)) + ' days away)';
+    'Race: Rock\'n\'Roll Arizona Half Marathon, Jan 17 2027 (' + Math.ceil((new Date('2027-01-17') - new Date()) / (1000*60*60*24)) + ' days away)';
 
-  var text = await aiGenerate(
-    'You are a fierce but loyal Red Rising training coach speaking directly to a Howler pack member. Give them 1–2 sentences of personalized, specific coaching advice based on their current stats and pack position. Address them by first name. Be direct and motivating — not generic. No hashtags. Output only the coaching message.',
-    prompt, 100
-  );
-  if (text) { setCachedNudge(pid, text); }
+  var text = await aiGenerate(coach.systemPrompt, prompt, 120);
+  if (text) {
+    setCachedNudge(pid, text, coach.id);
+    applyCoachUI(coach);
+  }
   return text;
 }
 
@@ -6372,9 +6430,9 @@ async function refreshCoachingNudge() {
   if (!currentHowlerId) return;
   var btn = document.getElementById('nudge-refresh-btn');
   var el = document.getElementById('coaching-nudge-text');
+  var card = document.getElementById('coaching-nudge-card');
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
   var text = await generateCoachingNudge(currentHowlerId, true);
-  var card = document.getElementById('coaching-nudge-card');
   if (text && card && el) { el.textContent = text; card.style.display = 'block'; }
   if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh'; }
 }
@@ -6915,7 +6973,9 @@ function switchTab(id) {
       var el = document.getElementById('coaching-nudge-text');
       var cached = getCachedNudge(currentHowlerId);
       if (cached && card && el) {
-        el.textContent = cached;
+        var cachedCoach = COACHES.find(function(c){ return c.id === cached.coachId; }) || COACHES[0];
+        applyCoachUI(cachedCoach);
+        el.textContent = cached.text;
         card.style.display = 'block';
       } else {
         generateCoachingNudge(currentHowlerId).then(function(text) {
