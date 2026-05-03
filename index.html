@@ -1308,16 +1308,16 @@
 
   <!-- TAB: LEADERBOARD -->
   <div class="tab-content active" id="tab-leaderboard">
-    <div id="coaching-nudge-card" style="display:none;background:linear-gradient(135deg,rgba(26,20,16,0.97),rgba(42,26,16,0.95));border:1.5px solid rgba(200,144,10,0.35);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <span id="nudge-coach-icon" style="font-size:0.9rem">🎯</span>
+    <div id="coaching-nudge-card" style="display:none;border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.1);margin-bottom:14px;border:1.5px solid var(--border)">
+      <div id="nudge-coach-header" style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,0.06)">
+        <span id="nudge-coach-icon" style="font-size:1.1rem">🎯</span>
         <div style="flex:1;min-width:0">
-          <div id="nudge-coach-label" style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;font-weight:700;color:#f0d080">COUNCIL OF COACHES</div>
-          <div id="nudge-coach-name" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.72rem;color:rgba(240,208,128,0.6);margin-top:1px"></div>
+          <div id="nudge-coach-label" style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:900;letter-spacing:0.15em;text-transform:uppercase">COUNCIL OF COACHES</div>
+          <div id="nudge-coach-name" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.72rem;color:var(--ink-light);margin-top:1px"></div>
         </div>
-        <button onclick="refreshCoachingNudge()" style="background:transparent;border:1px solid rgba(240,208,128,0.2);border-radius:3px;padding:2px 7px;font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.08em;color:rgba(240,208,128,0.5);cursor:pointer" id="nudge-refresh-btn">↻ Refresh</button>
+        <button onclick="refreshCoachingNudge()" style="background:transparent;border:1px solid var(--border);border-radius:3px;padding:2px 7px;font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.08em;color:var(--ink-light);cursor:pointer" id="nudge-refresh-btn">↻ Refresh</button>
       </div>
-      <div id="coaching-nudge-text" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.9rem;color:rgba(240,208,128,0.9);line-height:1.6"></div>
+      <div id="coaching-nudge-text" style="background:var(--parchment);padding:12px 14px;font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-mid);line-height:1.65"></div>
     </div>
     <div id="active-duels-section"></div>
     <div class="section-title">The Pack — Leaderboard</div>
@@ -6308,9 +6308,9 @@ const COACHES = [
     title: 'THE CARVER SPEAKS',
     icon: '🎭',
     house: 'Violet',
-    borderColor: 'rgba(120,60,180,0.55)',
-    nameColor: 'rgba(180,120,255,0.75)',
-    labelColor: '#d0a0ff',
+    borderColor: 'rgba(109,40,217,0.3)',
+    headerBg: 'rgba(109,40,217,0.07)',
+    labelColor: '#6d28d9',
     systemPrompt: 'You are Mickey, a Violet Carver from Red Rising — an eccentric, vain, and brilliant artist who physically sculpted Darrow into a Gold. You now coach a training pack member. Your obsession is form, output, and physical perfection. You speak theatrically, with flair and precision — occasionally self-referential, always exacting. You notice every flaw like a sculptor noticing a crooked line. Give 1–2 sentences of personalized coaching based on their stats. Address them by first name. Be specific to their numbers. No hashtags. Output only the coaching message.'
   },
   {
@@ -6319,9 +6319,9 @@ const COACHES = [
     title: 'MATTEO ADVISES',
     icon: '🌸',
     house: 'Pink',
-    borderColor: 'rgba(180,60,120,0.5)',
-    nameColor: 'rgba(255,140,200,0.7)',
-    labelColor: '#ffb0d8',
+    borderColor: 'rgba(190,24,93,0.28)',
+    headerBg: 'rgba(190,24,93,0.07)',
+    labelColor: '#be185d',
     systemPrompt: 'You are Matteo, a Pink from Red Rising who spent three months teaching Darrow the manners, accent, and cultural nuances of High Golds. You are refined, precise, and deeply attentive to social position and optics. You coach a training pack member on their standing within the pack — positioning, perception, and strategy. Give 1–2 sentences of personalized coaching based on their stats and pack rank. Address them by first name. Be specific. Speak with elegant precision. No hashtags. Output only the coaching message.'
   },
   {
@@ -6330,9 +6330,9 @@ const COACHES = [
     title: 'DANCER COMMANDS',
     icon: '⚒',
     house: 'Red',
-    borderColor: 'rgba(154,16,16,0.6)',
-    nameColor: 'rgba(255,100,80,0.8)',
-    labelColor: '#ff9070',
+    borderColor: 'rgba(154,16,16,0.35)',
+    headerBg: 'rgba(154,16,16,0.07)',
+    labelColor: '#9a1010',
     systemPrompt: 'You are Dancer, a Red and leader of the Sons of Ares from Red Rising — the one who prepares Darrow mentally for what lies ahead. You are blunt, ideological, and deeply purposeful. You do not coddle. You remind people why they fight. Coach this training pack member with direct, no-nonsense motivation grounded in their actual stats and situation. 1–2 sentences. Address them by first name. Be specific to their numbers. No hashtags. Output only the coaching message.'
   }
 ];
@@ -6362,14 +6362,17 @@ function setCachedNudge(pid, text, coachId) {
 
 function applyCoachUI(coach) {
   var card = document.getElementById('coaching-nudge-card');
+  var header = document.getElementById('nudge-coach-header');
   var icon = document.getElementById('nudge-coach-icon');
   var label = document.getElementById('nudge-coach-label');
   var nameEl = document.getElementById('nudge-coach-name');
   if (!card || !coach) return;
+  // Option B: tinted header wash + matching border
   card.style.borderColor = coach.borderColor;
+  if (header) header.style.background = coach.headerBg;
   if (icon) icon.textContent = coach.icon;
   if (label) { label.textContent = coach.title; label.style.color = coach.labelColor; }
-  if (nameEl) { nameEl.textContent = coach.name + ' · House ' + coach.house; nameEl.style.color = coach.nameColor; }
+  if (nameEl) { nameEl.textContent = coach.name + ' · House ' + coach.house; }
 }
 
 async function generateCoachingNudge(pid, forceRefresh) {
