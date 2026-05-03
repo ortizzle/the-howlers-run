@@ -2289,12 +2289,10 @@ async function loadState() {
     localStorage.setItem(cvKey, 'v6');
   }
   retroactiveChallengePayout();
-  if (!window._challengesChecked) {
-    window._challengesChecked = true;
-    checkAndPostChallengeHowls();
-  }
+  checkAndPostChallengeHowls();
   checkAndPostWeeklyRecap();
   checkAndPostDailyRecap();
+  checkArchprimusChange();
   } catch(e) {
     setSyncStatus('error');
     console.error('Load error:', e);
@@ -3272,6 +3270,7 @@ async function qlSubmit() {
   var trialColors = [houseCol, houseCol+'cc', houseCol+'99', '#f0c040', '#ffffff'];
   setTimeout(function(){ launchConfetti('trial', trialColors); }, 100);
   renderAll();
+  checkArchprimusChange();
   switchTab('chronicle');
 }
 
@@ -3859,6 +3858,116 @@ function getStats(pid) {
   return _statsCache[pid] || calcPlayerStats(pid);
 }
 
+
+function playRoyalHorn() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Fanfare: a rising 4-note brass-style sequence
+    var notes = [
+      { freq: 392.0, start: 0.00, dur: 0.18 },  // G4
+      { freq: 523.3, start: 0.18, dur: 0.18 },  // C5
+      { freq: 659.3, start: 0.36, dur: 0.18 },  // E5
+      { freq: 784.0, start: 0.54, dur: 0.45 },  // G5 — held
+      { freq: 659.3, start: 0.90, dur: 0.14 },  // E5
+      { freq: 784.0, start: 1.04, dur: 0.60 },  // G5 — final flourish
+    ];
+    notes.forEach(function(n) {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(n.freq, ctx.currentTime + n.start);
+      gain.gain.setValueAtTime(0, ctx.currentTime + n.start);
+      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + n.start + 0.03);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime + n.start + n.dur - 0.05);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + n.start + n.dur);
+      osc.start(ctx.currentTime + n.start);
+      osc.stop(ctx.currentTime + n.start + n.dur + 0.01);
+    });
+    setTimeout(function() { try { ctx.close(); } catch(e) {} }, 2200);
+  } catch(e) { /* Audio not supported — silent fail */ }
+}
+
+function checkArchprimusChange() {
+  if (!state || !state.players || state.players.length === 0) return;
+  buildStatsCache();
+  var sorted = state.players.slice().sort(function(a, b) {
+    return ((_statsCache[b.id]||{}).laurels||0) - ((_statsCache[a.id]||{}).laurels||0);
+  });
+  var leader = sorted[0];
+  if (!leader || ((_statsCache[leader.id]||{}).laurels||0) === 0) return;
+
+  var storageKey = 'howlers_archprimus_id_' + (localStorage.getItem('howlers_gist_id') || 'local');
+  var prevPrimusId = localStorage.getItem(storageKey);
+
+  if (prevPrimusId === leader.id) return; // No change
+
+  // New Archprimus — save it
+  localStorage.setItem(storageKey, leader.id);
+
+  // Don't fanfare on very first load (no previous leader stored)
+  if (!prevPrimusId) return;
+
+  // Build house-colored confetti — extended burst
+  var houseCol = HOUSES[leader.house] || '#c8900a';
+  var lighter = houseCol + 'cc';
+  var lightest = houseCol + '88';
+  var archColors = [houseCol, lighter, lightest, '#ffd700', '#f0c040', '#ffffff', houseCol, '#c8900a'];
+
+  // Extended confetti — 3 waves
+  setTimeout(function() { launchConfettiExtended(archColors, 120); }, 300);
+  setTimeout(function() { launchConfettiExtended(archColors, 80);  }, 900);
+  setTimeout(function() { launchConfettiExtended(archColors, 60);  }, 1600);
+
+  // Royal horn
+  setTimeout(function() { playRoyalHorn(); }, 200);
+
+  // System howl
+  var prevPlayer = state.players.find(function(p) { return p.id === prevPrimusId; });
+  var prevName = prevPlayer ? prevPlayer.name : 'the former Primus';
+  var howlId = 'archprimus_' + leader.id + '_' + getAZDate().replace(/-/g,'');
+  if (!state.howls) state.howls = [];
+  if (!state.howls.some(function(h) { return h.id === howlId; })) {
+    var msg = '♛ ALL HAIL THE ARCHPRIMUS! @' + leader.name + ' has seized the summit from ' + prevName +
+      ' and now commands the pack. The Laurels answer to one name. Rise or be forgotten. ⚔ Per aspera ad astra. 🐺✨';
+    state.howls.push({
+      id: howlId,
+      player_id: 'system',
+      player_laurels: 9999,
+      message: msg,
+      date: getAZDate(),
+      timestamp: new Date().toISOString(),
+      reactions: {},
+      is_recap: true
+    });
+    saveState().catch(function(e) { console.error('Archprimus howl save failed:', e); });
+  }
+
+  showToast('♛ NEW ARCHPRIMUS: ' + leader.name + '! All hail. 🐺');
+}
+
+function launchConfettiExtended(colors, count) {
+  for (var i = 0; i < count; i++) {
+    (function(i) {
+      setTimeout(function() {
+        var el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        var size = Math.random() * 12 + 5;
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+        el.style.borderRadius = Math.random() > 0.4 ? '50%' : '2px';
+        var dur = (Math.random() * 2.5 + 2.0).toFixed(2);
+        el.style.animationDuration = dur + 's';
+        el.style.animationDelay = '0s';
+        document.body.appendChild(el);
+        setTimeout(function() { el.remove(); }, parseFloat(dur) * 1000 + 100);
+      }, i * 20);
+    })(i);
+  }
+}
 
 function launchConfetti(type, customColors) {
   // type: 'conquest' = crimson/gold, 'rankup' = gold/amber, 'trial' = house color
