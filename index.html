@@ -3358,6 +3358,8 @@ function renderChallengeManager() {
   var keys = Object.keys(won).filter(function(k){ return won[k] && (Array.isArray(won[k]) ? won[k].length > 0 : true); });
   if (keys.length === 0) { list.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
+
+  // Build HTML
   list.innerHTML = keys.map(function(cid) {
     var def = CHALLENGES_DEF.find(function(c){ return c.id === cid; });
     var label = def ? (def.icon + ' ' + def.name) : cid;
@@ -3366,42 +3368,63 @@ function renderChallengeManager() {
     var rows = entries.map(function(e) {
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">' +
         '<span style="font-family:\'Crimson Pro\',serif;font-size:0.82rem;color:var(--ink-mid)">' + (placeIcon[e.place||1]||'') + ' ' + escHtml(e.name||'?') + (e.date ? ' <span style="color:var(--ink-light);font-size:0.72rem">· ' + e.date + '</span>' : '') + '</span>' +
-        '<button data-action="remove-entry" data-cid="' + escHtml(cid) + '" data-place="' + (e.place||1) + '" style="background:transparent;border:1px solid rgba(154,16,16,0.35);border-radius:3px;padding:2px 7px;font-family:Cinzel,serif;font-size:0.52rem;color:var(--house-red);cursor:pointer">✕</button>' +
+        '<button id="ch-rm-entry-' + escHtml(cid) + '-' + (e.place||1) + '" style="background:transparent;border:1px solid rgba(154,16,16,0.35);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.52rem;color:var(--house-red);cursor:pointer">✕</button>' +
       '</div>';
     }).join('');
-    return '<div style="margin-bottom:12px" id="ch-block-' + escHtml(cid) + '">' +
+    return '<div style="margin-bottom:12px">' +
       '<div style="font-family:\'Cinzel\',serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">' + escHtml(label) + '</div>' +
       rows +
       '<div id="ch-confirm-' + escHtml(cid) + '" style="display:none;background:rgba(154,16,16,0.06);border:1px solid rgba(154,16,16,0.3);border-radius:4px;padding:8px 10px;margin-top:6px">' +
-        '<div style="font-family:\'Crimson Pro\',serif;font-size:0.8rem;color:var(--house-red);margin-bottom:6px">Remove all results for this challenge? Laurels and howls will also be removed.</div>' +
-        '<div style="display:flex;gap:6px">' +
-          '<button data-action="confirm-full" data-cid="' + escHtml(cid) + '" data-label="' + escHtml(label) + '" style="flex:1;background:rgba(154,16,16,0.9);border:none;border-radius:3px;padding:6px;font-family:Cinzel,serif;font-size:0.58rem;font-weight:700;color:white;cursor:pointer;pointer-events:auto">✕ Confirm Remove</button>' +
-          '<button data-action="cancel-full" data-cid="' + escHtml(cid) + '" style="flex:1;background:var(--parchment-dark);border:1px solid var(--border);border-radius:3px;padding:6px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--ink-mid);cursor:pointer;pointer-events:auto">Cancel</button>' +
+        '<div style="font-family:\'Crimson Pro\',serif;font-size:0.8rem;color:var(--house-red);margin-bottom:8px;line-height:1.4">Remove all results for <strong>' + escHtml(label) + '</strong>? Laurels and howls will also be removed.</div>' +
+        '<div style="display:flex;gap:8px">' +
+          '<button id="ch-confirm-yes-' + escHtml(cid) + '" style="flex:1;background:rgba(154,16,16,0.9);border:none;border-radius:4px;padding:10px 6px;font-family:Cinzel,serif;font-size:0.6rem;font-weight:700;color:white;cursor:pointer">CONFIRM REMOVE</button>' +
+          '<button id="ch-confirm-no-' + escHtml(cid) + '" style="flex:1;background:var(--parchment-dark);border:1px solid var(--border);border-radius:4px;padding:10px 6px;font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-mid);cursor:pointer">CANCEL</button>' +
         '</div>' +
       '</div>' +
-      '<button data-action="remove-full" data-cid="' + escHtml(cid) + '" data-label="' + escHtml(label) + '" style="margin-top:5px;background:transparent;border:1px solid rgba(154,16,16,0.35);border-radius:3px;padding:3px 10px;font-family:Cinzel,serif;font-size:0.52rem;color:var(--house-red);cursor:pointer">✕ Remove all results for this challenge</button>' +
+      '<button id="ch-rm-full-' + escHtml(cid) + '" style="margin-top:6px;width:100%;background:transparent;border:1px solid rgba(154,16,16,0.35);border-radius:3px;padding:7px;font-family:Cinzel,serif;font-size:0.55rem;color:var(--house-red);cursor:pointer">✕ REMOVE ALL RESULTS FOR THIS CHALLENGE</button>' +
     '</div>';
   }).join('');
 
-  list.onclick = function(e) {
-    var btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    var action = btn.getAttribute('data-action');
-    var cid = btn.getAttribute('data-cid');
-    if (action === 'remove-entry') {
-      removeChallengeWinEntry(cid, parseInt(btn.getAttribute('data-place'), 10));
-    } else if (action === 'remove-full') {
-      var panel = document.getElementById('ch-confirm-' + cid);
-      if (panel) { panel.style.display = 'block'; btn.style.display = 'none'; }
-    } else if (action === 'confirm-full') {
-      removeChallengeWinFull(cid, btn.getAttribute('data-label'));
-    } else if (action === 'cancel-full') {
-      var panel = document.getElementById('ch-confirm-' + cid);
-      if (panel) { panel.style.display = 'none'; }
-      var removeBtn = list.querySelector('[data-action="remove-full"][data-cid="' + cid + '"]');
-      if (removeBtn) removeBtn.style.display = '';
+  // Wire up buttons directly with addEventListener
+  keys.forEach(function(cid) {
+    var def = CHALLENGES_DEF.find(function(c){ return c.id === cid; });
+    var label = def ? (def.icon + ' ' + def.name) : cid;
+    var entries = Array.isArray(won[cid]) ? won[cid] : [Object.assign({place:1}, won[cid])];
+
+    // Per-entry remove buttons
+    entries.forEach(function(e) {
+      var entryBtn = document.getElementById('ch-rm-entry-' + cid + '-' + (e.place||1));
+      if (entryBtn) {
+        entryBtn.addEventListener('click', function() {
+          removeChallengeWinEntry(cid, e.place||1);
+        });
+      }
+    });
+
+    // Remove all button — shows confirm panel
+    var rmFull = document.getElementById('ch-rm-full-' + cid);
+    var panel  = document.getElementById('ch-confirm-' + cid);
+    var yes    = document.getElementById('ch-confirm-yes-' + cid);
+    var no     = document.getElementById('ch-confirm-no-' + cid);
+
+    if (rmFull && panel) {
+      rmFull.addEventListener('click', function() {
+        panel.style.display = 'block';
+        rmFull.style.display = 'none';
+      });
     }
-  };
+    if (yes) {
+      yes.addEventListener('click', function() {
+        removeChallengeWinFull(cid, label);
+      });
+    }
+    if (no && panel && rmFull) {
+      no.addEventListener('click', function() {
+        panel.style.display = 'none';
+        rmFull.style.display = '';
+      });
+    }
+  });
 }
 
 function removeChallengeWinEntry(cid, place) {
