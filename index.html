@@ -3862,6 +3862,12 @@ async function checkAndPostDailyRecap() {
   const todayAZ = getAZDate();
   const recapId = 'daily_' + todayAZ;
 
+  // Compute yesterday in AZ time
+  const azNow = new Date(now.getTime() - 7*60*60*1000);
+  const azYesterday = new Date(azNow);
+  azYesterday.setDate(azNow.getDate() - 1);
+  const yesterdayStr = azYesterday.toISOString().split('T')[0];
+
   // Only post after 6am AZ
   const azHour = parseInt(new Date(now.getTime() - 7*60*60*1000).toISOString().substr(11,2));
   if (azHour < 6) return;
