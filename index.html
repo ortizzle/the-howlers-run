@@ -3408,6 +3408,7 @@ function removeChallengeWinEntry(cid, place) {
   var arr = Array.isArray(won) ? won : [Object.assign({place:1}, won)];
   // Also remove associated reward workout and howl
   var rewardId = 'ch_reward_' + cid + '_p' + place;
+  _deletedWorkoutIds.add(rewardId);
   state.workouts = state.workouts.filter(function(w){ return w.id !== rewardId; });
   var howlId = 'challenge_' + cid + '_p' + place;
   state.howls = (state.howls||[]).filter(function(h){ return h.id !== howlId; });
@@ -3425,6 +3426,15 @@ function removeChallengeWinFull(cid, label) {
   showToast('Removing ' + label + '…');
   if (!state._deleted_challenges) state._deleted_challenges = [];
   if (!state._deleted_challenges.includes(cid)) state._deleted_challenges.push(cid);
+  // Mark all reward workout variants as deleted so safe merge doesn't resurrect them
+  state.workouts.forEach(function(w) {
+    if (w.id && w.id.startsWith('ch_reward_' + cid + '_')) _deletedWorkoutIds.add(w.id);
+  });
+  // Also cover old single-winner format
+  _deletedWorkoutIds.add('ch_reward_' + cid);
+  _deletedWorkoutIds.add('ch_reward_' + cid + '_p1');
+  _deletedWorkoutIds.add('ch_reward_' + cid + '_p2');
+  _deletedWorkoutIds.add('ch_reward_' + cid + '_p3');
   state.workouts = state.workouts.filter(function(w){ return !w.id || !w.id.startsWith('ch_reward_' + cid + '_'); });
   state.howls = (state.howls||[]).filter(function(h){ return !h.id || !h.id.startsWith('challenge_' + cid + '_'); });
   delete state.challenges_won[cid];
