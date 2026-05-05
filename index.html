@@ -2438,7 +2438,9 @@ async function saveState() {
 
         // Merge challenges_won — union winners arrays, support both old {id,name} and new [{id,name,place}] format
         if (remoteState.challenges_won) {
+          var deletedChallenges = new Set(state._deleted_challenges || []);
           Object.keys(remoteState.challenges_won).forEach(function(cid) {
+            if (deletedChallenges.has(cid)) return; // skip explicitly deleted challenges
             var remote = remoteState.challenges_won[cid];
             var local = state.challenges_won[cid];
             // Normalize both to arrays
@@ -3410,19 +3412,23 @@ function removeChallengeWinEntry(cid, place) {
   var howlId = 'challenge_' + cid + '_p' + place;
   state.howls = (state.howls||[]).filter(function(h){ return h.id !== howlId; });
   arr = arr.filter(function(e){ return (e.place||1) !== place; });
-  if (arr.length === 0) { delete state.challenges_won[cid]; }
-  else { state.challenges_won[cid] = arr; }
+  if (arr.length === 0) {
+    if (!state._deleted_challenges) state._deleted_challenges = [];
+    if (!state._deleted_challenges.includes(cid)) state._deleted_challenges.push(cid);
+    delete state.challenges_won[cid];
+  } else { state.challenges_won[cid] = arr; }
   saveState().then(function(){ showToast('✓ Entry removed and saved.'); renderChallengeManager(); renderAll(); }).catch(function(){ showToast('⚠️ Save failed.'); });
 }
 
 function removeChallengeWinFull(cid, label) {
   label = label || cid;
   showToast('Removing ' + label + '…');
-  // Remove all reward workouts and howls for this challenge
+  if (!state._deleted_challenges) state._deleted_challenges = [];
+  if (!state._deleted_challenges.includes(cid)) state._deleted_challenges.push(cid);
   state.workouts = state.workouts.filter(function(w){ return !w.id || !w.id.startsWith('ch_reward_' + cid + '_'); });
   state.howls = (state.howls||[]).filter(function(h){ return !h.id || !h.id.startsWith('challenge_' + cid + '_'); });
   delete state.challenges_won[cid];
-  saveState().then(function(){ showToast('✓ Challenge results cleared and saved.'); renderChallengeManager(); renderAll(); }).catch(function(){ showToast('⚠️ Save failed.'); });
+  saveState().then(function(){ showToast('✓ ' + label + ' cleared.'); renderChallengeManager(); renderAll(); }).catch(function(e){ showToast('⚠️ Save failed: ' + e.message); });
 }
 
 // ─── BROWSER NOTIFICATIONS ───────────────────────────────────────────────────
