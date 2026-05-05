@@ -1671,6 +1671,7 @@
         </div>
         <button onclick="forceRestore()" style="width:100%;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em;margin-bottom:6px">⚠️ Force Restore (bypasses merge)</button>
         <button onclick="openChallengeManager()" style="width:100%;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">⚔ Manage Challenge Results</button>
+        <button id="btn-purge-bad-rewards" onclick="purgeCorruptRewards()" style="width:100%;margin-top:6px;background:rgba(154,16,16,0.08);border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">🧹 Remove Corrupt Challenge Laurels</button>
       </div>
     </div>
 
@@ -3344,6 +3345,32 @@ async function qlSubmit() {
   checkArchprimusChange();
   generateAndPostCoachHowl(pid).catch(function(){});
   switchTab('chronicle');
+}
+
+function purgeCorruptRewards() {
+  var targets = [
+    'ch_reward_grand_march_p1','ch_reward_grand_march_p2','ch_reward_grand_march_p3','ch_reward_grand_march',
+    'ch_reward_the_long_road_p1','ch_reward_the_long_road_p2','ch_reward_the_long_road_p3','ch_reward_the_long_road'
+  ];
+  // Also catch player-ID-suffixed variants from retroactive payout
+  var extraTargets = state.workouts
+    .filter(function(w){ return w.id && (w.id.startsWith('ch_reward_grand_march_') || w.id.startsWith('ch_reward_the_long_road_')); })
+    .map(function(w){ return w.id; });
+  var allTargets = new Set(targets.concat(extraTargets));
+  var before = state.workouts.length;
+  allTargets.forEach(function(id){ _deletedWorkoutIds.add(id); });
+  state.workouts = state.workouts.filter(function(w){ return !allTargets.has(w.id); });
+  var removed = before - state.workouts.length;
+  if (removed === 0) { showToast('No corrupt reward workouts found.'); return; }
+  showToast('Removing ' + removed + ' corrupt reward workout(s)…');
+  saveState()
+    .then(function(){ 
+      showToast('✓ Corrupt Laurels removed. Reloading…'); 
+      var btn = document.getElementById('btn-purge-bad-rewards');
+      if (btn) btn.style.display = 'none';
+      renderAll(); 
+    })
+    .catch(function(e){ showToast('⚠️ Save failed: ' + e.message); });
 }
 
 function openChallengeManager() {
