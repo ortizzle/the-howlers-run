@@ -1669,7 +1669,20 @@
           <button onclick="exportBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--ink-mid);cursor:pointer">⬇ Export</button>
           <button onclick="importBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--ink-mid);cursor:pointer">⬆ Restore</button>
         </div>
-        <button onclick="forceRestore()" style="width:100%;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">⚠️ Force Restore (bypasses merge)</button>
+        <button onclick="forceRestore()" style="width:100%;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em;margin-bottom:6px">⚠️ Force Restore (bypasses merge)</button>
+
+        <!-- Challenge Results Manager -->
+        <div style="border:1.5px solid rgba(154,16,16,0.3);border-radius:var(--radius);overflow:hidden">
+          <div onclick="toggleChallengeManager()" style="background:rgba(154,16,16,0.06);padding:9px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+            <span style="font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;color:var(--house-red)">⚔ MANAGE CHALLENGE RESULTS</span>
+            <span id="ch-manager-arrow" style="font-size:0.8rem;color:var(--house-red)">▾</span>
+          </div>
+          <div id="ch-manager-body" style="display:none;padding:10px 12px">
+            <p style="font-family:'Crimson Pro',serif;font-size:0.78rem;color:var(--ink-light);font-style:italic;margin-bottom:10px;line-height:1.5">Remove incorrectly awarded challenge wins. This cannot be undone — use with care.</p>
+            <div id="ch-manager-list"></div>
+            <div id="ch-manager-empty" style="font-family:'Crimson Pro',serif;font-size:0.82rem;color:var(--ink-light);font-style:italic;display:none">No challenge results recorded.</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -3328,6 +3341,69 @@ async function qlSubmit() {
   switchTab('chronicle');
 }
 
+function toggleChallengeManager() {
+  var body = document.getElementById('ch-manager-body');
+  var arrow = document.getElementById('ch-manager-arrow');
+  var open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  arrow.textContent = open ? '▾' : '▴';
+  if (!open) renderChallengeManager();
+}
+
+function renderChallengeManager() {
+  var list = document.getElementById('ch-manager-list');
+  var empty = document.getElementById('ch-manager-empty');
+  if (!list) return;
+  var won = state.challenges_won || {};
+  var keys = Object.keys(won).filter(function(k){ return won[k] && (Array.isArray(won[k]) ? won[k].length > 0 : true); });
+  if (keys.length === 0) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = keys.map(function(cid) {
+    var def = CHALLENGES_DEF.find(function(c){ return c.id === cid; });
+    var label = def ? (def.icon + ' ' + def.name) : cid;
+    var entries = Array.isArray(won[cid]) ? won[cid] : [Object.assign({place:1}, won[cid])];
+    var placeIcon = {1:'🥇',2:'🥈',3:'🥉'};
+    var rows = entries.map(function(e) {
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">' +
+        '<span style="font-family:\'Crimson Pro\',serif;font-size:0.82rem;color:var(--ink-mid)">' + (placeIcon[e.place||1]||'') + ' ' + (e.name||'?') + (e.date ? ' <span style="color:var(--ink-light);font-size:0.72rem">· ' + e.date + '</span>' : '') + '</span>' +
+        '<button onclick="removeChallengeWinEntry(\'' + cid + '\',' + (e.place||1) + ')" style="background:transparent;border:1px solid rgba(154,16,16,0.35);border-radius:3px;padding:2px 7px;font-family:Cinzel,serif;font-size:0.52rem;color:var(--house-red);cursor:pointer">✕</button>' +
+      '</div>';
+    }).join('');
+    return '<div style="margin-bottom:10px">' +
+      '<div style="font-family:\'Cinzel\',serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">' + label + '</div>' +
+      rows +
+      '<button onclick="removeChallengeWinFull(\'' + cid + '\')" style="margin-top:5px;background:transparent;border:1px solid rgba(154,16,16,0.35);border-radius:3px;padding:3px 10px;font-family:Cinzel,serif;font-size:0.52rem;color:var(--house-red);cursor:pointer">✕ Remove all results for this challenge</button>' +
+    '</div>';
+  }).join('');
+}
+
+function removeChallengeWinEntry(cid, place) {
+  if (!confirm('Remove place ' + place + ' from "' + cid + '"? This cannot be undone.')) return;
+  var won = state.challenges_won[cid];
+  if (!won) return;
+  var arr = Array.isArray(won) ? won : [Object.assign({place:1}, won)];
+  // Also remove associated reward workout and howl
+  var rewardId = 'ch_reward_' + cid + '_p' + place;
+  state.workouts = state.workouts.filter(function(w){ return w.id !== rewardId; });
+  var howlId = 'challenge_' + cid + '_p' + place;
+  state.howls = (state.howls||[]).filter(function(h){ return h.id !== howlId; });
+  arr = arr.filter(function(e){ return (e.place||1) !== place; });
+  if (arr.length === 0) { delete state.challenges_won[cid]; }
+  else { state.challenges_won[cid] = arr; }
+  saveState().then(function(){ showToast('✓ Entry removed and saved.'); renderChallengeManager(); renderAll(); }).catch(function(){ showToast('⚠️ Save failed.'); });
+}
+
+function removeChallengeWinFull(cid) {
+  var def = CHALLENGES_DEF.find(function(c){ return c.id === cid; });
+  var label = def ? def.name : cid;
+  if (!confirm('Remove ALL results for "' + label + '"? This will also remove reward Laurels and howls. Cannot be undone.')) return;
+  // Remove all reward workouts and howls for this challenge
+  state.workouts = state.workouts.filter(function(w){ return !w.id || !w.id.startsWith('ch_reward_' + cid + '_'); });
+  state.howls = (state.howls||[]).filter(function(h){ return !h.id || !h.id.startsWith('challenge_' + cid + '_'); });
+  delete state.challenges_won[cid];
+  saveState().then(function(){ showToast('✓ Challenge results cleared and saved.'); renderChallengeManager(); renderAll(); }).catch(function(){ showToast('⚠️ Save failed.'); });
+}
+
 // ─── BROWSER NOTIFICATIONS ───────────────────────────────────────────────────
 function requestNotifications() {
   if (!('Notification' in window)) {
@@ -4525,6 +4601,21 @@ function postBadgeHowl(pid, badgeKey) {
   if ((state.howls||[]).some(function(h){ return h.id===howlId; })) return;
   var tierDef = def.tiers.find(function(t){ return t.tier===tier; });
   var laurelReward = BADGE_LAURELS[tier] || 0;
+
+  // Find the date the badge was actually earned — the qualifying workout
+  var playerWorkouts = state.workouts.filter(function(w){
+    return w.player_id === pid && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout);
+  }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+  var earnedDate = getAZDate(); // fallback
+  // Walk workouts in order, find first date where check passes
+  var cumStats = calcPlayerStats(pid); // full stats — use workout date of last qualifying activity as proxy
+  if (playerWorkouts.length) {
+    // Use the date of the most recent non-bonus workout as the earned date
+    // (better than today if badge is retroactive)
+    var lastRelevant = playerWorkouts.slice(-1)[0];
+    if (lastRelevant && lastRelevant.date < getAZDate()) earnedDate = lastRelevant.date;
+  }
+
   // Grant laurel reward as a milestone workout
   var rewardId = 'badge_reward_' + pid + '_' + badgeKey;
   if (!state.workouts.some(function(w){ return w.id===rewardId; })) {
@@ -4532,7 +4623,7 @@ function postBadgeHowl(pid, badgeKey) {
       id: rewardId,
       player_id: pid,
       workout: 'milestone_bonus',
-      date: getAZDate(),
+      date: earnedDate,
       laurels_base: laurelReward,
       timestamp: new Date().toISOString(),
       milestone_label: def.icon + ' Badge: ' + def.name + ' ' + tierLabel,
@@ -4540,7 +4631,7 @@ function postBadgeHowl(pid, badgeKey) {
     });
   }
   var msg = def.icon + ' BADGE EARNED: ' + def.name + ' ' + tierLabel + ' (' + tierWord + ')! @' + player.name + ' — ' + (tierDef ? tierDef.desc : '') + '. +' + laurelReward + 'L awarded. ⚔ Per aspera ad astra. 🐺';
-  state.howls.push({id:howlId, player_id:'system', player_laurels:9999, message:msg, date:getAZDate(), timestamp:new Date().toISOString(), likes:0});
+  state.howls.push({id:howlId, player_id:'system', player_laurels:9999, message:msg, date:earnedDate, timestamp:new Date().toISOString(), likes:0});
 }
 
 
@@ -5034,7 +5125,7 @@ function renderChallenges() {
       } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
         const big=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
         if(big){progress=ch.goal;winner=state.players.find(p=>p.id===big.player_id)?.name;}
-        else{let best=0;state.players.forEach(p=>{const m=statsMap[p.id].maxSingleRun||0;if(m>best)best=m;});progress=Math.min(best,ch.goal);}
+        else{let best=0,bestP=null;state.players.forEach(p=>{const m=statsMap[p.id].maxSingleRun||0;if(m>best){best=m;bestP=p;}});progress=Math.min(best,ch.goal);if(bestP&&!winner)winner=bestP.name;}
       } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
         let best=0,bestP=null;
         state.players.forEach(p=>{const s=statsMap[p.id].streak;if(s>best){best=s;bestP=p;}});
@@ -5591,6 +5682,10 @@ function renderHowlFeed() {
         statRow('🏃', 'LONGEST MARCH', marchName ? marchName + (marchMiles ? ' &nbsp;·&nbsp; ' + marchMiles + ' mi' : '') : '') +
         statRow('⭐', 'PERFECT WEEK', perfectNames || '');
 
+      // If no structured data parsed out and no AI narrative, render raw message as prose fallback
+      var hasStats = trialCount || primusName || marchName || perfectNames;
+      var rawFallback = (!hasStats && !aiNarrative) ? msg.replace(/^📊 WEEKLY RECAP\n\n?/,'').trim() : null;
+
       return '<div class="chronicle-entry" style="--house-color:var(--amber);background:linear-gradient(135deg,rgba(26,20,16,0.97),rgba(42,26,16,0.95));border:1.5px solid rgba(200,144,10,0.4);box-shadow:0 4px 20px rgba(0,0,0,0.3),0 0 0 1px rgba(200,144,10,0.15);border-radius:8px;padding:0;overflow:hidden">' +
         // Header bar
         '<div style="background:linear-gradient(90deg,#1a1410,#2a1a10);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(200,144,10,0.3)">' +
@@ -5608,7 +5703,8 @@ function renderHowlFeed() {
         // Stats + narrative body
         '<div style="padding:10px 14px;background:var(--parchment)">' +
           (aiNarrative ? '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.92rem;color:var(--ink-mid);line-height:1.65;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:8px">' + escHtml(aiNarrative) + '</div>' : '') +
-          statsHTML +
+          (rawFallback ? '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.92rem;color:var(--ink-mid);line-height:1.65;padding-bottom:10px">' + escHtml(rawFallback) + '</div>' : '') +
+          (hasStats ? statsHTML : '') +
           '<div style="font-family:Crimson Pro,serif;font-size:0.78rem;font-style:italic;color:var(--amber);padding-top:8px;text-align:right">Per aspera ad astra 🐺</div>' +
         '</div>' +
         // Actions
