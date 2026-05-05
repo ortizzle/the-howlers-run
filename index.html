@@ -3356,64 +3356,49 @@ function renderChallengeManager() {
   if (!list) return;
   var won = state.challenges_won || {};
   var keys = Object.keys(won).filter(function(k){ return won[k] && (Array.isArray(won[k]) ? won[k].length > 0 : true); });
-  if (keys.length === 0) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+  list.innerHTML = '';
+  if (keys.length === 0) { empty.style.display = 'block'; return; }
   empty.style.display = 'none';
 
-  list.innerHTML = keys.map(function(cid) {
+  keys.forEach(function(cid) {
     var def = CHALLENGES_DEF.find(function(c){ return c.id === cid; });
     var label = def ? (def.icon + ' ' + def.name) : cid;
     var entries = Array.isArray(won[cid]) ? won[cid] : [Object.assign({place:1}, won[cid])];
     var placeIcon = {1:'🥇',2:'🥈',3:'🥉'};
-    var safeCid = cid.replace(/[^a-zA-Z0-9_]/g, '_');
-    var rows = entries.map(function(e) {
-      var place = e.place || 1;
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">' +
-        '<span style="font-family:\'Crimson Pro\',serif;font-size:0.82rem;color:var(--ink-mid)">' + (placeIcon[place]||'') + ' ' + escHtml(e.name||'?') + (e.date ? ' <span style="color:var(--ink-light);font-size:0.72rem">· ' + e.date + '</span>' : '') + '</span>' +
-        '<button onclick="window.chRemoveEntry(\'' + safeCid + '\',' + place + ')" style="background:transparent;border:1px solid rgba(154,16,16,0.35);border-radius:3px;padding:4px 10px;font-family:Cinzel,serif;font-size:0.55rem;color:var(--house-red);cursor:pointer">✕</button>' +
-      '</div>';
-    }).join('');
-    return '<div style="margin-bottom:14px">' +
-      '<div style="font-family:\'Cinzel\',serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:6px">' + escHtml(label) + '</div>' +
-      rows +
-      '<div id="chp-' + safeCid + '" style="display:none;background:rgba(154,16,16,0.06);border:1px solid rgba(154,16,16,0.3);border-radius:4px;padding:10px;margin-top:8px">' +
-        '<div style="font-family:\'Crimson Pro\',serif;font-size:0.82rem;color:var(--house-red);margin-bottom:10px;line-height:1.4">Remove <strong>' + escHtml(label) + '</strong>? Laurels and feed posts will also be removed.</div>' +
-        '<div style="display:flex;gap:8px">' +
-          '<button onclick="window.chConfirmFull(\'' + safeCid + '\',\'' + escHtml(label).replace(/'/g,'&apos;') + '\')" style="flex:1;background:rgba(154,16,16,0.9);border:none;border-radius:4px;padding:11px 6px;font-family:Cinzel,serif;font-size:0.6rem;font-weight:700;color:white;cursor:pointer">CONFIRM REMOVE</button>' +
-          '<button onclick="window.chCancelFull(\'' + safeCid + '\')" style="flex:1;background:var(--parchment-dark);border:1px solid var(--border);border-radius:4px;padding:11px 6px;font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-mid);cursor:pointer">CANCEL</button>' +
-        '</div>' +
-      '</div>' +
-      '<button onclick="window.chShowConfirm(\'' + safeCid + '\')" style="margin-top:6px;width:100%;background:transparent;border:1px solid rgba(154,16,16,0.35);border-radius:3px;padding:8px;font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer" id="chb-' + safeCid + '">✕ REMOVE ALL RESULTS FOR THIS CHALLENGE</button>' +
-    '</div>';
-  }).join('');
 
-  // Store cid map for safe lookups
-  window._chCidMap = {};
-  keys.forEach(function(cid) {
-    var safeCid = cid.replace(/[^a-zA-Z0-9_]/g, '_');
-    window._chCidMap[safeCid] = cid;
+    var block = document.createElement('div');
+    block.style.cssText = 'margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)';
+
+    var title = document.createElement('div');
+    title.style.cssText = 'font-family:Cinzel,serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:8px';
+    title.textContent = label;
+    block.appendChild(title);
+
+    entries.forEach(function(e) {
+      var place = e.place || 1;
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)';
+      var nameEl = document.createElement('span');
+      nameEl.style.cssText = 'font-family:Crimson Pro,serif;font-size:0.85rem;color:var(--ink-mid)';
+      nameEl.textContent = (placeIcon[place]||'') + ' ' + (e.name||'?') + (e.date ? ' · ' + e.date : '');
+      var rmBtn = document.createElement('button');
+      rmBtn.textContent = '✕';
+      rmBtn.style.cssText = 'background:transparent;border:1px solid rgba(154,16,16,0.4);border-radius:3px;padding:5px 12px;font-family:Cinzel,serif;font-size:0.55rem;color:var(--house-red);cursor:pointer';
+      rmBtn.addEventListener('click', (function(c,p){ return function(){ removeChallengeWinEntry(c,p); }; })(cid, place));
+      row.appendChild(nameEl);
+      row.appendChild(rmBtn);
+      block.appendChild(row);
+    });
+
+    var fullBtn = document.createElement('button');
+    fullBtn.textContent = '✕ REMOVE ALL FOR: ' + label;
+    fullBtn.style.cssText = 'margin-top:10px;width:100%;background:rgba(154,16,16,0.08);border:1.5px solid rgba(154,16,16,0.45);border-radius:4px;padding:11px;font-family:Cinzel,serif;font-size:0.58rem;font-weight:700;letter-spacing:0.06em;color:var(--house-red);cursor:pointer';
+    fullBtn.addEventListener('click', (function(c,l){ return function(){ removeChallengeWinFull(c,l); }; })(cid, label));
+    block.appendChild(fullBtn);
+
+    list.appendChild(block);
   });
 }
-
-window.chShowConfirm = function(safeCid) {
-  var panel = document.getElementById('chp-' + safeCid);
-  var btn = document.getElementById('chb-' + safeCid);
-  if (panel) panel.style.display = 'block';
-  if (btn) btn.style.display = 'none';
-};
-window.chCancelFull = function(safeCid) {
-  var panel = document.getElementById('chp-' + safeCid);
-  var btn = document.getElementById('chb-' + safeCid);
-  if (panel) panel.style.display = 'none';
-  if (btn) btn.style.display = '';
-};
-window.chConfirmFull = function(safeCid, label) {
-  var cid = (window._chCidMap && window._chCidMap[safeCid]) || safeCid;
-  removeChallengeWinFull(cid, label);
-};
-window.chRemoveEntry = function(safeCid, place) {
-  var cid = (window._chCidMap && window._chCidMap[safeCid]) || safeCid;
-  removeChallengeWinEntry(cid, place);
-};
 
 function removeChallengeWinEntry(cid, place) {
   var won = state.challenges_won[cid];
