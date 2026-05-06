@@ -3981,8 +3981,8 @@ async function checkAndPostDailyRecap() {
       (challengeUpdates.length ? '\nChallenge updates: ' + challengeUpdates.join('; ') : '');
 
     var aiText = await aiGenerate(
-      'You are the morning scribe of The Howlers pack — warriors training for the Rock \'n\' Roll Arizona Half Marathon. Write a sharp, punchy daily morning dispatch covering yesterday\'s training. Call out who worked hard, who went dark, any streak at risk. Use Red Rising House colors and first names. Keep it under 4 sentences. End with one short provocative line targeting whoever went dark or underperformed. No hashtags. Output only the dispatch.',
-      aiPrompt, 200
+      'You are the Sovereign\'s morning herald for The Howlers — six warriors training for the Rock \'n\' Roll Arizona Half Marathon. Write a daily morning dispatch in the voice of Red Rising: dramatic, sharp, with genuine personality. DO NOT list workouts or stats — weave them into vivid narrative prose. Celebrate the standout performer with specific color. Call out anyone who went dark or underperformed by name with a provocative jab. Reference house colors and ranks. 3-4 sentences maximum. End with one punchy rallying cry or challenge. No bullet points. No hashtags. Output only the dispatch text.',
+      aiPrompt, 250
     );
     if (aiText) finalMsg = '📋 DAILY DISPATCH\n\n' + aiText;
   }
