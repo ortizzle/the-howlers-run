@@ -4044,6 +4044,7 @@ async function checkAndPostDailyRecap() {
     }
   });
 
+  saveState().catch(function(e){ console.error('Daily dispatch save failed:', e); });
 }
 // Stats cache — computed once per render cycle, shared by all render fns
 let _statsCache = {};
