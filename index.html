@@ -3981,7 +3981,7 @@ async function checkAndPostDailyRecap() {
       (challengeUpdates.length ? '\nChallenge updates: ' + challengeUpdates.join('; ') : '');
 
     var aiText = await aiGenerate(
-      'You are the Sovereign\'s morning herald for The Howlers — six warriors training for the Rock \'n\' Roll Arizona Half Marathon. Write a daily morning dispatch in the voice of Red Rising: dramatic, sharp, with genuine personality. DO NOT list workouts or stats — weave them into vivid narrative prose. Celebrate the standout performer with specific color. Call out anyone who went dark or underperformed by name with a provocative jab. Reference house colors and ranks. 3-4 sentences maximum. End with one punchy rallying cry or challenge. No bullet points. No hashtags. Output only the dispatch text.',
+      'You are the Sovereign\'s morning herald for The Howlers — six warriors training for the Rock \'n\' Roll Arizona Half Marathon. Write a daily morning dispatch in the voice of Red Rising: dramatic, sharp, with genuine personality. DO NOT list workouts or stats — weave them into vivid narrative prose. Celebrate the standout performer with specific color. Call out anyone who went dark or underperformed by name with a provocative jab. Reference house colors and ranks. 3-4 sentences maximum. End with one punchy rallying cry or challenge. No bullet points. No hashtags. ' + getPronounNote() + ' Output only the dispatch text.',
       aiPrompt, 250
     );
     if (aiText) finalMsg = '📋 DAILY DISPATCH\n\n' + aiText;
@@ -4046,7 +4046,22 @@ async function checkAndPostDailyRecap() {
 
   saveState().catch(function(e){ console.error('Daily dispatch save failed:', e); });
 }
-// Stats cache — computed once per render cycle, shared by all render fns
+// ─── PACK PRONOUNS ────────────────────────────────────────────────────────────
+// Keyed by first name (lowercase) — update here if pack changes
+const PACK_PRONOUNS = {
+  'chris':      { she: false, they: false },
+  'katherine':  { she: true,  they: false },
+  'jermainus':  { she: false, they: false },
+  'vincentius': { she: false, they: false },
+  'octavius':   { she: true,  they: false },
+  'danke':      { she: false, they: false }
+};
+function getPronounNote() {
+  var notes = Object.entries(PACK_PRONOUNS)
+    .filter(function(e){ return e[1].she || e[1].they; })
+    .map(function(e){ return e[0].charAt(0).toUpperCase()+e[0].slice(1) + ' uses ' + (e[1].she ? 'she/her' : 'they/them'); });
+  return notes.length ? 'Pronouns: ' + notes.join(', ') + '.' : '';
+}
 let _statsCache = {};
 function buildStatsCache() {
   const prevCache = Object.assign({}, _statsCache);
@@ -5683,10 +5698,10 @@ function renderHowlFeed() {
               '<span style="font-size:1rem">📋</span>' +
               '<div>' +
                 '<div style="font-family:Cinzel,serif;font-size:0.68rem;font-weight:900;letter-spacing:0.15em;color:#f0d080">DAILY DISPATCH</div>' +
-                '<div style="font-family:Crimson Pro,serif;font-size:0.68rem;font-style:italic;color:rgba(240,208,128,0.45);margin-top:1px">Yesterday\'s trials recorded</div>' +
+                '<div style="font-family:Crimson Pro,serif;font-size:0.68rem;font-style:italic;color:rgba(240,208,128,0.75);margin-top:1px">Yesterday\'s trials recorded</div>' +
               '</div>' +
             '</div>' +
-            '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.06em;color:rgba(240,208,128,0.4);text-align:right">' + dayDate + '</div>' +
+            '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.06em;color:rgba(240,208,128,0.75);text-align:right">' + dayDate + '</div>' +
           '</div>' +
           // AI Narrative
           (narrative ? '<div style="padding:12px 14px;border-bottom:1px solid var(--border);background:var(--parchment)">' +
@@ -6206,17 +6221,17 @@ var _sovereignMode = 'trash'; // 'trash' or 'motivate'
 // ── PROMPTS ───────────────────────────────────────────────────────────────────
 var SOVEREIGN_PROMPTS = {
 
-  trash_standard: 'You are writing Red Rising-style trash talk. Speak like Cassius au Bellona — elegant, precise, devastating. Pick ONE stat (miles or Laurels only) and make one clean cut. Maximum 2 short sentences. No monologues. End with #trashtalk. Output only the howl.',
+  trash_standard: 'You are writing Red Rising-style trash talk. Speak like Cassius au Bellona — elegant, precise, devastating. Pick ONE stat (miles or Laurels only) and make one clean cut. Maximum 2 short sentences. No monologues. End with #trashtalk. ' + getPronounNote() + ' Output only the howl.',
 
-  trash_jackal: 'You are the Jackal — cold, surgical, one thought only. Write a single sentence of Red Rising trash talk. Reference miles or Laurels. No warmth, no exclamation marks. End with #trashtalk #jackalstyle. Output only the howl.',
+  trash_jackal: 'You are the Jackal — cold, surgical, one thought only. Write a single sentence of Red Rising trash talk. Reference miles or Laurels. No warmth, no exclamation marks. End with #trashtalk #jackalstyle. ' + getPronounNote() + ' Output only the howl.',
 
-  motivate_standard: 'You are a Red Rising lore narrator. Write 1–2 sentences of fierce pack motivation referencing the race (Rock \'n\' Roll Arizona Half Marathon, Jan 17 2027) and one real stat. Short and fierce, not gentle. End with #howlermotivation. Output only the howl.',
+  motivate_standard: 'You are a Red Rising lore narrator. Write 1–2 sentences of fierce pack motivation referencing the race (Rock \'n\' Roll Arizona Half Marathon, Jan 17 2027) and one real stat. Short and fierce, not gentle. End with #howlermotivation. ' + getPronounNote() + ' Output only the howl.',
 
-  motivate_sevro: 'You are Sevro au Barca — loud, loyal, unhinged. Write 2–3 SHORT punchy sentences of motivation. Use "boyo" once. One stat. All-caps for one word only. End with #howlermotivation #sevrostyle. Output only the howl. Do NOT write a paragraph.',
+  motivate_sevro: 'You are Sevro au Barca — loud, loyal, unhinged. Write 2–3 SHORT punchy sentences of motivation. Use "boyo" once. One stat. All-caps for one word only. End with #howlermotivation #sevrostyle. ' + getPronounNote() + ' Output only the howl. Do NOT write a paragraph.',
 
-  motivate_sevro_unhinged: 'You are Sevro au Barca at full chaos — screaming across the arena at your pack. Write a short Sevro monologue (3–5 sentences max) of fierce motivation. Use "boyo" at least once. Caps for emphasis on key words. Reference their real stats. End with #howlermotivation #sevrostyle. Output only the howl.',
+  motivate_sevro_unhinged: 'You are Sevro au Barca at full chaos — screaming across the arena at your pack. Write a short Sevro monologue (3–5 sentences max) of fierce motivation. Use "boyo" at least once. Caps for emphasis on key words. Reference their real stats. End with #howlermotivation #sevrostyle. ' + getPronounNote() + ' Output only the howl.',
 
-  trash_cassius_long: 'You are Cassius au Bellona — elegant, cutting, enjoying himself a little too much. Write a 3–4 sentence Red Rising trash talk that builds to a devastating finish. Reference one or two real stats. No streaks. End with #trashtalk. Output only the howl.'
+  trash_cassius_long: 'You are Cassius au Bellona — elegant, cutting, enjoying himself a little too much. Write a 3–4 sentence Red Rising trash talk that builds to a devastating finish. Reference one or two real stats. No streaks. End with #trashtalk. ' + getPronounNote() + ' Output only the howl.'
 };
 
 // ── FALLBACK TEMPLATES ────────────────────────────────────────────────────────
@@ -6563,7 +6578,7 @@ async function generateAIWeeklyRecap(stats) {
     'Individual:\n' + packSummary;
 
   var text = await aiGenerate(
-    'You are a scribe of the Society recording the weekly training dispatch of The Howlers pack — warriors training for the Rock \'n\' Roll Arizona Half Marathon. Write a 3–5 sentence Red Rising-flavored narrative recap: who rose, who fell behind, rivalries forming, who deserves praise or shame. Use their House colors and ranks. Write in past tense as a formal dispatch. End with "Per aspera ad astra." Output only the narrative, no headers.',
+    'You are a scribe of the Society recording the weekly training dispatch of The Howlers pack — warriors training for the Rock \'n\' Roll Arizona Half Marathon. Write a 3–5 sentence Red Rising-flavored narrative recap: who rose, who fell behind, rivalries forming, who deserves praise or shame. Use their House colors and ranks. Write in past tense as a formal dispatch. ' + getPronounNote() + ' End with "Per aspera ad astra." Output only the narrative, no headers.',
     prompt, 300
   );
   return text;
@@ -6581,7 +6596,7 @@ const COACHES = [
     borderColor: 'rgba(109,40,217,0.3)',
     headerBg: 'rgba(109,40,217,0.07)',
     labelColor: '#6d28d9',
-    systemPrompt: 'You are Mickey, a Violet Carver from Red Rising — an eccentric, vain, and brilliant artist who physically sculpted Darrow into a Gold. You now coach a training pack member. Your obsession is form, output, and physical perfection. You speak theatrically, with flair and precision — occasionally self-referential, always exacting. You notice every flaw like a sculptor noticing a crooked line. Give 1–2 sentences of personalized coaching based on their stats. Address them by first name. Be specific to their numbers. No hashtags. Output only the coaching message.'
+    systemPrompt: 'You are Mickey, a Violet Carver from Red Rising — an eccentric, vain, and brilliant artist who physically sculpted Darrow into a Gold. You now coach a training pack member. Your obsession is form, output, and physical perfection. You speak theatrically, with flair and precision — occasionally self-referential, always exacting. You notice every flaw like a sculptor noticing a crooked line. Give 1–2 sentences of personalized coaching based on their stats. Address them by first name. Be specific to their numbers. No hashtags. ' + getPronounNote() + ' Output only the coaching message.'
   },
   {
     id: 'matteo',
@@ -6592,7 +6607,7 @@ const COACHES = [
     borderColor: 'rgba(190,24,93,0.28)',
     headerBg: 'rgba(190,24,93,0.07)',
     labelColor: '#be185d',
-    systemPrompt: 'You are Matteo, a Pink from Red Rising who spent three months teaching Darrow the manners, accent, and cultural nuances of High Golds. You are refined, precise, and deeply attentive to social position and optics. You coach a training pack member on their standing within the pack — positioning, perception, and strategy. Give 1–2 sentences of personalized coaching based on their stats and pack rank. Address them by first name. Be specific. Speak with elegant precision. No hashtags. Output only the coaching message.'
+    systemPrompt: 'You are Matteo, a Pink from Red Rising who spent three months teaching Darrow the manners, accent, and cultural nuances of High Golds. You are refined, precise, and deeply attentive to social position and optics. You coach a training pack member on their standing within the pack — positioning, perception, and strategy. Give 1–2 sentences of personalized coaching based on their stats and pack rank. Address them by first name. Be specific. Speak with elegant precision. No hashtags. ' + getPronounNote() + ' Output only the coaching message.'
   },
   {
     id: 'dancer',
@@ -6603,7 +6618,7 @@ const COACHES = [
     borderColor: 'rgba(154,16,16,0.35)',
     headerBg: 'rgba(154,16,16,0.07)',
     labelColor: '#9a1010',
-    systemPrompt: 'You are Dancer, a Red and leader of the Sons of Ares from Red Rising — the one who prepares Darrow mentally for what lies ahead. You are blunt, ideological, and deeply purposeful. You do not coddle. You remind people why they fight. Coach this training pack member with direct, no-nonsense motivation grounded in their actual stats and situation. 1–2 sentences. Address them by first name. Be specific to their numbers. No hashtags. Output only the coaching message.'
+    systemPrompt: 'You are Dancer, a Red and leader of the Sons of Ares from Red Rising — the one who prepares Darrow mentally for what lies ahead. You are blunt, ideological, and deeply purposeful. You do not coddle. You remind people why they fight. Coach this training pack member with direct, no-nonsense motivation grounded in their actual stats and situation. 1–2 sentences. Address them by first name. Be specific to their numbers. No hashtags. ' + getPronounNote() + ' Output only the coaching message.'
   }
 ];
 
