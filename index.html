@@ -2365,6 +2365,8 @@ async function loadState() {
       if (!state.duels) state.duels = [];
       // Restore persisted deleted IDs into in-memory Set
       if (state._deletedWorkoutIds) state._deletedWorkoutIds.forEach(function(id){ _deletedWorkoutIds.add(id); });
+      // Pick up shared API key so all pack members get coaching without manual setup
+      if (state.anthropic_key && !getAnthropicKey()) saveAnthropicKey(state.anthropic_key);
     }
     setSyncStatus('live');
   checkForNewActivityNotifications(prevState);
@@ -2388,7 +2390,14 @@ async function loadState() {
   renderAll();
 }
 
-async function saveState() {
+// Serialize all saves — prevents concurrent read-merge-write from clobbering each other
+let _saveQueue = Promise.resolve();
+function saveState() {
+  _saveQueue = _saveQueue.then(_doSave).catch(function(e) { console.error('Queued save error:', e); });
+  return _saveQueue;
+}
+
+async function _doSave() {
   if (!hasConfig()) return;
   setSyncStatus('loading');
   try {
@@ -2481,6 +2490,8 @@ async function saveState() {
       }
       // ── END SAFE MERGE ────────────────────────────────────────────────────
 
+      // Propagate API key to pack — stored in private Gist, visible only to members with the token
+      if (getAnthropicKey()) state.anthropic_key = getAnthropicKey();
       const res = await fetch('https://api.github.com/gists/' + gistId, {
         method: 'PATCH',
         headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
@@ -2488,6 +2499,7 @@ async function saveState() {
       });
       if (!res.ok) throw new Error('Gist HTTP ' + res.status);
     } else {
+      if (getAnthropicKey()) state.anthropic_key = getAnthropicKey();
       const res = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
@@ -3364,7 +3376,6 @@ async function qlSubmit() {
   setTimeout(function(){ launchConfetti('trial', trialColors); }, 100);
   renderAll();
   checkArchprimusChange();
-  generateAndPostCoachHowl(pid).catch(function(){});
   switchTab('chronicle');
 }
 
