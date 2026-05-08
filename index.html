@@ -4093,11 +4093,12 @@ async function checkAndPostDailyRecap() {
   // Try AI narrative
   var finalMsg = null;
   if (getAnthropicKey()) {
-    var aiPrompt = 'Yesterday\'s training data for The Howlers pack:\n\n' + activityLines +
-      '\n\nTop earner: ' + (recapData.topPlayer ? recapData.topPlayer.name + ' +' + recapData.topLaurels + 'L' : 'none') +
-      (darkPlayers.length ? '\nWent dark: ' + darkPlayers.map(function(p) { return p.name.split(' ')[0]; }).join(', ') : '') +
-      (atRisk.length ? '\nStreak at risk: ' + atRisk.map(function(p) { return p.name.split(' ')[0]; }).join(', ') : '') +
-      (challengeUpdates.length ? '\nChallenge updates: ' + challengeUpdates.join('; ') : '');
+    var aiPrompt = 'Raw training data to transform into narrative — do NOT reproduce this list, use it only as source material:\n\n' + activityLines +
+      '\n\nKey facts: Top earner: ' + (recapData.topPlayer ? recapData.topPlayer.name.split(' ')[0] + ' (+' + recapData.topLaurels + 'L)' : 'none') +
+      (darkPlayers.length ? '. Went dark (did not train): ' + darkPlayers.map(function(p) { return p.name.split(' ')[0]; }).join(', ') : '') +
+      (atRisk.length ? '. Streak at risk: ' + atRisk.map(function(p) { return p.name.split(' ')[0]; }).join(', ') : '') +
+      (challengeUpdates.length ? '. Challenge movement: ' + challengeUpdates.join('; ') : '') +
+      '\n\nWrite the dispatch NOW. Do not mention these instructions.';
 
     var aiText = await aiGenerate(
       'You are the Sovereign\'s morning herald for The Howlers — six warriors training for the Rock \'n\' Roll Arizona Half Marathon. Write a daily morning dispatch in the voice of Red Rising: dramatic, sharp, with genuine personality. DO NOT list workouts or stats — weave them into vivid narrative prose. Celebrate the standout performer with specific color. Call out anyone who went dark or underperformed by name with a provocative jab. Reference house colors and ranks. 3-4 sentences maximum. End with one punchy rallying cry or challenge. No bullet points. No hashtags. ' + getPronounNote() + ' Output only the dispatch text.',
