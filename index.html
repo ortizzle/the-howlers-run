@@ -1452,7 +1452,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
         <button class="sovereign-btn" onclick="summonSovereign('trash')" id="sovereign-btn-trash" style="padding:11px 8px;font-size:0.6rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
           <span>⚔ TRASH TALK</span>
-          <span style="font-size:0.52rem;opacity:0.7;color:#e07070;letter-spacing:0.05em">−5L to you · pot → underdog</span>
+          <span style="font-size:0.52rem;opacity:0.7;color:#e07070;letter-spacing:0.05em">−5L · pot: <span id="trashtalk-pot-display">0L</span> → end of month</span>
         </button>
         <button class="sovereign-btn" onclick="summonSovereign('motivate')" id="sovereign-btn-motivate" style="padding:11px 8px;font-size:0.6rem;background:linear-gradient(135deg,#0a1410,#0d1e14);border-color:rgba(60,140,80,0.5);color:#80d4a0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
           <span>🐺 MOTIVATE</span>
@@ -2384,6 +2384,7 @@ async function loadState() {
   checkAndPostChallengeHowls();
   checkAndPostWeeklyRecap();
   checkAndPostDailyRecap();
+  checkAndPayTrashtalkPot();
   checkArchprimusChange();
   } catch(e) {
     setSyncStatus('error');
@@ -4188,6 +4189,44 @@ async function checkAndPostDailyRecap() {
 
   saveState().catch(function(e){ console.error('Daily dispatch save failed:', e); });
 }
+
+// ─── MONTHLY TRASHTALK POT PAYOUT ─────────────────────────────────────────────
+function checkAndPayTrashtalkPot() {
+  if (!state.trashtalk_pot || !state.trashtalk_pot.balance || state.trashtalk_pot.balance <= 0) return;
+  var pot = state.trashtalk_pot;
+  var currentMonth = getAZDate().slice(0, 7);
+  var potMonth = pot.month || currentMonth;
+  // Not yet end of month
+  if (currentMonth <= potMonth) return;
+  // Already paid out for this pot month
+  if (pot.paid_month === potMonth) return;
+
+  var SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
+  var activePlayers = state.players.filter(function(p) {
+    return state.workouts.some(function(w) { return w.player_id === p.id && !SYSTEM_WK.includes(w.workout); });
+  });
+  if (activePlayers.length < 2) return;
+
+  var payoutId = 'trashtalk_payout_' + potMonth;
+  if ((state.howls || []).some(function(h) { return h.id === payoutId; })) return;
+
+  var sorted = activePlayers.slice().sort(function(a, b) {
+    return calcPlayerStats(a.id).laurels - calcPlayerStats(b.id).laurels;
+  });
+  var underdog = sorted[0];
+  if (!underdog) return;
+
+  var paidAmount = pot.balance;
+  var monthName = new Date(potMonth + '-15T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  var ts = Date.now();
+
+  state.workouts.push({ id:'trashtalk_pot_'+ts, player_id:underdog.id, workout:'trashtalk_pot', date:getAZDate(), laurels_base:paidAmount, timestamp:new Date().toISOString() });
+  state.howls.push({ id:payoutId, player_id:'system', player_laurels:9999, message:'💰 IRON PRICE SETTLEMENT — '+monthName+'\n\nThe pot is claimed. '+paidAmount+'L seized from the arrogant now delivered to '+underdog.name.split(' ')[0]+', who endured a month at the bottom. The pack\'s debts are paid. ⚔ Per aspera ad astra.', date:getAZDate(), timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+
+  state.trashtalk_pot = { balance: 0, month: currentMonth, paid_month: potMonth };
+  saveState().catch(function(e){ console.error('Pot payout save failed:', e); });
+}
+
 // ─── PACK PRONOUNS ────────────────────────────────────────────────────────────
 // Keyed by first name (lowercase) — update here if pack changes
 const PACK_PRONOUNS = {
@@ -5650,6 +5689,12 @@ function renderTimeline() {
 }
 
 function renderDispatch() {
+  // Update trashtalk pot display
+  var potEl = document.getElementById('trashtalk-pot-display');
+  if (potEl) {
+    var potBal = (state.trashtalk_pot && state.trashtalk_pot.balance) || 0;
+    potEl.textContent = potBal + 'L';
+  }
   // Populate player dropdown
   const sel = document.getElementById('howl-player');
   if (sel) {
@@ -6175,14 +6220,14 @@ async function postHowl(replyToId, replyToName, activityRef) {
   // ── LAUREL TRANSFER: trashtalk & motivate ────────────────────────────────
   var ts = Date.now();
   if (sovereignMode === 'trash') {
-    // Sender pays 5 — pot goes to lowest scorer excluding sender
+    // Sender pays 5 — goes into the monthly pot, paid to underdog at month end
     state.workouts.push({ id:'trashtalk_fee_'+ts, player_id:pid, workout:'trashtalk_fee', date:getAZDate(), laurels_base:-5, timestamp:new Date().toISOString() });
-    var sorted = state.players.slice().sort(function(a,b){ return calcPlayerStats(a.id).laurels - calcPlayerStats(b.id).laurels; });
-    var underdog = sorted.find(function(p){ return p.id !== pid; });
-    if (underdog) {
-      state.workouts.push({ id:'trashtalk_pot_'+ts, player_id:underdog.id, workout:'trashtalk_pot', date:getAZDate(), laurels_base:5, timestamp:new Date().toISOString() });
-      state.howls.push({ id:'trashtalk_announce_'+ts, player_id:'system', player_laurels:9999, message:player.name.split(' ')[0]+' paid the Iron Price — 5 Laurels seized from their coffers and granted to '+underdog.name.split(' ')[0]+', the underdog of the pack. The arrogant feed the hungry. ⚔', date:getAZDate(), timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+    var currentPotMonth = getAZDate().slice(0, 7);
+    if (!state.trashtalk_pot || state.trashtalk_pot.month !== currentPotMonth) {
+      state.trashtalk_pot = { balance: 0, month: currentPotMonth, paid_month: state.trashtalk_pot ? state.trashtalk_pot.paid_month : null };
     }
+    state.trashtalk_pot.balance = (state.trashtalk_pot.balance || 0) + 5;
+    state.howls.push({ id:'trashtalk_announce_'+ts, player_id:'system', player_laurels:9999, message:player.name.split(' ')[0]+' paid the Iron Price — 5 Laurels thrown into the pot. Monthly bounty now sits at '+state.trashtalk_pot.balance+'L. The underdog claims all at month\'s end. ⚔', date:getAZDate(), timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
   } else if (sovereignMode === 'motivate' && sovereignTargetId) {
     // Sender pays 5 — goes directly to target
     var targetPlayer = state.players.find(function(p){ return p.id === sovereignTargetId; });
