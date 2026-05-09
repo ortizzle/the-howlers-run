@@ -2392,6 +2392,17 @@ async function loadState() {
     showToast('⚠️ Sync error: ' + e.message);
   }
   renderAll();
+
+  // Generate coaching nudge now that state is populated with real data.
+  // The startup switchTab('leaderboard') fires before loadState completes, so
+  // state.players is empty and coaching returns null. This re-triggers it correctly.
+  if (currentHowlerId && getAnthropicKey() && !getCachedNudge(currentHowlerId)) {
+    generateCoachingNudge(currentHowlerId).then(function(text) {
+      var card = document.getElementById('coaching-nudge-card');
+      var el = document.getElementById('coaching-nudge-text');
+      if (text && card && el) { el.textContent = text; card.style.display = 'block'; }
+    }).catch(function(){});
+  }
 }
 
 // Serialize all saves — prevents concurrent read-merge-write from clobbering each other
