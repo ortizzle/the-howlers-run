@@ -5110,8 +5110,28 @@ function renderPackStats() {
   const byTrials = state.players.slice().sort((a,b)=>(sm[b.id].trials||0)-(sm[a.id].trials||0));
   const byStreak = state.players.slice().sort((a,b)=>(sm[b.id].streak||0)-(sm[a.id].streak||0));
 
+  // Trashtalk stats
+  const trashGiven = {}, trashReceived = {};
+  state.workouts.forEach(w => {
+    if (w.workout === 'trashtalk_fee') trashGiven[w.player_id] = (trashGiven[w.player_id]||0) + 1;
+    if (w.workout === 'trashtalk_pot') trashReceived[w.player_id] = (trashReceived[w.player_id]||0) + 1;
+  });
+  const totalTrashtalk = Object.values(trashGiven).reduce((s,n)=>s+n,0);
+
+  // Motivation stats
+  const motiGiven = {}, motiReceived = {};
+  state.workouts.forEach(w => {
+    if (w.workout === 'motivate_fee') motiGiven[w.player_id] = (motiGiven[w.player_id]||0) + 1;
+    if (w.workout === 'motivate_gift') motiReceived[w.player_id] = (motiReceived[w.player_id]||0) + 1;
+  });
+  const totalMoti = Object.values(motiGiven).reduce((s,n)=>s+n,0);
+
   function rankList(players, statFn, unit) {
     return players.slice(0,3).map((p,i)=>`<div style="font-family:'Cinzel',serif;font-size:0.6rem;display:flex;justify-content:space-between;width:100%;padding:2px 0;border-bottom:1px solid rgba(0,0,0,0.05);${i===0?'color:var(--amber);font-weight:700':'color:var(--ink-mid)'}"><span>${i===0?'★':i+1+'.'} ${p.name.split(' ')[0]}</span><span>${statFn(p)}${unit}</span></div>`).join('');
+  }
+
+  function dualRankList(players, givenFn, rcvdFn, title) {
+    return players.map(p=>`<div style="font-family:'Cinzel',serif;font-size:0.57rem;display:flex;justify-content:space-between;width:100%;padding:2px 0;border-bottom:1px solid rgba(0,0,0,0.05)"><span style="color:var(--ink-mid)">${p.name.split(' ')[0]}</span><span style="color:var(--amber)">${givenFn(p)} sent · ${rcvdFn(p)} rcvd</span></div>`).join('');
   }
 
   function flipCard(icon, value, label, rankHTML, rankTitle) {
@@ -5136,7 +5156,9 @@ function renderPackStats() {
     flipCard('🏅', totalLaurels, 'TOTAL LAURELS', rankList(byLaurels, p=>sm[p.id].laurels||0, 'L'), 'LAURELS RANKING') +
     flipCard('👥', totalHowlers, 'HOWLERS', rankList(byLaurels, p=>sm[p.id].rank.name, ''), 'RANK STANDING') +
     flipCard('🐺', totalHowls, 'HOWLS POSTED', rankList(byStreak, p=>sm[p.id].streak||0, ' wks'), 'STREAK RANKING') +
-    flipCard('❤️', totalLikes, 'LIKES GIVEN', rankList(state.players.slice().sort((a,b)=>{ const la=(state.howls||[]).filter(h=>h.player_id===b.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0); const lb=(state.howls||[]).filter(h=>h.player_id===a.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0); return la-lb; }), p=>(state.howls||[]).filter(h=>h.player_id===p.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0), ' ❤️'), 'LIKES RECEIVED') +
+    flipCard('❤️', totalLikes, 'LIKES RECEIVED', rankList(state.players.slice().sort((a,b)=>{ const la=(state.howls||[]).filter(h=>h.player_id===b.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0); const lb=(state.howls||[]).filter(h=>h.player_id===a.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0); return la-lb; }), p=>(state.howls||[]).filter(h=>h.player_id===p.id).reduce((s,h)=>s+((h.reactions&&h.reactions.hype)||0),0), ' ❤️'), 'LIKES RECEIVED') +
+    flipCard('⚔', totalTrashtalk, 'TRASH TALKS', dualRankList(state.players.slice().sort((a,b)=>(trashGiven[b.id]||0)-(trashGiven[a.id]||0)), p=>trashGiven[p.id]||0, p=>trashReceived[p.id]||0), 'TRASH TALK RECORD') +
+    flipCard('🎁', totalMoti, 'MOTIVATIONS', dualRankList(state.players.slice().sort((a,b)=>(motiGiven[b.id]||0)-(motiGiven[a.id]||0)), p=>motiGiven[p.id]||0, p=>motiReceived[p.id]||0), 'MOTIVATION RECORD') +
     flipCard('🔥', peakWeek + ' TRIALS', 'PEAK WEEK', rankList(byTrials, p=>sm[p.id].trials||0, ''), 'TRIALS RANKING') +
     flipCard('💪', state.players.reduce((s,p)=>s+(sm[p.id].strength||0),0), 'STRENGTH SESSIONS', rankList(state.players.slice().sort((a,b)=>(sm[b.id].strength||0)-(sm[a.id].strength||0)), p=>sm[p.id].strength||0, ''), 'STRENGTH RANKING') +
     flipCard('🧘', state.players.reduce((s,p)=>s+(sm[p.id].mobility||0),0), 'MOBILITY SESSIONS', rankList(state.players.slice().sort((a,b)=>(sm[b.id].mobility||0)-(sm[a.id].mobility||0)), p=>sm[p.id].mobility||0, ''), 'MOBILITY RANKING') +
