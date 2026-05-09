@@ -2179,9 +2179,10 @@ const RED_GOD_LAURELS = 200;
 const WORKOUT_NAMES = {
   duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
   long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
-  
   walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
-  strength:'The Iron Forge (Strength)', mobility:'Mind & Body (Mobility)'
+  strength:'The Iron Forge (Strength)', mobility:'Mind & Body (Mobility)',
+  trashtalk_fee:'⚔ Trash Talk Toll', trashtalk_pot:'💰 Underdog\'s Share',
+  motivate_fee:'🐺 Motivation Offering', motivate_gift:'🎁 Pack Gift'
 };
 
 let state = { players: [], workouts: [], howls: [], duels: [], challenges_won: {}, badges_awarded: {} };
@@ -2603,7 +2604,7 @@ function calcPlayerStats(pid) {
   const works = state.workouts.filter(w => w.player_id === pid);
   const player = state.players.find(p => p.id === pid);
   let laurels = (player && player.book_laurels) ? player.book_laurels : 0;
-  const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss'];
+  const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
   const TIMED_WK = ['peloton','cardio','strength','mobility']; // require 15-min minimum
   const RUN_WK = ['long_run','easy_run','tempo','walk_run','race','optional_run'];
   // Trials = real workouts; timed ones must meet 15-min minimum
@@ -4006,7 +4007,7 @@ async function checkAndPostDailyRecap() {
   if ((state.howls || []).some(function(h) { return h.id === recapId; })) return;
 
   // Get yesterday's workouts (exclude system)
-  const SYSTEM_WK = ['milestone_bonus', 'duel_win', 'duel_loss'];
+  const SYSTEM_WK = ['milestone_bonus', 'duel_win', 'duel_loss', 'trashtalk_fee', 'trashtalk_pot', 'motivate_fee', 'motivate_gift'];
   const TIMED_WK = ['peloton', 'cardio', 'strength', 'mobility'];
   const yesterdayWorkouts = state.workouts.filter(function(w) {
     return w.date === yesterdayStr && !SYSTEM_WK.includes(w.workout);
@@ -4969,7 +4970,7 @@ function renderPlayers() {
     });
 
     // ── PACK PULSE: Gone Dark detection ──
-    var SYSTEM_WK_TYPES = ['milestone_bonus','duel_win','duel_loss'];
+    var SYSTEM_WK_TYPES = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
     var realWorkouts = state.workouts.filter(function(w) {
       return w.player_id === p.id && !SYSTEM_WK_TYPES.includes(w.workout);
     });
@@ -5243,7 +5244,7 @@ function setAnnalsFilter(pid) {
 function renderChronicle() {
   renderAnnalsFilter();
   const feed = document.getElementById('chronicle-feed');
-  const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss'];
+  const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
   var allWorkouts = state.workouts.filter(w => !SYSTEM_WK.includes(w.workout));
   if (allWorkouts.length === 0) {
     feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📜</span>No trials logged yet. The pack awaits its first march.</div>';
@@ -6118,6 +6119,7 @@ async function postHowl(replyToId, replyToName, activityRef) {
   const sovereignMode = msgEl ? msgEl.dataset.sovereignMode : null;
   const sovereignTarget = msgEl ? msgEl.dataset.sovereignTarget : null;
   const sovereignTargetHouse = msgEl ? msgEl.dataset.sovereignTargetHouse : null;
+  const sovereignTargetId = msgEl ? msgEl.dataset.sovereignTargetId : null;
   const howl = {
     id: 'h_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
     player_id: pid,
@@ -6133,9 +6135,32 @@ async function postHowl(replyToId, replyToName, activityRef) {
     sovereign_target: sovereignTarget || null,
     sovereign_target_house: sovereignTargetHouse || null
   };
-  if (msgEl) { delete msgEl.dataset.sovereignMode; delete msgEl.dataset.sovereignTarget; delete msgEl.dataset.sovereignTargetHouse; }
+  if (msgEl) { delete msgEl.dataset.sovereignMode; delete msgEl.dataset.sovereignTarget; delete msgEl.dataset.sovereignTargetHouse; delete msgEl.dataset.sovereignTargetId; }
   if (!state.howls) state.howls = [];
   state.howls.push(howl);
+
+  // ── LAUREL TRANSFER: trashtalk & motivate ────────────────────────────────
+  var ts = Date.now();
+  if (sovereignMode === 'trash') {
+    // Sender pays 5 — pot goes to lowest scorer excluding sender
+    state.workouts.push({ id:'trashtalk_fee_'+ts, player_id:pid, workout:'trashtalk_fee', date:getAZDate(), laurels_base:-5, timestamp:new Date().toISOString() });
+    var sorted = state.players.slice().sort(function(a,b){ return calcPlayerStats(a.id).laurels - calcPlayerStats(b.id).laurels; });
+    var underdog = sorted.find(function(p){ return p.id !== pid; });
+    if (underdog) {
+      state.workouts.push({ id:'trashtalk_pot_'+ts, player_id:underdog.id, workout:'trashtalk_pot', date:getAZDate(), laurels_base:5, timestamp:new Date().toISOString() });
+      state.howls.push({ id:'trashtalk_announce_'+ts, player_id:'system', player_laurels:9999, message:player.name.split(' ')[0]+' paid the Iron Price — 5 Laurels seized from their coffers and granted to '+underdog.name.split(' ')[0]+', the underdog of the pack. The arrogant feed the hungry. ⚔', date:getAZDate(), timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+    }
+  } else if (sovereignMode === 'motivate' && sovereignTargetId) {
+    // Sender pays 5 — goes directly to target
+    var targetPlayer = state.players.find(function(p){ return p.id === sovereignTargetId; });
+    if (targetPlayer) {
+      state.workouts.push({ id:'motivate_fee_'+ts, player_id:pid, workout:'motivate_fee', date:getAZDate(), laurels_base:-5, timestamp:new Date().toISOString() });
+      state.workouts.push({ id:'motivate_gift_'+ts, player_id:sovereignTargetId, workout:'motivate_gift', date:getAZDate(), laurels_base:5, timestamp:new Date().toISOString() });
+      state.howls.push({ id:'motivate_announce_'+ts, player_id:'system', player_laurels:9999, message:player.name.split(' ')[0]+' gifted 5 Laurels to '+targetPlayer.name.split(' ')[0]+' — an offering of strength from one Howler to another. Per aspera ad astra. 🐺', date:getAZDate(), timestamp:new Date().toISOString(), reactions:{}, is_recap:true });
+    }
+  }
+  // ── END LAUREL TRANSFER ──────────────────────────────────────────────────
+
   await saveState();
   if (msgEl) msgEl.value = '';
   if (btn) { btn.disabled = false; btn.textContent = '🐺 SEND THE HOWL'; }
@@ -6143,7 +6168,9 @@ async function postHowl(replyToId, replyToName, activityRef) {
   var mentionCount = (msgText.match(/@/g)||[]).length;
   if (sovereignMode === 'motivate') {
     setTimeout(function(){ launchConfetti('trial'); }, 200);
-    showToast('🐺 The pack rises! Howl sent.');
+    showToast('🐺 5 Laurels gifted — the pack rises!');
+  } else if (sovereignMode === 'trash') {
+    showToast('⚔ 5 Laurels taken — the underdog receives the pot.');
   } else if (mentionCount >= state.players.length - 1) {
     launchConfetti('conquest');
     showToast('🐺 THE PACK HOWLS! Everyone has been summoned. ⛓️‍💥');
@@ -6603,6 +6630,7 @@ function sendSovereignHowl() {
     msg.dataset.sovereignMode = _sovereignMode;
     msg.dataset.sovereignTarget = targetPlayer ? targetPlayer.name : '';
     msg.dataset.sovereignTargetHouse = targetPlayer ? targetPlayer.house : '';
+    msg.dataset.sovereignTargetId = targetPid || '';
   }
   // Clear sovereign panel
   const out = document.getElementById('sovereign-output');
