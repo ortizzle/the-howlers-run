@@ -1275,9 +1275,15 @@
       </div>
     </div>
     <div class="header-row2">
-      <select id="current-howler-select" onchange="setCurrentHowler(this.value)" style="background:rgba(255,255,255,0.08);border:1px solid rgba(240,208,128,0.35);color:rgba(240,208,128,0.9);font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.06em;padding:5px 8px;border-radius:3px;cursor:pointer;flex:1;max-width:180px">
+      <!-- Unlocked: player picker -->
+      <select id="current-howler-select" onchange="setCurrentHowlerWithPin(this.value)" style="background:rgba(255,255,255,0.08);border:1px solid rgba(240,208,128,0.35);color:rgba(240,208,128,0.9);font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.06em;padding:5px 8px;border-radius:3px;cursor:pointer;flex:1;max-width:180px">
         <option value="">🐺 I am...</option>
       </select>
+      <!-- Locked: name display + lock icon -->
+      <div id="howler-locked-display" style="display:none;align-items:center;gap:6px;flex:1;max-width:180px">
+        <span id="howler-locked-name" style="font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.06em;color:rgba(240,208,128,0.9);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <button onclick="openPinUnlock()" style="background:none;border:none;color:rgba(240,208,128,0.6);font-size:0.85rem;cursor:pointer;padding:0;line-height:1;flex-shrink:0" title="Switch player">🔒</button>
+      </div>
       <div style="flex:1"></div>
       <div class="sync-bar" onclick="manualRefresh()" title="Refresh" style="gap:5px">
         <div class="sync-dot loading" id="sync-dot"></div>
@@ -1659,9 +1665,13 @@
       <label class="form-label">GitHub Token (ghp_...)</label>
       <input id="setup-gist-token" type="password" class="form-input" placeholder="ghp_..." style="font-family:monospace">
     </div>
-    <div style="margin-bottom:16px">
+    <div style="margin-bottom:10px">
       <label class="form-label">Anthropic API Key <span style="font-weight:400;color:var(--ink-light)">(optional · powers AI howls)</span></label>
       <input id="setup-anthropic-key" type="password" class="form-input" placeholder="sk-ant-..." style="font-family:monospace">
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="form-label">Admin PIN <span style="font-weight:400;color:var(--ink-light)">(4 digits · unlocks any player on any device)</span></label>
+      <input id="setup-admin-pin" type="password" inputmode="numeric" maxlength="4" class="form-input" placeholder="4-digit PIN" style="font-family:monospace;letter-spacing:0.2em">
     </div>
 
     <!-- STRAVA -->
@@ -1701,6 +1711,33 @@
     <div style="text-align:center;margin-top:14px">
       <span onclick="hideSetupScreen()" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);cursor:pointer;text-decoration:underline">dismiss</span>
     </div>
+  </div>
+</div>
+
+<!-- PIN UNLOCK MODAL -->
+<div id="pin-unlock-modal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:700;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">
+  <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:24px;width:100%;max-width:320px;text-align:center">
+    <div style="font-size:1.6rem;margin-bottom:6px">🔒</div>
+    <div style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--ink);margin-bottom:4px">UNLOCK PLAYER</div>
+    <div style="font-family:Crimson Pro,serif;font-size:0.8rem;color:var(--ink-light);font-style:italic;margin-bottom:16px">Enter your PIN or the admin PIN</div>
+    <input id="pin-unlock-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••" style="width:100%;text-align:center;font-size:1.4rem;letter-spacing:0.3em;padding:10px;border:1.5px solid var(--border-strong);border-radius:var(--radius);background:var(--parchment-dark);font-family:Cinzel,serif;margin-bottom:12px">
+    <div id="pin-unlock-error" style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--house-red);margin-bottom:10px;min-height:18px"></div>
+    <button onclick="submitPinUnlock()" style="width:100%;background:var(--ink);color:var(--amber-pale);border:none;border-radius:var(--radius);padding:11px;font-family:Cinzel,serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;cursor:pointer">UNLOCK</button>
+    <div style="margin-top:10px"><span onclick="this.closest('[id]').style.display='none'" style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.82rem;color:var(--ink-light);cursor:pointer;text-decoration:underline">cancel</span></div>
+  </div>
+</div>
+
+<!-- SET PIN MODAL -->
+<div id="pin-set-modal" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:700;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">
+  <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:24px;width:100%;max-width:320px;text-align:center">
+    <div style="font-size:1.6rem;margin-bottom:6px">🐺</div>
+    <div style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--ink);margin-bottom:4px">CLAIM YOUR NAME</div>
+    <div id="pin-set-name" style="font-family:Crimson Pro,serif;font-size:1rem;font-style:italic;color:var(--amber);margin-bottom:4px"></div>
+    <div style="font-family:Crimson Pro,serif;font-size:0.8rem;color:var(--ink-light);font-style:italic;margin-bottom:16px">Set a 4-digit PIN to lock this device to your name</div>
+    <input id="pin-set-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••" style="width:100%;text-align:center;font-size:1.4rem;letter-spacing:0.3em;padding:10px;border:1.5px solid var(--border-strong);border-radius:var(--radius);background:var(--parchment-dark);font-family:Cinzel,serif;margin-bottom:6px">
+    <input id="pin-set-confirm" type="password" inputmode="numeric" maxlength="4" placeholder="confirm ••••" style="width:100%;text-align:center;font-size:1.4rem;letter-spacing:0.3em;padding:10px;border:1.5px solid var(--border-strong);border-radius:var(--radius);background:var(--parchment-dark);font-family:Cinzel,serif;margin-bottom:12px">
+    <div id="pin-set-error" style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--house-red);margin-bottom:10px;min-height:18px"></div>
+    <button onclick="submitPinSet()" style="width:100%;background:var(--house-red);color:#fff;border:none;border-radius:var(--radius);padding:11px;font-family:Cinzel,serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;cursor:pointer">✦ CLAIM & LOCK ✦</button>
   </div>
 </div>
 
@@ -2617,6 +2654,8 @@ function submitSetup() {
   if (anthropicKey.trim() && !anthropicKey.startsWith('•')) saveAnthropicKey(anthropicKey.trim());
   const stravaSecret = (document.getElementById('setup-strava-secret')||{}).value||'';
   if (stravaSecret.trim() && !stravaSecret.startsWith('•')) localStorage.setItem('howlers_strava_secret', stravaSecret.trim());
+  const adminPin = (document.getElementById('setup-admin-pin')||{}).value||'';
+  if (adminPin.trim() && !adminPin.startsWith('•')) localStorage.setItem('howlers_admin_pin', adminPin.trim());
   hideSetupScreen();
   loadState();
 }
@@ -2632,6 +2671,8 @@ function openSetup() {
   if (ss) ss.value = localStorage.getItem('howlers_strava_secret') ? '••••••••••••••••' : '';
   var stEl = document.getElementById('strava-status');
   if (stEl) stEl.textContent = localStorage.getItem('howlers_strava_access_token') ? '✓ Connected' : '';
+  var ap = document.getElementById('setup-admin-pin');
+  if (ap) ap.value = localStorage.getItem('howlers_admin_pin') ? '••••' : '';
   showSetupScreen();
 }
 
@@ -4989,6 +5030,7 @@ function renderAll() {
   renderCodex();
   checkUnreadHowls();
   markAllPlayersSeen();
+  applyLockState();
 }
 
 function renderPlayers() {
@@ -7710,6 +7752,108 @@ document.addEventListener('DOMContentLoaded', () => {
     window.history.replaceState({}, '', window.location.pathname);
     stravaExchangeCode(_stravaCode);
   }
+});
+
+// ─── PLAYER PIN LOCK ─────────────────────────────────────────────────────────
+function pinKey(pid) { return 'howlers_pin_' + pid; }
+function getAdminPin() { return localStorage.getItem('howlers_admin_pin') || ''; }
+function isDeviceLocked() { return !!localStorage.getItem('howlers_locked_player'); }
+function getLockedPlayer() { return localStorage.getItem('howlers_locked_player') || ''; }
+
+function applyLockState() {
+  var locked = isDeviceLocked();
+  var sel = document.getElementById('current-howler-select');
+  var display = document.getElementById('howler-locked-display');
+  var nameEl = document.getElementById('howler-locked-name');
+  if (locked) {
+    var pid = getLockedPlayer();
+    var player = state.players.find(function(p){ return p.id === pid; });
+    if (sel) sel.style.display = 'none';
+    if (display) display.style.display = 'flex';
+    if (nameEl && player) nameEl.textContent = '🐺 ' + player.name.split(' ')[0];
+    // Ensure currentHowlerId matches lock
+    if (pid && pid !== currentHowlerId) { currentHowlerId = pid; localStorage.setItem('howlers_current_player', pid); }
+  } else {
+    if (sel) sel.style.display = '';
+    if (display) display.style.display = 'none';
+  }
+}
+
+function setCurrentHowlerWithPin(pid) {
+  // Called when dropdown changes — if no pin set yet, prompt to set one
+  if (!pid) return;
+  var existingPin = localStorage.getItem(pinKey(pid));
+  if (!existingPin) {
+    // First claim — show Set PIN modal
+    var player = state.players.find(function(p){ return p.id === pid; });
+    var nameEl = document.getElementById('pin-set-name');
+    if (nameEl && player) nameEl.textContent = player.name.split(' ')[0];
+    var modal = document.getElementById('pin-set-modal');
+    if (modal) { modal.dataset.pendingPid = pid; modal.style.display = 'flex'; }
+    document.getElementById('pin-set-input').value = '';
+    document.getElementById('pin-set-confirm').value = '';
+    document.getElementById('pin-set-error').textContent = '';
+    setTimeout(function(){ document.getElementById('pin-set-input').focus(); }, 100);
+  } else {
+    // Already has a pin — lock immediately
+    lockToPlayer(pid);
+  }
+}
+
+function lockToPlayer(pid) {
+  localStorage.setItem('howlers_locked_player', pid);
+  currentHowlerId = pid;
+  localStorage.setItem('howlers_current_player', pid);
+  applyLockState();
+  autoFillHowlerDropdowns();
+}
+
+function submitPinSet() {
+  var modal = document.getElementById('pin-set-modal');
+  var pid = modal ? modal.dataset.pendingPid : '';
+  var pin = (document.getElementById('pin-set-input').value || '').trim();
+  var confirm = (document.getElementById('pin-set-confirm').value || '').trim();
+  var errEl = document.getElementById('pin-set-error');
+  if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { errEl.textContent = 'PIN must be exactly 4 digits.'; return; }
+  if (pin !== confirm) { errEl.textContent = 'PINs don\'t match — try again.'; return; }
+  localStorage.setItem(pinKey(pid), pin);
+  if (modal) modal.style.display = 'none';
+  lockToPlayer(pid);
+  showToast('🔒 Locked to ' + (state.players.find(function(p){return p.id===pid;})||{name:'?'}).name.split(' ')[0] + '. Use 🔒 to switch.');
+}
+
+function openPinUnlock() {
+  var modal = document.getElementById('pin-unlock-modal');
+  if (modal) modal.style.display = 'flex';
+  document.getElementById('pin-unlock-input').value = '';
+  document.getElementById('pin-unlock-error').textContent = '';
+  setTimeout(function(){ document.getElementById('pin-unlock-input').focus(); }, 100);
+}
+
+function submitPinUnlock() {
+  var entered = (document.getElementById('pin-unlock-input').value || '').trim();
+  var errEl = document.getElementById('pin-unlock-error');
+  var lockedPid = getLockedPlayer();
+  var playerPin = localStorage.getItem(pinKey(lockedPid)) || '';
+  var adminPin = getAdminPin();
+  if (entered === playerPin || (adminPin && entered === adminPin)) {
+    // Correct — unlock dropdown temporarily
+    localStorage.removeItem('howlers_locked_player');
+    document.getElementById('pin-unlock-modal').style.display = 'none';
+    applyLockState();
+    showToast('🔓 Unlocked — pick your player.');
+  } else {
+    errEl.textContent = 'Wrong PIN. Try again.';
+    document.getElementById('pin-unlock-input').value = '';
+    document.getElementById('pin-unlock-input').focus();
+  }
+}
+
+// Allow Enter key in PIN fields
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('pin-unlock-modal').style.display === 'flex') submitPinUnlock();
+  if (document.getElementById('pin-set-modal').style.display === 'flex') submitPinSet();
 });
 
 // ─── STRAVA INTEGRATION ───────────────────────────────────────────────────────
