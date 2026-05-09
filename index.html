@@ -7724,12 +7724,12 @@ function stravaConnect() {
     alert('Enter your Strava Client Secret in the field above first, then tap Connect.');
     return;
   }
+  var redirectUri = window.location.origin + window.location.pathname;
   var url = 'https://www.strava.com/oauth/authorize' +
     '?client_id=' + STRAVA_CLIENT_ID +
-    '&redirect_uri=' + encodeURIComponent(STRAVA_REDIRECT_URI) +
+    '&redirect_uri=' + encodeURIComponent(redirectUri) +
     '&response_type=code' +
-    '&approval_prompt=auto' +
-    '&scope=activity:read_all';
+    '&scope=read,activity:read_all';
   window.location.href = url;
 }
 
@@ -7740,7 +7740,7 @@ async function stravaExchangeCode(code) {
     var res = await fetch('https://www.strava.com/oauth/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: STRAVA_CLIENT_ID, client_secret: secret, code: code, grant_type: 'authorization_code' })
+      body: JSON.stringify({ client_id: STRAVA_CLIENT_ID, client_secret: secret, code: code, grant_type: 'authorization_code', redirect_uri: window.location.origin + window.location.pathname })
     });
     var data = await res.json();
     if (data.access_token) {
