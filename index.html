@@ -1706,9 +1706,9 @@
 </div>
 
 <!-- STRAVA SYNC MODAL -->
-<div id="strava-sync-modal" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:600;overflow-y:auto;padding:20px;backdrop-filter:blur(4px)">
+<div id="strava-sync-modal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:600;overflow-y:auto;padding:20px;backdrop-filter:blur(4px)">
   <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:20px;width:100%;max-width:460px;margin:auto;position:relative">
-    <button onclick="closeModal('strava-sync-modal')" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>
+    <button onclick="document.getElementById('strava-sync-modal').style.display='none'" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
       <span style="font-size:1.2rem">🏃</span>
       <div style="font-family:Cinzel,serif;font-size:0.85rem;font-weight:700;letter-spacing:0.1em;color:#fc4c02">STRAVA SYNC</div>
@@ -2404,6 +2404,7 @@ async function loadState() {
       if (state._deletedWorkoutIds) state._deletedWorkoutIds.forEach(function(id){ _deletedWorkoutIds.add(id); });
       // Pick up shared API key so all pack members get coaching without manual setup
       if (state.anthropic_key && !getAnthropicKey()) saveAnthropicKey(state.anthropic_key);
+      if (state.strava_secret && !localStorage.getItem('howlers_strava_secret')) localStorage.setItem('howlers_strava_secret', state.strava_secret);
     }
     setSyncStatus('live');
   checkForNewActivityNotifications(prevState);
@@ -2539,8 +2540,9 @@ async function _doSave() {
       }
       // ── END SAFE MERGE ────────────────────────────────────────────────────
 
-      // Propagate API key to pack — stored in private Gist, visible only to members with the token
+      // Propagate API keys to pack — stored in private Gist, visible only to members with the token
       if (getAnthropicKey()) state.anthropic_key = getAnthropicKey();
+      if (localStorage.getItem('howlers_strava_secret')) state.strava_secret = localStorage.getItem('howlers_strava_secret');
       const res = await fetch('https://api.github.com/gists/' + gistId, {
         method: 'PATCH',
         headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
