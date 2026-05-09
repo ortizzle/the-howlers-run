@@ -7740,7 +7740,7 @@ async function stravaExchangeCode(code) {
     var res = await fetch('https://www.strava.com/oauth/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: STRAVA_CLIENT_ID, client_secret: secret, code: code, grant_type: 'authorization_code', redirect_uri: window.location.origin + window.location.pathname })
+      body: JSON.stringify({ client_id: STRAVA_CLIENT_ID, client_secret: secret, code: code, grant_type: 'authorization_code' })
     });
     var data = await res.json();
     if (data.access_token) {
