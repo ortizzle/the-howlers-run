@@ -5775,8 +5775,9 @@ function renderHowlFeed() {
         var dd = h.daily_data;
         var dayDate = h.date ? new Date(h.date + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}) : '';
 
-        // Narrative — only show when AI-generated (fallback text is just bullet data)
-        var narrative = (dd && dd.ai_generated) ? dd.narrative : null;
+        // Narrative — hide only when explicitly marked as fallback (ai_generated === false)
+        // Old dispatches with no flag are assumed to have real AI text
+        var narrative = (dd && dd.ai_generated !== false) ? dd.narrative : null;
 
         // Player rows — from structured data if available, fallback to parsing message
         var playerRows = '';
