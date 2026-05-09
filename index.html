@@ -1324,10 +1324,6 @@
       </div>
       <div id="coaching-nudge-text" style="background:var(--parchment);padding:12px 14px;font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-mid);line-height:1.65"></div>
     </div>
-    <!-- Always-visible coaching trigger — shown when card is hidden -->
-    <div id="coaching-nudge-trigger" style="display:none;margin-bottom:14px;text-align:center">
-      <button onclick="requestCoachingNudge()" id="coaching-request-btn" style="background:transparent;border:1px solid var(--border-strong);border-radius:var(--radius);padding:7px 16px;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-mid);cursor:pointer">🎯 Summon your coach</button>
-    </div>
     <div id="active-duels-section"></div>
     <div class="section-title">The Pack — Leaderboard</div>
     <div class="player-grid" id="player-grid">
@@ -5218,6 +5214,13 @@ function renderPlayers() {
     + '<div style="font-family:\'Crimson Pro\',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">Join the Pack</div>'
     + '</div>';
 
+  // Coaching card
+  html += '<div class="induct-card" onclick="requestCoachingNudge()" id="coaching-request-card">'
+    + '<div class="induct-icon">\ud83c\udfaf</div>'
+    + '<div class="induct-text">\u2726 Summon Coach</div>'
+    + '<div style="font-family:\'Crimson Pro\',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)" id="coaching-card-sub">Daily guidance</div>'
+    + '</div>';
+
   grid.innerHTML = html;
   grid.querySelectorAll('.badge-pill').forEach(function(pill) {
     pill.addEventListener('click', function(e) {
@@ -7057,23 +7060,23 @@ async function generateCoachingNudge(pid, forceRefresh) {
 function showCoachCard(text) {
   var card = document.getElementById('coaching-nudge-card');
   var el = document.getElementById('coaching-nudge-text');
-  var trigger = document.getElementById('coaching-nudge-trigger');
+  var sub = document.getElementById('coaching-card-sub');
   if (text && card && el) {
     el.textContent = text;
     card.style.display = 'block';
-    if (trigger) trigger.style.display = 'none';
+    if (sub) sub.textContent = 'Today\'s guidance ✓';
   } else {
-    if (trigger) trigger.style.display = 'block';
+    if (sub) sub.textContent = 'Daily guidance';
   }
 }
 
 async function requestCoachingNudge() {
   if (!currentHowlerId) { showToast('Select your player first.'); return; }
-  var btn = document.getElementById('coaching-request-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '🎯 Summoning…'; }
+  var sub = document.getElementById('coaching-card-sub');
+  if (sub) sub.textContent = 'Summoning…';
   var text = await generateCoachingNudge(currentHowlerId, true);
   showCoachCard(text);
-  if (btn) { btn.disabled = false; btn.textContent = '🎯 Summon your coach'; }
+  if (!text && sub) sub.textContent = 'Try again';
 }
 
 async function refreshCoachingNudge() {
