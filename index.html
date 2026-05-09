@@ -6852,8 +6852,14 @@ async function aiGenerate(systemPrompt, userPrompt, maxTokens) {
       })
     });
     var data = await res.json();
+    if (!res.ok) {
+      _lastAIError = (data.error && data.error.message) ? data.error.message : ('HTTP ' + res.status);
+      console.warn('AI generate API error:', _lastAIError, data);
+      return null;
+    }
     return (data.content && data.content[0] && data.content[0].text) ? data.content[0].text.trim() : null;
   } catch(e) {
+    _lastAIError = e.message;
     console.warn('AI generate failed:', e.message);
     return null;
   }
@@ -6961,6 +6967,7 @@ const COACHES = [
 
 var _lastNudgePid = null;
 var _lastNudgeText = null;
+var _lastAIError = null;
 
 function getNudgeCacheKey(pid) {
   return 'howlers_nudge_' + pid + '_' + (localStorage.getItem('howlers_gist_id') || '');
@@ -7065,10 +7072,15 @@ function showCoachCard(text) {
 }
 
 async function requestCoachingNudge() {
+  var key = getAnthropicKey();
   if (!currentHowlerId) { showToast('Select your player first.'); return; }
-  if (!getAnthropicKey()) { showToast('No API key — add one in ⚙ Setup.'); return; }
+  if (!key) { showToast('No API key — add one in ⚙ Setup.'); return; }
+  if (!key.startsWith('sk-ant')) { showToast('API key looks wrong — should start with sk-ant.'); return; }
+  var player = state.players.find(function(p){ return p.id === currentHowlerId; });
+  if (!player) { showToast('Player not found — try reloading.'); return; }
   var btn = document.getElementById('summon-coach-btn');
   if (btn) { btn.textContent = '⏳ Summoning…'; btn.disabled = true; }
+  _lastAIError = null;
   var text = await generateCoachingNudge(currentHowlerId, true);
   if (btn) { btn.textContent = '🎯 SUMMON COACH'; btn.disabled = false; }
   if (text) {
@@ -7078,7 +7090,8 @@ async function requestCoachingNudge() {
       if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 150);
   } else {
-    showToast('Coach unavailable — check your API key.');
+    var reason = _lastAIError ? _lastAIError : 'API may be rate-limited or key invalid.';
+    showToast('Coach failed: ' + reason);
   }
 }
 
