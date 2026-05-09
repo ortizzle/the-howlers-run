@@ -1346,6 +1346,14 @@
 
   <!-- TAB: LOG TRIAL -->
   <div class="tab-content" id="tab-log">
+    <div id="strava-sync-bar" style="display:none;background:linear-gradient(90deg,#fc4c02,#e03a00);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="stravaSyncActivities()">
+      <span style="font-size:1.1rem">🏃</span>
+      <div style="flex:1">
+        <div style="font-family:Cinzel,serif;font-size:0.62rem;font-weight:700;letter-spacing:0.12em;color:#fff">STRAVA SYNC</div>
+        <div style="font-family:Crimson Pro,serif;font-size:0.75rem;color:rgba(255,255,255,0.85);font-style:italic">Tap to import recent activities</div>
+      </div>
+      <span style="font-family:Cinzel,serif;font-size:0.7rem;color:#fff;opacity:0.8">→</span>
+    </div>
     <div class="section-title">Log Trial</div>
     <div class="log-form-card">
       <div class="form-group">
@@ -1657,6 +1665,19 @@
       <input id="setup-anthropic-key" type="password" class="form-input" placeholder="sk-ant-..." style="font-family:monospace">
     </div>
 
+    <!-- STRAVA -->
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:16px">
+      <div style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.14em;color:var(--ink-light);margin-bottom:10px">🏃 STRAVA INTEGRATION <span style="font-weight:400;color:var(--ink-light)">(optional · auto-fills workouts)</span></div>
+      <div style="margin-bottom:8px">
+        <label class="form-label">Strava Client Secret</label>
+        <input id="setup-strava-secret" type="password" class="form-input" placeholder="From strava.com/settings/api" style="font-family:monospace">
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="stravaConnect()" style="flex:1;background:#fc4c02;color:#fff;border:none;border-radius:var(--radius);padding:9px;font-family:Cinzel,serif;font-size:0.62rem;font-weight:700;letter-spacing:0.08em;cursor:pointer">🏃 Connect Strava</button>
+        <span id="strava-status" style="font-family:Crimson Pro,serif;font-size:0.8rem;color:var(--ink-light)"></span>
+      </div>
+    </div>
+
     <button onclick="submitSetup()" style="width:100%;background:var(--ink);color:var(--amber-pale);border:2px solid var(--ink);border-radius:var(--radius);padding:12px 20px;font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;letter-spacing:0.15em;cursor:pointer">✦ CONNECT THE PACK ✦</button>
 
     <!-- ADVANCED -->
@@ -1681,6 +1702,19 @@
     <div style="text-align:center;margin-top:14px">
       <span onclick="hideSetupScreen()" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);cursor:pointer;text-decoration:underline">dismiss</span>
     </div>
+  </div>
+</div>
+
+<!-- STRAVA SYNC MODAL -->
+<div id="strava-sync-modal" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:600;overflow-y:auto;padding:20px;backdrop-filter:blur(4px)">
+  <div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:20px;width:100%;max-width:460px;margin:auto;position:relative">
+    <button onclick="closeModal('strava-sync-modal')" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span style="font-size:1.2rem">🏃</span>
+      <div style="font-family:Cinzel,serif;font-size:0.85rem;font-weight:700;letter-spacing:0.1em;color:#fc4c02">STRAVA SYNC</div>
+    </div>
+    <div id="strava-sync-status" style="font-family:Crimson Pro,serif;font-size:0.82rem;color:var(--ink-light);font-style:italic;margin-bottom:14px">Fetching recent activities…</div>
+    <div id="strava-sync-list" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>
 </div>
 
@@ -2580,6 +2614,8 @@ function submitSetup() {
   saveGistConfig(gistId.trim(), gistToken.trim());
   const anthropicKey = (document.getElementById('setup-anthropic-key')||{}).value||'';
   if (anthropicKey.trim() && !anthropicKey.startsWith('•')) saveAnthropicKey(anthropicKey.trim());
+  const stravaSecret = (document.getElementById('setup-strava-secret')||{}).value||'';
+  if (stravaSecret.trim() && !stravaSecret.startsWith('•')) localStorage.setItem('howlers_strava_secret', stravaSecret.trim());
   hideSetupScreen();
   loadState();
 }
@@ -2588,9 +2624,13 @@ function openSetup() {
   const gi = document.getElementById('setup-gist-id');
   const gt = document.getElementById('setup-gist-token');
   const ak = document.getElementById('setup-anthropic-key');
+  const ss = document.getElementById('setup-strava-secret');
   if (gi) gi.value = gc.gistId;
   if (gt) gt.value = gc.token;
   if (ak) ak.value = getAnthropicKey() ? '••••••••••••••••' : '';
+  if (ss) ss.value = localStorage.getItem('howlers_strava_secret') ? '••••••••••••••••' : '';
+  var stEl = document.getElementById('strava-status');
+  if (stEl) stEl.textContent = localStorage.getItem('howlers_strava_access_token') ? '✓ Connected' : '';
   showSetupScreen();
 }
 
@@ -7650,6 +7690,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (dd) dd.style.display = 'none';
     }
   });
+  stravaUpdateSyncBar();
   switchTab('leaderboard');
   // Immediately show Setup if no credentials found — don't wait for loadState
   if (!hasConfig()) {
@@ -7659,7 +7700,214 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   refreshInterval = setInterval(function(){ if(document.visibilityState !== "hidden") loadState(); }, 300000);
   renderCodex();
+
+  // ── STRAVA OAUTH CALLBACK ─────────────────────────────────────────────────
+  var _urlParams = new URLSearchParams(window.location.search);
+  var _stravaCode = _urlParams.get('code');
+  var _stravaScope = _urlParams.get('scope');
+  if (_stravaCode && _stravaScope && _stravaScope.includes('activity')) {
+    window.history.replaceState({}, '', window.location.pathname);
+    stravaExchangeCode(_stravaCode);
+  }
 });
+
+// ─── STRAVA INTEGRATION ───────────────────────────────────────────────────────
+const STRAVA_CLIENT_ID = '238065';
+const STRAVA_REDIRECT_URI = 'https://ortizzle.github.io/the-howlers-run/';
+
+function stravaConnect() {
+  var secret = localStorage.getItem('howlers_strava_secret');
+  if (!secret) {
+    alert('Enter your Strava Client Secret in the field above first, then tap Connect.');
+    return;
+  }
+  var url = 'https://www.strava.com/oauth/authorize' +
+    '?client_id=' + STRAVA_CLIENT_ID +
+    '&redirect_uri=' + encodeURIComponent(STRAVA_REDIRECT_URI) +
+    '&response_type=code' +
+    '&approval_prompt=auto' +
+    '&scope=activity:read_all';
+  window.location.href = url;
+}
+
+async function stravaExchangeCode(code) {
+  var secret = localStorage.getItem('howlers_strava_secret');
+  if (!secret) { showToast('⚠️ Strava secret not found — open Setup and enter it.'); return; }
+  try {
+    var res = await fetch('https://www.strava.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: STRAVA_CLIENT_ID, client_secret: secret, code: code, grant_type: 'authorization_code' })
+    });
+    var data = await res.json();
+    if (data.access_token) {
+      localStorage.setItem('howlers_strava_access_token', data.access_token);
+      localStorage.setItem('howlers_strava_refresh_token', data.refresh_token);
+      localStorage.setItem('howlers_strava_token_expires', data.expires_at);
+      stravaUpdateSyncBar();
+      showToast('🏃 Strava connected! Tap the orange bar on the Log tab to sync.');
+    } else {
+      showToast('⚠️ Strava auth failed: ' + (data.message || 'unknown error'));
+    }
+  } catch(e) { showToast('⚠️ Strava connection error: ' + e.message); }
+}
+
+async function stravaRefreshIfNeeded() {
+  var expires = parseInt(localStorage.getItem('howlers_strava_token_expires') || '0');
+  if (Date.now() / 1000 < expires - 300) return localStorage.getItem('howlers_strava_access_token');
+  var secret = localStorage.getItem('howlers_strava_secret');
+  var refresh = localStorage.getItem('howlers_strava_refresh_token');
+  if (!secret || !refresh) return null;
+  try {
+    var res = await fetch('https://www.strava.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: STRAVA_CLIENT_ID, client_secret: secret, refresh_token: refresh, grant_type: 'refresh_token' })
+    });
+    var data = await res.json();
+    if (data.access_token) {
+      localStorage.setItem('howlers_strava_access_token', data.access_token);
+      localStorage.setItem('howlers_strava_refresh_token', data.refresh_token);
+      localStorage.setItem('howlers_strava_token_expires', data.expires_at);
+      return data.access_token;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function stravaGetLoggedIds() {
+  try { return new Set(JSON.parse(localStorage.getItem('howlers_strava_logged_ids') || '[]')); } catch(e) { return new Set(); }
+}
+function stravaMarkLogged(stravaId) {
+  var ids = stravaGetLoggedIds();
+  ids.add(String(stravaId));
+  localStorage.setItem('howlers_strava_logged_ids', JSON.stringify([...ids]));
+}
+
+function stravaMapActivity(a) {
+  var miles = (a.distance || 0) / 1609.34;
+  var minutes = Math.round((a.moving_time || 0) / 60);
+  var type = a.sport_type || a.type || '';
+  var workout;
+  if (type === 'Run' || type === 'VirtualRun') {
+    if (miles >= 8) workout = 'long_run';
+    else if (miles >= 4 && (a.average_speed || 0) >= 2.5) workout = 'tempo';
+    else workout = 'easy_run';
+  } else if (type === 'Walk' || type === 'Hike') {
+    workout = 'walk_run';
+  } else if (type === 'VirtualRide' || type === 'EBikeRide') {
+    workout = 'peloton';
+  } else if (type === 'WeightTraining' || type === 'Workout' || type === 'CrossFit' || type === 'Crossfit') {
+    workout = 'strength';
+  } else if (type === 'Yoga' || type === 'Stretching' || type === 'Pilates') {
+    workout = 'mobility';
+  } else {
+    workout = 'cardio';
+  }
+  var date = (a.start_date_local || a.start_date || '').slice(0, 10);
+  return { workout: workout, miles: parseFloat(miles.toFixed(2)), minutes: minutes, date: date };
+}
+
+async function stravaSyncActivities() {
+  var token = await stravaRefreshIfNeeded();
+  if (!token) { showToast('⚠️ Strava not connected — open Setup to connect.'); return; }
+  var modal = document.getElementById('strava-sync-modal');
+  var statusEl = document.getElementById('strava-sync-status');
+  var listEl = document.getElementById('strava-sync-list');
+  if (modal) modal.style.display = 'flex';
+  if (statusEl) statusEl.textContent = 'Fetching recent activities…';
+  if (listEl) listEl.innerHTML = '';
+  try {
+    var after = Math.floor((Date.now() - 14 * 24 * 60 * 60 * 1000) / 1000);
+    var res = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=20&after=' + after, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var activities = await res.json();
+    if (!Array.isArray(activities)) throw new Error(activities.message || 'Bad response');
+    var loggedIds = stravaGetLoggedIds();
+    var pending = activities.filter(function(a) { return !loggedIds.has(String(a.id)); });
+    if (pending.length === 0) {
+      if (statusEl) statusEl.textContent = 'All recent activities already logged. Great work, Howler.';
+      return;
+    }
+    if (statusEl) statusEl.textContent = pending.length + ' unlogged activit' + (pending.length === 1 ? 'y' : 'ies') + ' found:';
+    var WK_LABELS = { long_run:'Long Run', easy_run:'Easy Run', tempo:'Tempo Run', walk_run:'Walk/Run', peloton:'Peloton', strength:'Iron Forge', mobility:'Mobility', cardio:'Cardio' };
+    var playerOpts = state.players.map(function(p) { return '<option value="' + p.id + '"' + (p.id === currentHowlerId ? ' selected' : '') + '>' + p.name.split(' ')[0] + '</option>'; }).join('');
+    if (listEl) listEl.innerHTML = pending.map(function(a) {
+      var mapped = stravaMapActivity(a);
+      var distStr = mapped.miles > 0 ? mapped.miles.toFixed(2) + ' mi' : mapped.minutes + ' min';
+      var dateStr = mapped.date ? new Date(mapped.date + 'T12:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'}) : '';
+      var wkOpts = ['long_run','easy_run','tempo','walk_run','peloton','strength','mobility','cardio'].map(function(w) {
+        return '<option value="' + w + '"' + (w === mapped.workout ? ' selected' : '') + '>' + WK_LABELS[w] + '</option>';
+      }).join('');
+      return '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:6px;padding:12px" data-strava-id="' + a.id + '">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
+          '<div>' +
+            '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:var(--ink)">' + (a.name || 'Activity') + '</div>' +
+            '<div style="font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink-light);margin-top:1px">' + dateStr + ' · ' + distStr + '</div>' +
+          '</div>' +
+          '<button onclick="stravaSkip(' + a.id + ')" style="background:none;border:none;color:var(--ink-light);font-size:0.75rem;cursor:pointer;padding:0">skip</button>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;margin-bottom:8px">' +
+          '<select class="form-select" id="strava-player-' + a.id + '" style="flex:1;font-size:0.65rem;padding:6px">' + playerOpts + '</select>' +
+          '<select class="form-select" id="strava-wk-' + a.id + '" style="flex:1;font-size:0.65rem;padding:6px">' + wkOpts + '</select>' +
+        '</div>' +
+        '<button onclick="stravaLogOne(' + a.id + ',' + mapped.miles + ',' + mapped.minutes + ',\'' + mapped.date + '\')" style="width:100%;background:#fc4c02;color:#fff;border:none;border-radius:4px;padding:8px;font-family:Cinzel,serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;cursor:pointer">✦ LOG THIS TRIAL ✦</button>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    if (statusEl) statusEl.textContent = 'Error fetching activities: ' + e.message;
+  }
+}
+
+function stravaSkip(stravaId) {
+  stravaMarkLogged(stravaId);
+  var card = document.querySelector('[data-strava-id="' + stravaId + '"]');
+  if (card) card.remove();
+  var listEl = document.getElementById('strava-sync-list');
+  if (listEl && !listEl.querySelector('[data-strava-id]')) {
+    var statusEl = document.getElementById('strava-sync-status');
+    if (statusEl) statusEl.textContent = 'All caught up.';
+  }
+}
+
+function stravaLogOne(stravaId, miles, minutes, date) {
+  var pid = (document.getElementById('strava-player-' + stravaId) || {}).value || currentHowlerId;
+  var workout = (document.getElementById('strava-wk-' + stravaId) || {}).value || 'easy_run';
+  if (!pid) { showToast('Select a Howler first.'); return; }
+  var player = state.players.find(function(p) { return p.id === pid; });
+  if (!player) return;
+  var TIMED = ['peloton','cardio','strength','mobility'];
+  var ts = Date.now();
+  var entry = {
+    id: 'strava_' + stravaId,
+    player_id: pid,
+    workout: workout,
+    date: date || getAZDate(),
+    timestamp: new Date().toISOString(),
+    strava_id: stravaId
+  };
+  if (TIMED.includes(workout)) { entry.minutes = minutes || 30; }
+  else { entry.miles = miles || 0; }
+  entry.laurels_base = calcLaurels(entry.workout, entry.miles, entry.minutes);
+  if (state.workouts.some(function(w) { return w.id === entry.id; })) {
+    showToast('Already logged.');
+    stravaMarkLogged(stravaId);
+    stravaSkip(stravaId);
+    return;
+  }
+  state.workouts.push(entry);
+  stravaMarkLogged(stravaId);
+  saveState();
+  renderAll();
+  showToast('✦ ' + (player.name.split(' ')[0]) + '\'s trial logged from Strava!');
+  stravaSkip(stravaId);
+}
+
+function stravaUpdateSyncBar() {
+  var bar = document.getElementById('strava-sync-bar');
+  if (bar) bar.style.display = localStorage.getItem('howlers_strava_access_token') ? 'flex' : 'none';
+}
 </script>
 </body>
 </html>
