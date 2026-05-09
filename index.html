@@ -1333,6 +1333,7 @@
         <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">Join the Pack</div>
       </div>
     </div>
+    <button id="summon-coach-btn" onclick="requestCoachingNudge()" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--ink-mid);cursor:pointer;margin-top:8px;margin-bottom:4px">🎯 SUMMON COACH</button>
 
     <div class="section-title" style="margin-top:28px;font-size:1rem">⚔️ This Week's Race</div>
     <div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:8px;box-shadow:var(--shadow);margin-bottom:8px" id="weekly-lb">
@@ -5214,13 +5215,6 @@ function renderPlayers() {
     + '<div style="font-family:\'Crimson Pro\',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">Join the Pack</div>'
     + '</div>';
 
-  // Coaching card
-  html += '<div class="induct-card" onclick="requestCoachingNudge()" id="coaching-request-card">'
-    + '<div class="induct-icon">\ud83c\udfaf</div>'
-    + '<div class="induct-text">\u2726 Summon Coach</div>'
-    + '<div style="font-family:\'Crimson Pro\',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)" id="coaching-card-sub">Daily guidance</div>'
-    + '</div>';
-
   grid.innerHTML = html;
   grid.querySelectorAll('.badge-pill').forEach(function(pill) {
     pill.addEventListener('click', function(e) {
@@ -7072,11 +7066,20 @@ function showCoachCard(text) {
 
 async function requestCoachingNudge() {
   if (!currentHowlerId) { showToast('Select your player first.'); return; }
-  var sub = document.getElementById('coaching-card-sub');
-  if (sub) sub.textContent = 'Summoning…';
+  if (!getAnthropicKey()) { showToast('No API key — add one in ⚙ Setup.'); return; }
+  var btn = document.getElementById('summon-coach-btn');
+  if (btn) { btn.textContent = '⏳ Summoning…'; btn.disabled = true; }
   var text = await generateCoachingNudge(currentHowlerId, true);
-  showCoachCard(text);
-  if (!text && sub) sub.textContent = 'Try again';
+  if (btn) { btn.textContent = '🎯 SUMMON COACH'; btn.disabled = false; }
+  if (text) {
+    switchTab('leaderboard');
+    setTimeout(function() {
+      var card = document.getElementById('coaching-nudge-card');
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+  } else {
+    showToast('Coach unavailable — check your API key.');
+  }
 }
 
 async function refreshCoachingNudge() {
