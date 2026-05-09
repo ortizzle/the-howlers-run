@@ -7716,6 +7716,9 @@ const STRAVA_CLIENT_ID = '238065';
 const STRAVA_REDIRECT_URI = 'https://ortizzle.github.io/the-howlers-run/';
 
 function stravaConnect() {
+  // Save from field immediately if present — don't require hitting "Connect the Pack" first
+  var fieldVal = ((document.getElementById('setup-strava-secret')||{}).value||'').trim();
+  if (fieldVal && !fieldVal.startsWith('•')) localStorage.setItem('howlers_strava_secret', fieldVal);
   var secret = localStorage.getItem('howlers_strava_secret');
   if (!secret) {
     alert('Enter your Strava Client Secret in the field above first, then tap Connect.');
