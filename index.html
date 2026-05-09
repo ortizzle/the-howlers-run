@@ -4003,8 +4003,15 @@ async function checkAndPostDailyRecap() {
   const azHour = parseInt(new Date(now.getTime() - 7*60*60*1000).toISOString().substr(11,2));
   if (azHour < 6) return;
 
-  // Check Gist state — if today's dispatch already exists, skip
-  if ((state.howls || []).some(function(h) { return h.id === recapId; })) return;
+  // Check Gist state — if today's dispatch already exists AND is AI-generated, skip
+  var existingRecap = (state.howls || []).find(function(h) { return h.id === recapId; });
+  if (existingRecap) {
+    // AI-generated dispatch is final — don't touch it
+    if (existingRecap.daily_data && existingRecap.daily_data.ai_generated) return;
+    // Fallback dispatch exists but we have a key now — remove it and regenerate
+    if (!getAnthropicKey()) return;
+    state.howls = state.howls.filter(function(h) { return h.id !== recapId; });
+  }
 
   // Get yesterday's workouts (exclude system)
   const SYSTEM_WK = ['milestone_bonus', 'duel_win', 'duel_loss', 'trashtalk_fee', 'trashtalk_pot', 'motivate_fee', 'motivate_gift'];
@@ -4154,6 +4161,7 @@ async function checkAndPostDailyRecap() {
     is_recap: true,
     is_daily: true,
     daily_data: {
+      ai_generated: !!aiText,
       narrative: finalMsg.replace(/^📋 DAILY DISPATCH[^\n]*\n\n?/, '').trim(),
       players: activePlayers.map(function(p) {
         var works = byPlayer[p.id];
@@ -5767,8 +5775,8 @@ function renderHowlFeed() {
         var dd = h.daily_data;
         var dayDate = h.date ? new Date(h.date + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}) : '';
 
-        // Narrative — strip the header line if present
-        var narrative = dd ? dd.narrative : (h.message || '').replace(/^📋 DAILY DISPATCH[^\n]*\n\n?/, '').trim();
+        // Narrative — only show when AI-generated (fallback text is just bullet data)
+        var narrative = (dd && dd.ai_generated) ? dd.narrative : null;
 
         // Player rows — from structured data if available, fallback to parsing message
         var playerRows = '';
