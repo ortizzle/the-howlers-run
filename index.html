@@ -1509,9 +1509,7 @@
           <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
           <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum (any activity, 15 min min)</td></tr>
           
-          <tr><td><strong>Perfect Week Bonus</strong></td><td>Log activity on 4+ different days in a week (15 min min each) → +25 Laurels</td></tr>
-          <tr><td><strong>Streak Bonus</strong></td><td>+10 Laurels per consecutive week after week 1</td></tr>
-          <tr><td><strong>Book Bonus</strong></td><td>+25 Laurels per Red Rising book read (max 150)</td></tr>
+          <tr><td><strong>Book Bonus</strong></td><td>Ladders up per book: Red Rising +25, Golden Son +50, Morning Star +75, Iron Gold +100, Dark Age +125, Light Bringer +150, Red God +250</td></tr>
           <tr><td><strong>Archprimus</strong></td><td>Player with most Laurels leads the pack ★</td></tr>
           <tr><td><strong>Peerless Gold</strong></td><td>Reach Peerless Scarred (16,000L) and your card turns gold — earned, not chosen ✦</td></tr>
         </tbody>
@@ -1537,8 +1535,6 @@
           <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
           <tr><td>The Iron Forge — Strength <em style="font-size:0.8rem;color:var(--ink-light)">(15 min min to count)</em></td><td>15 flat</td></tr>
           <tr><td>Mind & Body — Mobility/Yoga <em style="font-size:0.8rem;color:var(--ink-light)">(15 min min to count)</em></td><td>10 flat</td></tr>
-          <tr><td>Perfect Week Bonus</td><td>+25</td></tr>
-          <tr><td>Streak Bonus</td><td>+10 per consecutive week (from week 2)</td></tr>
           <tr><td>Underdog Bonus</td><td>+20% when 300+ Laurels behind leader</td></tr>
           <tr><td>Weekly Mile Bonus</td><td>First time hitting 10/15/20/25/30 mi in a week: +30/50/75/100/150L</td></tr>
           <tr><td>🏅 Badge Earned</td><td>Bronze +25L · Silver +50L · Gold +100L</td></tr>
@@ -2245,10 +2241,11 @@ const BOOKS = [
   {id:'iron_gold', title:'Iron Gold'},
   {id:'dark_age', title:'Dark Age'},
   {id:'light_bringer', title:'Light Bringer'},
-  {id:'red_god', title:'Red God ✦', laurels:200, unreleased:true}
+  {id:'red_god', title:'Red God ✦', unreleased:true}
 ];
+const BOOK_LADDER = {red_rising:25,golden_son:50,morning_star:75,iron_gold:100,dark_age:125,light_bringer:150,red_god:250};
 const BOOK_LAURELS = 25;
-const RED_GOD_LAURELS = 200;
+const RED_GOD_LAURELS = 250;
 
 const WORKOUT_NAMES = {
   milestone_bonus:'✦ Conquest Bonus', duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
@@ -2705,7 +2702,9 @@ function updateCountdown() {
 function calcPlayerStats(pid) {
   const works = state.workouts.filter(w => w.player_id === pid);
   const player = state.players.find(p => p.id === pid);
-  let laurels = (player && player.book_laurels) ? player.book_laurels : 0;
+  let laurels = (player && player.books_read && player.books_read.length)
+    ? player.books_read.reduce(function(s,bid){ return s+(BOOK_LADDER[bid]||0); },0)
+    : (player && player.book_laurels ? player.book_laurels : 0);
   const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
   const TIMED_WK = ['peloton','cardio','strength','mobility']; // require 15-min minimum
   const RUN_WK = ['long_run','easy_run','tempo','walk_run','race','optional_run'];
@@ -7459,9 +7458,7 @@ async function inductPlayer() {
   const subtitle = document.getElementById('induct-subtitle').value.trim();
   if (!name) { showToast('Name is required, Howler.'); return; }
   const booksRead = [...document.querySelectorAll('#induct-books input:checked')].map(cb => cb.value);
-  const bookLaurels = booksRead.reduce(function(sum, bid) {
-    return sum + (bid === 'red_god' ? RED_GOD_LAURELS : BOOK_LAURELS);
-  }, 0);
+  const bookLaurels = booksRead.reduce(function(sum, bid) { return sum + (BOOK_LADDER[bid]||0); }, 0);
   const id = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
   state.players.push({ id, name, house, subtitle, books_read: booksRead, book_laurels: bookLaurels });
   await saveState();
@@ -7485,12 +7482,12 @@ function openBooksModal(pid) {
   const read = player.books_read || [];
   const BOOK_LIST = [
     {id:'red_rising', title:'Red Rising', laurels:25},
-    {id:'golden_son', title:'Golden Son', laurels:25},
-    {id:'morning_star', title:'Morning Star', laurels:25},
-    {id:'iron_gold', title:'Iron Gold', laurels:25},
-    {id:'dark_age', title:'Dark Age', laurels:25},
-    {id:'light_bringer', title:'Light Bringer', laurels:25},
-    {id:'red_god', title:'Red God ✦', laurels:200, unreleased:true}
+    {id:'golden_son', title:'Golden Son', laurels:50},
+    {id:'morning_star', title:'Morning Star', laurels:75},
+    {id:'iron_gold', title:'Iron Gold', laurels:100},
+    {id:'dark_age', title:'Dark Age', laurels:125},
+    {id:'light_bringer', title:'Light Bringer', laurels:150},
+    {id:'red_god', title:'Red God ✦', laurels:250, unreleased:true}
   ];
   const list = document.getElementById('books-modal-list');
   list.innerHTML = BOOK_LIST.map(b => {
@@ -7516,12 +7513,10 @@ async function saveBooksModal() {
   if (!player) return;
   const checked = [...document.querySelectorAll('#books-modal-list input:checked')].map(cb => cb.value);
   player.books_read = checked;
-  player.book_laurels = checked.reduce(function(sum, bid) {
-    return sum + (bid === 'red_god' ? RED_GOD_LAURELS : BOOK_LAURELS);
-  }, 0);
+  player.book_laurels = checked.reduce(function(sum, bid) { return sum + (BOOK_LADDER[bid]||0); }, 0);
   await saveState();
   closeModal('books-modal');
-  const newBookTotal = checked.reduce(function(sum, bid) { return sum + (bid === 'red_god' ? RED_GOD_LAURELS : BOOK_LAURELS); }, 0);
+  const newBookTotal = checked.reduce(function(sum, bid) { return sum + (BOOK_LADDER[bid]||0); }, 0);
   showToast(`📚 ${player.name}'s books updated — ${checked.length} read, +${newBookTotal} Laurels. ✦`);
   renderAll();
 }
@@ -7539,12 +7534,12 @@ function openEditModal(pid) {
     const read = player.books_read || [];
     const BOOK_LIST = [
       {id:'red_rising',title:'Red Rising',laurels:25},
-      {id:'golden_son',title:'Golden Son',laurels:25},
-      {id:'morning_star',title:'Morning Star',laurels:25},
-      {id:'iron_gold',title:'Iron Gold',laurels:25},
-      {id:'dark_age',title:'Dark Age',laurels:25},
-      {id:'light_bringer',title:'Light Bringer',laurels:25},
-      {id:'red_god',title:'Red God ✦',laurels:200}
+      {id:'golden_son',title:'Golden Son',laurels:50},
+      {id:'morning_star',title:'Morning Star',laurels:75},
+      {id:'iron_gold',title:'Iron Gold',laurels:100},
+      {id:'dark_age',title:'Dark Age',laurels:125},
+      {id:'light_bringer',title:'Light Bringer',laurels:150},
+      {id:'red_god',title:'Red God ✦',laurels:250}
     ];
     const BOOK_COLORS = {red_rising:'#cc2200',golden_son:'#c8980a',morning_star:'#1a6aaa',iron_gold:'#7a5006',dark_age:'#8a6800',light_bringer:'#5ab4e0',red_god:'#9a1010'};
     editBooksList.innerHTML = BOOK_LIST.map(b => {
@@ -7575,7 +7570,7 @@ async function saveEditPlayer() {
   if (editBooksCbs.length >= 0) {
     const checked = [...editBooksCbs].map(cb => cb.value);
     player.books_read = checked;
-    player.book_laurels = checked.reduce((s, bid) => s + (bid==='red_god' ? 200 : 25), 0);
+    player.book_laurels = checked.reduce((s, bid) => s + (BOOK_LADDER[bid]||0), 0);
   }
   await saveState();
   closeModal('edit-modal');
@@ -7880,7 +7875,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Dispatch custom input
   document.getElementById('induct-books').addEventListener('change', () => {
     const checked = [...document.querySelectorAll('#induct-books input:checked')].map(cb => cb.value);
-    const total = checked.reduce((sum, bid) => sum + (bid === 'red_god' ? RED_GOD_LAURELS : BOOK_LAURELS), 0);
+    const total = checked.reduce((sum, bid) => sum + (BOOK_LADDER[bid]||0), 0);
     document.getElementById('induct-book-preview').textContent = `+${total} Laurels from books`;
   });
 
