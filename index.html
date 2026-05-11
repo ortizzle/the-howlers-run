@@ -5965,6 +5965,7 @@ function renderHowlFeed() {
       const isDaily = h.is_daily || (h.id && h.id.startsWith('daily_'));
       const isWeeklyRecap = h.id && h.id.startsWith('recap_');
       const isCoach = h.id && h.id.startsWith('coach_');
+      const isIronPrice = h.id && (h.id.startsWith('trashtalk_announce_') || h.id.startsWith('trashtalk_payout_') || h.id.startsWith('motivate_announce_'));
 
       // Coach howl — Option B card style
       if (isCoach) {
@@ -6097,6 +6098,27 @@ function renderHowlFeed() {
           statsHTML +
           // Actions
           '<div style="display:flex;gap:6px;padding:7px 14px;border-top:1px solid var(--border);background:var(--parchment-dark)">' +
+            reactionBarHTML(h, h.id, 'toggleHowlReaction') +
+            '<div style="flex:1"></div>' +
+            '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
+          '</div>' +
+        '</div>';
+      }
+
+      // Iron Price / motivation notices — simple system card
+      if (isIronPrice) {
+        var isPayout = h.id && h.id.startsWith('trashtalk_payout_');
+        var isMoti = h.id && h.id.startsWith('motivate_announce_');
+        var ironIcon = isPayout ? '💰' : isMoti ? '🐺' : '⚔';
+        var ironLabel = isPayout ? 'IRON PRICE SETTLEMENT' : isMoti ? 'PACK MOTIVATION' : 'IRON PRICE POT';
+        return '<div class="chronicle-entry" style="--house-color:var(--amber);background:var(--parchment);border:1.5px solid var(--border);border-radius:8px;padding:0;overflow:hidden">' +
+          '<div style="background:var(--parchment-dark);padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)">' +
+            '<span style="font-size:1rem">' + ironIcon + '</span>' +
+            '<span style="font-family:Cinzel,serif;font-size:0.6rem;font-weight:900;letter-spacing:0.14em;color:var(--ink-mid)">' + ironLabel + '</span>' +
+            '<span style="margin-left:auto;font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light)">' + formatDate(h.date) + '</span>' +
+          '</div>' +
+          '<div style="padding:12px 14px;font-family:Crimson Pro,serif;font-style:italic;font-size:0.92rem;color:var(--ink-mid);line-height:1.6">' + escHtml(h.message) + '</div>' +
+          '<div style="display:flex;gap:6px;padding:6px 14px;border-top:1px solid var(--border);background:var(--parchment-dark)">' +
             reactionBarHTML(h, h.id, 'toggleHowlReaction') +
             '<div style="flex:1"></div>' +
             '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
