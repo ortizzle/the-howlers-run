@@ -4137,12 +4137,14 @@ async function checkAndPostDailyRecap() {
 
   // Check Gist state — if today's dispatch already exists AND is AI-generated, skip
   var existingRecap = (state.howls || []).find(function(h) { return h.id === recapId; });
+  var replacingFallback = false;
   if (existingRecap) {
     // AI-generated dispatch is final — don't touch it
     if (existingRecap.daily_data && existingRecap.daily_data.ai_generated) return;
-    // Fallback dispatch exists but we have a key now — remove it and regenerate
+    // Fallback dispatch exists — only try to upgrade if we have an API key
     if (!getAnthropicKey()) return;
-    state.howls = state.howls.filter(function(h) { return h.id !== recapId; });
+    // Don't delete yet — only remove after AI succeeds to avoid delete→fail→loop
+    replacingFallback = true;
   }
 
   // Get yesterday's workouts (exclude system)
@@ -4255,7 +4257,14 @@ async function checkAndPostDailyRecap() {
       'You are the Sovereign\'s morning herald for The Howlers — six warriors training for the Rock \'n\' Roll Arizona Half Marathon. Write a daily morning dispatch in the voice of Red Rising: dramatic, sharp, with genuine personality. DO NOT list workouts or stats — weave them into vivid narrative prose. Celebrate the standout performer with specific color. Call out anyone who went dark or underperformed by name with a provocative jab. Reference house colors and ranks. 3-4 sentences maximum. End with one punchy rallying cry or challenge. No bullet points. No hashtags. ' + getPronounNote() + ' Output only the dispatch text.',
       aiPrompt, 250
     );
-    if (aiText) finalMsg = '📋 DAILY DISPATCH\n\n' + aiText;
+    if (aiText) {
+      finalMsg = '📋 DAILY DISPATCH\n\n' + aiText;
+      // AI succeeded — now safe to remove the old fallback
+      if (replacingFallback) state.howls = state.howls.filter(function(h) { return h.id !== recapId; });
+    } else if (replacingFallback) {
+      // AI failed — leave existing fallback in place, don't loop
+      return;
+    }
   }
 
   // Fallback structured message
