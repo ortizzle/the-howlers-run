@@ -7949,6 +7949,21 @@ function submitPinSet() {
 }
 
 function openPinUnlock() {
+  var lockedPid = getLockedPlayer();
+  var existingPin = lockedPid ? localStorage.getItem(pinKey(lockedPid)) : null;
+  if (!existingPin) {
+    // Locked but no PIN yet — send them straight to PIN setup
+    var player = state.players.find(function(p){ return p.id === lockedPid; });
+    var nameEl = document.getElementById('pin-set-name');
+    if (nameEl && player) nameEl.textContent = player.name.split(' ')[0];
+    var setModal = document.getElementById('pin-set-modal');
+    if (setModal) { setModal.dataset.pendingPid = lockedPid; setModal.style.display = 'flex'; }
+    document.getElementById('pin-set-input').value = '';
+    document.getElementById('pin-set-confirm').value = '';
+    document.getElementById('pin-set-error').textContent = '';
+    setTimeout(function(){ document.getElementById('pin-set-input').focus(); }, 100);
+    return;
+  }
   var modal = document.getElementById('pin-unlock-modal');
   if (modal) modal.style.display = 'flex';
   document.getElementById('pin-unlock-input').value = '';
