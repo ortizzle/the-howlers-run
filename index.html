@@ -3879,7 +3879,8 @@ async function checkAndPostChallengeHowls() {
     } else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) {
       achievers=state.players.filter(p=>(sm[p.id]||{}).laurels>=ch.goal);
     } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
-      var qr=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date));
+      var runTypes=['grand_march','the_long_road'].includes(ch.id)?['long_run','easy_run','tempo']:['long_run','easy_run','tempo','walk_run'];
+      var qr=state.workouts.filter(w=>runTypes.includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date));
       var seenR=new Set(); qr.forEach(function(w){if(!seenR.has(w.player_id)){seenR.add(w.player_id);var p=state.players.find(p=>p.id===w.player_id);if(p)achievers.push(p);}});
     } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
       achievers=state.players.filter(p=>(sm[p.id]||{}).streak>=ch.goal);
@@ -5586,9 +5587,11 @@ function renderChallenges() {
         state.players.forEach(p=>{const l=statsMap[p.id].laurels;if(l>best){best=l;bestP=p;}});
         progress=Math.min(best,ch.goal);winner=best>=ch.goal?bestP?.name:null;
       } else if (['five_league','grand_march','the_long_road'].includes(ch.id)) {
-        const big=state.workouts.filter(w=>['long_run','easy_run','tempo','walk_run'].includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
+        const pureOnly=['grand_march','the_long_road'].includes(ch.id);
+        const eligTypes=pureOnly?['long_run','easy_run','tempo']:['long_run','easy_run','tempo','walk_run'];
+        const big=state.workouts.filter(w=>eligTypes.includes(w.workout)&&(w.miles||0)>=ch.goal).slice().sort((a,b)=>new Date(a.timestamp||a.date)-new Date(b.timestamp||b.date))[0];
         if(big){progress=ch.goal;winner=state.players.find(p=>p.id===big.player_id)?.name;}
-        else{let best=0,bestP=null;state.players.forEach(p=>{const m=statsMap[p.id].maxSingleRun||0;if(m>best){best=m;bestP=p;}});progress=Math.min(best,ch.goal);if(bestP&&!winner)winner=bestP.name;}
+        else{let best=0,bestP=null;state.players.forEach(p=>{const m=pureOnly?Math.max(0,...state.workouts.filter(w=>eligTypes.includes(w.workout)&&w.player_id===p.id).map(w=>w.miles||0)):statsMap[p.id].maxSingleRun||0;if(m>best){best=m;bestP=p;}});progress=Math.min(best,ch.goal);if(bestP&&!winner)winner=bestP.name;}
       } else if (['the_unbroken','unbreakable'].includes(ch.id)) {
         let best=0,bestP=null;
         state.players.forEach(p=>{const s=statsMap[p.id].streak;if(s>best){best=s;bestP=p;}});
@@ -5709,7 +5712,7 @@ function renderChallenges() {
           let val = 0;
           if (ch.id==='first_blood') val = state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)&&w.player_id===p.id).length>0?1:0;
           else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) val=s.laurels||0;
-          else if (['five_league','grand_march','the_long_road'].includes(ch.id)) val=s.maxSingleRun||0;
+          else if (['five_league','grand_march','the_long_road'].includes(ch.id)) val=['grand_march','the_long_road'].includes(ch.id)?Math.max(0,...state.workouts.filter(w=>['long_run','easy_run','tempo'].includes(w.workout)&&w.player_id===p.id).map(w=>w.miles||0)):s.maxSingleRun||0;
           else if (['the_unbroken','unbreakable'].includes(ch.id)) val=s.streak||0;
           else if (ch.id==='iron_league') val=s.miles||0;
           else if (ch.id==='the_tireless') val=s.trials||0;
@@ -5770,7 +5773,7 @@ function renderChallenges() {
         const s = statsMap[p.id]; let val = 0;
         if (ch.id==='first_blood') val = state.workouts.filter(w=>!['milestone_bonus','duel_win','duel_loss'].includes(w.workout)&&w.player_id===p.id).length>0?1:0;
         else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) val=s.laurels||0;
-        else if (['five_league','grand_march','the_long_road'].includes(ch.id)) val=s.maxSingleRun||0;
+        else if (['five_league','grand_march','the_long_road'].includes(ch.id)) val=['grand_march','the_long_road'].includes(ch.id)?Math.max(0,...state.workouts.filter(w=>['long_run','easy_run','tempo'].includes(w.workout)&&w.player_id===p.id).map(w=>w.miles||0)):s.maxSingleRun||0;
         else if (['the_unbroken','unbreakable'].includes(ch.id)) val=s.streak||0;
         else if (ch.id==='iron_league') val=s.miles||0;
         else if (ch.id==='the_tireless') val=s.trials||0;
