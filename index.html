@@ -3482,6 +3482,9 @@ async function qlSubmit() {
 }
 
 function purgeCorruptRewards() {
+  requireAdminPin('remove corrupt laurels', _doPurgeCorruptRewards);
+}
+function _doPurgeCorruptRewards() {
   var targets = [
     'ch_reward_grand_march_p1','ch_reward_grand_march_p2','ch_reward_grand_march_p3','ch_reward_grand_march',
     'ch_reward_the_long_road_p1','ch_reward_the_long_road_p2','ch_reward_the_long_road_p3','ch_reward_the_long_road'
@@ -3508,9 +3511,11 @@ function purgeCorruptRewards() {
 }
 
 function openBadgeManager() {
-  hideSetupScreen();
-  renderBadgeManager();
-  document.getElementById('badge-manager-modal').style.display = 'block';
+  requireAdminPin('manage badges', function() {
+    hideSetupScreen();
+    renderBadgeManager();
+    document.getElementById('badge-manager-modal').style.display = 'block';
+  });
 }
 
 function renderBadgeManager() {
@@ -3602,9 +3607,11 @@ function removeBadge(pid, badgeKey, playerName, label) {
 }
 
 function openChallengeManager() {
-  hideSetupScreen();
-  renderChallengeManager();
-  document.getElementById('ch-manager-modal').style.display = 'block';
+  requireAdminPin('manage challenge results', function() {
+    hideSetupScreen();
+    renderChallengeManager();
+    document.getElementById('ch-manager-modal').style.display = 'block';
+  });
 }
 
 function renderChallengeManager() {
@@ -4808,6 +4815,9 @@ function exportWeeklyImage() {
 
 
 async function forceRestore() {
+  requireAdminPin('force restore', _doForceRestore);
+}
+async function _doForceRestore() {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json';
@@ -7925,6 +7935,15 @@ function pinKey(pid) { return 'howlers_pin_' + pid; }
 function getAdminPin() { return localStorage.getItem('howlers_admin_pin') || ''; }
 function isDeviceLocked() { return !!localStorage.getItem('howlers_locked_player'); }
 function getLockedPlayer() { return localStorage.getItem('howlers_locked_player') || ''; }
+
+function requireAdminPin(label, callback) {
+  var pin = getAdminPin();
+  if (!pin) { showToast('No admin PIN set — configure one in ⚙ Setup.'); return; }
+  var entered = prompt('Admin PIN required to ' + label + ':');
+  if (entered === null) return;
+  if (entered.trim() !== pin) { showToast('Wrong PIN. Access denied.'); return; }
+  callback();
+}
 
 function applyLockState() {
   var locked = isDeviceLocked();
