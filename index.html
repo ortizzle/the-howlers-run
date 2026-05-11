@@ -1699,9 +1699,10 @@
         <button onclick="testGistConnection()" style="width:100%;margin-bottom:6px;background:transparent;border:1.5px solid var(--amber);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);cursor:pointer">🔍 TEST CONNECTION</button>
         <div id="test-result" style="margin-bottom:8px;font-family:monospace;font-size:0.72rem;color:var(--ink-mid);word-break:break-all;display:none"></div>
         <div style="display:flex;gap:6px;margin-bottom:6px">
-          <button onclick="exportBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--ink-mid);cursor:pointer">⬇ Export</button>
+          <button onclick="exportBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--ink-mid);cursor:pointer">⬇ Export JSON</button>
           <button onclick="importBackup()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--ink-mid);cursor:pointer">⬆ Restore</button>
         </div>
+        <button onclick="exportCSV()" style="width:100%;margin-bottom:6px;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--ink-mid);cursor:pointer">📊 Export Points as CSV</button>
         <button onclick="forceRestore()" style="width:100%;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em;margin-bottom:6px">⚠️ Force Restore (bypasses merge)</button>
         <button onclick="openChallengeManager()" style="width:100%;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">⚔ Manage Challenge Results</button>
         <button onclick="openBadgeManager()" style="width:100%;margin-top:6px;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">🏅 Manage Badge Awards</button>
@@ -4514,6 +4515,69 @@ function exportBackup() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast('📦 Backup saved: ' + filename);
+}
+
+function exportCSV() {
+  const FINANCIAL = ['trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
+  const rows = [['Player','House','Date','Entry Type','Laurels','Miles','Minutes','Notes']];
+
+  // Build per-player totals for summary rows at top
+  const totals = {};
+  state.players.forEach(function(p) { totals[p.id] = 0; });
+
+  // One row per workout entry, sorted by player then date
+  const workouts = state.workouts.slice().sort(function(a,b) {
+    var pa = state.players.findIndex(function(p){return p.id===a.player_id;});
+    var pb = state.players.findIndex(function(p){return p.id===b.player_id;});
+    if (pa !== pb) return pa - pb;
+    return a.date.localeCompare(b.date);
+  });
+
+  workouts.forEach(function(w) {
+    var player = state.players.find(function(p){return p.id===w.player_id;});
+    if (!player) return;
+    var label = w.milestone_label || WORKOUT_NAMES[w.workout] || w.workout;
+    var laurels = w.laurels_base || 0;
+    if (totals[player.id] !== undefined) totals[player.id] += laurels;
+    rows.push([
+      player.name,
+      player.house,
+      w.date,
+      label,
+      laurels,
+      w.miles || '',
+      w.minutes || '',
+      w.notes || ''
+    ]);
+  });
+
+  // Summary block at the bottom
+  rows.push([]);
+  rows.push(['PLAYER TOTALS','','','','','','','']);
+  rows.push(['Player','House','Total Laurels','','','','','']);
+  state.players.slice().sort(function(a,b){return (totals[b.id]||0)-(totals[a.id]||0);}).forEach(function(p) {
+    rows.push([p.name, p.house, totals[p.id]||0, '','','','','']);
+  });
+
+  var csv = rows.map(function(row) {
+    return row.map(function(cell) {
+      var s = String(cell);
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        s = '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }).join(',');
+  }).join('\n');
+
+  var filename = 'howlers-points-' + getAZDate() + '.csv';
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('📊 Exported: ' + filename);
 }
 
 function importBackup() {
