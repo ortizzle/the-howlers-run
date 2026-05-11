@@ -7130,6 +7130,14 @@ function showCoachCard(text) {
     el.textContent = text;
     card.style.display = 'block';
     if (sub) sub.textContent = 'Today\'s guidance ✓';
+    // Restore coach identity (cache may have been set by generateCoachingNudge)
+    if (currentHowlerId) {
+      var cached = getCachedNudge(currentHowlerId);
+      if (cached && cached.coachId) {
+        var coach = COACHES.find(function(c){ return c.id === cached.coachId; });
+        if (coach) applyCoachUI(coach);
+      }
+    }
   } else {
     if (sub) sub.textContent = 'Daily guidance';
   }
