@@ -1507,7 +1507,7 @@
           <tr><td><strong>Training Start</strong></td><td>Monday, April 13, 2026</td></tr>
           <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
           <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
-          <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum (any activity, 15 min min)</td></tr>
+          <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum (any activity, 15 minutes minimum)</td></tr>
           
           <tr><td><strong>Book Bonus</strong></td><td>Ladders up per book: Red Rising +25, Golden Son +50, Morning Star +75, Iron Gold +100, Dark Age +125, Light Bringer +150, Red God +250</td></tr>
           <tr><td><strong>Archprimus</strong></td><td>Player with most Laurels leads the pack ★</td></tr>
@@ -1530,11 +1530,11 @@
           <tr><td>The Charge — Tempo / Race Pace</td><td>12 per mile</td></tr>
           <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
           <tr><td>Walk/Run Intervals</td><td>8 per mile</td></tr>
-          <tr><td>The Steed — Peloton Ride <em style="font-size:0.8rem;color:var(--ink-light)">(15 min min to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
-          <tr><td>The Crimson Pulse — Cardio <em style="font-size:0.8rem;color:var(--ink-light)">(15 min min to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
+          <tr><td>The Steed — Peloton Ride <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
+          <tr><td>The Crimson Pulse — Cardio <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
           <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
-          <tr><td>The Iron Forge — Strength <em style="font-size:0.8rem;color:var(--ink-light)">(15 min min to count)</em></td><td>15 flat</td></tr>
-          <tr><td>Mind & Body — Mobility/Yoga <em style="font-size:0.8rem;color:var(--ink-light)">(15 min min to count)</em></td><td>10 flat</td></tr>
+          <tr><td>The Iron Forge — Strength <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>15 flat</td></tr>
+          <tr><td>Mind & Body — Mobility/Yoga <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>10 flat</td></tr>
           <tr><td>Underdog Bonus</td><td>+20% when 300+ Laurels behind leader</td></tr>
           <tr><td>Weekly Mile Bonus</td><td>First time hitting 10/15/20/25/30 mi in a week: +30/50/75/100/150L</td></tr>
           <tr><td>🏅 Badge Earned</td><td>Bronze +25L · Silver +50L · Gold +100L</td></tr>
@@ -2109,7 +2109,7 @@ const BADGES_DEF = [
     ]},
   {id:'week_warrior', icon:'⚔️', name:'Week Warrior',
     tiers:[
-      {tier:'bronze', desc:'1 perfect week (4 days, 15 min min each)',  check:(s)=>s.perfectWeeks>=1},
+      {tier:'bronze', desc:'1 perfect week (4 days, 15 minutes minimum each)',  check:(s)=>s.perfectWeeks>=1},
       {tier:'silver', desc:'18 perfect weeks',              check:(s)=>s.perfectWeeks>=18},
       {tier:'gold',   desc:'32 perfect weeks',              check:(s)=>s.perfectWeeks>=32}
     ]},
@@ -2127,15 +2127,15 @@ const BADGES_DEF = [
     ]},
   {id:'iron_forged', icon:'🦵', name:'Iron Forged',
     tiers:[
-      {tier:'bronze', desc:'10 strength sessions (15 min min)',  check:(s)=>s.strength>=10},
-      {tier:'silver', desc:'50 strength sessions (15 min min)',  check:(s)=>s.strength>=50},
-      {tier:'gold',   desc:'100 strength sessions (15 min min)', check:(s)=>s.strength>=100}
+      {tier:'bronze', desc:'10 strength sessions (15 minutes minimum)',  check:(s)=>s.strength>=10},
+      {tier:'silver', desc:'50 strength sessions (15 minutes minimum)',  check:(s)=>s.strength>=50},
+      {tier:'gold',   desc:'100 strength sessions (15 minutes minimum)', check:(s)=>s.strength>=100}
     ]},
   {id:'mind_body', icon:'🧘', name:'Mind & Body',
     tiers:[
-      {tier:'bronze', desc:'5 mobility sessions (15 min min)',   check:(s)=>s.mobility>=5},
-      {tier:'silver', desc:'25 mobility sessions (15 min min)',  check:(s)=>s.mobility>=25},
-      {tier:'gold',   desc:'60 mobility sessions (15 min min)',  check:(s)=>s.mobility>=60}
+      {tier:'bronze', desc:'5 mobility sessions (15 minutes minimum)',   check:(s)=>s.mobility>=5},
+      {tier:'silver', desc:'25 mobility sessions (15 minutes minimum)',  check:(s)=>s.mobility>=25},
+      {tier:'gold',   desc:'60 mobility sessions (15 minutes minimum)',  check:(s)=>s.mobility>=60}
     ]},
   {id:'long_march', icon:'🗺️', name:'The Long March',
     tiers:[
