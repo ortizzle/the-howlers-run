@@ -1703,6 +1703,7 @@
         <button onclick="openChallengeManager()" style="width:100%;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">⚔ Manage Challenge Results</button>
         <button onclick="openBadgeManager()" style="width:100%;margin-top:6px;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">🏅 Manage Badge Awards</button>
         <button id="btn-purge-bad-rewards" onclick="purgeCorruptRewards()" style="width:100%;margin-top:6px;background:rgba(154,16,16,0.08);border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">🧹 Remove Corrupt Challenge Laurels</button>
+        <button onclick="repairUnderdogBonuses()" style="width:100%;margin-top:6px;background:rgba(154,16,16,0.08);border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">🔧 Repair Underdog Bonus Data</button>
       </div>
     </div>
 
@@ -3508,6 +3509,28 @@ function _doPurgeCorruptRewards() {
       renderAll(); 
     })
     .catch(function(e){ showToast('⚠️ Save failed: ' + e.message); });
+}
+
+function repairUnderdogBonuses() {
+  requireAdminPin('repair underdog bonus data', function() {
+    var fixed = [];
+    state.workouts.forEach(function(w) {
+      if (!w.underdog_bonus || w.underdog_bonus <= 0) return;
+      var expected = (w.laurels_earned || 0) + w.underdog_bonus;
+      if (w.laurels_base !== expected) {
+        var player = state.players.find(function(p){ return p.id === w.player_id; });
+        fixed.push((player ? player.name.split(' ')[0] : w.player_id) + ' · ' + w.date + ' · ' + (WORKOUT_NAMES[w.workout]||w.workout) + ' (' + w.laurels_base + 'L → ' + expected + 'L)');
+        w.laurels_base = expected;
+      }
+    });
+    if (fixed.length === 0) { showToast('No underdog bonus mismatches found — data is clean.'); return; }
+    var msg = 'Repair ' + fixed.length + ' workout(s)?\n\n' + fixed.join('\n') + '\n\nThis adds missing underdog bonus laurels to these entries.';
+    if (!confirm(msg)) return;
+    saveState().then(function() {
+      showToast('✓ Repaired ' + fixed.length + ' workout(s). Reloading…');
+      renderAll();
+    }).catch(function(e){ showToast('⚠️ Save failed: ' + e.message); });
+  });
 }
 
 function openBadgeManager() {
