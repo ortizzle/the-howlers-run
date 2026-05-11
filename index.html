@@ -2250,7 +2250,7 @@ const BOOK_LAURELS = 25;
 const RED_GOD_LAURELS = 200;
 
 const WORKOUT_NAMES = {
-  duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
+  milestone_bonus:'✦ Conquest Bonus', duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
   long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
   walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
   strength:'The Iron Forge (Strength)', mobility:'Mind & Body (Mobility)',
@@ -4866,20 +4866,21 @@ function loadCardAnnals(pid, el) {
   var player = state.players.find(function(p){ return p.id === pid; });
   if (!player) return;
   var hc = HOUSES[player.house] || '#9a1010';
+  var FINANCIAL_WK = ['trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
   var works = state.workouts.filter(function(w){
-    return w.player_id === pid && !['milestone_bonus','duel_win','duel_loss'].includes(w.workout);
+    return w.player_id === pid && !FINANCIAL_WK.includes(w.workout);
   }).sort(function(a,b){
     if (b.date !== a.date) return b.date > a.date ? 1 : -1;
     return new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date);
   });
   if (!works.length) {
-    el.innerHTML = '<div style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;padding:16px 0">No trials logged yet.</div>';
+    el.innerHTML = '<div style=”font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;padding:16px 0”>No trials logged yet.</div>';
     return;
   }
   el.innerHTML = works.map(function(w) {
-    var name = (WORKOUT_NAMES && WORKOUT_NAMES[w.workout]) || w.workout;
+    var name = w.milestone_label || (WORKOUT_NAMES && WORKOUT_NAMES[w.workout]) || w.workout;
     var detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
-    var note = w.notes ? '<div class="card-annals-note">“' + escHtml(w.notes) + '”</div>' : '';
+    var note = w.notes ? '<div class=”card-annals-note”>”' + escHtml(w.notes) + '”</div>' : '';
     return '<div class="card-annals-entry">'
       + '<div class="card-annals-dot" style="background:' + hc + '"></div>'
       + '<div class="card-annals-info">'
@@ -5415,7 +5416,7 @@ function setAnnalsFilter(pid) {
 function renderChronicle() {
   renderAnnalsFilter();
   const feed = document.getElementById('chronicle-feed');
-  const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
+  const SYSTEM_WK = ['trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
   var allWorkouts = state.workouts.filter(w => !SYSTEM_WK.includes(w.workout));
   if (allWorkouts.length === 0) {
     feed.innerHTML = '<div class="empty-state"><span class="empty-icon">📜</span>No trials logged yet. The pack awaits its first march.</div>';
@@ -5441,6 +5442,8 @@ function renderChronicle() {
     const playerStats = getStats(player.id);
     const houseColor = playerStats.laurels >= 9500 ? PEERLESS_GOLD : (HOUSES[player.house] || '#7a5006');
     const badgeDef = w.badge_earned ? BADGES_DEF.find(b => b.id === w.badge_earned) : null;
+    const isBonus = ['milestone_bonus','duel_win','duel_loss'].includes(w.workout);
+    const displayName = w.milestone_label || WORKOUT_NAMES[w.workout] || w.workout;
     // Build meaningful detail string per workout type
     let detail = '';
     if (['long_run','tempo','easy_run','optional_run','walk_run'].includes(w.workout)) {
@@ -5456,12 +5459,13 @@ function renderChronicle() {
     } else {
       detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
     }
+    const laurelSign = (w.laurels_base || 0) >= 0 ? '+' : '';
     return `<div class="ch-entry-wrap" style="--house-color:${houseColor}"><div class="ch-entry-front chronicle-entry" onclick="this.closest('.ch-entry-wrap').classList.toggle('flipped')" style="--house-color:${houseColor}">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:2px">
         <span class="chronicle-player">${escHtml(player.name)}</span>
-        <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">+${w.laurels_base}L</span>
+        <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">${laurelSign}${w.laurels_base}L</span>
       </div>
-      <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);margin-bottom:5px">${WORKOUT_NAMES[w.workout]||w.workout}${w.miles?' · '+w.miles+' mi':''}${w.minutes?' · '+w.minutes+' min':''} · ${formatDate(w.date)}</div>
+      <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);margin-bottom:5px">${escHtml(displayName)}${w.miles?' · '+w.miles+' mi':''}${w.minutes?' · '+w.minutes+' min':''} · ${formatDate(w.date)}</div>
       ${w.notes?`<div style="font-family:'Crimson Pro',serif;font-size:0.87rem;font-style:italic;color:var(--ink-mid);margin-bottom:3px">"${escHtml(w.notes)}"</div>`:''}
       ${w.badge_earned?(()=>{
         const tier=BADGE_TIERS.find(t=>w.badge_earned.endsWith('_'+t));
@@ -5469,19 +5473,15 @@ function renderChronicle() {
         const bd=BADGES_DEF.find(b=>b.id===baseId);
         return bd?`<div class="chronicle-badge" style="border-color:${TIER_COLORS[tier]||'var(--amber-light)'};color:${TIER_COLORS[tier]||'var(--amber)'};background:${TIER_COLORS[tier]||'var(--amber)'}18;margin-bottom:3px">${bd.icon}<sup style="font-size:0.6em">${TIER_ROMAN[tier]||''}</sup> Badge: ${bd.name}</div>`:'';
       })():''}
-      <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--amber);opacity:0.85;margin-bottom:5px">"${w.quote}"</div>
+      ${w.quote?`<div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--amber);opacity:0.85;margin-bottom:5px">"${w.quote}"</div>`:''}
       <div style="display:flex;gap:5px;padding-top:5px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">
-        ${reactionBarHTML(w,w.id,'toggleReaction')}
+        ${isBonus ? '' : reactionBarHTML(w,w.id,'toggleReaction')}
       </div>
-      <div class="ch-flip-hint">tap card for options</div>
+      ${isBonus ? '' : '<div class="ch-flip-hint">tap card for options</div>'}
     </div>
     <div class="ch-entry-back" style="--house-color:${houseColor}">
-      <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light);margin-bottom:10px">${WORKOUT_NAMES[w.workout]||w.workout} &middot; ${formatDate(w.date)}</div>
-      <div style="margin-bottom:12px;width:100%">${buildHypersList(w)}</div>
-      <div style="display:flex;gap:10px;width:100%">
-        <button onclick="event.stopPropagation();openEditWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">&#9998; Edit</button>
-        <button onclick="event.stopPropagation();removeWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.4);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer">&#10005; Remove</button>
-      </div>
+      <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light);margin-bottom:10px">${escHtml(displayName)} &middot; ${formatDate(w.date)}</div>
+      ${isBonus ? `<div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-mid);margin-bottom:12px">${w.quote||''}</div>` : `<div style="margin-bottom:12px;width:100%">${buildHypersList(w)}</div><div style="display:flex;gap:10px;width:100%"><button onclick="event.stopPropagation();openEditWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">&#9998; Edit</button><button onclick="event.stopPropagation();removeWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.4);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer">&#10005; Remove</button></div>`}
       <button onclick="event.stopPropagation();this.closest('.ch-entry-wrap').classList.remove('flipped')" style="background:transparent;border:none;font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light);cursor:pointer;margin-top:8px;opacity:0.7">&#10005; close</button>
     </div>
     </div>`;
