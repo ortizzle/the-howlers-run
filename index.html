@@ -2440,8 +2440,9 @@ async function loadState() {
       if (!state.duels) state.duels = [];
       // Restore persisted deleted IDs into in-memory Set
       if (state._deletedWorkoutIds) state._deletedWorkoutIds.forEach(function(id){ _deletedWorkoutIds.add(id); });
-      // Pick up shared API key so all pack members get coaching without manual setup
-      if (state.anthropic_key && !getAnthropicKey()) saveAnthropicKey(state.anthropic_key);
+      // Pick up shared API key so all pack members get coaching without manual setup.
+      // Always sync if the Gist key differs — covers key rotations on any device.
+      if (state.anthropic_key && state.anthropic_key !== getAnthropicKey()) saveAnthropicKey(state.anthropic_key);
       if (state.strava_secret && !localStorage.getItem('howlers_strava_secret')) localStorage.setItem('howlers_strava_secret', state.strava_secret);
     }
     setSyncStatus('live');
