@@ -4518,7 +4518,7 @@ function exportBackup() {
 
 function exportCSV() {
   const FINANCIAL = ['trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
-  const rows = [['Player','House','Date','Entry Type','Laurels','Miles','Minutes','Notes']];
+  const rows = [['Player','House','Date','Entry Type','Total Laurels','Base Laurels','Underdog Bonus','Miles','Minutes','Notes']];
 
   // Build per-player totals for summary rows at top
   const totals = {};
@@ -4544,6 +4544,8 @@ function exportCSV() {
       w.date,
       label,
       laurels,
+      w.laurels_earned != null ? w.laurels_earned : laurels,
+      w.underdog_bonus || 0,
       w.miles || '',
       w.minutes || '',
       w.notes || ''
@@ -4552,10 +4554,10 @@ function exportCSV() {
 
   // Summary block at the bottom
   rows.push([]);
-  rows.push(['PLAYER TOTALS','','','','','','','']);
-  rows.push(['Player','House','Total Laurels','','','','','']);
+  rows.push(['PLAYER TOTALS','','','','','','','','','']);
+  rows.push(['Player','House','Total Laurels','','','','','','','']);
   state.players.slice().sort(function(a,b){return (totals[b.id]||0)-(totals[a.id]||0);}).forEach(function(p) {
-    rows.push([p.name, p.house, totals[p.id]||0, '','','','','']);
+    rows.push([p.name, p.house, totals[p.id]||0, '','','','','','','']);
   });
 
   var csv = rows.map(function(row) {
