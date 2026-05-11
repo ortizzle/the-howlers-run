@@ -6141,16 +6141,21 @@ function renderHowlFeed() {
       if (isIronPrice) {
         var isPayout = h.id && h.id.startsWith('trashtalk_payout_');
         var isMoti = h.id && h.id.startsWith('motivate_announce_');
-        var ironIcon = isPayout ? '💰' : isMoti ? '🐺' : '⚔';
+        var ironIcon = isPayout ? '💰' : isMoti ? '🐺' : '💰';
         var ironLabel = isPayout ? 'IRON PRICE SETTLEMENT' : isMoti ? 'PACK MOTIVATION' : 'IRON PRICE POT';
-        return '<div class="chronicle-entry" style="--house-color:var(--amber);background:var(--parchment);border:1.5px solid var(--border);border-radius:8px;padding:0;overflow:hidden">' +
-          '<div style="background:var(--parchment-dark);padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)">' +
+        var isPot = !isPayout && !isMoti;
+        var cardBg = isPot ? 'rgba(30,80,40,0.08)' : 'var(--parchment)';
+        var headerBg = isPot ? 'rgba(30,80,40,0.14)' : 'var(--parchment-dark)';
+        var borderColor = isPot ? 'rgba(40,120,60,0.45)' : 'var(--border)';
+        var labelColor = isPot ? '#2a7a40' : 'var(--ink-mid)';
+        return '<div class="chronicle-entry" style="--house-color:var(--amber);background:' + cardBg + ';border:1.5px solid ' + borderColor + ';border-radius:8px;padding:0;overflow:hidden">' +
+          '<div style="background:' + headerBg + ';padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ' + borderColor + '">' +
             '<span style="font-size:1rem">' + ironIcon + '</span>' +
-            '<span style="font-family:Cinzel,serif;font-size:0.6rem;font-weight:900;letter-spacing:0.14em;color:var(--ink-mid)">' + ironLabel + '</span>' +
+            '<span style="font-family:Cinzel,serif;font-size:0.6rem;font-weight:900;letter-spacing:0.14em;color:' + labelColor + '">' + ironLabel + '</span>' +
             '<span style="margin-left:auto;font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light)">' + formatDate(h.date) + '</span>' +
           '</div>' +
           '<div style="padding:12px 14px;font-family:Crimson Pro,serif;font-style:italic;font-size:0.92rem;color:var(--ink-mid);line-height:1.6">' + escHtml(h.message) + '</div>' +
-          '<div style="display:flex;gap:6px;padding:6px 14px;border-top:1px solid var(--border);background:var(--parchment-dark)">' +
+          '<div style="display:flex;gap:6px;padding:6px 14px;border-top:1px solid ' + borderColor + ';background:' + headerBg + '">' +
             reactionBarHTML(h, h.id, 'toggleHowlReaction') +
             '<div style="flex:1"></div>' +
             '<button onclick="removeHowl(&quot;' + h.id + '&quot;)" style="background:transparent;border:1px solid rgba(154,16,16,0.3);border-radius:3px;padding:4px 8px;font-family:Cinzel,serif;font-size:0.58rem;color:var(--house-red);cursor:pointer">✕ Delete</button>' +
@@ -7648,7 +7653,9 @@ async function saveEditWorkout() {
   w.minutes = parseInt(document.getElementById('edit-workout-minutes').value) || undefined;
   w.date = editDate;
   w.notes = document.getElementById('edit-workout-notes').value.trim();
-  w.laurels_base = calcLaurels(w.workout, w.miles, w.minutes);
+  var newBase = calcLaurels(w.workout, w.miles, w.minutes);
+  w.laurels_earned = newBase;
+  w.laurels_base = newBase + (w.underdog_bonus || 0);
   recalcAllBadges();
   await saveState();
   closeModal('edit-workout-modal');
