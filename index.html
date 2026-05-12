@@ -4986,13 +4986,14 @@ function loadCardAnnals(pid, el) {
   }
   el.innerHTML = works.map(function(w) {
     var name = w.milestone_label || (WORKOUT_NAMES && WORKOUT_NAMES[w.workout]) || w.workout;
-    var detail = w.miles ? w.miles + ' mi' : (w.minutes ? w.minutes + ' min' : '');
+    var detail = (w.miles ? w.miles + ' mi' : '') + (w.miles && w.minutes ? ' · ' : '') + (w.minutes ? w.minutes + ' min' : '');
+    var stravaTag = w.strava_id ? '<span style=”background:#fc4c02;color:#fff;font-size:0.5rem;font-weight:900;padding:1px 3px;border-radius:2px;margin-left:4px;vertical-align:middle”>S</span>' : '';
     var note = w.notes ? '<div class=”card-annals-note”>”' + escHtml(w.notes) + '”</div>' : '';
-    return '<div class="card-annals-entry">'
-      + '<div class="card-annals-dot" style="background:' + hc + '"></div>'
-      + '<div class="card-annals-info">'
-      +   '<div class="card-annals-name">' + escHtml(name) + (detail ? ' <span style="font-family:Crimson Pro,serif;font-weight:400;font-size:0.82rem;color:var(--ink-light)">· ' + detail + '</span>' : '') + '</div>'
-      +   '<div class="card-annals-meta">' + formatDate(w.date) + '</div>'
+    return '<div class=”card-annals-entry”>'
+      + '<div class=”card-annals-dot” style=”background:' + hc + '”></div>'
+      + '<div class=”card-annals-info”>'
+      +   '<div class=”card-annals-name”>' + escHtml(name) + (detail ? ' <span style=”font-family:Crimson Pro,serif;font-weight:400;font-size:0.82rem;color:var(--ink-light)”>· ' + detail + '</span>' : '') + stravaTag + '</div>'
+      +   '<div class=”card-annals-meta”>' + formatDate(w.date) + '</div>'
       +   note
       + '</div>'
       + '<div class="card-annals-laurels">+' + (w.laurels_base||0) + 'L</div>'
@@ -5583,7 +5584,7 @@ function renderChronicle() {
         <span class="chronicle-player">${escHtml(player.name)}</span>
         <span style="font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;color:var(--house-color,var(--amber));white-space:nowrap;flex-shrink:0">${laurelSign}${w.laurels_base}L</span>
       </div>
-      <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);margin-bottom:5px">${escHtml(displayName)}${w.miles?' · '+w.miles+' mi':''}${w.minutes?' · '+w.minutes+' min':''} · ${formatDate(w.date)}</div>
+      <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);margin-bottom:5px">${escHtml(displayName)}${w.miles?' · '+w.miles+' mi':''}${w.minutes?' · '+w.minutes+' min':''} · ${formatDate(w.date)}${w.strava_id?'<span style="margin-left:6px;background:#fc4c02;color:#fff;font-size:0.52rem;font-weight:900;padding:1px 4px;border-radius:3px;letter-spacing:0.05em;vertical-align:middle">S</span>':''}</div>
       ${w.notes?`<div style="font-family:'Crimson Pro',serif;font-size:0.87rem;font-style:italic;color:var(--ink-mid);margin-bottom:3px">"${escHtml(w.notes)}"</div>`:''}
       ${w.badge_earned?(()=>{
         const tier=BADGE_TIERS.find(t=>w.badge_earned.endsWith('_'+t));
@@ -8274,8 +8275,8 @@ function stravaLogOne(stravaId, miles, minutes, date) {
     timestamp: new Date().toISOString(),
     strava_id: stravaId
   };
-  if (TIMED.includes(workout)) { entry.minutes = minutes || 30; }
-  else { entry.miles = miles || 0; }
+  if (miles > 0) entry.miles = miles;
+  if (minutes > 0) entry.minutes = minutes;
   entry.laurels_base = calcLaurels(entry.workout, entry.miles, entry.minutes);
   if (state.workouts.some(function(w) { return w.id === entry.id; })) {
     showToast('Already logged.');
