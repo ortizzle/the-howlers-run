@@ -2438,6 +2438,23 @@ async function loadState() {
       if (!state.duels) state.duels = [];
       // Restore persisted deleted IDs into in-memory Set
       if (state._deletedWorkoutIds) state._deletedWorkoutIds.forEach(function(id){ _deletedWorkoutIds.add(id); });
+      // Deduplicate howls by id — prefer ai_generated over fallback, otherwise keep first
+      (function() {
+        var best = {};
+        state.howls.forEach(function(h) {
+          if (!h.id) return;
+          var prev = best[h.id];
+          if (!prev) { best[h.id] = h; return; }
+          if (h.daily_data && h.daily_data.ai_generated && !(prev.daily_data && prev.daily_data.ai_generated)) best[h.id] = h;
+        });
+        var seen = new Set();
+        state.howls = state.howls.filter(function(h) {
+          if (!h.id) return true;
+          if (seen.has(h.id)) return false;
+          seen.add(h.id);
+          return best[h.id] === h;
+        });
+      })();
       // Secrets (API key, Strava secret) are never stored in the Gist — localStorage only.
     }
     setSyncStatus('live');
@@ -4032,6 +4049,11 @@ async function checkAndPostWeeklyRecap() {
   thisWeekMonday.setHours(0,0,0,0);
   const weekKey = thisWeekMonday.toISOString().split('T')[0];
   if (lastRecap === weekKey) return;
+  // Also check Gist state — another device may have already posted
+  if ((state.howls||[]).some(function(h) { return h.id === 'recap_' + weekKey; })) {
+    localStorage.setItem(lastRecapKey, weekKey);
+    return;
+  }
   // Build last week stats
   const lastMonday = new Date(thisWeekMonday);
   lastMonday.setDate(lastMonday.getDate() - 7);
