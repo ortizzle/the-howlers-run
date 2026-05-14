@@ -2251,6 +2251,8 @@ const WORKOUT_NAMES = {
   long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
   walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
   strength:'The Iron Forge (Strength)', mobility:'Mind & Body (Mobility)',
+  cardio:'The Crimson Pulse (Cardio)', race:'Race Day 🏆',
+  optional_run:'Optional Run', optional_other:'Cross-Train',
   trashtalk_fee:'⚔ Trash Talk Toll', trashtalk_pot:'💰 Underdog\'s Share',
   motivate_fee:'🐺 Motivation Offering', motivate_gift:'🎁 Pack Gift'
 };
@@ -5004,11 +5006,17 @@ function loadCardAnnals(pid, el) {
     el.innerHTML = '<div style=”font-family:Crimson Pro,serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);text-align:center;padding:16px 0”>No trials logged yet.</div>';
     return;
   }
-  el.innerHTML = works.map(function(w) {
+  var header = '<div style=”font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.12em;color:var(--amber);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:2px”>'
+    + works.length + ' TRIAL' + (works.length !== 1 ? 'S' : '') + ' LOGGED'
+    + '</div>';
+  el.innerHTML = header + works.map(function(w) {
     var name = w.milestone_label || (WORKOUT_NAMES && WORKOUT_NAMES[w.workout]) || w.workout;
     var detail = (w.miles ? w.miles + ' mi' : '') + (w.miles && w.minutes ? ' · ' : '') + (w.minutes ? w.minutes + ' min' : '');
     var stravaTag = w.strava_id ? '<span style=”background:#fc4c02;color:#fff;font-size:0.5rem;font-weight:900;padding:1px 3px;border-radius:2px;margin-left:4px;vertical-align:middle”>S</span>' : '';
     var note = w.notes ? '<div class=”card-annals-note”>”' + escHtml(w.notes) + '”</div>' : '';
+    var laurels = w.laurels_base || 0;
+    var laurelSign = laurels >= 0 ? '+' : '';
+    var laurelColor = laurels < 0 ? 'color:#9a1010' : '';
     return '<div class=”card-annals-entry”>'
       + '<div class=”card-annals-dot” style=”background:' + hc + '”></div>'
       + '<div class=”card-annals-info”>'
@@ -5016,7 +5024,7 @@ function loadCardAnnals(pid, el) {
       +   '<div class=”card-annals-meta”>' + formatDate(w.date) + '</div>'
       +   note
       + '</div>'
-      + '<div class="card-annals-laurels">+' + (w.laurels_base||0) + 'L</div>'
+      + '<div class=”card-annals-laurels” style=”' + laurelColor + '”>' + laurelSign + laurels + 'L</div>'
       + '</div>';
   }).join('');
 }
