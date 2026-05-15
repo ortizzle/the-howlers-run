@@ -3403,17 +3403,20 @@ function renderQuestManagerUI() {
     + '<label style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.08em;color:var(--ink-light);white-space:nowrap">UNDERDOGS</label>'
     + '<input id="qm-count" type="number" value="2" min="1" max="3" style="flex:1;font-family:Crimson Pro,serif;font-size:0.85rem;padding:7px 9px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
     + '</div>'
-    + '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:4px">TIERS (miles → bonus laurels)</div>'
-    + '<div style="display:flex;gap:4px;margin-bottom:6px">'
-    + '<input id="qm-t1m" type="number" value="175" placeholder="mi" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
-    + '<span style="align-self:center;font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">→</span>'
-    + '<input id="qm-t1b" type="number" value="75" placeholder="L" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
-    + '<input id="qm-t2m" type="number" value="225" placeholder="mi" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
-    + '<span style="align-self:center;font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">→</span>'
-    + '<input id="qm-t2b" type="number" value="125" placeholder="L" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
-    + '<input id="qm-t3m" type="number" value="275" placeholder="mi" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
-    + '<span style="align-self:center;font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">→</span>'
-    + '<input id="qm-t3b" type="number" value="175" placeholder="L" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:6px">TIERS — GROUP MILES → UNDERDOG BONUS</div>'
+    + '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px">'
+    + ['1','2','3'].map(function(n, i) {
+        var defMi = ['175','225','275'][i];
+        var defBo = ['75','125','175'][i];
+        return '<div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.03);border:1px solid var(--border);border-radius:4px;padding:7px 10px">'
+          + '<span style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.08em;color:var(--ink-light);white-space:nowrap;min-width:36px">TIER ' + n + '</span>'
+          + '<input id="qm-t' + n + 'm" type="number" value="' + defMi + '" placeholder="mi" style="width:70px;font-family:Crimson Pro,serif;font-size:0.9rem;padding:4px 7px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink);text-align:center">'
+          + '<span style="font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">group mi</span>'
+          + '<span style="font-family:Cinzel,serif;font-size:0.7rem;color:var(--ink-light);margin:0 2px">→</span>'
+          + '<input id="qm-t' + n + 'b" type="number" value="' + defBo + '" placeholder="L" style="width:60px;font-family:Crimson Pro,serif;font-size:0.9rem;padding:4px 7px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink);text-align:center">'
+          + '<span style="font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">L each</span>'
+          + '</div>';
+      }).join('')
     + '</div>'
     + '<button onclick="createPackQuest()" style="width:100%;background:var(--house-red);color:#fff;border:none;border-radius:4px;padding:10px;font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;cursor:pointer;letter-spacing:0.08em">⚔ CREATE QUEST</button>'
     + '</div>';
