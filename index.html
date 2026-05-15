@@ -3324,7 +3324,7 @@ function renderQuestBanner() {
     + '<span style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:var(--ink)">' + p.totalMiles + ' <span style="font-size:0.45rem;font-weight:400;color:var(--ink-light)">/ ' + maxMiles + ' mi</span></span>'
     + '</div>'
     + '<div style="position:relative;height:8px;background:#e8e0d0;border-radius:4px;overflow:visible">'
-    + '<div style="height:100%;width:' + groupPct.toFixed(1) + '%;background:linear-gradient(90deg,var(--amber),#c8820a);border-radius:4px;transition:width 0.6s"></div>'
+    + '<div style="height:100%;width:' + groupPct.toFixed(1) + '%;background:linear-gradient(90deg,var(--house-red),var(--amber));border-radius:4px;transition:width 0.6s"></div>'
     + tierMarkers
     + '</div>'
     + (p.currentTier ? '<div style="margin-top:26px;font-family:Cinzel,serif;font-size:0.48rem;letter-spacing:0.08em;color:#4caf50">✦ TIER REACHED · bottom ' + (quest.underdog_count||2) + ' howlers stand to earn ' + p.currentTier.bonus + 'L</div>' : '<div style="margin-top:26px"></div>')
@@ -3339,7 +3339,7 @@ function renderQuestBanner() {
       var floorPct = Math.min(100, (mi / floor) * 100).toFixed(1);
       var hc = (HOUSES[pl.house] && HOUSES[pl.house].color) ? HOUSES[pl.house].color : (HOUSES[pl.house] || '#9a1010');
       if (typeof hc === 'object') hc = hc.color || '#9a1010';
-      var barColor = hitFloor ? '#4caf50' : 'var(--amber)';
+      var barColor = hitFloor ? '#4caf50' : 'linear-gradient(90deg,var(--house-red),var(--amber))';
       return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'
         + '<div style="width:58px;font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0">' + pl.name.split(' ')[0] + '</div>'
         + '<div style="flex:1;position:relative">'
