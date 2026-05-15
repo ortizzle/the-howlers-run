@@ -3297,59 +3297,80 @@ function renderQuestBanner() {
   if (!quest) { el.innerHTML = ''; return; }
   var p = calcQuestProgress(quest);
   var maxMiles = (quest.tiers && quest.tiers.length) ? quest.tiers[quest.tiers.length-1].miles : 1;
-  var pct = Math.min(100, (p.totalMiles / maxMiles) * 100).toFixed(1);
-  var nextTarget = p.nextTier ? p.nextTier.miles : maxMiles;
-  var nextPct = Math.min(100, (p.totalMiles / nextTarget) * 100).toFixed(1);
+  var groupPct = Math.min(100, (p.totalMiles / maxMiles) * 100);
+  var floor = quest.individual_floor || 25;
+
   var statusLabel = quest.status === 'upcoming'
-    ? '<span style="font-size:0.55rem;letter-spacing:0.12em;color:var(--amber);font-family:Cinzel,serif">BEGINS ' + formatDate(quest.start_date).toUpperCase() + '</span>'
-    : p.daysLeft === 0 ? '<span style="font-size:0.55rem;letter-spacing:0.12em;color:#c8450a;font-family:Cinzel,serif">FINAL DAY</span>'
-    : '<span style="font-size:0.55rem;letter-spacing:0.12em;color:var(--amber);font-family:Cinzel,serif">' + p.daysLeft + ' DAYS REMAINING</span>';
+    ? '<span style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--amber)">BEGINS ' + formatDate(quest.start_date).toUpperCase() + '</span>'
+    : p.daysLeft === 0 ? '<span style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:#c8450a">FINAL DAY</span>'
+    : '<span style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--ink-light)">' + p.daysLeft + ' DAYS LEFT</span>';
 
-  var tierBadge = p.currentTier
-    ? '<div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:#4caf50;margin-top:4px">✦ TIER UNLOCKED: ' + p.currentTier.miles + ' mi → bottom howlers earn ' + p.currentTier.bonus + 'L</div>'
-    : '';
+  // Group progress bar spanning full range (0 → max tier), all tier markers visible
+  var tierMarkers = (quest.tiers || []).map(function(t) {
+    var pct = (t.miles / maxMiles * 100).toFixed(1);
+    var hit = p.totalMiles >= t.miles;
+    return '<div style="position:absolute;left:' + pct + '%;transform:translateX(-50%);bottom:0;top:0;display:flex;flex-direction:column;align-items:center;pointer-events:none">'
+      + '<div style="width:1.5px;height:100%;background:' + (hit ? 'rgba(76,175,80,0.7)' : 'rgba(120,90,50,0.35)') + '"></div>'
+      + '</div>'
+      + '<div style="position:absolute;left:' + pct + '%;transform:translateX(-50%);top:100%;margin-top:3px;text-align:center;white-space:nowrap">'
+      + '<div style="font-family:Cinzel,serif;font-size:0.42rem;letter-spacing:0.06em;color:' + (hit ? '#4caf50' : 'var(--ink-light)') + '">' + t.miles + ' mi</div>'
+      + '<div style="font-family:Cinzel,serif;font-size:0.42rem;color:' + (hit ? '#4caf50' : 'var(--amber)') + '">' + t.bonus + 'L ' + (hit ? '✦' : '') + '</div>'
+      + '</div>';
+  }).join('');
 
-  var progressBar = '<div style="margin:8px 0 4px">'
-    + '<div style="display:flex;justify-content:space-between;font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.08em;color:rgba(240,208,128,0.7);margin-bottom:3px">'
-    + '<span>' + p.totalMiles + ' mi</span>'
-    + (p.nextTier ? '<span>→ ' + p.nextTier.miles + ' mi for ' + p.nextTier.bonus + 'L</span>' : '<span>ALL TIERS HIT ✦</span>')
+  var groupBar = '<div style="margin:10px 0 28px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'
+    + '<span style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light)">GROUP MILES</span>'
+    + '<span style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:var(--ink)">' + p.totalMiles + ' <span style="font-size:0.45rem;font-weight:400;color:var(--ink-light)">/ ' + maxMiles + ' mi</span></span>'
     + '</div>'
-    + '<div style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden">'
-    + '<div style="height:100%;width:' + nextPct + '%;background:linear-gradient(90deg,#9a3a10,var(--amber));border-radius:3px;transition:width 0.6s"></div>'
+    + '<div style="position:relative;height:8px;background:#e8e0d0;border-radius:4px;overflow:visible">'
+    + '<div style="height:100%;width:' + groupPct.toFixed(1) + '%;background:linear-gradient(90deg,var(--amber),#c8820a);border-radius:4px;transition:width 0.6s"></div>'
+    + tierMarkers
     + '</div>'
-    + (quest.tiers || []).map(function(t){
-        var tp = Math.min(100,(t.miles/nextTarget)*100);
-        return '<div style="position:relative;margin-top:-9px;height:0">'
-          + '<div style="position:absolute;left:' + tp.toFixed(1) + '%;transform:translateX(-50%);top:0;width:1px;height:9px;background:rgba(240,208,128,0.3)"></div>'
-        + '</div>';
-      }).join('')
+    + (p.currentTier ? '<div style="margin-top:26px;font-family:Cinzel,serif;font-size:0.48rem;letter-spacing:0.08em;color:#4caf50">✦ TIER REACHED · bottom ' + (quest.underdog_count||2) + ' howlers stand to earn ' + p.currentTier.bonus + 'L</div>' : '<div style="margin-top:26px"></div>')
     + '</div>';
 
-  var playerTiles = (state.players || []).slice()
+  // Individual floor rows — one bar per player
+  var playerRows = (state.players || []).slice()
     .sort(function(a,b){ return (p.playerMiles[b.id]||0) - (p.playerMiles[a.id]||0); })
-    .map(function(pl){
-      var mi = (p.playerMiles[pl.id]||0).toFixed(1);
-      var hitFloor = (p.playerMiles[pl.id]||0) >= (quest.individual_floor||0);
-      var hc = HOUSES[pl.house] || '#9a1010';
-      return '<div style="flex:1;min-width:0;background:rgba(0,0,0,0.2);border-radius:4px;padding:5px 4px;text-align:center;border:1px solid ' + (hitFloor ? 'rgba(76,175,80,0.4)' : 'rgba(255,255,255,0.08)') + '">'
-        + '<div style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:' + hc + '">' + mi + '</div>'
-        + '<div style="font-family:Crimson Pro,serif;font-size:0.58rem;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + pl.name.split(' ')[0] + '</div>'
-        + (hitFloor ? '<div style="font-size:0.45rem;color:#4caf50;margin-top:1px">✔ floor</div>' : '<div style="font-size:0.45rem;color:rgba(255,255,255,0.3);margin-top:1px">' + ((quest.individual_floor||0) - (p.playerMiles[pl.id]||0)).toFixed(1) + ' to go</div>')
+    .map(function(pl) {
+      var mi = p.playerMiles[pl.id] || 0;
+      var hitFloor = mi >= floor;
+      var floorPct = Math.min(100, (mi / floor) * 100).toFixed(1);
+      var hc = (HOUSES[pl.house] && HOUSES[pl.house].color) ? HOUSES[pl.house].color : (HOUSES[pl.house] || '#9a1010');
+      if (typeof hc === 'object') hc = hc.color || '#9a1010';
+      var barColor = hitFloor ? '#4caf50' : 'var(--amber)';
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'
+        + '<div style="width:58px;font-family:Crimson Pro,serif;font-size:0.78rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0">' + pl.name.split(' ')[0] + '</div>'
+        + '<div style="flex:1;position:relative">'
+        + '<div style="height:6px;background:#e8e0d0;border-radius:3px;overflow:hidden">'
+        + '<div style="height:100%;width:' + floorPct + '%;background:' + barColor + ';border-radius:3px;transition:width 0.6s"></div>'
+        + '</div>'
+        + '</div>'
+        + '<div style="width:52px;text-align:right;flex-shrink:0">'
+        + (hitFloor
+          ? '<span style="font-family:Cinzel,serif;font-size:0.58rem;color:#4caf50;font-weight:700">✔ ' + mi.toFixed(1) + ' mi</span>'
+          : '<span style="font-family:Cinzel,serif;font-size:0.6rem;font-weight:700;color:var(--ink)">' + mi.toFixed(1) + '</span><span style="font-family:Cinzel,serif;font-size:0.48rem;color:var(--ink-light)"> mi</span>')
+        + '</div>'
         + '</div>';
     }).join('');
 
-  el.innerHTML = '<div style="background:linear-gradient(135deg,#1a0505 0%,#2d0a0a 50%,#1a0505 100%);border:1.5px solid rgba(154,16,16,0.5);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:0 4px 24px rgba(0,0,0,0.4)">'
-    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">'
+  var floorSection = '<div style="margin-top:4px">'
+    + '<div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light);margin-bottom:8px">INDIVIDUAL FLOOR — ' + floor + ' MI EACH TO QUALIFY</div>'
+    + playerRows
+    + '</div>';
+
+  el.innerHTML = '<div style="background:var(--parchment);border:1.5px solid rgba(180,130,50,0.35);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.08)">'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px">'
     + '<div>'
-    + '<div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.18em;color:rgba(154,16,16,0.8);text-transform:uppercase;margin-bottom:2px">Pack Quest</div>'
-    + '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:#f0d080;line-height:1.2">' + quest.name + '</div>'
+    + '<div style="font-family:Cinzel,serif;font-size:0.48rem;letter-spacing:0.18em;color:var(--house-red);text-transform:uppercase;margin-bottom:2px">⚔ Pack Quest</div>'
+    + '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink);line-height:1.2">' + quest.name + '</div>'
     + '</div>'
-    + '<div style="text-align:right">' + statusLabel + '</div>'
+    + '<div style="text-align:right;padding-top:2px">' + statusLabel + '</div>'
     + '</div>'
-    + tierBadge
-    + progressBar
-    + '<div style="display:flex;gap:4px;margin-top:8px">' + playerTiles + '</div>'
-    + (p.started ? '' : '<div style="font-family:Crimson Pro,serif;font-size:0.72rem;font-style:italic;color:rgba(240,208,128,0.6);text-align:center;margin-top:8px">' + (quest.flavor || 'The hunt begins soon.') + '</div>')
+    + (quest.flavor && !p.started ? '<div style="font-family:Crimson Pro,serif;font-size:0.75rem;font-style:italic;color:var(--ink-light);margin:4px 0 8px">' + quest.flavor + '</div>' : '<div style="border-bottom:1px solid rgba(180,130,50,0.2);margin:8px 0"></div>')
+    + groupBar
+    + floorSection
     + '</div>';
 }
 
