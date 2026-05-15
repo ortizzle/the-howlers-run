@@ -5018,12 +5018,10 @@ function loadCardAnnals(pid, el) {
     var laurelSign = laurels >= 0 ? '+' : '';
     var laurelCol = laurels < 0 ? '#9a1010' : hc;
     var sub = formatDate(w.date) + (detail ? ' · ' + detail : '');
-    return '<div style=”padding:10px 0;border-bottom:1px solid rgba(122,80,6,0.09)”>'
-      + '<div style=”display:flex;justify-content:space-between;align-items:baseline;gap:6px”>'
-      +   '<div style=”font-family:Cinzel,serif;font-size:0.86rem;font-weight:700;color:var(--ink);line-height:1.25;flex:1;min-width:0”>' + escHtml(name) + stravaTag + '</div>'
-      +   '<div style=”font-family:Cinzel,serif;font-size:0.84rem;font-weight:700;color:' + laurelCol + ';flex-shrink:0;white-space:nowrap”>' + laurelSign + laurels + 'L</div>'
-      + '</div>'
-      + '<div style=”font-family:Crimson Pro,serif;font-size:0.66rem;color:var(--ink-light);font-style:italic;margin-top:2px;letter-spacing:0.01em”>' + sub + '</div>'
+    return '<div style=”padding:10px 0;border-bottom:1px solid rgba(122,80,6,0.09);overflow:hidden”>'
+      + '<div style=”float:right;font-family:Cinzel,serif;font-size:0.82rem;font-weight:700;color:' + laurelCol + ';margin-left:8px;line-height:1.4”>' + laurelSign + laurels + 'L</div>'
+      + '<div style=”font-family:Cinzel,serif;font-size:0.86rem;font-weight:700;color:var(--ink);line-height:1.4”>' + escHtml(name) + stravaTag + '</div>'
+      + '<div style=”font-family:Crimson Pro,serif;font-size:0.66rem;color:var(--ink-light);font-style:italic;margin-top:2px”>' + sub + '</div>'
       + note
       + '</div>';
   }).join('');
