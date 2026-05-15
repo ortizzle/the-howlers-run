@@ -6498,6 +6498,66 @@ function renderHowlFeed() {
       const isCoach = h.id && h.id.startsWith('coach_');
       const isIronPrice = h.id && (h.id.startsWith('trashtalk_announce_') || h.id.startsWith('trashtalk_payout_') || h.id.startsWith('motivate_announce_'));
       const isArchprimus = h.id && h.id.startsWith('archprimus_');
+      const isQuestAnnounce = h.id && h.id.startsWith('quest_announce_');
+
+      // Pack Quest announcement — rich proclamation card
+      if (isQuestAnnounce) {
+        var qId = h.id.replace('quest_announce_', '');
+        var q = (state.pack_quests || []).find(function(x){ return x.id === qId; }) || {};
+        var tiers = q.tiers || [];
+        var floor = q.individual_floor || 25;
+        var underdogs = q.underdog_count || 2;
+        var tierRows = tiers.map(function(t, i) {
+          var medals = ['🥇','🥈','🥉'][i] || '🏅';
+          return '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:' + (i % 2 === 0 ? 'rgba(0,0,0,0.03)' : 'transparent') + ';border-bottom:1px solid rgba(0,0,0,0.05)">'
+            + '<span style="font-size:1.1rem">' + medals + '</span>'
+            + '<div style="flex:1">'
+              + '<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;color:var(--ink)">' + t.miles + ' pack miles</span>'
+              + '<span style="font-family:Crimson Pro,serif;font-size:0.8rem;color:var(--ink-light);margin-left:6px">as a group</span>'
+            + '</div>'
+            + '<div style="text-align:right">'
+              + '<span style="font-family:Cinzel,serif;font-size:0.8rem;font-weight:700;color:var(--amber)">+' + t.bonus + 'L</span>'
+              + '<span style="font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light);margin-left:4px">each · bottom ' + underdogs + '</span>'
+            + '</div>'
+          + '</div>';
+        }).join('');
+        return '<div style="border-radius:10px;overflow:hidden;box-shadow:0 4px 24px rgba(154,16,16,0.18);border:2px solid var(--amber);margin-bottom:0">'
+          // Header bar
+          + '<div style="background:linear-gradient(135deg,var(--house-red),#7a1010);padding:14px 16px;display:flex;align-items:center;gap:10px">'
+            + '<span style="font-size:1.6rem">⚔️</span>'
+            + '<div style="flex:1">'
+              + '<div style="font-family:Cinzel,serif;font-size:0.6rem;font-weight:900;letter-spacing:0.2em;color:rgba(255,255,255,0.7);text-transform:uppercase">Pack Quest Declared</div>'
+              + '<div style="font-family:Cinzel,serif;font-size:1.05rem;font-weight:700;color:#fff;margin-top:2px">' + escHtml(q.name || 'Pack Quest') + '</div>'
+            + '</div>'
+            + '<span style="font-family:Crimson Pro,serif;font-size:0.75rem;color:rgba(255,255,255,0.65);align-self:flex-start;white-space:nowrap">' + formatDate(h.date) + '</span>'
+          + '</div>'
+          // Dates strip
+          + '<div style="background:var(--amber);padding:5px 16px;display:flex;align-items:center;gap:6px">'
+            + '<span style="font-size:0.85rem">📅</span>'
+            + '<span style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:#fff">' + formatDate(q.start_date) + ' – ' + formatDate(q.end_date) + '</span>'
+          + '</div>'
+          // Flavor text
+          + (q.flavor ? '<div style="background:var(--parchment);padding:12px 16px;font-family:Crimson Pro,serif;font-style:italic;font-size:0.95rem;color:var(--ink-mid);line-height:1.65;border-bottom:1px solid var(--border)">' + escHtml(q.flavor) + '</div>' : '')
+          // Individual floor callout
+          + '<div style="background:linear-gradient(90deg,rgba(154,16,16,0.08),transparent);padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)">'
+            + '<span style="font-size:1.2rem">🏃</span>'
+            + '<div>'
+              + '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--house-red);text-transform:uppercase">Individual Floor</div>'
+              + '<div style="font-family:Crimson Pro,serif;font-size:0.9rem;color:var(--ink);margin-top:1px">Each Howler must run <strong>' + floor + ' miles</strong> to qualify for the underdog prize</div>'
+            + '</div>'
+          + '</div>'
+          // Tier milestones header
+          + '<div style="background:rgba(0,0,0,0.04);padding:7px 14px;border-bottom:1px solid var(--border)">'
+            + '<span style="font-family:Cinzel,serif;font-size:0.6rem;font-weight:900;letter-spacing:0.15em;color:var(--ink-light);text-transform:uppercase">Group Milestones</span>'
+          + '</div>'
+          + tierRows
+          // Footer note
+          + '<div style="background:var(--parchment);padding:10px 14px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border)">'
+            + reactionBarHTML(h, h.id, 'toggleHowlReaction')
+            + '<div style="flex:1;font-family:Crimson Pro,serif;font-style:italic;font-size:0.8rem;color:var(--ink-light);text-align:right">Running miles only · Per aspera ad astra 🐺</div>'
+          + '</div>'
+        + '</div>';
+      }
 
       // Coach howl — Option B card style
       if (isCoach) {
