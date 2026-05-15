@@ -1325,6 +1325,7 @@
       <div id="coaching-nudge-text" style="background:var(--parchment);padding:12px 14px;font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-mid);line-height:1.65"></div>
     </div>
     <div id="active-duels-section"></div>
+    <div id="quest-banner"></div>
     <div class="section-title">The Pack — Leaderboard</div>
     <div class="player-grid" id="player-grid">
       <div class="induct-card" onclick="openInductModal()">
@@ -1373,7 +1374,7 @@
           <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
           <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
           <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-          <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
+          <option value="walk_run">Walk (6L/mile)</option>
           <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
           <option value="strength">The Iron Forge — Strength (15L flat)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
@@ -1529,7 +1530,7 @@
           <tr><td>The March — Long Run (min 6 mi)</td><td>15 per mile</td></tr>
           <tr><td>The Charge — Tempo / Race Pace</td><td>12 per mile</td></tr>
           <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
-          <tr><td>Walk/Run Intervals</td><td>8 per mile</td></tr>
+          <tr><td>Walk</td><td>6 per mile</td></tr>
           <tr><td>The Steed — Peloton Ride <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
           <tr><td>The Crimson Pulse — Cardio <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
           <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
@@ -1700,6 +1701,7 @@
         <button onclick="forceRestore()" style="width:100%;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em;margin-bottom:6px">⚠️ Force Restore (bypasses merge)</button>
         <button onclick="openChallengeManager()" style="width:100%;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">⚔ Manage Challenge Results</button>
         <button onclick="openBadgeManager()" style="width:100%;margin-top:6px;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">🏅 Manage Badge Awards</button>
+        <button onclick="openQuestManager()" style="width:100%;margin-top:6px;background:transparent;border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">⚔ Pack Quest Manager</button>
         <button id="btn-purge-bad-rewards" onclick="purgeCorruptRewards()" style="width:100%;margin-top:6px;background:rgba(154,16,16,0.08);border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">🧹 Remove Corrupt Challenge Laurels</button>
         <button onclick="repairUnderdogBonuses()" style="width:100%;margin-top:6px;background:rgba(154,16,16,0.08);border:1.5px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:9px;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:700;color:var(--house-red);cursor:pointer;letter-spacing:0.05em">🔧 Repair Underdog Bonus Data</button>
       </div>
@@ -1780,6 +1782,19 @@
   </div>
 </div>
 
+<!-- PACK QUEST MANAGER MODAL -->
+<div id="quest-manager-modal" style="display:none;position:fixed;inset:0;background:rgba(26,20,16,0.88);z-index:600;overflow-y:auto;padding:20px;backdrop-filter:blur(4px)">
+  <div style="background:var(--parchment);border:2px solid rgba(154,16,16,0.4);border-radius:var(--radius);padding:20px;width:100%;max-width:480px;margin:auto;position:relative">
+    <button onclick="document.getElementById('quest-manager-modal').style.display='none'" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid);padding:4px">✕</button>
+    <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;letter-spacing:0.1em;color:var(--house-red);margin-bottom:4px">⚔ Pack Quest Manager</div>
+    <p style="font-family:'Crimson Pro',serif;font-size:0.8rem;color:var(--ink-light);font-style:italic;margin-bottom:14px;line-height:1.5">Create and manage time-limited pack challenges with underdog rewards.</p>
+    <div id="quest-manager-body"></div>
+    <div style="text-align:center;margin-top:16px">
+      <span onclick="document.getElementById('quest-manager-modal').style.display='none'" style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-light);cursor:pointer;text-decoration:underline">dismiss</span>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT WORKOUT MODAL -->
 <div class="modal-overlay" id="edit-workout-modal">
   <div class="modal-box">
@@ -1792,7 +1807,7 @@
         <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
         <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
         <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-        <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
+        <option value="walk_run">Walk (6L/mile)</option>
         <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
         <option value="strength">The Iron Forge — Strength (15L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
@@ -1952,7 +1967,7 @@
         <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
         <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
         <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-        <option value="walk_run">Walk/Run Intervals (8L/mile)</option>
+        <option value="walk_run">Walk (6L/mile)</option>
         <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
         <option value="strength">The Iron Forge — Strength (15L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
@@ -2249,7 +2264,7 @@ const RED_GOD_LAURELS = 250;
 const WORKOUT_NAMES = {
   milestone_bonus:'✦ Conquest Bonus', duel_win:'⚔ Duel Victory', duel_loss:'⚔ Duel Defeat',
   long_run:'The March (Long Run)', tempo:'The Charge (Tempo)', easy_run:'The Patrol (Easy Run)',
-  walk_run:'Walk/Run Intervals', peloton:'The Steed (Peloton)',
+  walk_run:'Walk', peloton:'The Steed (Peloton)',
   strength:'The Iron Forge (Strength)', mobility:'Mind & Body (Mobility)',
   cardio:'The Crimson Pulse (Cardio)', race:'Race Day 🏆',
   optional_run:'Optional Run', optional_other:'Cross-Train',
@@ -2257,7 +2272,7 @@ const WORKOUT_NAMES = {
   motivate_fee:'🐺 Motivation Offering', motivate_gift:'🎁 Pack Gift'
 };
 
-let state = { players: [], workouts: [], howls: [], duels: [], challenges_won: {}, badges_awarded: {} };
+let state = { players: [], workouts: [], howls: [], duels: [], challenges_won: {}, badges_awarded: {}, pack_quests: [] };
 let refreshInterval = null;
 
 // ─── JSONBIN CONFIG ───────────────────────────────────────────────────────────
@@ -2436,6 +2451,7 @@ async function loadState() {
       if (!state.badges_awarded) state.badges_awarded = {};
       if (!state.howls) state.howls = [];
       if (!state.duels) state.duels = [];
+      if (!state.pack_quests) state.pack_quests = [];
       // Restore persisted deleted IDs into in-memory Set
       if (state._deletedWorkoutIds) state._deletedWorkoutIds.forEach(function(id){ _deletedWorkoutIds.add(id); });
       // Deduplicate howls by id — prefer ai_generated over fallback, otherwise keep first
@@ -2460,6 +2476,7 @@ async function loadState() {
     setSyncStatus('live');
   checkForNewActivityNotifications(prevState);
   if (_swReg) seedServiceWorker(_swReg);
+  checkQuestMilestones();
   // Reset announced cache if challenges version changed
   var cvKey = 'howlers_ch_version';
   if (localStorage.getItem(cvKey) !== 'v6') {
@@ -3158,7 +3175,7 @@ function calcLaurels(workout, miles, minutes) {
     case 'long_run': return Math.round(miles * 15);
     case 'tempo': return Math.round(miles * 12);
     case 'easy_run': return Math.round(miles * 10);
-    case 'walk_run': return miles > 0 ? Math.round(miles * 8) : 8;
+    case 'walk_run': return miles > 0 ? Math.round(miles * 6) : 6;
     case 'peloton': return Math.round((minutes / 10) * 8);
     case 'cardio': return Math.round((minutes / 10) * 8);
     case 'race': return miles > 0 ? Math.round(miles * 20) + 50 : 50;
@@ -3166,6 +3183,296 @@ function calcLaurels(workout, miles, minutes) {
     case 'mobility': return 10;
     default: return 0;
   }
+}
+
+// ─── PACK QUEST ──────────────────────────────────────────────────────────────
+const QUEST_RUN_TYPES = ['long_run','tempo','easy_run','race','optional_run'];
+
+function getActiveQuest() {
+  return (state.pack_quests || []).find(function(q){ return q.status === 'active' || q.status === 'upcoming'; }) || null;
+}
+
+function calcQuestProgress(quest) {
+  var today = getAZDate();
+  var works = (state.workouts || []).filter(function(w) {
+    return QUEST_RUN_TYPES.includes(w.workout) && w.miles > 0 &&
+      w.date >= quest.start_date && w.date <= quest.end_date;
+  });
+  var playerMiles = {};
+  works.forEach(function(w) {
+    playerMiles[w.player_id] = (playerMiles[w.player_id] || 0) + (parseFloat(w.miles) || 0);
+  });
+  var totalMiles = Object.values(playerMiles).reduce(function(a,b){ return a+b; }, 0);
+  var tiers = quest.tiers || [];
+  var currentTier = null;
+  tiers.slice().reverse().forEach(function(t){ if (totalMiles >= t.miles && !currentTier) currentTier = t; });
+  var nextTier = tiers.find(function(t){ return totalMiles < t.miles; }) || null;
+  var floorPlayers = (state.players || []).filter(function(p){ return (playerMiles[p.id] || 0) >= (quest.individual_floor || 0); });
+  var daysLeft = Math.max(0, Math.ceil((new Date(quest.end_date + 'T23:59:59') - new Date()) / 86400000));
+  var started = today >= quest.start_date;
+  return { playerMiles, totalMiles: +totalMiles.toFixed(1), currentTier, nextTier, floorPlayers, daysLeft, started };
+}
+
+function renderQuestBanner() {
+  var el = document.getElementById('quest-banner');
+  if (!el) return;
+  var quest = getActiveQuest();
+  if (!quest) { el.innerHTML = ''; return; }
+  var p = calcQuestProgress(quest);
+  var maxMiles = (quest.tiers && quest.tiers.length) ? quest.tiers[quest.tiers.length-1].miles : 1;
+  var pct = Math.min(100, (p.totalMiles / maxMiles) * 100).toFixed(1);
+  var nextTarget = p.nextTier ? p.nextTier.miles : maxMiles;
+  var nextPct = Math.min(100, (p.totalMiles / nextTarget) * 100).toFixed(1);
+  var statusLabel = quest.status === 'upcoming'
+    ? '<span style="font-size:0.55rem;letter-spacing:0.12em;color:var(--amber);font-family:Cinzel,serif">BEGINS ' + formatDate(quest.start_date).toUpperCase() + '</span>'
+    : p.daysLeft === 0 ? '<span style="font-size:0.55rem;letter-spacing:0.12em;color:#c8450a;font-family:Cinzel,serif">FINAL DAY</span>'
+    : '<span style="font-size:0.55rem;letter-spacing:0.12em;color:var(--amber);font-family:Cinzel,serif">' + p.daysLeft + ' DAYS REMAINING</span>';
+
+  var tierBadge = p.currentTier
+    ? '<div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:#4caf50;margin-top:4px">✦ TIER UNLOCKED: ' + p.currentTier.miles + ' mi → bottom howlers earn ' + p.currentTier.bonus + 'L</div>'
+    : '';
+
+  var progressBar = '<div style="margin:8px 0 4px">'
+    + '<div style="display:flex;justify-content:space-between;font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.08em;color:rgba(240,208,128,0.7);margin-bottom:3px">'
+    + '<span>' + p.totalMiles + ' mi</span>'
+    + (p.nextTier ? '<span>→ ' + p.nextTier.miles + ' mi for ' + p.nextTier.bonus + 'L</span>' : '<span>ALL TIERS HIT ✦</span>')
+    + '</div>'
+    + '<div style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden">'
+    + '<div style="height:100%;width:' + nextPct + '%;background:linear-gradient(90deg,#9a3a10,var(--amber));border-radius:3px;transition:width 0.6s"></div>'
+    + '</div>'
+    + (quest.tiers || []).map(function(t){
+        var tp = Math.min(100,(t.miles/nextTarget)*100);
+        return '<div style="position:relative;margin-top:-9px;height:0">'
+          + '<div style="position:absolute;left:' + tp.toFixed(1) + '%;transform:translateX(-50%);top:0;width:1px;height:9px;background:rgba(240,208,128,0.3)"></div>'
+        + '</div>';
+      }).join('')
+    + '</div>';
+
+  var playerTiles = (state.players || []).slice()
+    .sort(function(a,b){ return (p.playerMiles[b.id]||0) - (p.playerMiles[a.id]||0); })
+    .map(function(pl){
+      var mi = (p.playerMiles[pl.id]||0).toFixed(1);
+      var hitFloor = (p.playerMiles[pl.id]||0) >= (quest.individual_floor||0);
+      var hc = HOUSES[pl.house] || '#9a1010';
+      return '<div style="flex:1;min-width:0;background:rgba(0,0,0,0.2);border-radius:4px;padding:5px 4px;text-align:center;border:1px solid ' + (hitFloor ? 'rgba(76,175,80,0.4)' : 'rgba(255,255,255,0.08)') + '">'
+        + '<div style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:' + hc + '">' + mi + '</div>'
+        + '<div style="font-family:Crimson Pro,serif;font-size:0.58rem;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + pl.name.split(' ')[0] + '</div>'
+        + (hitFloor ? '<div style="font-size:0.45rem;color:#4caf50;margin-top:1px">✔ floor</div>' : '<div style="font-size:0.45rem;color:rgba(255,255,255,0.3);margin-top:1px">' + ((quest.individual_floor||0) - (p.playerMiles[pl.id]||0)).toFixed(1) + ' to go</div>')
+        + '</div>';
+    }).join('');
+
+  el.innerHTML = '<div style="background:linear-gradient(135deg,#1a0505 0%,#2d0a0a 50%,#1a0505 100%);border:1.5px solid rgba(154,16,16,0.5);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:0 4px 24px rgba(0,0,0,0.4)">'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">'
+    + '<div>'
+    + '<div style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.18em;color:rgba(154,16,16,0.8);text-transform:uppercase;margin-bottom:2px">Pack Quest</div>'
+    + '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:#f0d080;line-height:1.2">' + quest.name + '</div>'
+    + '</div>'
+    + '<div style="text-align:right">' + statusLabel + '</div>'
+    + '</div>'
+    + tierBadge
+    + progressBar
+    + '<div style="display:flex;gap:4px;margin-top:8px">' + playerTiles + '</div>'
+    + (p.started ? '' : '<div style="font-family:Crimson Pro,serif;font-size:0.72rem;font-style:italic;color:rgba(240,208,128,0.6);text-align:center;margin-top:8px">' + (quest.flavor || 'The hunt begins soon.') + '</div>')
+    + '</div>';
+}
+
+function openQuestManager() {
+  var pin = getAdminPin();
+  if (!pin) { showToast('No admin PIN set — configure one in Setup.'); return; }
+  var entered = prompt('Enter admin PIN to manage Pack Quests:');
+  if (entered !== pin) { showToast('Incorrect PIN.'); return; }
+  renderQuestManagerUI();
+  document.getElementById('quest-manager-modal').style.display = 'block';
+}
+
+function renderQuestManagerUI() {
+  var el = document.getElementById('quest-manager-body');
+  var quests = state.pack_quests || [];
+  var html = '';
+
+  quests.forEach(function(q) {
+    var p = calcQuestProgress(q);
+    var statusColor = q.status === 'active' ? '#4caf50' : q.status === 'completed' ? '#9a9a9a' : 'var(--amber)';
+    html += '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:10px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'
+      + '<div style="font-family:Cinzel,serif;font-size:0.78rem;font-weight:700;color:var(--ink)">' + q.name + '</div>'
+      + '<span style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.1em;color:' + statusColor + '">' + q.status.toUpperCase() + '</span>'
+      + '</div>'
+      + '<div style="font-family:Crimson Pro,serif;font-size:0.72rem;color:var(--ink-light);margin-bottom:8px">' + q.start_date + ' → ' + q.end_date + ' · ' + p.totalMiles + ' mi logged</div>'
+      + '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+    if (!q.announced) {
+      html += '<button onclick="announcePackQuest(\'' + q.id + '\')" style="flex:1;background:var(--amber);color:#1a0a0a;border:none;border-radius:4px;padding:6px 10px;font-family:Cinzel,serif;font-size:0.58rem;font-weight:700;cursor:pointer;letter-spacing:0.05em">📣 Post Announcement</button>';
+    }
+    if (q.status === 'active' && !q.payout_done) {
+      html += '<button onclick="payoutPackQuest(\'' + q.id + '\')" style="flex:1;background:var(--house-red);color:#fff;border:none;border-radius:4px;padding:6px 10px;font-family:Cinzel,serif;font-size:0.58rem;font-weight:700;cursor:pointer;letter-spacing:0.05em">⚔ Close & Pay Out</button>';
+    }
+    if (q.status === 'upcoming') {
+      html += '<button onclick="activatePackQuest(\'' + q.id + '\')" style="flex:1;background:#2d5a27;color:#fff;border:none;border-radius:4px;padding:6px 10px;font-family:Cinzel,serif;font-size:0.58rem;font-weight:700;cursor:pointer;letter-spacing:0.05em">▶ Activate</button>';
+    }
+    html += '</div></div>';
+  });
+
+  html += '<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">'
+    + '<div style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--ink);margin-bottom:10px">Create New Quest</div>'
+    + '<input id="qm-name" placeholder="Quest name (e.g. The June Gauntlet)" style="width:100%;box-sizing:border-box;font-family:Crimson Pro,serif;font-size:0.85rem;padding:7px 9px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink);margin-bottom:6px">'
+    + '<input id="qm-flavor" placeholder="Flavor text (optional)" style="width:100%;box-sizing:border-box;font-family:Crimson Pro,serif;font-size:0.85rem;padding:7px 9px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink);margin-bottom:6px">'
+    + '<div style="display:flex;gap:6px;margin-bottom:6px">'
+    + '<input id="qm-start" type="date" value="2026-06-01" style="flex:1;font-family:Crimson Pro,serif;font-size:0.85rem;padding:7px 9px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '<input id="qm-end" type="date" value="2026-06-30" style="flex:1;font-family:Crimson Pro,serif;font-size:0.85rem;padding:7px 9px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '</div>'
+    + '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">'
+    + '<label style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.08em;color:var(--ink-light);white-space:nowrap">FLOOR (mi)</label>'
+    + '<input id="qm-floor" type="number" value="25" min="1" style="flex:1;font-family:Crimson Pro,serif;font-size:0.85rem;padding:7px 9px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '<label style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.08em;color:var(--ink-light);white-space:nowrap">UNDERDOGS</label>'
+    + '<input id="qm-count" type="number" value="2" min="1" max="3" style="flex:1;font-family:Crimson Pro,serif;font-size:0.85rem;padding:7px 9px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '</div>'
+    + '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:4px">TIERS (miles → bonus laurels)</div>'
+    + '<div style="display:flex;gap:4px;margin-bottom:6px">'
+    + '<input id="qm-t1m" type="number" value="175" placeholder="mi" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '<span style="align-self:center;font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">→</span>'
+    + '<input id="qm-t1b" type="number" value="75" placeholder="L" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '<input id="qm-t2m" type="number" value="225" placeholder="mi" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '<span style="align-self:center;font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">→</span>'
+    + '<input id="qm-t2b" type="number" value="125" placeholder="L" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '<input id="qm-t3m" type="number" value="275" placeholder="mi" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '<span style="align-self:center;font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">→</span>'
+    + '<input id="qm-t3b" type="number" value="175" placeholder="L" style="flex:1;font-family:Crimson Pro,serif;font-size:0.82rem;padding:6px;border:1.5px solid var(--border);border-radius:4px;background:var(--parchment);color:var(--ink)">'
+    + '</div>'
+    + '<button onclick="createPackQuest()" style="width:100%;background:var(--house-red);color:#fff;border:none;border-radius:4px;padding:10px;font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;cursor:pointer;letter-spacing:0.08em">⚔ CREATE QUEST</button>'
+    + '</div>';
+
+  el.innerHTML = html;
+}
+
+function createPackQuest() {
+  var name = (document.getElementById('qm-name').value || '').trim();
+  if (!name) { showToast('Quest name required.'); return; }
+  if (!state.pack_quests) state.pack_quests = [];
+  var q = {
+    id: 'quest_' + Date.now(),
+    name: name,
+    flavor: (document.getElementById('qm-flavor').value || '').trim(),
+    metric: 'running_miles',
+    start_date: document.getElementById('qm-start').value,
+    end_date: document.getElementById('qm-end').value,
+    individual_floor: parseFloat(document.getElementById('qm-floor').value) || 25,
+    underdog_count: parseInt(document.getElementById('qm-count').value) || 2,
+    tiers: [
+      { miles: parseFloat(document.getElementById('qm-t1m').value)||175, bonus: parseFloat(document.getElementById('qm-t1b').value)||75 },
+      { miles: parseFloat(document.getElementById('qm-t2m').value)||225, bonus: parseFloat(document.getElementById('qm-t2b').value)||125 },
+      { miles: parseFloat(document.getElementById('qm-t3m').value)||275, bonus: parseFloat(document.getElementById('qm-t3b').value)||175 }
+    ].filter(function(t){ return t.miles > 0 && t.bonus > 0; }),
+    status: 'upcoming',
+    announced: false,
+    milestones_announced: [],
+    payout_done: false,
+    created_at: new Date().toISOString()
+  };
+  state.pack_quests.push(q);
+  saveState();
+  showToast('Quest created: ' + name);
+  renderQuestManagerUI();
+  renderQuestBanner();
+}
+
+function activatePackQuest(questId) {
+  var q = (state.pack_quests||[]).find(function(x){ return x.id===questId; });
+  if (!q) return;
+  q.status = 'active';
+  saveState();
+  showToast('Quest activated.');
+  renderQuestManagerUI();
+  renderQuestBanner();
+}
+
+function announcePackQuest(questId) {
+  var q = (state.pack_quests||[]).find(function(x){ return x.id===questId; });
+  if (!q) return;
+  if (!state.howls) state.howls = [];
+  var tierLines = (q.tiers||[]).map(function(t){ return '  • ' + t.miles + ' pack miles → bottom ' + (q.underdog_count||2) + ' earn ' + t.bonus + 'L each'; }).join('\n');
+  var msg = '⚔️ PACK QUEST DECLARED: ' + q.name + '\n\n'
+    + (q.flavor ? q.flavor + '\n\n' : '')
+    + '📏 THE RULES\n'
+    + '• Running miles only (no walks)\n'
+    + '• Individual floor: ' + (q.individual_floor||25) + ' miles to be eligible for the underdog prize\n'
+    + tierLines + '\n\n'
+    + '📅 ' + formatDate(q.start_date) + ' – ' + formatDate(q.end_date) + '\n\n'
+    + 'Per aspera ad astra. 🐺';
+  state.howls.push({ id: 'quest_announce_' + q.id, player_id: 'system', player_laurels: 9999, message: msg, date: getAZDate(), timestamp: new Date().toISOString(), reactions: {}, is_recap: true });
+  q.announced = true;
+  saveState();
+  showToast('Quest announcement posted to the Dispatch!');
+  renderQuestManagerUI();
+  renderAll();
+}
+
+function checkQuestMilestones() {
+  var q = (state.pack_quests||[]).find(function(x){ return x.status==='active'; });
+  if (!q) return;
+  var p = calcQuestProgress(q);
+  var changed = false;
+  if (!q.milestones_announced) q.milestones_announced = [];
+  (q.tiers||[]).forEach(function(t) {
+    if (p.totalMiles >= t.miles && !q.milestones_announced.includes(t.miles)) {
+      q.milestones_announced.push(t.miles);
+      if (!state.howls) state.howls = [];
+      var nextTier = (q.tiers||[]).find(function(nt){ return nt.miles > t.miles; });
+      var msg = '🔥 PACK QUEST — MILESTONE REACHED\n\n'
+        + 'The pack has crossed ' + t.miles + ' miles in ' + q.name + '.\n'
+        + 'The bottom ' + (q.underdog_count||2) + ' eligible Howlers stand to earn ' + t.bonus + 'L.\n'
+        + (nextTier ? 'Push to ' + nextTier.miles + ' miles and that climbs to ' + nextTier.bonus + 'L.\n\n' : '\nThat\'s the final tier. The pack delivered. 🐺\n\n')
+        + 'Per aspera ad astra. 🐺';
+      state.howls.push({ id: 'quest_milestone_' + q.id + '_' + t.miles, player_id: 'system', player_laurels: 9999, message: msg, date: getAZDate(), timestamp: new Date().toISOString(), reactions: {}, is_recap: true });
+      changed = true;
+    }
+  });
+  var today = getAZDate();
+  if (today > q.end_date && q.status === 'active' && !q.payout_done) {
+    q.status = 'completed';
+    changed = true;
+    var highestTier = null;
+    (q.tiers||[]).slice().reverse().forEach(function(t){ if (p.totalMiles >= t.miles && !highestTier) highestTier = t; });
+    if (!state.howls) state.howls = [];
+    var closeId = 'quest_close_' + q.id;
+    if (!(state.howls||[]).some(function(h){ return h.id===closeId; })) {
+      var closeMsg = '⚔️ ' + q.name.toUpperCase() + ' — THE GAUNTLET CLOSES\n\n'
+        + 'The pack logged ' + p.totalMiles + ' running miles.\n\n'
+        + (highestTier
+          ? '✦ ' + highestTier.miles + '-mile tier achieved. The bottom ' + (q.underdog_count||2) + ' eligible Howlers each earn ' + highestTier.bonus + 'L.\nGlory to those who finished when it was hardest. 🐺'
+          : 'The pack fell short of the first milestone. No payout this time — but the hunt never truly ends.')
+        + '\n\nPer aspera ad astra. 🐺';
+      state.howls.push({ id: closeId, player_id: 'system', player_laurels: 9999, message: closeMsg, date: getAZDate(), timestamp: new Date().toISOString(), reactions: {}, is_recap: true });
+    }
+  }
+  if (changed) saveState();
+}
+
+function payoutPackQuest(questId) {
+  var q = (state.pack_quests||[]).find(function(x){ return x.id===questId; });
+  if (!q) return;
+  var p = calcQuestProgress(q);
+  var highestTier = null;
+  (q.tiers||[]).slice().reverse().forEach(function(t){ if (p.totalMiles >= t.miles && !highestTier) highestTier = t; });
+  if (!highestTier) { showToast('No tier reached — no payout to award.'); return; }
+  var eligible = (state.players||[]).filter(function(pl){ return (p.playerMiles[pl.id]||0) >= (q.individual_floor||0); });
+  if (!eligible.length) { showToast('No eligible players (none hit the floor).'); return; }
+  var sorted = eligible.slice().sort(function(a,b){
+    return (calcPlayerStats(a.id).laurels||0) - (calcPlayerStats(b.id).laurels||0);
+  });
+  var underdogs = sorted.slice(0, q.underdog_count||2);
+  if (!confirm('Pay ' + highestTier.bonus + 'L to: ' + underdogs.map(function(p){return p.name;}).join(', ') + '?')) return;
+  if (!state.workouts) state.workouts = [];
+  underdogs.forEach(function(pl) {
+    var rewardId = 'quest_payout_' + q.id + '_' + pl.id;
+    if (state.workouts.some(function(w){ return w.id===rewardId; })) return;
+    state.workouts.push({ id: rewardId, player_id: pl.id, workout: 'milestone_bonus', date: getAZDate(), laurels_base: highestTier.bonus, quote: 'The underdogs who showed up when it was hardest. ⚔️', timestamp: new Date().toISOString(), milestone_label: '⚔ ' + q.name + ' Underdog Prize', milestone_bonus: highestTier.bonus });
+  });
+  q.payout_done = true;
+  q.status = 'completed';
+  saveState();
+  showToast('Payout complete. ' + highestTier.bonus + 'L awarded to ' + underdogs.map(function(p){return p.name.split(' ')[0];}).join(' & ') + '.');
+  document.getElementById('quest-manager-modal').style.display = 'none';
+  renderAll();
 }
 
 // ─── DUELS ───────────────────────────────────────────────────────────────────
@@ -4112,6 +4419,29 @@ async function checkAndPostWeeklyRecap() {
   var weekPrimusId = Object.keys(laurelsByPlayer).sort(function(a,b){return laurelsByPlayer[b]-laurelsByPlayer[a];})[0];
   var weekPrimus = weekPrimusId ? state.players.find(function(p){return p.id===weekPrimusId;}) : null;
 
+  // Quest status block
+  var activeQuest = getActiveQuest();
+  var questBlock = '';
+  if (activeQuest) {
+    var qp = calcQuestProgress(activeQuest);
+    var qTopTier = null;
+    (activeQuest.tiers||[]).slice().reverse().forEach(function(t){ if (qp.totalMiles >= t.miles && !qTopTier) qTopTier = t; });
+    var qNext = (activeQuest.tiers||[]).find(function(t){ return qp.totalMiles < t.miles; });
+    var qBar = (function(){
+      var target = qNext ? qNext.miles : (activeQuest.tiers||[]).slice(-1)[0].miles;
+      var pct = Math.min(100, Math.round((qp.totalMiles / target) * 10));
+      return '█'.repeat(pct) + '░'.repeat(10 - pct) + ' ' + qp.totalMiles + '/' + target + ' mi';
+    })();
+    var qPlayerLines = (state.players||[]).slice()
+      .sort(function(a,b){ return (qp.playerMiles[b.id]||0)-(qp.playerMiles[a.id]||0); })
+      .map(function(pl){ var mi=(qp.playerMiles[pl.id]||0).toFixed(1); var hit=(qp.playerMiles[pl.id]||0)>=(activeQuest.individual_floor||0); return pl.name.split(' ')[0]+': '+mi+'mi'+(hit?' ✔':''); }).join(' | ');
+    questBlock = '\n\n🏔️ PACK QUEST — ' + activeQuest.name.toUpperCase() + '\n'
+      + qBar + '\n'
+      + qPlayerLines + '\n'
+      + (qNext ? 'Next tier: ' + qNext.miles + ' mi → ' + qNext.bonus + 'L for the underdogs. ' + qp.daysLeft + ' days left.' : 'ALL TIERS ACHIEVED. 🐺')
+      + (qTopTier ? '\n✦ ' + qTopTier.miles + '-mile tier unlocked — bottom howlers earn ' + qTopTier.bonus + 'L.' : '');
+  }
+
   let recap = '📊 WEEKLY RECAP\n\n';
   recap += 'The pack logged ' + lastWeekWorkouts.length + ' trial' + (lastWeekWorkouts.length!==1?'s':'') + ' last week. ';
   if (weekPrimus) recap += '\n🏅 Weekly Primus: ' + weekPrimus.name + ' — +' + (laurelsByPlayer[weekPrimusId]||0) + ' Laurels earned. ';
@@ -4121,7 +4451,7 @@ async function checkAndPostWeeklyRecap() {
   if (perfectHowlers.length > 0) {
     recap += '\n⭐ Perfect Week: ' + perfectHowlers.map(function(p){return p.name;}).join(' & ') + '. ';
   }
-  recap += '\nPer aspera ad astra. 🐺';
+  recap += questBlock + '\nPer aspera ad astra. 🐺';
 
   // Try AI narrative if key available
   var aiRecap = null;
@@ -5194,6 +5524,7 @@ function renderAll() {
   renderDistanceRankings();
   renderMarsBar();
   renderWeeklyLeaderboard();
+  renderQuestBanner();
   renderCodex();
   checkUnreadHowls();
   markAllPlayersSeen();
@@ -7906,7 +8237,7 @@ function switchTab(id) {
   if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); checkAndFireMotivationBurst(); }
   if (id === 'chronicle') { renderChronicle(); markAnnalsSeen(); }
   if (id === 'leaderboard') {
-    renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard();
+    renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard(); renderQuestBanner();
     // Show coaching nudge — use cache if available, fire AI only if no cache for today
     if (currentHowlerId && getAnthropicKey()) {
       var card = document.getElementById('coaching-nudge-card');
