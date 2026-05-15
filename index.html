@@ -1530,7 +1530,7 @@
           <tr><td>The March — Long Run (min 6 mi)</td><td>15 per mile</td></tr>
           <tr><td>The Charge — Tempo / Race Pace</td><td>12 per mile</td></tr>
           <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
-          <tr><td>Walk</td><td>6 per mile</td></tr>
+          <tr><td>Walk <em style="font-size:0.8rem;color:var(--ink-light)">(6L/mi from June 1 · 8L/mi before)</em></td><td>6 per mile</td></tr>
           <tr><td>The Steed — Peloton Ride <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
           <tr><td>The Crimson Pulse — Cardio <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
           <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
@@ -3168,14 +3168,15 @@ function getWeekKey(dateStr) {
   return `${d.getFullYear()}-W${week}`;
 }
 
-function calcLaurels(workout, miles, minutes) {
+function calcLaurels(workout, miles, minutes, date) {
   miles = parseFloat(miles) || 0;
   minutes = parseInt(minutes) || 0;
+  var walkRate = (date || getAZDate()) >= '2026-06-01' ? 6 : 8;
   switch(workout) {
     case 'long_run': return Math.round(miles * 15);
     case 'tempo': return Math.round(miles * 12);
     case 'easy_run': return Math.round(miles * 10);
-    case 'walk_run': return miles > 0 ? Math.round(miles * 6) : 6;
+    case 'walk_run': return miles > 0 ? Math.round(miles * walkRate) : walkRate;
     case 'peloton': return Math.round((minutes / 10) * 8);
     case 'cardio': return Math.round((minutes / 10) * 8);
     case 'race': return miles > 0 ? Math.round(miles * 20) + 50 : 50;
@@ -3758,7 +3759,7 @@ async function qlSubmit() {
   if (btn && btn.disabled) return;
   if (btn) { btn.disabled = true; btn.textContent = '⏳ RECORDING…'; }
 
-  var laurels_base = calcLaurels(workout, miles, minutes);
+  var laurels_base = calcLaurels(workout, miles, minutes, date);
   buildStatsCache();
   var allLaurels = state.players.map(function(p){ return (_statsCache[p.id]||{}).laurels||0; });
   var leaderLaurels = allLaurels.length > 0 ? Math.max.apply(null, allLaurels) : 0;
@@ -8069,7 +8070,7 @@ async function saveEditWorkout() {
   w.minutes = parseInt(document.getElementById('edit-workout-minutes').value) || undefined;
   w.date = editDate;
   w.notes = document.getElementById('edit-workout-notes').value.trim();
-  var newBase = calcLaurels(w.workout, w.miles, w.minutes);
+  var newBase = calcLaurels(w.workout, w.miles, w.minutes, w.date);
   w.laurels_earned = newBase;
   w.laurels_base = newBase + (w.underdog_bonus || 0);
   recalcAllBadges();
