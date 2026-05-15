@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="20" fill="#1a0a0a"/>
+  <rect width="200" height="200" rx="20" fill="url(#bg)"/>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#3a0808"/>
+      <stop offset="100%" stop-color="#0d0505"/>
+    </radialGradient>
+  </defs>
+  <text x="100" y="130" font-size="110" text-anchor="middle" font-family="serif">🐺</text>
+  <text x="100" y="180" font-size="18" text-anchor="middle" font-family="Georgia,serif" fill="#c8900a" letter-spacing="3">HOWLERS</text>
+</svg>

@@ -2459,6 +2459,7 @@ async function loadState() {
     }
     setSyncStatus('live');
   checkForNewActivityNotifications(prevState);
+  if (_swReg) seedServiceWorker(_swReg);
   // Reset announced cache if challenges version changed
   var cvKey = 'howlers_ch_version';
   if (localStorage.getItem(cvKey) !== 'v6') {
@@ -3761,7 +3762,14 @@ function requestNotifications() {
   Notification.requestPermission().then(function(result) {
     if (result === 'granted') {
       showToast('Notifications enabled! The pack will alert you. 🐺');
-      new Notification('The Howlers', { body: 'You will now be notified of pack activity. 🐺', icon: '' });
+      if (_swReg) {
+        _swReg.showNotification('The Howlers', { body: 'You will now be notified of pack activity. 🐺', icon: '/the-howlers-run/icon.svg', badge: '/the-howlers-run/icon.svg', tag: 'howlers-welcome' });
+        if (_swReg.periodicSync) {
+          _swReg.periodicSync.register('check-howls', { minInterval: 3 * 60 * 1000 }).catch(function(){});
+        }
+      } else {
+        try { new Notification('The Howlers', { body: 'You will now be notified of pack activity. 🐺', icon: '/the-howlers-run/icon.svg' }); } catch(e) {}
+      }
     } else {
       showToast('Notifications blocked. Enable them in browser settings.');
     }
@@ -3787,11 +3795,29 @@ function updateNotifBtn() {
     btn.style.opacity = '0.7';
   }
 }
-function fireNotification(title, body) {
+function fireNotification(title, body, tag) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  if (document.visibilityState === 'visible') return; // don't notify if app is in focus
-  try { new Notification(title, { body: body, icon: '' }); } catch(e) {}
+  if (document.visibilityState === 'visible') return;
+  var opts = { body: body, icon: '/the-howlers-run/icon.svg', badge: '/the-howlers-run/icon.svg', tag: tag || ('howlers-' + Date.now()), renotify: true, vibrate: [200, 100, 200] };
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'NOTIFY', title: title, body: body, tag: opts.tag });
+  } else {
+    try { new Notification(title, opts); } catch(e) {}
+  }
 }
+function seedServiceWorker(reg) {
+  var ctrl = reg && (reg.active || reg.installing || reg.waiting);
+  if (!ctrl) return;
+  var cfg = getGistConfig();
+  ctrl.postMessage({
+    type: 'SEED',
+    gistId: cfg.gistId,
+    gistToken: cfg.token,
+    howlIds: (state.howls || []).map(function(h){ return h.id; }),
+    workoutIds: (state.workouts || []).map(function(w){ return w.id; })
+  });
+}
+var _swReg = null;
 function checkForNewActivityNotifications(prevState) {
   if (!prevState) return;
   // New workouts
@@ -3802,7 +3828,7 @@ function checkForNewActivityNotifications(prevState) {
     if (!player || player.id === currentHowlerId) return;
     const wname = WORKOUT_NAMES[w.workout]||w.workout;
     const detail = w.miles ? w.miles+' mi' : (w.minutes ? w.minutes+' min' : '');
-    fireNotification('🐺 The Howlers', player.name + ' logged ' + wname + (detail?' · '+detail:'') + ' · +' + w.laurels_base + 'L');
+    fireNotification('🐺 ' + player.name.split(' ')[0] + ' logged a workout', wname + (detail?' · '+detail:'') + ' · +' + w.laurels_base + 'L', 'workout-' + w.id);
   });
   // New howls
   const prevHowlIds = new Set((prevState.howls||[]).map(function(h){return h.id;}));
@@ -3810,7 +3836,7 @@ function checkForNewActivityNotifications(prevState) {
   newHowls.forEach(function(h) {
     const player = state.players.find(function(p){return p.id===h.player_id;});
     if (!player) return;
-    fireNotification('🐺 The Howlers', player.name + ' howled: "' + h.message.slice(0,60) + (h.message.length>60?'...':'"'));
+    fireNotification('🐺 ' + player.name.split(' ')[0] + ' howled', h.message.slice(0,100) + (h.message.length>100?'…':''), 'howl-' + h.id);
   });
 }
 
@@ -7985,6 +8011,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   refreshInterval = setInterval(function(){ if(document.visibilityState !== "hidden") loadState(); }, 300000);
   renderCodex();
+
+  // ── SERVICE WORKER ─────────────────────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/the-howlers-run/sw.js').then(function(reg) {
+      _swReg = reg;
+      // Re-seed whenever SW activates or updates
+      reg.addEventListener('updatefound', function() {
+        var newSW = reg.installing;
+        if (newSW) newSW.addEventListener('statechange', function() {
+          if (newSW.state === 'activated') seedServiceWorker(reg);
+        });
+      });
+      if (reg.active) seedServiceWorker(reg);
+      // Re-register periodic sync if permission already granted
+      if (Notification.permission === 'granted' && reg.periodicSync) {
+        reg.periodicSync.register('check-howls', { minInterval: 3 * 60 * 1000 }).catch(function(){});
+      }
+    }).catch(function(err) {
+      console.warn('[Howlers] SW registration failed:', err);
+    });
+  }
 
   // ── STRAVA OAUTH CALLBACK ─────────────────────────────────────────────────
   var _urlParams = new URLSearchParams(window.location.search);
