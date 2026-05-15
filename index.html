@@ -2267,7 +2267,7 @@ const WORKOUT_NAMES = {
   walk_run:'Walk', peloton:'The Steed (Peloton)',
   strength:'The Iron Forge (Strength)', mobility:'Mind & Body (Mobility)',
   cardio:'The Crimson Pulse (Cardio)', race:'Race Day 🏆',
-  optional_run:'Optional Run', optional_other:'Cross-Train',
+  optional_other:'Cross-Train',
   trashtalk_fee:'⚔ Trash Talk Toll', trashtalk_pot:'💰 Underdog\'s Share',
   motivate_fee:'🐺 Motivation Offering', motivate_gift:'🎁 Pack Gift'
 };
@@ -2743,7 +2743,7 @@ function calcPlayerStats(pid) {
     : (player && player.book_laurels ? player.book_laurels : 0);
   const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
   const TIMED_WK = ['peloton','cardio','strength','mobility']; // require 15-min minimum
-  const RUN_WK = ['long_run','easy_run','tempo','walk_run','race','optional_run'];
+  const RUN_WK = ['long_run','easy_run','tempo','walk_run','race'];
   // Trials = real workouts; timed ones must meet 15-min minimum
   let trials = works.filter(w => {
     if (SYSTEM_WK.includes(w.workout)) return false;
@@ -2840,7 +2840,7 @@ function calcPlayerStats(pid) {
 
   const earnedBadges = (state.badges_awarded[pid] || []);
   // Personal bests
-  const runWorkouts = works.filter(w => ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout) && w.miles);
+  const runWorkouts = works.filter(w => ['long_run','easy_run','tempo','walk_run'].includes(w.workout) && w.miles);
   const longestRun = runWorkouts.length > 0 ? Math.max(...runWorkouts.map(w => w.miles)) : 0;
   const totalRunMiles = +miles.toFixed(1);
   // Underdog check (based on stored data — compare against other players later in render)
@@ -2907,7 +2907,7 @@ function openProfile(pid) {
       runningTotal += (w.laurels_base || 0);
       const wname = w.workout === 'milestone_bonus' ? (w.milestone_label || '⚔ Milestone Bonus') : (WORKOUT_NAMES[w.workout] || w.workout);
       let detail = '';
-      if (['long_run','tempo','easy_run','optional_run','walk_run'].includes(w.workout)) detail = w.miles ? w.miles + ' mi' : '';
+      if (['long_run','tempo','easy_run','walk_run'].includes(w.workout)) detail = w.miles ? w.miles + ' mi' : '';
       else if (w.workout === 'peloton') detail = w.minutes ? w.minutes + ' min' : '';
       else if (w.workout === 'strength') detail = 'Strength session';
       else if (w.workout === 'mobility') detail = 'Mobility session';
@@ -3187,7 +3187,7 @@ function calcLaurels(workout, miles, minutes, date) {
 }
 
 // ─── PACK QUEST ──────────────────────────────────────────────────────────────
-const QUEST_RUN_TYPES = ['long_run','tempo','easy_run','race','optional_run'];
+const QUEST_RUN_TYPES = ['long_run','tempo','easy_run','race'];
 
 function getActiveQuest() {
   return (state.pack_quests || []).find(function(q){ return q.status === 'active' || q.status === 'upcoming'; }) || null;
@@ -4399,7 +4399,7 @@ async function checkAndPostWeeklyRecap() {
   });
   if (lastWeekWorkouts.length === 0) return;
   // Who ran the most miles — running workouts only, not Peloton
-  const RUN_TYPES = ['long_run','easy_run','tempo','walk_run','race','optional_run'];
+  const RUN_TYPES = ['long_run','easy_run','tempo','walk_run','race'];
   const milesByPlayer = {};
   lastWeekWorkouts.forEach(function(w) {
     if (RUN_TYPES.includes(w.workout) && w.miles)
@@ -5949,7 +5949,7 @@ function renderChronicle() {
     const displayName = w.milestone_label || WORKOUT_NAMES[w.workout] || w.workout;
     // Build meaningful detail string per workout type
     let detail = '';
-    if (['long_run','tempo','easy_run','optional_run','walk_run'].includes(w.workout)) {
+    if (['long_run','tempo','easy_run','walk_run'].includes(w.workout)) {
       detail = w.miles ? w.miles + ' mi' : '';
     } else if (w.workout === 'peloton') {
       detail = w.minutes ? w.minutes + ' min' : '';
@@ -6268,13 +6268,13 @@ function renderTimeline() {
   const checkMilestone = (id) => {
     if (id === 'm1') return state.workouts.length > 0;
     if (id === 'm2') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && w.workout === 'peloton'));
-    if (id === 'm3') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && ['long_run','easy_run','tempo','optional_run','walk_run'].includes(w.workout)));
-    if (id === 'm4') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && ['optional_run','optional_other'].includes(w.workout)));
+    if (id === 'm3') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && ['long_run','easy_run','tempo','walk_run'].includes(w.workout)));
+    if (id === 'm4') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && w.workout === 'optional_other'));
     if (id === 'm5') { const totalWeeks = state.players.reduce((s,p)=>s+((statsMap[p.id].weekSet&&statsMap[p.id].weekSet.size)||0),0); return totalWeeks >= 8; }
-    if (id === 'm6') return state.workouts.some(w => ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 6);
-    if (id === 'm7') return state.workouts.some(w => ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 10);
+    if (id === 'm6') return state.workouts.some(w => ['long_run','easy_run','tempo'].includes(w.workout) && (w.miles||0) >= 6);
+    if (id === 'm7') return state.workouts.some(w => ['long_run','easy_run','tempo'].includes(w.workout) && (w.miles||0) >= 10);
     if (id === 'm8') return state.workouts.length >= 100;
-    if (id === 'm9') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && ['long_run','easy_run','tempo','optional_run'].includes(w.workout) && (w.miles||0) >= 12));
+    if (id === 'm9') return state.players.length > 0 && state.players.every(p => state.workouts.some(w => w.player_id === p.id && ['long_run','easy_run','tempo'].includes(w.workout) && (w.miles||0) >= 12));
     if (id === 'm10') return now >= raceWeekStart && now <= raceWeekEnd;
     return false;
   };
@@ -8111,7 +8111,7 @@ function updateLaurelPreview() {
     milesGroup.style.display = 'block';
     if (milesLabel) milesLabel.textContent = 'Peloton Miles (optional)';
     minsGroup.style.display = 'block';
-  } else if (['long_run','tempo','easy_run','optional_run','walk_run','race'].includes(workout)) {
+  } else if (['long_run','tempo','easy_run','walk_run','race'].includes(workout)) {
     milesGroup.style.display = 'block';
     if (milesLabel) milesLabel.textContent = 'Miles';
     minsGroup.style.display = 'none';
@@ -8151,7 +8151,7 @@ async function submitTrial() {
   if (!date) { showToast('Enter a date.'); return; }
   if(date<'2026-04-13'){showToast('No trials before April 13, 2026.');return;}
   if(date>getAZDate()){showToast('Cannot log a future date.');return;}
-  if (['long_run','tempo','easy_run','optional_run'].includes(workout) && miles === 0) {
+  if (['long_run','tempo','easy_run'].includes(workout) && miles === 0) {
     showToast('Enter miles for this workout.'); return;
   }
   if (workout === 'long_run' && miles < 6) {
