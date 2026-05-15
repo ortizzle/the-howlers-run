@@ -1001,7 +1001,20 @@
   .copy-btn.copied { background: #4caf50; }
 
   /* CODEX */
-  .codex-section { margin-bottom: 32px; }
+  .codex-section { margin-bottom: 8px; }
+  .codex-heading {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 700;
+    color: var(--ink); padding: 10px 14px; cursor: pointer;
+    background: var(--parchment-dark); border: 1.5px solid var(--border);
+    border-radius: var(--radius); user-select: none; transition: background 0.15s;
+  }
+  .codex-heading:hover { background: #e8dece; }
+  .codex-heading .ch-arrow { font-size: 0.65rem; color: var(--ink-light); transition: transform 0.2s; }
+  .codex-heading.open .ch-arrow { transform: rotate(90deg); }
+  .codex-body { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
+  .codex-body.open { max-height: 4000px; }
+  .codex-body-inner { padding: 2px 0 10px; }
   .codex-table {
     width: 100%;
     border-collapse: collapse;
@@ -1500,101 +1513,143 @@
     <!-- TAB: CODEX -->
   <div class="tab-content" id="tab-codex">
     <div class="section-title">The Scrolls — Rules of the Pack</div>
-    <div class="codex-section">
-      <div class="codex-section">
-      <div class="section-title" style="font-size:0.95rem">Pack Rules</div>
-      <table class="codex-table">
-        <tbody>
-          <tr><td><strong>Training Start</strong></td><td>Monday, April 13, 2026</td></tr>
-          <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
-          <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
-          <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum (any activity, 15 minutes minimum)</td></tr>
-          
-          <tr><td><strong>Book Bonus</strong></td><td>Ladders up per book: Red Rising +25, Golden Son +50, Morning Star +75, Iron Gold +100, Dark Age +125, Light Bringer +150, Red God +250</td></tr>
-          <tr><td><strong>Archprimus</strong></td><td>Player with most Laurels leads the pack ★</td></tr>
-          <tr><td><strong>Peerless Gold</strong></td><td>Reach Peerless Scarred (16,000L) and your card turns gold — earned, not chosen ✦</td></tr>
-        </tbody>
-      </table>
-    </div>
-      <div class="section-title" style="font-size:0.95rem">Ranks by Laurels</div>
-      <table class="codex-table">
-        <thead><tr><th>Laurels</th><th>Rank</th></tr></thead>
-        <tbody id="codex-ranks"></tbody>
-      </table>
-    </div>
-    <div class="codex-section">
-      <div class="section-title" style="font-size:0.95rem">Points System</div>
-      <table class="codex-table">
-        <thead><tr><th>Workout</th><th>Laurels</th></tr></thead>
-        <tbody>
-          <tr><td>The March — Long Run (min 6 mi)</td><td>15 per mile</td></tr>
-          <tr><td>The Charge — Tempo / Race Pace</td><td>12 per mile</td></tr>
-          <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
-          <tr><td>Walk <em style="font-size:0.8rem;color:var(--ink-light)">(6L/mi from June 1 · 8L/mi before)</em></td><td>6 per mile</td></tr>
-          <tr><td>The Steed — Peloton Ride <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
-          <tr><td>The Crimson Pulse — Cardio <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>8L per 10 min (24L / 30 min)</td></tr>
-          <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
-          <tr><td>The Iron Forge — Strength <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>15 flat</td></tr>
-          <tr><td>Mind & Body — Mobility/Yoga <em style="font-size:0.8rem;color:var(--ink-light)">(15 minutes minimum to count)</em></td><td>10 flat</td></tr>
-          <tr><td>Underdog Bonus</td><td>+20% when 300+ Laurels behind leader</td></tr>
-          <tr><td>🏅 Badge Earned</td><td>Bronze +25L · Silver +50L · Gold +100L</td></tr>
-          <tr><td>📚 Books Read</td><td>Red Rising +25 · Golden Son +50 · Morning Star +75 · Iron Gold +100 · Dark Age +125 · Light Bringer +150 · Red God +250 ✦</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="codex-section">
-      <div class="section-title" style="font-size:0.95rem">The Council of Coaches</div>
-      <p style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.9rem;color:var(--ink-light);margin-bottom:14px;line-height:1.6">Each Howler is advised daily by one of three coaches drawn from the Sons of Ares. Your personal coach appears on the Leaderboard. After every trial, the pack sees a coaching howl addressed to you in the feed — the council may send a different voice each time.</p>
 
-      <!-- Mickey -->
-      <div style="border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1.5px solid rgba(109,40,217,0.3);margin-bottom:12px">
-        <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,0.06);background:rgba(109,40,217,0.07)">
-          <span style="font-size:1.1rem">🎭</span>
-          <div style="flex:1">
-            <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:900;letter-spacing:0.15em;color:#6d28d9">THE CARVER SPEAKS</div>
-            <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.72rem;color:var(--ink-light);margin-top:1px">Mickey au Valii-Ven · House Violet</div>
-          </div>
-        </div>
-        <div style="background:var(--parchment);padding:12px 14px">
-          <p style="font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.6;margin-bottom:6px">The Violet Carver who physically transformed Darrow into a Gold. Mickey's obsession is <strong>form, output, and physical perfection</strong> — he coaches like an artist critiquing a sculpture. Expect theatrical precision and exacting standards.</p>
-          <p style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.1em;color:#6d28d9;text-transform:uppercase">Focus: Miles · Output · Physical Form</p>
-        </div>
+    <!-- Pack Rules -->
+    <div class="codex-section">
+      <div class="codex-heading open" onclick="toggleCodexSection('rules')">
+        <span>Pack Rules</span><span class="ch-arrow">▶</span>
       </div>
-
-      <!-- Matteo -->
-      <div style="border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1.5px solid rgba(190,24,93,0.28);margin-bottom:12px">
-        <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,0.06);background:rgba(190,24,93,0.07)">
-          <span style="font-size:1.1rem">🌸</span>
-          <div style="flex:1">
-            <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:900;letter-spacing:0.15em;color:#be185d">MATTEO ADVISES</div>
-            <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.72rem;color:var(--ink-light);margin-top:1px">Matteo · House Pink</div>
-          </div>
-        </div>
-        <div style="background:var(--parchment);padding:12px 14px">
-          <p style="font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.6;margin-bottom:6px">The Pink who spent three months teaching Darrow the manners and cultural nuances of High Golds. Matteo is attuned to <strong>social positioning, pack hierarchy, and perception</strong> — he reads the leaderboard like a political map.</p>
-          <p style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.1em;color:#be185d;text-transform:uppercase">Focus: Pack Rank · Strategy · Positioning</p>
-        </div>
-      </div>
-
-      <!-- Dancer -->
-      <div style="border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1.5px solid rgba(154,16,16,0.35);margin-bottom:0">
-        <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,0.06);background:rgba(154,16,16,0.07)">
-          <span style="font-size:1.1rem">⚒</span>
-          <div style="flex:1">
-            <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:900;letter-spacing:0.15em;color:#9a1010">DANCER COMMANDS</div>
-            <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.72rem;color:var(--ink-light);margin-top:1px">Dancer · House Red</div>
-          </div>
-        </div>
-        <div style="background:var(--parchment);padding:12px 14px">
-          <p style="font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.6;margin-bottom:6px">Leader of the Sons of Ares who prepared Darrow's mind for what lay ahead. Dancer does not coddle. He speaks in <strong>purpose, grit, and ideological fire</strong> — reminding each Howler what they're really training for.</p>
-          <p style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.1em;color:#9a1010;text-transform:uppercase">Focus: Mental Toughness · Consistency · Purpose</p>
+      <div class="codex-body open" id="codex-body-rules">
+        <div class="codex-body-inner">
+          <table class="codex-table">
+            <tbody>
+              <tr><td><strong>Training Start</strong></td><td>Monday, April 13, 2026</td></tr>
+              <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
+              <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
+              <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum (any activity, 15 minutes minimum)</td></tr>
+              <tr><td><strong>Book Bonus</strong></td><td>Ladders up per book: Red Rising +25, Golden Son +50, Morning Star +75, Iron Gold +100, Dark Age +125, Light Bringer +150, Red God +250</td></tr>
+              <tr><td><strong>Archprimus</strong></td><td>Player with most Laurels leads the pack ★</td></tr>
+              <tr><td><strong>Peerless Gold</strong></td><td>Reach Peerless Scarred (16,000L) and your card turns gold — earned, not chosen ✦</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
+    <!-- Pack Quest -->
+    <div class="codex-section" id="codex-quest-section" style="display:none">
+      <div class="codex-heading open" onclick="toggleCodexSection('quest')" style="border-color:rgba(154,16,16,0.4);background:rgba(26,5,5,0.06)">
+        <span>⚔ Pack Quest</span><span class="ch-arrow">▶</span>
+      </div>
+      <div class="codex-body open" id="codex-body-quest">
+        <div class="codex-body-inner" id="codex-quest-body"></div>
+      </div>
+    </div>
+
+    <!-- Points System -->
     <div class="codex-section">
-      <div class="section-title" style="font-size:0.95rem">Badges</div>
-      <div class="badges-grid" id="codex-badges"></div>
+      <div class="codex-heading" onclick="toggleCodexSection('points')">
+        <span>Points System</span><span class="ch-arrow">▶</span>
+      </div>
+      <div class="codex-body" id="codex-body-points">
+        <div class="codex-body-inner">
+          <table class="codex-table">
+            <thead><tr><th>Workout</th><th>Laurels</th></tr></thead>
+            <tbody>
+              <tr><td>The March — Long Run (min 6 mi)</td><td>15 per mile</td></tr>
+              <tr><td>The Charge — Tempo / Race Pace</td><td>12 per mile</td></tr>
+              <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
+              <tr><td>Walk <em style="font-size:0.8rem;color:var(--ink-light)">(6L/mi from June 1 · 8L/mi before)</em></td><td>6 per mile</td></tr>
+              <tr><td>The Steed — Peloton Ride <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>8L per 10 min</td></tr>
+              <tr><td>The Crimson Pulse — Cardio <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>8L per 10 min</td></tr>
+              <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
+              <tr><td>The Iron Forge — Strength <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>15 flat</td></tr>
+              <tr><td>Mind & Body — Mobility/Yoga <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>10 flat</td></tr>
+              <tr><td>Underdog Bonus</td><td>+20% when 300+ Laurels behind leader</td></tr>
+              <tr><td>🏅 Badge Earned</td><td>Bronze +25L · Silver +50L · Gold +100L</td></tr>
+              <tr><td>📚 Books Read</td><td>Red Rising +25 · Golden Son +50 · Morning Star +75 · Iron Gold +100 · Dark Age +125 · Light Bringer +150 · Red God +250 ✦</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ranks -->
+    <div class="codex-section">
+      <div class="codex-heading" onclick="toggleCodexSection('ranks')">
+        <span>Ranks by Laurels</span><span class="ch-arrow">▶</span>
+      </div>
+      <div class="codex-body" id="codex-body-ranks">
+        <div class="codex-body-inner">
+          <table class="codex-table">
+            <thead><tr><th>Laurels</th><th>Rank</th></tr></thead>
+            <tbody id="codex-ranks"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coaches -->
+    <div class="codex-section">
+      <div class="codex-heading" onclick="toggleCodexSection('coaches')">
+        <span>The Council of Coaches</span><span class="ch-arrow">▶</span>
+      </div>
+      <div class="codex-body" id="codex-body-coaches">
+        <div class="codex-body-inner">
+          <p style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.9rem;color:var(--ink-light);margin-bottom:14px;line-height:1.6">Each Howler is advised by one of three coaches drawn from the Sons of Ares. Your coach appears on the Leaderboard and howls at you after every trial.</p>
+          <div style="border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1.5px solid rgba(109,40,217,0.3);margin-bottom:12px">
+            <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,0.06);background:rgba(109,40,217,0.07)">
+              <span style="font-size:1.1rem">🎭</span>
+              <div style="flex:1">
+                <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:900;letter-spacing:0.15em;color:#6d28d9">THE CARVER SPEAKS</div>
+                <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.72rem;color:var(--ink-light);margin-top:1px">Mickey au Valii-Ven · House Violet</div>
+              </div>
+            </div>
+            <div style="background:var(--parchment);padding:12px 14px">
+              <p style="font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.6;margin-bottom:6px">The Violet Carver who physically transformed Darrow into a Gold. Mickey's obsession is <strong>form, output, and physical perfection</strong> — he coaches like an artist critiquing a sculpture.</p>
+              <p style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.1em;color:#6d28d9;text-transform:uppercase">Focus: Miles · Output · Physical Form</p>
+            </div>
+          </div>
+          <div style="border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1.5px solid rgba(190,24,93,0.28);margin-bottom:12px">
+            <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,0.06);background:rgba(190,24,93,0.07)">
+              <span style="font-size:1.1rem">🌸</span>
+              <div style="flex:1">
+                <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:900;letter-spacing:0.15em;color:#be185d">MATTEO ADVISES</div>
+                <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.72rem;color:var(--ink-light);margin-top:1px">Matteo · House Pink</div>
+              </div>
+            </div>
+            <div style="background:var(--parchment);padding:12px 14px">
+              <p style="font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.6;margin-bottom:6px">The Pink who taught Darrow the nuances of High Gold society. Matteo reads the leaderboard like a <strong>political map</strong> — social positioning, pack hierarchy, and perception.</p>
+              <p style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.1em;color:#be185d;text-transform:uppercase">Focus: Pack Rank · Strategy · Positioning</p>
+            </div>
+          </div>
+          <div style="border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1.5px solid rgba(154,16,16,0.35)">
+            <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,0.06);background:rgba(154,16,16,0.07)">
+              <span style="font-size:1.1rem">⚒</span>
+              <div style="flex:1">
+                <div style="font-family:'Cinzel',serif;font-size:0.6rem;font-weight:900;letter-spacing:0.15em;color:#9a1010">DANCER COMMANDS</div>
+                <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.72rem;color:var(--ink-light);margin-top:1px">Dancer · House Red</div>
+              </div>
+            </div>
+            <div style="background:var(--parchment);padding:12px 14px">
+              <p style="font-family:'Crimson Pro',serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.6;margin-bottom:6px">Leader of the Sons of Ares. Dancer does not coddle. He speaks in <strong>purpose, grit, and ideological fire</strong> — reminding each Howler what they're really training for.</p>
+              <p style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.1em;color:#9a1010;text-transform:uppercase">Focus: Mental Toughness · Consistency · Purpose</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="codex-section">
+      <div class="codex-heading" onclick="toggleCodexSection('badges')">
+        <span>Badges</span><span class="ch-arrow">▶</span>
+      </div>
+      <div class="codex-body" id="codex-body-badges">
+        <div class="codex-body-inner">
+          <div class="badges-grid" id="codex-badges"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -7854,11 +7909,20 @@ function exportLeaderboardImage() {
   });
 }
 
+function toggleCodexSection(id) {
+  var heading = document.querySelector('[onclick="toggleCodexSection(\'' + id + '\')"]');
+  var body = document.getElementById('codex-body-' + id);
+  if (!heading || !body) return;
+  var isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  heading.classList.toggle('open', !isOpen);
+}
+
 function renderCodex() {
   const ranksBody = document.getElementById('codex-ranks');
-  ranksBody.innerHTML = RANKS.map(r => `<tr><td>${r.min.toLocaleString()}+</td><td><strong>${r.name}</strong><br><span style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--ink-light)">${RANK_MOTTOS[r.name]||''}</span></td></tr>`).join('');
+  if (ranksBody) ranksBody.innerHTML = RANKS.map(r => `<tr><td>${r.min.toLocaleString()}+</td><td><strong>${r.name}</strong><br><span style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.82rem;color:var(--ink-light)">${RANK_MOTTOS[r.name]||''}</span></td></tr>`).join('');
   const badgesGrid = document.getElementById('codex-badges');
-  badgesGrid.innerHTML = BADGES_DEF.map(b =>
+  if (badgesGrid) badgesGrid.innerHTML = BADGES_DEF.map(b =>
     `<div class="badge-card" style="flex-direction:column;align-items:flex-start;gap:8px">
       <div style="display:flex;align-items:center;gap:8px">
         <div class="badge-card-icon">${b.icon}</div>
@@ -7872,6 +7936,32 @@ function renderCodex() {
       </div>
     </div>`
   ).join('');
+
+  // Pack Quest section — show when a quest exists
+  var questSection = document.getElementById('codex-quest-section');
+  var questBody = document.getElementById('codex-quest-body');
+  var quest = getActiveQuest() || (state.pack_quests||[]).find(function(q){ return q.status==='completed'; });
+  if (quest && questSection && questBody) {
+    questSection.style.display = '';
+    var statusTag = quest.status === 'active' ? '<span style="color:#4caf50;font-size:0.72rem">● Active</span>'
+      : quest.status === 'upcoming' ? '<span style="color:var(--amber);font-size:0.72rem">● Upcoming</span>'
+      : '<span style="color:var(--ink-light);font-size:0.72rem">● Completed</span>';
+    var tierRows = (quest.tiers||[]).map(function(t){
+      return '<tr><td>' + t.miles + ' pack miles</td><td>Bottom ' + (quest.underdog_count||2) + ' eligible Howlers each earn <strong>' + t.bonus + 'L</strong></td></tr>';
+    }).join('');
+    questBody.innerHTML = '<table class="codex-table" style="margin-bottom:12px"><tbody>'
+      + '<tr><td><strong>Quest</strong></td><td>' + escHtml(quest.name) + ' ' + statusTag + '</td></tr>'
+      + (quest.flavor ? '<tr><td><strong>Motto</strong></td><td><em>' + escHtml(quest.flavor) + '</em></td></tr>' : '')
+      + '<tr><td><strong>Period</strong></td><td>' + formatDate(quest.start_date) + ' – ' + formatDate(quest.end_date) + '</td></tr>'
+      + '<tr><td><strong>Counts</strong></td><td>Long runs, tempo, easy runs, races only — walks do not count</td></tr>'
+      + '<tr><td><strong>Individual floor</strong></td><td>Each Howler must log at least ' + (quest.individual_floor||25) + ' miles to be eligible for the underdog prize</td></tr>'
+      + '</tbody></table>'
+      + '<div style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--ink-light);margin-bottom:6px">COLLECTIVE MILESTONES</div>'
+      + '<table class="codex-table"><thead><tr><th>Pack Total</th><th>Reward</th></tr></thead><tbody>' + tierRows + '</tbody></table>'
+      + '<p style="font-family:Crimson Pro,serif;font-style:italic;font-size:0.82rem;color:var(--ink-light);margin-top:10px;line-height:1.5">The pack runs together or falls apart. The underdogs who show up when it is hardest earn the prize — but only if they hit their floor. Per aspera ad astra. 🐺</p>';
+  } else if (questSection) {
+    questSection.style.display = 'none';
+  }
 }
 
 // ─── ACTIONS ─────────────────────────────────────────────────────────────────
