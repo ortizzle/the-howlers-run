@@ -1387,7 +1387,7 @@
           <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
           <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
           <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-          <option value="walk_run">Walk (6L/mile)</option>
+          <option value="walk_run" class="walk-rate-opt">Walk (8L/mile)</option>
           <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
           <option value="strength">The Iron Forge — Strength (15L flat)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
@@ -1546,6 +1546,33 @@
       </div>
     </div>
 
+    <!-- Pack Challenges -->
+    <div class="codex-section">
+      <div class="codex-heading" onclick="toggleCodexSection('packchallenges')">
+        <span>Pack Challenges</span><span class="ch-arrow">▶</span>
+      </div>
+      <div class="codex-body" id="codex-body-packchallenges">
+        <div class="codex-body-inner">
+          <p style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.88rem;color:var(--ink-light);margin-bottom:12px;line-height:1.5">Collective trials where the entire pack must rise together. Every Howler earns the reward when the goal is met.</p>
+          <table class="codex-table">
+            <thead><tr><th>Challenge</th><th>Goal</th><th>Reward</th></tr></thead>
+            <tbody>
+              <tr><td>🤝 The Pack Trains</td><td>Everyone logs 10+ trials</td><td>+60L each</td></tr>
+              <tr><td>🏛️ Society Rising</td><td>Pack earns 500 combined Laurels</td><td>+100L each</td></tr>
+              <tr><td>🦵 The Iron Pack</td><td>Everyone logs 5+ strength sessions</td><td>+75L each</td></tr>
+              <tr><td>🎖️ Warriors All</td><td>Everyone earns at least one badge</td><td>+100L each</td></tr>
+              <tr><td>🗺️ The Full March</td><td>Everyone runs a 6+ mile session</td><td>+125L each</td></tr>
+              <tr><td>🌊 The Rising Tide</td><td>Pack earns 2000 combined Laurels</td><td>+150L each</td></tr>
+              <tr><td>🎵 Crimson Pack</td><td>Everyone logs a Crimson Pulse session</td><td>+60L each</td></tr>
+              <tr><td>🧘 The Flexible Pack</td><td>Everyone logs a Mind &amp; Body session</td><td>+60L each</td></tr>
+              <tr><td>💪 Iron Pack Rising</td><td>Everyone logs 10+ strength sessions</td><td>+100L each</td></tr>
+              <tr><td>⏱️ Pack Endurance</td><td>Pack logs 1000 combined timed minutes</td><td>+150L each</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- Points System -->
     <div class="codex-section">
       <div class="codex-heading" onclick="toggleCodexSection('points')">
@@ -1559,7 +1586,7 @@
               <tr><td>The March — Long Run (min 6 mi)</td><td>15 per mile</td></tr>
               <tr><td>The Charge — Tempo / Race Pace</td><td>12 per mile</td></tr>
               <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
-              <tr><td>Walk <em style="font-size:0.8rem;color:var(--ink-light)">(6L/mi from June 1 · 8L/mi before)</em></td><td>6 per mile</td></tr>
+              <tr><td>Walk <em style="font-size:0.8rem;color:var(--ink-light)">(8L/mi until June 1 · 6L/mi from June 1)</em></td><td id="codex-walk-rate">8 per mile</td></tr>
               <tr><td>The Steed — Peloton Ride <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>8L per 10 min</td></tr>
               <tr><td>The Crimson Pulse — Cardio <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>8L per 10 min</td></tr>
               <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
@@ -1862,7 +1889,7 @@
         <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
         <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
         <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-        <option value="walk_run">Walk (6L/mile)</option>
+        <option value="walk_run" class="walk-rate-opt">Walk (8L/mile)</option>
         <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
         <option value="strength">The Iron Forge — Strength (15L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
@@ -2022,7 +2049,7 @@
         <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
         <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
         <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
-        <option value="walk_run">Walk (6L/mile)</option>
+        <option value="walk_run" class="walk-rate-opt">Walk (8L/mile)</option>
         <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
         <option value="strength">The Iron Forge — Strength (15L flat)</option>
         <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
@@ -8366,6 +8393,14 @@ function formatDate(dateStr) {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // Update walk rate labels based on current date (8L/mi before June 1, 6L/mi from June 1)
+  const currentWalkRate = getAZDate() >= '2026-06-01' ? 6 : 8;
+  document.querySelectorAll('.walk-rate-opt').forEach(el => {
+    el.textContent = `Walk (${currentWalkRate}L/mile)`;
+  });
+  const walkRateCell = document.getElementById('codex-walk-rate');
+  if (walkRateCell) walkRateCell.textContent = `${currentWalkRate} per mile`;
+
   // Set today as default date
   const todayStr = getAZDate();
   const logDateEl = document.getElementById('log-date');
