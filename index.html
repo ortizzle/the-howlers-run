@@ -4752,7 +4752,7 @@ function showBadgeEarners(badgeId, badgeName) {
   overlay.innerHTML = '<div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:20px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.5)">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
     '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + def.icon + ' ' + badgeName + '</div>' +
-    '<button onclick="this.parentNode.parentNode.remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>' +
+    '<button onclick="this.parentNode.parentNode.parentNode.remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>' +
     '</div>' + lines + '</div>';
   overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
   document.body.appendChild(overlay);
@@ -5081,7 +5081,7 @@ window.showBadgeEarners = function(badgeId, badgeName) {
   overlay.innerHTML = '<div style="background:var(--parchment);border:2px solid var(--border-strong);border-radius:var(--radius);padding:20px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.5)">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
     '<div style="font-family:Cinzel,serif;font-size:1rem;font-weight:700;color:var(--ink)">' + def.icon + ' ' + badgeName + '</div>' +
-    '<button onclick="this.closest(\'div\').parentNode.remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">&#10005;</button>' +
+    '<button onclick="this.closest(\'div\').parentNode.parentNode.remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">&#10005;</button>' +
     '</div>' + lines + '</div>';
   overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
   document.body.appendChild(overlay);
