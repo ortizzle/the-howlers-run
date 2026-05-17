@@ -3895,6 +3895,7 @@ async function qlSubmit() {
     var bd = BADGES_DEF.find(function(b){ return b.id===baseId; });
     if (bd && tier) msg += ' ' + {bronze:'I',silver:'II',gold:'III'}[tier] + ' Badge: ' + bd.icon + ' ' + bd.name + '!';
     newBadges.forEach(function(bk){ postBadgeHowl(pid, bk); });
+    saveState(); // persist badge reward workout and howl
   }
   showToast(msg);
   if (btn) { btn.disabled = false; btn.textContent = '✦ RECORD TRIAL ✦'; }
@@ -8400,6 +8401,7 @@ async function submitTrial() {
     const bd = BADGES_DEF.find(b => b.id === baseId);
     if (bd && tier) toastMsg += ` ${TIER_ROMAN[tier]} Badge: ${bd.icon} ${bd.name}!`;
     newBadges.forEach(function(bk){ postBadgeHowl(pid, bk); });
+    saveState(); // persist badge reward workout and howl
   }
   showToast(toastMsg);
   if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✦ RECORD TRIAL ✦'; }
