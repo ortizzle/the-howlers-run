@@ -4476,12 +4476,13 @@ async function checkAndPostWeeklyRecap() {
   if (state.players.length === 0 || state.workouts.length === 0) return;
   const lastRecapKey = 'howlers_last_recap_' + (localStorage.getItem('howlers_gist_id')||localStorage.getItem('howlers_bin_id')||'');
   const lastRecap = localStorage.getItem(lastRecapKey);
-  const now = new Date();
-  // Post recap on Mondays, max once per week
-  const isMonday = now.getDay() === 1;
-  if (!isMonday) return;
-  const thisWeekMonday = new Date(now);
-  thisWeekMonday.setHours(0,0,0,0);
+  // Use AZ time (UTC-7) for all checks — prevents UTC+ users from triggering on Sunday
+  const azNow = new Date(new Date().getTime() - 7 * 60 * 60 * 1000);
+  const isMonday = azNow.getUTCDay() === 1;
+  const azHour = azNow.getUTCHours();
+  if (!isMonday || azHour < 6) return; // only post on Monday morning AZ time
+  const thisWeekMonday = new Date(azNow);
+  thisWeekMonday.setUTCHours(0,0,0,0);
   const weekKey = thisWeekMonday.toISOString().split('T')[0];
   if (lastRecap === weekKey) return;
   // Also check Gist state — another device may have already posted
@@ -4494,13 +4495,14 @@ async function checkAndPostWeeklyRecap() {
   lastMonday.setDate(lastMonday.getDate() - 7);
   const lastSunday = new Date(thisWeekMonday);
   lastSunday.setDate(lastSunday.getDate() - 1);
+  const SYSTEM_WK_RECAP = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
+  const RUN_TYPES = ['long_run','easy_run','tempo','walk_run','race'];
   const lastWeekWorkouts = state.workouts.filter(function(w) {
     const d = new Date(w.date + 'T12:00:00');
-    return d >= lastMonday && d <= lastSunday;
+    return d >= lastMonday && d <= lastSunday && !SYSTEM_WK_RECAP.includes(w.workout);
   });
   if (lastWeekWorkouts.length === 0) return;
   // Who ran the most miles — running workouts only, not Peloton
-  const RUN_TYPES = ['long_run','easy_run','tempo','walk_run','race'];
   const milesByPlayer = {};
   lastWeekWorkouts.forEach(function(w) {
     if (RUN_TYPES.includes(w.workout) && w.miles)
@@ -4508,18 +4510,21 @@ async function checkAndPostWeeklyRecap() {
   });
   const topRunnerId = Object.keys(milesByPlayer).sort(function(a,b){return milesByPlayer[b]-milesByPlayer[a];})[0];
   const topRunner = state.players.find(function(p){return p.id===topRunnerId;});
-  // Who had a perfect week
-  const weekKey2 = getWeekKey(lastMonday.toISOString().split('T')[0]);
+  // Who had a perfect week (4+ distinct workout days)
   const perfectHowlers = state.players.filter(function(p) {
-    const pWorkouts = lastWeekWorkouts.filter(function(w){return w.player_id===p.id;});
-    return pWorkouts.length >= 4;
+    const days = new Set(lastWeekWorkouts.filter(function(w){return w.player_id===p.id;}).map(function(w){return w.date;}));
+    return days.size >= 4;
   });
-  // Build message
-  // Weekly Primus — who had most laurels gained last week
+  // Weekly Primus — who had most laurels gained last week (real workouts only)
   var laurelsByPlayer = {};
   lastWeekWorkouts.forEach(function(w) { laurelsByPlayer[w.player_id] = (laurelsByPlayer[w.player_id]||0) + (w.laurels_base||0); });
   var weekPrimusId = Object.keys(laurelsByPlayer).sort(function(a,b){return laurelsByPlayer[b]-laurelsByPlayer[a];})[0];
   var weekPrimus = weekPrimusId ? state.players.find(function(p){return p.id===weekPrimusId;}) : null;
+  // Per-player breakdown for the card and AI
+  var playerBreakdown = (state.players||[]).map(function(p) {
+    return { name: p.name, laurels: laurelsByPlayer[p.id]||0, miles: +(milesByPlayer[p.id]||0).toFixed(1) };
+  }).filter(function(p){ return p.laurels > 0 || p.miles > 0; })
+    .sort(function(a,b){ return b.laurels - a.laurels; });
 
   // Quest status block
   var activeQuest = getActiveQuest();
@@ -4567,6 +4572,7 @@ async function checkAndPostWeeklyRecap() {
         topMiles: topRunnerId ? milesByPlayer[topRunnerId] : 0,
         perfectHowlers: perfectHowlers,
         laurelsByPlayer: laurelsByPlayer,
+        milesByPlayer: milesByPlayer,
         weekDate: lastMonday.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})
       });
     }
@@ -4587,10 +4593,11 @@ async function checkAndPostWeeklyRecap() {
       primusLaurels: weekPrimusId ? (laurelsByPlayer[weekPrimusId] || 0) : 0,
       topRunner: topRunner ? topRunner.name : null,
       topMiles: topRunnerId ? (milesByPlayer[topRunnerId] || 0) : 0,
-      perfectHowlers: perfectHowlers.map(function(p){ return p.name; })
+      perfectHowlers: perfectHowlers.map(function(p){ return p.name; }),
+      playerBreakdown: playerBreakdown
     },
-    date: now.toISOString().split('T')[0],
-    timestamp: now.toISOString(),
+    date: azNow.toISOString().split('T')[0],
+    timestamp: azNow.toISOString(),
     likes: [],
     is_recap: true
   });
@@ -6783,11 +6790,25 @@ function renderHowlFeed() {
           '</div>';
       };
 
+      var playerRows = '';
+      if (wd && wd.playerBreakdown && wd.playerBreakdown.length) {
+        playerRows = '<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">' +
+          '<div style="font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.12em;color:var(--ink-light);margin-bottom:6px">PACK BREAKDOWN</div>' +
+          wd.playerBreakdown.map(function(p) {
+            return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,0.04)">' +
+              '<span style="font-family:Crimson Pro,serif;font-size:0.88rem;color:var(--ink);flex:1">' + p.name.split(' ')[0] + '</span>' +
+              (p.miles > 0 ? '<span style="font-family:Cinzel,serif;font-size:0.68rem;color:var(--ink-light)">' + p.miles.toFixed(1) + ' mi</span>' : '') +
+              '<span style="font-family:Cinzel,serif;font-size:0.72rem;font-weight:700;color:var(--amber)">+' + p.laurels + 'L</span>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+      }
       var statsHTML =
         statRow('⚔️', 'TRIALS', trialCount ? trialCount + ' logged by the pack' : '') +
         statRow('🏅', 'WEEKLY PRIMUS', primusName ? primusName + (primusLaurels ? ' &nbsp;·&nbsp; +' + primusLaurels + 'L' : '') : '') +
         statRow('🏃', 'LONGEST MARCH', marchName ? marchName + (marchMiles ? ' &nbsp;·&nbsp; ' + marchMiles + ' mi' : '') : '') +
-        statRow('⭐', 'PERFECT WEEK', perfectNames || '');
+        statRow('⭐', 'PERFECT WEEK', perfectNames || '') +
+        playerRows;
 
       // If no structured data parsed out and no AI narrative, render raw message as prose fallback
       var hasStats = trialCount || primusName || marchName || perfectNames;
@@ -7618,10 +7639,10 @@ async function postWorkoutCommentary(pid, workout) {
 async function generateAIWeeklyRecap(stats) {
   // stats = { trials, weekPrimus, primusLaurels, topRunner, topMiles, perfectHowlers, weekDate }
   var packSummary = state.players.map(function(p) {
-    var s = calcPlayerStats(p.id);
     var weekLaurels = stats.laurelsByPlayer[p.id] || 0;
-    return p.name + ' (' + p.house + '): +' + weekLaurels + 'L this week, ' + s.trials + ' total trials, ' + s.miles + ' total miles';
-  }).join('\n');
+    var weekMiles = stats.milesByPlayer ? +(stats.milesByPlayer[p.id]||0).toFixed(1) : 0;
+    return p.name + ' (' + p.house + '): +' + weekLaurels + 'L this week, ' + weekMiles + ' running miles this week';
+  }).filter(function(line){ return line.indexOf(': +0L') === -1 || line.indexOf(' 0 running') === -1; }).join('\n');
 
   var prompt = 'Weekly pack training data:\n' +
     'Week of: ' + stats.weekDate + '\n' +
