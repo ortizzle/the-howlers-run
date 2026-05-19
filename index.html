@@ -6482,7 +6482,7 @@ function checkAndFireMotivationBurst() {
 function renderHowlFeed() {
   const feed = document.getElementById('howl-feed');
   if (!feed) return;
-  const howls = (state.howls || []).slice().reverse();
+  const howls = (state.howls || []).slice().sort(function(a,b){ return new Date(b.timestamp||b.date) - new Date(a.timestamp||a.date); });
   if (howls.length === 0) {
     feed.innerHTML = '<div class="empty-state"><span class="empty-icon">🐺</span>The pack is silent. Be the first to howl.</div>';
     return;
