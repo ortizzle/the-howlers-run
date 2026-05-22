@@ -1313,8 +1313,8 @@
   <div class="nav-inner">
     <div class="nav-tab active" onclick="switchTab('leaderboard')">🏅 Leaderboard</div>
     <div class="nav-tab" onclick="switchTab('dispatch')" id="howl-nav-tab">🐺 The Howler<span class="nav-badge" id="howl-badge" style="display:none">0</span></div>
-    <div class="nav-tab" onclick="switchTab('chronicle')" id="nav-annals">📜 The Annals</div>
     <div class="nav-tab" onclick="switchTab('log')">⚔ Log Trial</div>
+    <div class="nav-tab" onclick="switchTab('chronicle')" id="nav-annals">📜 The Annals</div>
     <div class="nav-tab" onclick="switchTab('trials')">⚔ The Gauntlet</div>
     <div class="nav-tab" onclick="switchTab('conquests')">✦ The Passage</div>
     <div class="nav-tab" onclick="switchTab('codex')">📜 The Scrolls</div>
@@ -8908,7 +8908,15 @@ function stravaLogOne(stravaId, miles, minutes, date) {
   };
   if (miles > 0) entry.miles = miles;
   if (minutes > 0) entry.minutes = minutes;
-  entry.laurels_base = calcLaurels(entry.workout, entry.miles, entry.minutes);
+  var baseLaurels = calcLaurels(entry.workout, entry.miles, entry.minutes);
+  var allLaurels = state.players.map(function(p) { return (state.workouts.filter(function(w){return w.player_id===p.id;}).reduce(function(s,w){return s+(w.laurels_base||0);},0)); });
+  var leaderLaurels = Math.max.apply(null, allLaurels.concat(0));
+  var myLaurels = state.workouts.filter(function(w){return w.player_id===pid;}).reduce(function(s,w){return s+(w.laurels_base||0);},0);
+  var isUnderdog = leaderLaurels - myLaurels >= 300;
+  var underdogBonus = isUnderdog ? Math.round(baseLaurels * 0.2) : 0;
+  entry.laurels_base = baseLaurels + underdogBonus;
+  entry.laurels_earned = baseLaurels;
+  if (underdogBonus > 0) entry.underdog_bonus = underdogBonus;
   if (state.workouts.some(function(w) { return w.id === entry.id; })) {
     showToast('Already logged.');
     stravaMarkLogged(stravaId);
