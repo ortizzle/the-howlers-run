@@ -3298,7 +3298,7 @@ function renderQuestBanner() {
   var p = calcQuestProgress(quest);
   var maxMiles = (quest.tiers && quest.tiers.length) ? quest.tiers[quest.tiers.length-1].miles : 1;
   var groupPct = Math.min(100, (p.totalMiles / maxMiles) * 100);
-  var floor = quest.individual_floor || 25;
+  var floor = quest.individual_floor || 15;
 
   var statusLabel = quest.status === 'upcoming'
     ? '<span style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--amber)">BEGINS ' + formatDate(quest.start_date).toUpperCase() + '</span>'
@@ -3456,7 +3456,7 @@ function createPackQuest() {
     metric: 'running_miles',
     start_date: document.getElementById('qm-start').value,
     end_date: document.getElementById('qm-end').value,
-    individual_floor: parseFloat(document.getElementById('qm-floor').value) || 25,
+    individual_floor: parseFloat(document.getElementById('qm-floor').value) || 15,
     underdog_count: parseInt(document.getElementById('qm-count').value) || 2,
     tiers: [
       { miles: parseFloat(document.getElementById('qm-t1m').value)||175, bonus: parseFloat(document.getElementById('qm-t1b').value)||75 },
@@ -6513,7 +6513,7 @@ function renderHowlFeed() {
         var qId = h.id.replace('quest_announce_', '');
         var q = (state.pack_quests || []).find(function(x){ return x.id === qId; }) || {};
         var tiers = q.tiers || [];
-        var floor = q.individual_floor || 25;
+        var floor = q.individual_floor || 15;
         var underdogs = q.underdog_count || 2;
         var tierRows = tiers.map(function(t, i) {
           var medals = ['🥇','🥈','🥉'][i] || '🏅';
