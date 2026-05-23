@@ -3495,7 +3495,7 @@ function announcePackQuest(questId) {
     + (q.flavor ? q.flavor + '\n\n' : '')
     + '📏 THE RULES\n'
     + '• Running miles only (no walks)\n'
-    + '• Individual floor: ' + (q.individual_floor||25) + ' miles to be eligible for the underdog prize\n'
+    + '• Individual floor: ' + (q.individual_floor||15) + ' miles to be eligible for the underdog prize\n'
     + tierLines + '\n\n'
     + '📅 ' + formatDate(q.start_date) + ' – ' + formatDate(q.end_date) + '\n\n'
     + 'Per aspera ad astra. 🐺';
@@ -8081,7 +8081,7 @@ function renderCodex() {
       + (quest.flavor ? '<tr><td><strong>Motto</strong></td><td><em>' + escHtml(quest.flavor) + '</em></td></tr>' : '')
       + '<tr><td><strong>Period</strong></td><td>' + formatDate(quest.start_date) + ' – ' + formatDate(quest.end_date) + '</td></tr>'
       + '<tr><td><strong>Counts</strong></td><td>Long runs, tempo, easy runs, races only — walks do not count</td></tr>'
-      + '<tr><td><strong>Individual floor</strong></td><td>Each Howler must log at least ' + (quest.individual_floor||25) + ' miles to be eligible for the underdog prize</td></tr>'
+      + '<tr><td><strong>Individual floor</strong></td><td>Each Howler must log at least ' + (quest.individual_floor||15) + ' miles to be eligible for the underdog prize</td></tr>'
       + '</tbody></table>'
       + '<div style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.1em;color:var(--ink-light);margin-bottom:6px">COLLECTIVE MILESTONES</div>'
       + '<table class="codex-table"><thead><tr><th>Pack Total</th><th>Reward</th></tr></thead><tbody>' + tierRows + '</tbody></table>'
