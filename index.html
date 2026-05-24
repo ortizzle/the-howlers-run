@@ -2360,6 +2360,21 @@ function saveConfig(binId, apiKey) {
   localStorage.setItem('howlers_bin_id', JSONBIN_BIN_ID);
   localStorage.setItem('howlers_api_key', JSONBIN_API_KEY);
 }
+// Pre-load Gist ID from URL hash: index.html#gist=ABC123
+// This lets shared links bypass the Gist ID entry — user only needs to enter token once.
+(function() {
+  var hash = window.location.hash || '';
+  var match = hash.match(/[#&]?gist=([a-f0-9]+)/i);
+  if (match && match[1]) {
+    var gistIdFromUrl = match[1].trim();
+    var stored = localStorage.getItem('howlers_gist_id');
+    if (!stored) {
+      localStorage.setItem('howlers_gist_id', gistIdFromUrl);
+      console.log('🐺 Gist ID loaded from URL:', gistIdFromUrl);
+    }
+  }
+})();
+
 function saveGistConfig(gistId, token) {
   localStorage.setItem('howlers_gist_id', gistId.trim());
   localStorage.setItem('howlers_gist_token', token.trim());
