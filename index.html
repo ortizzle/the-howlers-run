@@ -6241,7 +6241,46 @@ function renderChallenges() {
               </div>
             </div>`;
           }).join('') +
-          (wonArr.length < 3 ? `<div style="font-family:'Crimson Pro',serif;font-size:0.75rem;font-style:italic;color:var(--ink-light);margin-top:6px">${3-wonArr.length} place${wonArr.length<2?'s':''} remaining on the podium.</div>` : '');
+          (wonArr.length < 3 ? (function() {
+            var wonNames = wonArr.map(function(w){ return w.name; });
+            var nextPlace = wonArr.length + 1;
+            var placeLabels = {2:'2ND',3:'3RD'};
+            var placeIcons2 = {2:'⚔',3:'🛡'};
+            var remaining = state.players.map(function(p) {
+              var s = statsMap[p.id]; var val = 0;
+              if (ch.id==='first_blood') val=state.workouts.filter(function(w){return !['milestone_bonus','duel_win','duel_loss'].includes(w.workout)&&w.player_id===p.id;}).length>0?1:0;
+              else if (['century_laurels','imperator_rising','the_reaper_rises'].includes(ch.id)) val=s.laurels||0;
+              else if (['five_league','grand_march','the_long_road'].includes(ch.id)) val=['grand_march','the_long_road'].includes(ch.id)?Math.max(0,...state.workouts.filter(function(w){return ['long_run','easy_run','tempo'].includes(w.workout)&&w.player_id===p.id;}).map(function(w){return w.miles||0;})):s.maxSingleRun||0;
+              else if (['the_unbroken','unbreakable'].includes(ch.id)) val=s.streak||0;
+              else if (ch.id==='iron_league') val=s.miles||0;
+              else if (ch.id==='the_tireless') val=s.trials||0;
+              else if (ch.id==='the_dancer') val=state.workouts.filter(function(w){return w.player_id===p.id&&w.workout==='cardio';}).length;
+              else if (ch.id==='the_ironborn') val=s.strength||0;
+              else if (ch.id==='the_sage') val=s.mobility||0;
+              else if (ch.id==='the_peloton_ace') val=s.pelotons||0;
+              else if (ch.id==='the_faithful') val=s.perfectWeeks||0;
+              else if (ch.id==='primus_pares') val=(s.weekSet&&s.weekSet.size)||0;
+              else if (ch.id==='the_endurance') val=state.workouts.filter(function(w){return w.player_id===p.id&&['peloton','cardio','strength','mobility'].includes(w.workout)&&w.minutes;}).reduce(function(a,w){return a+(w.minutes||0);},0);
+              else if (ch.id==='race_finisher') val=state.workouts.filter(function(w){return w.player_id===p.id&&w.workout==='race';}).length;
+              return {name:p.name.split(' ')[0], fullName:p.name, val:val};
+            }).filter(function(p){ return !wonNames.includes(p.fullName) && !wonNames.includes(p.name); })
+              .sort(function(a,b){ return b.val-a.val; });
+            var html = '<div style="font-family:\'Cinzel\',serif;font-size:0.58rem;font-weight:700;letter-spacing:0.1em;color:var(--ink-light);margin-top:10px;margin-bottom:5px;border-top:1px solid var(--border);padding-top:8px">CURRENT STANDINGS</div>';
+            remaining.forEach(function(p, i) {
+              var spot = nextPlace + i;
+              if (spot > 3) return;
+              var reward = Math.round(ch.reward * ({2:0.5,3:0.25}[spot]||0.25));
+              html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">'
+                + '<span style="font-size:0.85rem">' + (placeIcons2[spot]||'·') + '</span>'
+                + '<div style="flex:1;font-family:\'Cinzel\',serif;font-size:0.68rem;color:var(--ink-mid)">' + p.name + '</div>'
+                + '<div style="text-align:right;font-family:\'Cinzel\',serif;font-size:0.6rem;color:var(--ink-light)">'
+                  + (typeof p.val==='number'&&p.val%1!==0?p.val.toFixed(1):p.val) + ' / ' + ch.goal
+                  + ' &nbsp;·&nbsp; <span style="color:var(--amber)">+' + reward + 'L</span>'
+                + '</div>'
+              + '</div>';
+            });
+            return html;
+          })() : '');
       } else {
         const standings = state.players.map(p => {
           const s = statsMap[p.id];
