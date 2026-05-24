@@ -1264,12 +1264,11 @@
     100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
   }
 
-  .ch-flip { perspective: 800px; cursor: pointer; }
-  .ch-flip-inner { position: relative; width: 100%; transition: transform 0.45s; transform-style: preserve-3d; min-height: 160px; }
-  .ch-flip.flipped .ch-flip-inner { transform: rotateY(180deg); }
+  .ch-flip { cursor: pointer; }
   .ch-flip-front { position: relative; }
-  .ch-flip-back { position: absolute; top:0; left:0; width:100%; min-height:160px; transform:rotateY(180deg); backface-visibility:hidden; -webkit-backface-visibility:hidden; background:var(--parchment-dark); border:1.5px solid var(--amber); border-radius:var(--radius); padding:14px 16px; box-sizing:border-box; }
-  .ch-flip-front { backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+  .ch-flip-back { display: none; background:var(--parchment-dark); border:1.5px solid var(--amber); border-top:none; border-radius:0 0 var(--radius) var(--radius); padding:14px 16px; box-sizing:border-box; }
+  .ch-flip.flipped .ch-flip-front { border-radius:var(--radius) var(--radius) 0 0; }
+  .ch-flip.flipped .ch-flip-back { display: block; }
 </style>
 </head>
 <body>
@@ -6375,7 +6374,6 @@ function renderChallenges() {
     const cardStyle = '--card-color:' + cardColor + ';--card-glow:' + cardGlow;
 
     return `<div class="ch-flip" onclick="this.classList.toggle('flipped')">
-      <div class="ch-flip-inner">
         <div class="ch-flip-front challenge-card ${cardClass}" style="${cardStyle}">
           ${isComplete ? '<div class="conquered-stamp">✦ CONQUERED</div>' : ''}
           <div class="challenge-top">
@@ -6395,9 +6393,9 @@ function renderChallenges() {
             ${wonArr.length>1?`<span style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--ink-light);margin-left:4px">+${wonArr.length-1} more on podium</span>`:''}
             ${wonArr.length<3?`<span style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--ink-light);font-style:normal">(${3-wonArr.length} place${wonArr.length===2?'':'s'} open)</span>`:''}
           </div>` : ''}
+          <div style="text-align:center;font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--ink-light);margin-top:6px;opacity:0.6">▼ TAP FOR DETAILS</div>
         </div>
-        <div class="ch-flip-back">${backHTML}</div>
-      </div>
+        <div class="ch-flip-back" onclick="event.stopPropagation()">${backHTML}</div>
     </div>`;
   }).join('');
 }
