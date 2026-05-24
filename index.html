@@ -2571,6 +2571,7 @@ async function loadState() {
     showToast('⚠️ Sync error: ' + e.message);
   }
   renderAll();
+  checkMentionNotifications();
 
   // Generate coaching nudge now that state is populated with real data.
   // The startup switchTab('leaderboard') fires before loadState completes, so
@@ -4603,6 +4604,31 @@ async function checkAndPostWeeklyRecap() {
   // saveState removed — let next user action save (prevents race condition)
   localStorage.setItem(lastRecapKey, weekKey);
 }
+function checkMentionNotifications() {
+  if (!currentHowlerId) return;
+  var me = state.players.find(function(p){ return p.id === currentHowlerId; });
+  if (!me) return;
+  var firstName = me.name.split(' ')[0].toLowerCase();
+  var lastSeen = getLastHowlSeen();
+  var mentionKey = 'howlers_last_mention_check_' + (localStorage.getItem('howlers_gist_id') || localStorage.getItem('howlers_bin_id') || '') + '_' + currentHowlerId;
+  var lastMentionCheck = localStorage.getItem(mentionKey) || '0';
+  var mentions = (state.howls || []).filter(function(h) {
+    if (h.player_id === currentHowlerId) return false; // skip own howls
+    if (h.is_recap) return false; // skip system howls
+    var ts = h.timestamp || h.date || '0';
+    if (ts <= lastMentionCheck) return false;
+    var msg = (h.message || '').toLowerCase();
+    return msg.includes('@' + firstName) || msg.includes('@pack');
+  });
+  localStorage.setItem(mentionKey, new Date().toISOString());
+  if (mentions.length === 0) return;
+  var latest = mentions[mentions.length - 1];
+  var sender = state.players.find(function(p){ return p.id === latest.player_id; });
+  var senderName = sender ? sender.name.split(' ')[0] : 'Someone';
+  var countLabel = mentions.length > 1 ? mentions.length + ' howls mentioned you' : senderName + ' mentioned you';
+  showToast('🐺 ' + countLabel + ' in the Dispatch — check The Howler');
+}
+
 async function checkAndPostDailyRecap() {
   if (!state.players || state.players.length === 0) return;
   if (!state.workouts || state.workouts.length === 0) return;
@@ -7377,8 +7403,9 @@ var SOVEREIGN_TEMPLATES = [
   // TRASH 0 — miles jab (Cassius)
   function(p,s,c) {
     var first = p.name.split(' ')[0];
-    if (s.miles === 0) return first + ' of ' + p.house + ' has logged zero running miles. The race is 13.1. #trashtalk';
-    if (c) { var diff = (calcPlayerStats(c.id).miles - s.miles).toFixed(1); if (diff > 0) return c.name.split(' ')[0] + ' has put ' + diff + ' miles between you and them, ' + first + '. That gap doesn\'t close itself. #trashtalk'; }
+    var pRun = _pureRunMiles(p.id);
+    if (pRun === 0) return first + ' of ' + p.house + ' has logged zero running miles. The race is 13.1. #trashtalk';
+    if (c) { var diff = (_pureRunMiles(c.id) - pRun).toFixed(1); if (diff > 0) return c.name.split(' ')[0] + ' has put ' + diff + ' running miles between you and them, ' + first + '. That gap doesn\'t close itself. #trashtalk'; }
     return first + '\'s longest run is ' + s.maxSingleRun + ' miles. The finish line is 13.1. Do the math. #trashtalk';
   },
   // TRASH 1 — laurels / pack position (Cassius)
@@ -7434,13 +7461,15 @@ var SOVEREIGN_TEMPLATES = [
   // MOTIVATE 2 — race focus
   function(p,s,c) {
     var first = p.name.split(' ')[0];
-    return 'January 17, 2027. Tempe Beach Park. ' + first + ' will be ready. ' + (s.miles > 0 ? s.miles + ' miles already in the legs.' : 'The march starts now.') + ' #howlermotivation';
+    var pRun = _pureRunMiles(p.id);
+    return 'January 17, 2027. Tempe Beach Park. ' + first + ' will be ready. ' + (pRun > 0 ? pRun + ' running miles already in the legs.' : 'The march starts now.') + ' #howlermotivation';
   },
   // MOTIVATE 3 — miles progress
   function(p,s,c) {
     var first = p.name.split(' ')[0];
-    if (s.miles >= 10) return first + ' of ' + p.house + ' has run ' + s.miles + ' miles. The race is 13.1. The gap is closing. #howlermotivation';
-    return 'The road to Tempe Beach is built one mile at a time, ' + first + '. ' + (s.miles > 0 ? s.miles + ' down.' : 'Start the clock.') + ' #howlermotivation';
+    var pRun = _pureRunMiles(p.id);
+    if (pRun >= 10) return first + ' of ' + p.house + ' has run ' + pRun + ' miles. The race is 13.1. The gap is closing. #howlermotivation';
+    return 'The road to Tempe Beach is built one mile at a time, ' + first + '. ' + (pRun > 0 ? pRun + ' down.' : 'Start the clock.') + ' #howlermotivation';
   },
   // MOTIVATE 4 — Sevro vs rival
   function(p,s,c) {
@@ -7468,18 +7497,32 @@ function _pickFlavor(mode) {
   return 'trash_standard';
 }
 
+function _pureRunMiles(pid) {
+  // Running miles only — excludes walk_run and Peloton
+  var PURE_RUN = ['long_run','easy_run','tempo','race'];
+  return +(state.workouts.filter(function(w){ return w.player_id===pid && PURE_RUN.includes(w.workout) && w.miles; }).reduce(function(s,w){ return s+(w.miles||0); }, 0)).toFixed(1);
+}
+
+function _walkRunMiles(pid) {
+  return +(state.workouts.filter(function(w){ return w.player_id===pid && w.workout==='walk_run' && w.miles; }).reduce(function(s,w){ return s+(w.miles||0); }, 0)).toFixed(1);
+}
+
 function _buildCtx(player, s, caller, mode) {
   var first = player.name.split(' ')[0];
+  var pureRun = _pureRunMiles(player.id);
+  var walkRun = _walkRunMiles(player.id);
+  var callerS = caller ? calcPlayerStats(caller.id) : null;
   var lines = [
     'Target: ' + first + ' (' + player.house + ' House, rank: ' + s.rank.name + ')',
-    'Miles run: ' + s.miles,
+    'Pure running miles (no walks): ' + pureRun,
+    walkRun > 0 ? 'Walk/run miles (separate): ' + walkRun : '',
     'Laurels: ' + s.laurels,
     'Trials logged: ' + s.trials,
     s.maxSingleRun > 0 ? 'Longest single run: ' + s.maxSingleRun + ' mi' : 'No runs yet',
-    s.pelotons > 0 ? 'Peloton rides: ' + s.pelotons : '',
-    caller && mode === 'trash' ? 'Trash talking as: ' + caller.name.split(' ')[0] + ' (' + caller.house + ' House, ' + calcPlayerStats(caller.id).miles + ' mi, ' + calcPlayerStats(caller.id).laurels + 'L)' : '',
+    s.pelotons > 0 ? 'Peloton rides: ' + s.pelotons + ' (indoor cycling — not running miles)' : '',
+    caller && mode === 'trash' ? 'Trash talking as: ' + caller.name.split(' ')[0] + ' (' + caller.house + ' House, ' + _pureRunMiles(caller.id) + ' run mi, ' + (callerS?callerS.laurels:0) + 'L)' : '',
     caller && mode === 'motivate' ? 'Motivating as: ' + caller.name.split(' ')[0] + ' (' + caller.house + ' House)' : '',
-    'IMPORTANT: Address the target by their first name (' + first + ') in your howl.',
+    'IMPORTANT: Only reference running miles or Peloton rides that actually exist in the data above. Do not invent workouts or mileage. Address target by first name (' + first + ').',
   ];
   return lines.filter(Boolean).join('\n');
 }
