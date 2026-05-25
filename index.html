@@ -2895,25 +2895,21 @@ function calcPlayerStats(pid) {
   const allWeekKeys = Array.from(weekSet).sort();
   let streak = 0;
   if (allWeekKeys.length > 0) {
-    // Walk backwards from the most recent week, count consecutive weeks
+    // Compare week keys like '2026-W22' numerically — new Date() cannot parse this format
+    const wkDiff = function(a, b) {
+      const [yA, nA] = a.split('-W').map(Number);
+      const [yB, nB] = b.split('-W').map(Number);
+      return (yB - yA) * 53 + (nB - nA);
+    };
     const thisWeek = getWeekKey(getAZDate());
-    // Start from most recent week the player has activity in (could be current or prior)
-    let cursor = allWeekKeys[allWeekKeys.length - 1];
-    // If the most recent week is more than 1 week behind current, streak is already broken
-    // Allow current week to count even if not yet complete
-    const cursorDate = new Date(cursor + 'T12:00:00');
-    const thisDate = new Date(thisWeek + 'T12:00:00');
-    const weeksBehind = Math.round((thisDate - cursorDate) / (7 * 24 * 60 * 60 * 1000));
+    const cursor = allWeekKeys[allWeekKeys.length - 1];
+    const weeksBehind = wkDiff(cursor, thisWeek);
     if (weeksBehind <= 1) {
-      // Walk backwards counting consecutive weeks
       streak = 1;
       let prev = cursor;
       for (let i = allWeekKeys.length - 2; i >= 0; i--) {
         const curr = allWeekKeys[i];
-        const prevDate = new Date(prev + 'T12:00:00');
-        const currDate = new Date(curr + 'T12:00:00');
-        const gap = Math.round((prevDate - currDate) / (7 * 24 * 60 * 60 * 1000));
-        if (gap === 1) { streak++; prev = curr; } else break;
+        if (wkDiff(curr, prev) === 1) { streak++; prev = curr; } else break;
       }
     }
   }
