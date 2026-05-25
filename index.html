@@ -1337,16 +1337,13 @@
       <div id="coaching-nudge-text" style="background:var(--parchment);padding:12px 14px;font-family:'Crimson Pro',serif;font-style:italic;font-size:0.95rem;color:var(--ink-mid);line-height:1.65"></div>
     </div>
     <div id="active-duels-section"></div>
-    <div id="quest-banner"></div>
     <div class="section-title">The Pack — Leaderboard</div>
-    <div class="player-grid" id="player-grid">
-      <div class="induct-card" onclick="openInductModal()">
-        <div class="induct-icon">🐺</div>
-        <div class="induct-text">✦ Induct a Howler</div>
-        <div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">Join the Pack</div>
-      </div>
+    <div class="player-grid" id="player-grid"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px">
+      <button onclick="openInductModal()" style="flex:1;background:var(--parchment-dark);border:1.5px dashed var(--border-strong);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--ink-mid);cursor:pointer">🐺 INDUCT HOWLER</button>
+      <button id="summon-coach-btn" onclick="requestCoachingNudge()" style="flex:1;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--ink-mid);cursor:pointer">🎯 SUMMON COACH</button>
     </div>
-    <button id="summon-coach-btn" onclick="requestCoachingNudge()" style="width:100%;background:var(--parchment-dark);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px;font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--ink-mid);cursor:pointer;margin-top:8px;margin-bottom:4px">🎯 SUMMON COACH</button>
+    <div id="quest-banner"></div>
 
     <div class="section-title" style="margin-top:28px;font-size:1rem">⚔️ This Week's Race</div>
     <div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);padding:8px;box-shadow:var(--shadow);margin-bottom:8px" id="weekly-lb">
@@ -5943,13 +5940,6 @@ function renderPlayers() {
       + '</div></div>' // card-detail-inner, card-detail
       + '</div></div>'; // player-card, pcard-wrap
   });
-
-  // Induct card
-  html += '<div class="induct-card" onclick="openInductModal()">'
-    + '<div class="induct-icon">\ud83d\udc3a</div>'
-    + '<div class="induct-text">\u2726 Induct a Howler</div>'
-    + '<div style="font-family:\'Crimson Pro\',serif;font-style:italic;font-size:0.8rem;color:var(--ink-light)">Join the Pack</div>'
-    + '</div>';
 
   grid.innerHTML = html;
   grid.querySelectorAll('.badge-pill').forEach(function(pill) {
