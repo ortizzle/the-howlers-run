@@ -1586,6 +1586,7 @@
               <tr><td>The Iron Forge — Strength <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>15 flat</td></tr>
               <tr><td>Mind & Body — Mobility/Yoga <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>10 flat</td></tr>
               <tr><td>Underdog Bonus</td><td>+20% when 300+ Laurels behind leader</td></tr>
+              <tr><td>🔥 Hype a Workout</td><td>+1L per hype · max 5L/day · can't hype your own</td></tr>
               <tr><td>🏅 Badge Earned</td><td>Bronze +25L · Silver +50L · Gold +100L</td></tr>
               <tr><td>📚 Books Read</td><td>Red Rising +25 · Golden Son +50 · Morning Star +75 · Iron Gold +100 · Dark Age +125 · Light Bringer +150 · Red God +250 ✦</td></tr>
             </tbody>
@@ -2900,6 +2901,15 @@ function calcPlayerStats(pid) {
     }
   }
   if (streak >= 2) laurels += (streak - 1) * 10;
+
+  // Hype laurels: +1L per workout hyped (max 5L per day, can't hype own workouts)
+  var hypeDateMap = {};
+  state.workouts.forEach(function(hw) {
+    if (hw.player_id === pid) return;
+    var hypers = (hw.reactions && Array.isArray(hw.reactions['🔥'])) ? hw.reactions['🔥'] : [];
+    if (hypers.indexOf(pid) >= 0) { var d = hw.date || ''; hypeDateMap[d] = (hypeDateMap[d]||0) + 1; }
+  });
+  laurels += Object.values(hypeDateMap).reduce(function(s,n){ return s + Math.min(n,5); }, 0);
 
   const rank = getRank(laurels);
 
@@ -5551,21 +5561,38 @@ function loadCardAnnals(pid, el) {
     var laurelSign = laurels >= 0 ? '+' : '';
     var laurelCol = laurels < 0 ? '#9a1010' : hc;
     var sub = formatDate(w.date) + (detail ? ' · ' + detail : '');
+    var hypers = (w.reactions && Array.isArray(w.reactions['🔥'])) ? w.reactions['🔥'] : [];
+    var myHype = currentHowlerId && hypers.includes(currentHowlerId);
+    var isOwn  = w.player_id === currentHowlerId;
+    var hypeLabel = myHype ? '🔥 Hyped' : '🤍 Hype';
+    var hypeCount = hypers.length > 0 ? ' <span style=”font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)”>' + hypers.length + '</span>' : '';
+    var hypeBtn = (!isOwn && currentHowlerId)
+      ? '<button onclick=”event.stopPropagation();toggleWorkoutReaction(\'' + w.id + '\',\'🔥\')” style=”background:' + (myHype?'rgba(200,144,10,0.15)':'transparent') + ';border:1.5px solid ' + (myHype?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;margin-top:6px;font-family:Crimson Pro,serif;line-height:1.4;-webkit-tap-highlight-color:transparent”>' + hypeLabel + hypeCount + '</button>'
+      : (hypers.length > 0 ? '<span style=”font-size:0.72rem;color:var(--amber);margin-top:4px;display:inline-block”>🔥 ' + hypers.length + '</span>' : '');
     return '<div style=”padding:10px 0;border-bottom:1px solid rgba(122,80,6,0.09);overflow:hidden”>'
       + '<div style=”float:right;font-family:Cinzel,serif;font-size:0.82rem;font-weight:700;color:' + laurelCol + ';margin-left:8px;line-height:1.4”>' + laurelSign + laurels + 'L</div>'
       + '<div style=”font-family:Cinzel,serif;font-size:0.86rem;font-weight:700;color:var(--ink);line-height:1.4”>' + escHtml(name) + stravaTag + '</div>'
       + '<div style=”font-family:Crimson Pro,serif;font-size:0.66rem;color:var(--ink-light);font-style:italic;margin-top:2px”>' + sub + '</div>'
       + note
+      + (hypeBtn ? '<div style=”margin-top:4px”>' + hypeBtn + '</div>' : '')
       + '</div>';
   }).join('');
 }
 
 
 function buildHypersList(w) {
+  var hypers = (w.reactions && Array.isArray(w.reactions['🔥'])) ? w.reactions['🔥'] : [];
   var talkers = Array.isArray(w.trashTalk) ? w.trashTalk : [];
-  if (!talkers.length) return '';
-  return '<div><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--house-red,#9a1010);margin-bottom:4px">TRASH TALKED BY</div>'
-    + talkers.map(function(pid){var pl=state.players.find(function(p){return p.id===pid;});return pl?'<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128564; '+escHtml(pl.name.split(' ')[0])+'</span>':'';}).join('')+'</div>';
+  var html = '';
+  if (hypers.length) {
+    html += '<div style="margin-bottom:8px"><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--amber);margin-bottom:4px">HYPED BY</div>'
+      + hypers.map(function(pid){var pl=state.players.find(function(p){return p.id===pid;});return pl?'<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128293; '+escHtml(pl.name.split(' ')[0])+'</span>':'';}).join('')+'</div>';
+  }
+  if (talkers.length) {
+    html += '<div><div style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.1em;color:var(--house-red,#9a1010);margin-bottom:4px">TRASH TALKED BY</div>'
+      + talkers.map(function(pid){var pl=state.players.find(function(p){return p.id===pid;});return pl?'<span style="font-family:Cinzel,serif;font-size:0.7rem;font-weight:700;color:var(--house-color,var(--amber));margin-right:8px">&#128564; '+escHtml(pl.name.split(' ')[0])+'</span>':'';}).join('')+'</div>';
+  }
+  return html;
 }
 
 function markAllPlayersSeen() {
@@ -7306,6 +7333,65 @@ function clearHowlReply() {
 }
 
 
+// Shared helper: count how many workouts currentHowlerId has hyped today (AZ date)
+function countHypesToday(excludeWorkoutId) {
+  var today = getAZDate();
+  return state.workouts.filter(function(w) {
+    if (w.id === excludeWorkoutId) return false;
+    if (w.player_id === currentHowlerId) return false;
+    var hypers = (w.reactions && Array.isArray(w.reactions['🔥'])) ? w.reactions['🔥'] : [];
+    return w.date === today && hypers.indexOf(currentHowlerId) >= 0;
+  }).length;
+}
+
+async function toggleReaction(workoutId, emoji) {
+  if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
+  var w = state.workouts.find(function(x){ return x.id === workoutId; });
+  if (!w) return;
+  if (!w.reactions) w.reactions = {};
+  if (!Array.isArray(w.reactions[emoji])) w.reactions[emoji] = [];
+  var arr = w.reactions[emoji];
+  var idx = arr.indexOf(currentHowlerId);
+  var adding = idx < 0;
+  var hypesBeforeToday = adding ? countHypesToday(null) : 0;
+  if (idx >= 0) { arr.splice(idx, 1); } else { arr.push(currentHowlerId); }
+  await saveState();
+  buildStatsCache();
+  if (adding) {
+    showToast(hypesBeforeToday < 5 ? '🔥 Hyped! +1L' : '🔥 Hyped! (5L daily max reached)');
+  } else {
+    showToast('Hype removed');
+  }
+  renderChronicle();
+}
+
+async function toggleWorkoutReaction(workoutId, emoji) {
+  if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
+  var w = state.workouts.find(function(x){ return x.id === workoutId; });
+  if (!w) return;
+  if (!w.reactions) w.reactions = {};
+  if (!Array.isArray(w.reactions[emoji])) w.reactions[emoji] = [];
+  var arr = w.reactions[emoji];
+  var idx = arr.indexOf(currentHowlerId);
+  var adding = idx < 0;
+  var hypesBeforeToday = adding ? countHypesToday(null) : 0;
+  if (idx >= 0) { arr.splice(idx, 1); } else { arr.push(currentHowlerId); }
+  await saveState();
+  buildStatsCache();
+  if (adding) {
+    showToast(hypesBeforeToday < 5 ? '🔥 Hyped! +1L' : '🔥 Hyped! (5L daily max reached)');
+    if (w.player_id !== currentHowlerId) {
+      var reactor = state.players.find(function(p){ return p.id === currentHowlerId; });
+      var wname = (WORKOUT_NAMES && WORKOUT_NAMES[w.workout]) || w.workout;
+      fireNotification('🔥 ' + (reactor ? reactor.name.split(' ')[0] : 'Someone') + ' hyped your workout', wname + (w.miles ? ' · ' + w.miles + ' mi' : '') + ' · ' + formatDate(w.date), 'hype-' + workoutId);
+    }
+  } else {
+    showToast('Hype removed');
+  }
+  var pannals = document.getElementById('pannals-' + w.player_id);
+  if (pannals) { pannals.dataset.loaded = ''; loadCardAnnals(w.player_id, pannals); }
+}
+
 async function toggleHowlReaction(howlId, emoji) {
   if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
   const h = (state.howls || []).find(function(x) { return x.id === howlId; });
@@ -7325,11 +7411,22 @@ async function toggleHowlReaction(howlId, emoji) {
 function reactionBarHTML(obj, idVal, fnPrefix) {
   var reactions = (obj && obj.reactions) ? obj.reactions : {};
   var bar = '<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">';
-  // Reply + trash talk on workout entries
+  // Hype + Reply + Trash talk on workout entries in The Annals
   if (fnPrefix === 'toggleReaction') {
-    var workoutPlayer = '';
     var wo = state.workouts.find(function(x){return x.id===idVal;});
+    var workoutPlayer = '';
     if (wo) { var wp=state.players.find(function(p){return p.id===wo.player_id;}); if(wp) workoutPlayer=wp.name; }
+    var isOwnWorkout = wo && wo.player_id === currentHowlerId;
+    if (!isOwnWorkout && currentHowlerId) {
+      var wHypers = (wo && wo.reactions && Array.isArray(wo.reactions['🔥'])) ? wo.reactions['🔥'] : [];
+      var wHyped = wHypers.indexOf(currentHowlerId) >= 0;
+      var safeId = idVal.replace(/"/g,'');
+      bar += '<button data-id="' + safeId + '" data-emoji="🔥" data-fn="toggleReaction" onclick="handleReaction(this,event)" ';
+      bar += 'style="background:' + (wHyped?'rgba(122,80,6,0.15)':'transparent') + ';border:1.5px solid ' + (wHyped?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
+      bar += (wHyped ? '🔥 Hyped' : '🤍 Hype');
+      if (wHypers.length > 0) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + wHypers.length + '</span>';
+      bar += '</button>';
+    }
     bar += '<button data-id="' + idVal + '" onclick="event.stopPropagation();replyToWorkout(this.dataset.id)" ';
     bar += 'style="background:transparent;border:1.5px solid var(--border);border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">🐺 Reply</button>';
     if (workoutPlayer && wo && wo.player_id !== currentHowlerId) {
@@ -7401,7 +7498,8 @@ function handleReaction(btn, evt) {
   var id = btn.dataset.id;
   var emoji = btn.dataset.emoji;
   var fn = btn.dataset.fn;
-  if (fn === 'toggleHowlReaction') toggleHowlReaction(id, emoji);
+  if (fn === 'toggleReaction') toggleReaction(id, emoji);
+  else if (fn === 'toggleHowlReaction') toggleHowlReaction(id, emoji);
 }
 
 
