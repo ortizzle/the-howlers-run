@@ -1361,6 +1361,9 @@
     <div id="mars-bar-section" style="margin-bottom:28px"></div>
     <div class="section-title" style="margin-top:28px;font-size:1rem">📊 Pack Stats</div>
     <div id="pack-stats-dashboard" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px"></div>
+
+    <div class="section-title" style="margin-top:28px;font-size:1rem">📋 Weekly Effort Report</div>
+    <div id="weekly-effort-report"></div>
   </div>
 
   <!-- TAB: LOG TRIAL -->
@@ -5735,6 +5738,7 @@ function renderAll() {
   renderMarsBar();
   renderWeeklyLeaderboard();
   renderQuestBanner();
+  renderWeeklyReport();
   renderCodex();
   checkUnreadHowls();
   markAllPlayersSeen();
@@ -5957,6 +5961,120 @@ function renderPlayers() {
       if (id && name) showBadgeEarners(id, name);
     });
   });
+}
+
+function renderWeeklyReport() {
+  const el = document.getElementById('weekly-effort-report');
+  if (!el) return;
+  const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
+  const TIMED_WK = ['peloton','cardio','strength','mobility'];
+  const RUN_WK = ['long_run','easy_run','tempo','walk_run','race'];
+
+  const allWeeks = [...new Set(
+    state.workouts.filter(w => !SYSTEM_WK.includes(w.workout)).map(w => getWeekKey(w.date))
+  )].sort();
+
+  if (!allWeeks.length || !state.players.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:20px"><span class="empty-icon">📋</span>No trials logged yet.</div>';
+    return;
+  }
+
+  const WORKOUT_LABELS = {
+    long_run:'Long Run', tempo:'Tempo', easy_run:'Easy Run', walk_run:'Walk',
+    peloton:'Peloton', cardio:'Cardio', strength:'Iron Forge', mobility:'Mind & Body',
+    race:'Race', optional_other:'Optional'
+  };
+
+  const playerData = state.players.map(p => {
+    const weeks = allWeeks.map(wk => {
+      const wkWorkouts = state.workouts.filter(w =>
+        w.player_id === p.id && !SYSTEM_WK.includes(w.workout) && getWeekKey(w.date) === wk
+      );
+      const trialL = wkWorkouts.reduce((s,w) => s + (w.laurels_base||0), 0);
+      const trials = wkWorkouts.length;
+      const qualDays = new Set(wkWorkouts.filter(w => {
+        if (TIMED_WK.includes(w.workout)) return (w.minutes||0) >= 15;
+        if (RUN_WK.includes(w.workout)) return (w.miles||0) >= 1;
+        return false;
+      }).map(w => w.date));
+      const isPerfect = qualDays.size >= 4;
+      const bonusL = isPerfect ? 25 : 0;
+      return { wk, trialL, bonusL, trials, isPerfect, total: trialL + bonusL, workouts: wkWorkouts };
+    });
+    const grandTrialL = weeks.reduce((s,w) => s + w.trialL, 0);
+    const grandBonusL = weeks.reduce((s,w) => s + w.bonusL, 0);
+    const perfectCount = weeks.filter(w => w.isPerfect).length;
+    return { player: p, weeks, grandTrialL, grandBonusL, grandTotal: grandTrialL + grandBonusL, perfectCount };
+  });
+
+  function fmtWk(wk) {
+    const d = new Date(wk + 'T12:00:00');
+    return d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+  }
+
+  const html = playerData.map(pd => {
+    const p = pd.player;
+    const houseColor = HOUSES[p.house] || 'var(--amber)';
+    const activeWeeks = pd.weeks.filter(w => w.trials > 0);
+
+    const rows = activeWeeks.map(w => {
+      const weekLabel = fmtWk(w.wk) + ' week';
+      const topTypes = Object.entries(
+        w.workouts.reduce((acc,wo) => { acc[wo.workout] = (acc[wo.workout]||0)+1; return acc; }, {})
+      ).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t]) => WORKOUT_LABELS[t]||t).join(', ');
+
+      return `<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--ink)">${fmtWk(w.wk)}</div>
+          <div style="font-family:'Crimson Pro',serif;font-size:0.68rem;color:var(--ink-light);font-style:italic">${topTypes}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--ink-mid)">${w.trials}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.06em;color:var(--ink-light)">TRIALS</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--ink)">${w.trialL}L</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.06em;color:var(--ink-light)">EFFORT</div>
+        </div>
+        <div style="text-align:center;min-width:48px">
+          ${w.isPerfect
+            ? `<div style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--amber);font-weight:700">✦ +25L</div><div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.06em;color:var(--amber)">PERFECT</div>`
+            : `<div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--ink-light)">${w.total}L</div><div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.06em;color:var(--ink-light)">${w.qualDays||''}TOTAL</div>`
+          }
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow)">
+      <div style="padding:10px 14px;border-bottom:1.5px solid var(--border);background:var(--parchment-dark);display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;color:${houseColor}">${p.name.split(' ')[0]}</div>
+          <div style="font-family:'Crimson Pro',serif;font-size:0.68rem;color:var(--ink-light);font-style:italic">${pd.perfectCount} perfect week${pd.perfectCount!==1?'s':''}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;color:var(--ink)">${pd.grandTotal}L</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.08em;color:var(--ink-light)">${pd.grandTrialL}L effort · ${pd.grandBonusL}L bonus</div>
+        </div>
+      </div>
+      <div style="padding:0 14px 6px">
+        <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;padding:5px 0;border-bottom:2px solid var(--border)">
+          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.08em;color:var(--ink-light)">WEEK OF</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.08em;color:var(--ink-light);text-align:center">TRIALS</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.08em;color:var(--ink-light);text-align:center">EFFORT L</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.08em;color:var(--ink-light);text-align:center">BONUS</div>
+        </div>
+        ${rows}
+        <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;padding:7px 0 3px;border-top:2px solid var(--border);margin-top:2px">
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:var(--ink)">TOTAL</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:var(--ink);text-align:center">${activeWeeks.reduce((s,w)=>s+w.trials,0)}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:var(--ink);text-align:center">${pd.grandTrialL}L</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:var(--amber);text-align:center">${pd.grandBonusL > 0 ? '+'+pd.grandBonusL+'L' : '—'}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = html;
 }
 
 function renderPackStats() {
@@ -8776,7 +8894,7 @@ function switchTab(id) {
   if (id === 'dispatch') { renderDispatch(); markHowlsSeen(); checkAndFireMotivationBurst(); }
   if (id === 'chronicle') { renderChronicle(); markAnnalsSeen(); }
   if (id === 'leaderboard') {
-    renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard(); renderQuestBanner();
+    renderMarsBar(); renderDistanceRankings(); renderPackStats(); renderWeeklyLeaderboard(); renderQuestBanner(); renderWeeklyReport();
     // Show coaching nudge — use cache if available, fire AI only if no cache for today
     if (currentHowlerId && getAnthropicKey()) {
       var card = document.getElementById('coaching-nudge-card');
