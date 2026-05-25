@@ -3259,6 +3259,26 @@ function getWeekKey(dateStr) {
   return `${d.getFullYear()}-W${week}`;
 }
 
+// ── WEEK STATS HELPERS ───────────────────────────────────────────────────────
+var _SYS_WK = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
+var _RUN_WK  = ['long_run','easy_run','tempo','walk_run','race'];
+
+function getWeekStats(pid, weekKey) {
+  var wks = state.workouts.filter(function(w){ return w.player_id===pid && !_SYS_WK.includes(w.workout) && getWeekKey(w.date)===weekKey; });
+  var laurels = wks.reduce(function(s,w){ return s+(w.laurels_base||0); }, 0);
+  var miles   = wks.filter(function(w){ return _RUN_WK.includes(w.workout)&&w.miles; }).reduce(function(s,w){ return s+(w.miles||0); }, 0);
+  return { laurels: laurels, miles: +miles.toFixed(1), trials: wks.length };
+}
+
+function getBestWeekMiles(pid) {
+  var byWeek = {};
+  state.workouts.filter(function(w){ return w.player_id===pid && _RUN_WK.includes(w.workout) && w.miles; }).forEach(function(w){
+    var wk = getWeekKey(w.date);
+    byWeek[wk] = (byWeek[wk]||0) + (w.miles||0);
+  });
+  return +Math.max(0, ...Object.values(byWeek).concat(0)).toFixed(1);
+}
+
 function calcLaurels(workout, miles, minutes, date) {
   miles = parseFloat(miles) || 0;
   minutes = parseInt(minutes) || 0;
@@ -3539,6 +3559,7 @@ function checkQuestMilestones() {
         + (nextTier ? 'Push to ' + nextTier.miles + ' miles and that climbs to ' + nextTier.bonus + 'L.\n\n' : '\nThat\'s the final tier. The pack delivered. 🐺\n\n')
         + 'Per aspera ad astra. 🐺';
       state.howls.push({ id: 'quest_milestone_' + q.id + '_' + t.miles, player_id: 'system', player_laurels: 9999, message: msg, date: getAZDate(), timestamp: new Date().toISOString(), reactions: {}, is_recap: true });
+      fireNotification('🔥 Pack Quest Milestone!', q.name + ' hit ' + t.miles + ' miles — bottom ' + (q.underdog_count||2) + ' earn ' + t.bonus + 'L', 'quest-milestone-' + t.miles);
       changed = true;
     }
   });
@@ -3909,7 +3930,14 @@ async function qlSubmit() {
     var baseId = tier ? newBadges[0].slice(0,-(tier.length+1)) : newBadges[0];
     var bd = BADGES_DEF.find(function(b){ return b.id===baseId; });
     if (bd && tier) msg += ' ' + {bronze:'I',silver:'II',gold:'III'}[tier] + ' Badge: ' + bd.icon + ' ' + bd.name + '!';
-    newBadges.forEach(function(bk){ postBadgeHowl(pid, bk); });
+    newBadges.forEach(function(bk){
+      postBadgeHowl(pid, bk);
+      // Push notification for badge
+      var bTier = ['bronze','silver','gold'].find(function(t){ return bk.endsWith('_'+t); });
+      var bBase = bTier ? bk.slice(0,-(bTier.length+1)) : bk;
+      var bDef  = BADGES_DEF.find(function(b){ return b.id===bBase; });
+      if (bDef) fireNotification('🏅 Badge Unlocked: ' + bDef.icon + ' ' + bDef.name, {bronze:'Bronze I',silver:'Silver II',gold:'Gold III'}[bTier] + ' — ' + (trialPlayer ? trialPlayer.name.split(' ')[0] : 'Howler'), 'badge-' + bk);
+    });
     saveState(); // persist badge reward workout and howl
   }
   showToast(msg);
@@ -5523,11 +5551,16 @@ function loadCardAnnals(pid, el) {
     var laurelSign = laurels >= 0 ? '+' : '';
     var laurelCol = laurels < 0 ? '#9a1010' : hc;
     var sub = formatDate(w.date) + (detail ? ' · ' + detail : '');
+    var hypers = (w.reactions && Array.isArray(w.reactions['🔥'])) ? w.reactions['🔥'] : [];
+    var myHype = currentHowlerId && hypers.includes(currentHowlerId);
+    var isOwn  = w.player_id === currentHowlerId;
+    var hypeBtn = (!isOwn && currentHowlerId) ? '<button onclick=”event.stopPropagation();toggleWorkoutReaction(\'' + w.id + '\',\'🔥\')” style=”background:' + (myHype?'rgba(200,144,10,0.15)':'transparent') + ';border:1px solid ' + (myHype?'var(--amber)':'rgba(0,0,0,0.15)') + ';border-radius:20px;padding:2px 7px;font-size:0.72rem;cursor:pointer;margin-top:4px”>' + (myHype?'🔥':'🤍') + (hypers.length?' '+hypers.length:'') + '</button>' : (hypers.length > 0 ? '<span style=”font-size:0.72rem;color:var(--amber);margin-top:4px;display:inline-block”>🔥 '+hypers.length+'</span>' : '');
     return '<div style=”padding:10px 0;border-bottom:1px solid rgba(122,80,6,0.09);overflow:hidden”>'
       + '<div style=”float:right;font-family:Cinzel,serif;font-size:0.82rem;font-weight:700;color:' + laurelCol + ';margin-left:8px;line-height:1.4”>' + laurelSign + laurels + 'L</div>'
       + '<div style=”font-family:Cinzel,serif;font-size:0.86rem;font-weight:700;color:var(--ink);line-height:1.4”>' + escHtml(name) + stravaTag + '</div>'
       + '<div style=”font-family:Crimson Pro,serif;font-size:0.66rem;color:var(--ink-light);font-style:italic;margin-top:2px”>' + sub + '</div>'
       + note
+      + '<div>' + hypeBtn + '</div>'
       + '</div>';
   }).join('');
 }
@@ -5742,6 +5775,11 @@ function renderPlayers() {
     return '<div style="font-size:0.78rem;color:var(--ink-light);padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:10px;display:flex;gap:12px;flex-wrap:wrap">' + parts.join('') + '</div>';
   }
 
+  // Week keys for deltas
+  var _azToday = (function(){ var az = new Date(new Date().getTime()-7*60*60*1000); return az.toISOString().split('T')[0]; })();
+  var _thisWkKey = getWeekKey(_azToday);
+  var _lastWkKey = getWeekKey(new Date(new Date(_azToday+'T12:00:00').getTime()-7*24*60*60*1000).toISOString().split('T')[0]);
+
   var html = '';
   sorted.forEach(function(p) {
     var s = statsMap[p.id];
@@ -5774,6 +5812,15 @@ function renderPlayers() {
       goneDarkDays = Math.floor((new Date() - lastDate) / (1000*60*60*24));
       isGoneDark = goneDarkDays >= 5;
     }
+
+    // Week-over-week & ghost racing
+    var thisWk   = getWeekStats(p.id, _thisWkKey);
+    var lastWk   = getWeekStats(p.id, _lastWkKey);
+    var lDelta   = thisWk.laurels - lastWk.laurels;
+    var mDelta   = +(thisWk.miles - lastWk.miles).toFixed(1);
+    var bestMi   = getBestWeekMiles(p.id);
+    var ghostPct = bestMi > 0 ? Math.min(100, (thisWk.miles / bestMi) * 100) : 0;
+    var isNewBest = bestMi > 0 && thisWk.miles >= bestMi && thisWk.miles > 0;
 
     var badges = buildBadges(s);
     var books  = buildBooks(p);
@@ -5808,6 +5855,7 @@ function renderPlayers() {
       +   '<div class="card-quick-stats">'
       +     '<div class="card-qstat"><div class="card-qstat-val">' + s.trials + '</div><div class="card-qstat-label">Trials</div></div>'
       +     '<div class="card-qstat"><div class="card-qstat-val">' + s.laurels + 'L</div><div class="card-qstat-label">Laurels</div></div>'
+      +     (thisWk.laurels > 0 ? '<div class="card-qstat"><div class="card-qstat-val" style="color:' + (lDelta>=0?'#2e7d32':'#9a1010') + ';font-size:0.72rem">' + (lDelta>=0?'↑':'↓') + Math.abs(lDelta) + 'L</div><div class="card-qstat-label">This Wk</div></div>' : '')
       +   '</div>'
       +   '<div class="card-chevron">\u25bc</div>'
       + '</div>'
@@ -5831,6 +5879,21 @@ function renderPlayers() {
       +     (badges ? '<div class="player-badges" style="margin-bottom:12px">' + badges + '</div>' : '')
       +     books
       +     extras
+      +     (bestMi > 0 ? (
+              '<div style="padding:8px 0;border-top:1px solid var(--border);margin-bottom:6px">'
+              + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">'
+                + '<span style="font-family:Cinzel,serif;font-size:0.52rem;letter-spacing:0.08em;color:var(--amber)">👻 GHOST RACE ' + (isNewBest ? '🔥 NEW BEST' : '') + '</span>'
+                + '<span style="font-family:Cinzel,serif;font-size:0.6rem;color:var(--ink-light)">' + thisWk.miles + ' / ' + bestMi + ' mi</span>'
+              + '</div>'
+              + '<div style="height:6px;background:rgba(0,0,0,0.08);border-radius:3px;position:relative;overflow:hidden">'
+                + '<div style="position:absolute;top:0;left:0;height:100%;width:100%;background:rgba(0,0,0,0.06);border-radius:3px"></div>'
+                + '<div style="position:absolute;top:0;left:0;height:100%;width:' + ghostPct.toFixed(1) + '%;background:linear-gradient(90deg,var(--house-red),var(--amber));border-radius:3px;transition:width 0.4s"></div>'
+              + '</div>'
+              + '<div style="font-family:Crimson Pro,serif;font-size:0.65rem;color:var(--ink-light);font-style:italic;margin-top:3px">'
+                + (mDelta > 0 ? '↑ ' + mDelta + ' mi vs last week' : mDelta < 0 ? '↓ ' + Math.abs(mDelta) + ' mi vs last week' : 'Same pace as last week')
+              + '</div>'
+              + '</div>'
+            ) : '')
       +     '<div style="display:flex;gap:6px;margin-top:8px">'
       +       (isGoneDark ? '<button onclick="event.stopPropagation();summonGoneDark(\'' + p.id + '\')" class="sovereign-btn" style="flex:1;font-size:0.58rem">🌑 Nudge ' + p.name.split(' ')[0] + '</button>' : '')
       +       '<button onclick="event.stopPropagation();openEditModal(\'' + p.id + '\')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:3px;padding:6px 8px;font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">\u270e Edit</button>'
@@ -7271,6 +7334,29 @@ async function toggleReaction(workoutId, emoji) {
   await saveState();
   renderChronicle();
 }
+// Workout reaction from player card annals — notifies the workout owner
+async function toggleWorkoutReaction(workoutId, emoji) {
+  if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
+  var w = state.workouts.find(function(x){ return x.id === workoutId; });
+  if (!w) return;
+  if (!w.reactions) w.reactions = {};
+  if (!Array.isArray(w.reactions[emoji])) w.reactions[emoji] = [];
+  var arr = w.reactions[emoji];
+  var idx = arr.indexOf(currentHowlerId);
+  var added = idx < 0;
+  if (idx >= 0) { arr.splice(idx, 1); } else { arr.push(currentHowlerId); }
+  await saveState();
+  // Reload the annals panel so the button updates
+  var pannals = document.getElementById('pannals-' + w.player_id);
+  if (pannals) { pannals.dataset.loaded = ''; loadCardAnnals(w.player_id, pannals); }
+  // Notify workout owner
+  if (added && w.player_id !== currentHowlerId) {
+    var reactor  = state.players.find(function(p){ return p.id === currentHowlerId; });
+    var wname    = (WORKOUT_NAMES && WORKOUT_NAMES[w.workout]) || w.workout;
+    fireNotification('🔥 ' + (reactor ? reactor.name.split(' ')[0] : 'Someone') + ' hyped your workout', wname + (w.miles ? ' · ' + w.miles + ' mi' : '') + ' · ' + formatDate(w.date), 'hype-' + workoutId);
+  }
+}
+
 async function toggleHowlReaction(howlId, emoji) {
   if (!currentHowlerId) { showToast('Select your Howler first.'); return; }
   const h = (state.howls || []).find(function(x) { return x.id === howlId; });
