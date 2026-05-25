@@ -1383,12 +1383,12 @@
         <label class="form-label">Workout Type</label>
         <select class="form-select" id="log-workout" onchange="updateLaurelPreview()">
           <option value="">— Select Workout —</option>
-          <option value="long_run">The March — Long Run · min 6 mi (15L/mile)</option>
+          <option value="long_run">The March — Long Run · min 6 mi before Jun 1 / 8.8 mi from Jun 1 (15L/mile)</option>
           <option value="tempo">The Charge — Tempo / Race Pace (12L/mile)</option>
           <option value="easy_run">The Patrol — Easy Run (10L/mile)</option>
           <option value="walk_run" class="walk-rate-opt">Walk (8L/mile)</option>
           <option value="peloton">The Steed — Peloton Ride (8L per 10 min)</option>
-          <option value="strength">The Iron Forge — Strength (15L flat)</option>
+          <option value="strength">The Iron Forge — Strength (15L flat before Jun 1 / 1L/min capped 30L from Jun 1)</option>
           <option value="mobility">Mind & Body — Mobility/Yoga (10L flat)</option>
         <option value="cardio">The Crimson Pulse — Cardio (8L per 10 min)</option>
         <option value="race">Race Day 🏆 (20L/mile + 50L bonus)</option>
@@ -1437,12 +1437,22 @@
   <!-- TAB: TRIALS (challenges) -->
   <div class="tab-content" id="tab-trials">
     <div class="section-title">The Gauntlet — Active Challenges</div>
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <button id="gauntlet-filter-all" onclick="setGauntletFilter('all')" style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;padding:5px 12px;border-radius:20px;border:1.5px solid var(--amber);background:var(--amber);color:#fff;cursor:pointer">All</button>
+      <button id="gauntlet-filter-open" onclick="setGauntletFilter('open')" style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--ink-mid);cursor:pointer">⚔ In Progress</button>
+      <button id="gauntlet-filter-conquered" onclick="setGauntletFilter('conquered')" style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--ink-mid);cursor:pointer">✦ Conquered</button>
+    </div>
     <div class="challenges-grid" id="challenges-grid"></div>
   </div>
 
   <!-- TAB: CONQUESTS -->
   <div class="tab-content" id="tab-conquests">
     <div class="section-title">The Passage — Pack Milestones</div>
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <button id="passage-filter-all" onclick="setPassageFilter('all')" style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;padding:5px 12px;border-radius:20px;border:1.5px solid var(--amber);background:var(--amber);color:#fff;cursor:pointer">All</button>
+      <button id="passage-filter-open" onclick="setPassageFilter('open')" style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--ink-mid);cursor:pointer">⏳ Pending</button>
+      <button id="passage-filter-reached" onclick="setPassageFilter('reached')" style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.08em;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--ink-mid);cursor:pointer">✦ Reached</button>
+    </div>
     <div class="timeline" id="timeline"></div>
   </div>
 
@@ -1523,6 +1533,7 @@
           <table class="codex-table">
             <tbody>
               <tr><td><strong>Training Start</strong></td><td>Monday, April 13, 2026</td></tr>
+              <tr><td><strong>June 1 Rule Changes</strong></td><td>Long Run minimum raises to 8.8 mi · Iron Forge becomes 1L/min (30L cap) · Walk adds time tracking</td></tr>
               <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
               <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
               <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum (any activity, 15 minutes minimum)</td></tr>
@@ -1580,11 +1591,11 @@
               <tr><td>The March — Long Run (min 6 mi)</td><td>15 per mile</td></tr>
               <tr><td>The Charge — Tempo / Race Pace</td><td>12 per mile</td></tr>
               <tr><td>The Patrol — Easy Run</td><td>10 per mile</td></tr>
-              <tr><td>Walk <em style="font-size:0.8rem;color:var(--ink-light)">(8L/mi until June 1 · 6L/mi from June 1)</em></td><td id="codex-walk-rate">8 per mile</td></tr>
+              <tr><td>Walk <em style="font-size:0.8rem;color:var(--ink-light)">(time tracking added June 1)</em></td><td>8 per mile</td></tr>
               <tr><td>The Steed — Peloton Ride <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>8L per 10 min</td></tr>
               <tr><td>The Crimson Pulse — Cardio <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>8L per 10 min</td></tr>
               <tr><td>Race Day 🏆</td><td>20L per mile + 50L bonus</td></tr>
-              <tr><td>The Iron Forge — Strength <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>15 flat</td></tr>
+              <tr><td>The Iron Forge — Strength <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum · before June 1: 15L flat · from June 1: 1L/min capped at 30L)</em></td><td id="codex-strength-rate">15 flat</td></tr>
               <tr><td>Mind & Body — Mobility/Yoga <em style="font-size:0.8rem;color:var(--ink-light)">(15 min minimum)</em></td><td>10 flat</td></tr>
               <tr><td>Underdog Bonus</td><td>+20% when 300+ Laurels behind leader</td></tr>
               <tr><td>🔥 Hype a Workout</td><td>+1L per hype · max 5L/day · can't hype your own</td></tr>
@@ -2394,6 +2405,8 @@ function saveAnthropicKey(key) {
   if (key) localStorage.setItem('howlers_anthropic_key', key.trim());
 }
 let currentHowlerId = localStorage.getItem('howlers_current_player') || '';
+let gauntletFilter = 'all';
+let passageFilter = 'all';
 let _skipMerge = false; // set true for force restore
 let _deletedWorkoutIds = new Set(); // IDs deleted this session — never merge back
 let _deletedHowlIds = new Set();    // Howl IDs deleted this session — never merge back
@@ -2922,10 +2935,18 @@ function calcPlayerStats(pid) {
 
   // Perfect weeks count
   let perfectWeeks = 0;
-  // Perfect week = workouts on 4+ distinct calendar days in a Mon-Sun week
+  // Perfect week = qualifying workouts on 4+ distinct calendar days in a Mon-Sun week
+  // (same qualification rules as streak: runs ≥ 1 mile, timed workouts ≥ 15 min)
   Object.keys(weekWorkouts).forEach(wk => {
     const daysInWeek = new Set(
-      state.workouts.filter(w => !['milestone_bonus','duel_win','duel_loss'].includes(w.workout) && w.player_id === pid && getWeekKey(w.date) === wk)
+      state.workouts.filter(w => {
+        if (SYSTEM_WK.includes(w.workout)) return false;
+        if (w.player_id !== pid || getWeekKey(w.date) !== wk) return false;
+        const isRunWk = ['long_run','easy_run','tempo','walk_run','race'].includes(w.workout);
+        if (TIMED_WK.includes(w.workout)) return (w.minutes||0) >= 15;
+        if (isRunWk) return (w.miles||0) >= 1;
+        return false;
+      })
       .map(w => w.date)
     );
     if (daysInWeek.size >= 4) perfectWeeks++;
@@ -3296,16 +3317,15 @@ function getBestWeekMiles(pid) {
 function calcLaurels(workout, miles, minutes, date) {
   miles = parseFloat(miles) || 0;
   minutes = parseInt(minutes) || 0;
-  var walkRate = (date || getAZDate()) >= '2026-06-01' ? 6 : 8;
   switch(workout) {
     case 'long_run': return Math.round(miles * 15);
     case 'tempo': return Math.round(miles * 12);
     case 'easy_run': return Math.round(miles * 10);
-    case 'walk_run': return miles > 0 ? Math.round(miles * walkRate) : walkRate;
+    case 'walk_run': return miles > 0 ? Math.round(miles * 8) : 8;
     case 'peloton': return Math.round((minutes / 10) * 8);
     case 'cardio': return Math.round((minutes / 10) * 8);
     case 'race': return miles > 0 ? Math.round(miles * 20) + 50 : 50;
-    case 'strength': return 15;
+    case 'strength': return (date || getAZDate()) >= '2026-06-01' ? Math.min(minutes > 0 ? minutes : 15, 30) : 15;
     case 'mobility': return 10;
     default: return 0;
   }
@@ -3864,7 +3884,12 @@ function qlUpdatePreview() {
     if (milesLbl) milesLbl.textContent = 'Peloton Miles (optional)';
     if (minsGrp)  minsGrp.style.display  = 'block';
     if (minsLbl)  minsLbl.textContent = 'Minutes';
-  } else if (['long_run','tempo','easy_run','walk_run','race'].includes(workout)) {
+  } else if (workout === 'walk_run') {
+    if (milesGrp) milesGrp.style.display = 'block';
+    if (milesLbl) milesLbl.textContent = 'Distance (mi)';
+    if (minsGrp)  minsGrp.style.display  = 'block';
+    if (minsLbl)  minsLbl.textContent = 'Minutes (optional)';
+  } else if (['long_run','tempo','easy_run','race'].includes(workout)) {
     if (milesGrp) milesGrp.style.display = 'block';
     if (milesLbl) milesLbl.textContent = 'Distance (mi)';
     if (minsGrp)  minsGrp.style.display  = 'none';
@@ -3902,7 +3927,8 @@ async function qlSubmit() {
   if (date < '2026-04-13') { showToast('No trials before April 13, 2026.'); return; }
   if (date > getAZDate()) { showToast('Cannot log a future date.'); return; }
   if (['long_run','tempo','easy_run'].includes(workout) && miles === 0) { showToast('Enter miles for this workout.'); return; }
-  if (workout === 'long_run' && miles < 6) { showToast('The March requires at least 6 miles.'); return; }
+  var longRunMin = date >= '2026-06-01' ? 8.8 : 6;
+  if (workout === 'long_run' && miles < longRunMin) { showToast('The March requires at least ' + longRunMin + ' miles' + (date >= '2026-06-01' ? ' from June 1.' : '.')); return; }
   if (workout === 'peloton' && minutes === 0) { showToast('Enter minutes for Peloton ride.'); return; }
 
   var btn = document.querySelector('#quick-log-modal .btn-primary');
@@ -6208,6 +6234,32 @@ function renderChronicle() {
   }).join('');
 }
 
+function setGauntletFilter(f) {
+  gauntletFilter = f;
+  ['all','open','conquered'].forEach(function(k) {
+    var btn = document.getElementById('gauntlet-filter-' + k);
+    if (!btn) return;
+    var active = k === f;
+    btn.style.background = active ? 'var(--amber)' : 'transparent';
+    btn.style.color = active ? '#fff' : 'var(--ink-mid)';
+    btn.style.borderColor = active ? 'var(--amber)' : 'var(--border)';
+  });
+  renderChallenges();
+}
+
+function setPassageFilter(f) {
+  passageFilter = f;
+  ['all','open','reached'].forEach(function(k) {
+    var btn = document.getElementById('passage-filter-' + k);
+    if (!btn) return;
+    var active = k === f;
+    btn.style.background = active ? 'var(--amber)' : 'transparent';
+    btn.style.color = active ? '#fff' : 'var(--ink-mid)';
+    btn.style.borderColor = active ? 'var(--amber)' : 'var(--border)';
+  });
+  renderTimeline();
+}
+
 function renderChallenges() {
   const grid = document.getElementById('challenges-grid');
   if (!grid) return;
@@ -6215,7 +6267,17 @@ function renderChallenges() {
   const statsMap = {};
   state.players.forEach(p => { try { statsMap[p.id] = getStats(p.id); } catch(e) { statsMap[p.id] = Object.assign({},EMPTY_STATS); } });
 
-  grid.innerHTML = CHALLENGES_DEF.map(ch => {
+  const challengesToShow = gauntletFilter === 'all' ? CHALLENGES_DEF : CHALLENGES_DEF.filter(ch => {
+    const w = state.challenges_won[ch.id];
+    const hasWinner = w && (Array.isArray(w) ? w.length > 0 : true);
+    return gauntletFilter === 'conquered' ? hasWinner : !hasWinner;
+  });
+  if (challengesToShow.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="padding:20px"><span class="empty-icon">⚔️</span>${gauntletFilter === 'conquered' ? 'No challenges conquered yet.' : 'All challenges conquered!'}</div>`;
+    return;
+  }
+
+  grid.innerHTML = challengesToShow.map(ch => {
     let progress = 0, progressMax = ch.goal, progressLabel = '', winner = null;
     const won = state.challenges_won[ch.id];
     // Normalize won to array for display
@@ -6432,6 +6494,16 @@ function renderChallenges() {
         `<div style="font-family:'Crimson Pro',serif;font-size:0.75rem;font-style:italic;color:var(--ink-light);margin-top:6px">${doneCount===state.players.length?'The pack has risen. ✦':'The march continues...'}</div>`;
     }
 
+    // Unbreakable: append per-player streak progress to backHTML
+    if (ch.id === 'unbreakable') {
+      const streakRows = state.players.map(p => {
+        const s = statsMap[p.id].streak || 0;
+        const pips = Array.from({length:8},(_,i)=>`<span style="display:inline-block;width:14px;height:14px;border-radius:50%;margin:0 2px;background:${i<s?'var(--amber)':'var(--border)'}"></span>`).join('');
+        return `<div style="padding:4px 0;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;font-family:'Cinzel',serif;font-size:0.68rem;color:var(--ink-mid);margin-bottom:3px"><span>${p.name.split(' ')[0]}</span><span style="color:var(--amber)">${s} / 8 wks</span></div><div style="line-height:1">${pips}</div></div>`;
+      }).join('');
+      backHTML = `<div style="font-family:'Cinzel',serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:8px;border-bottom:1px solid var(--amber);padding-bottom:4px">💎 STREAK PROGRESS</div>${streakRows}<div style="font-family:'Crimson Pro',serif;font-size:0.75rem;font-style:italic;color:var(--ink-light);margin-top:6px">First to 8 consecutive qualifying weeks.</div>` + (backHTML ? '<div style="margin-top:10px">' + backHTML + '</div>' : '');
+    }
+
     // Winner house color for duel, gold for pack
     const winnerPlayer = winner && ch.type === 'duel'
       ? state.players.find(p => p.name.split(' ')[0] === winner || p.name === winner)
@@ -6534,7 +6606,17 @@ function renderTimeline() {
     return false;
   };
 
-  tl.innerHTML = MILESTONES_DEF.map(m => {
+  const milestonesToShow = MILESTONES_DEF.filter(m => {
+    if (passageFilter === 'all') return true;
+    const done = checkMilestone(m.id);
+    return passageFilter === 'reached' ? done : !done;
+  });
+  if (milestonesToShow.length === 0) {
+    tl.innerHTML = `<div class="empty-state" style="padding:20px"><span class="empty-icon">🗺️</span>${passageFilter === 'reached' ? 'No milestones reached yet.' : 'All milestones reached!'}</div>`;
+    return;
+  }
+
+  tl.innerHTML = milestonesToShow.map(m => {
     const done = checkMilestone(m.id);
     return `<div class="timeline-item ${done?'done':''}">
       <div class="timeline-dot">${done ? '✦' : m.num}</div>
@@ -8736,13 +8818,9 @@ function formatDate(dateStr) {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Update walk rate labels based on current date (8L/mi before June 1, 6L/mi from June 1)
-  const currentWalkRate = getAZDate() >= '2026-06-01' ? 6 : 8;
-  document.querySelectorAll('.walk-rate-opt').forEach(el => {
-    el.textContent = `Walk (${currentWalkRate}L/mile)`;
-  });
-  const walkRateCell = document.getElementById('codex-walk-rate');
-  if (walkRateCell) walkRateCell.textContent = `${currentWalkRate} per mile`;
+  // Update strength rate label based on current date
+  const strengthRateCell = document.getElementById('codex-strength-rate');
+  if (strengthRateCell) strengthRateCell.textContent = getAZDate() >= '2026-06-01' ? '1L/min (30L cap)' : '15 flat';
 
   // Set today as default date
   const todayStr = getAZDate();
