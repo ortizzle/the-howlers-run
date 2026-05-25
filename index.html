@@ -5516,7 +5516,7 @@ function cardTab(tabEl, side) {
   card.querySelector('.card-side[data-side="' + side + '"]').classList.add('active');
   if (side === 'annals') {
     var el = card.querySelector('.card-annals-scroll');
-    if (el && !el.dataset.loaded) {
+    if (el) {
       el.dataset.loaded = '1';
       var pid = el.id.replace('pannals-','');
       loadCardAnnals(pid, el);
@@ -5557,12 +5557,12 @@ function loadCardAnnals(pid, el) {
     var hypeLabel = myHype ? '🔥 Hyped' : '🤍 Hype';
     var hypeCount = hypers.length > 0 ? ' <span style=”font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)”>' + hypers.length + '</span>' : '';
     var hypeBtn = (!isOwn && currentHowlerId) ? '<button onclick=”event.stopPropagation();toggleWorkoutReaction(\'' + w.id + '\',\'🔥\')” style=”background:' + (myHype?'rgba(200,144,10,0.15)':'transparent') + ';border:1.5px solid ' + (myHype?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;margin-top:6px;font-family:Crimson Pro,serif;line-height:1.4;-webkit-tap-highlight-color:transparent”>' + hypeLabel + hypeCount + '</button>' : (hypers.length > 0 ? '<span style=”font-size:0.72rem;color:var(--amber);margin-top:4px;display:inline-block”>🔥 '+hypers.length+'</span>' : '');
-    return '<div style=”padding:10px 0;border-bottom:1px solid rgba(122,80,6,0.09);overflow:hidden”>'
+    return '<div style=”padding:10px 0;border-bottom:1px solid rgba(122,80,6,0.09);display:flow-root”>'
       + '<div style=”float:right;font-family:Cinzel,serif;font-size:0.82rem;font-weight:700;color:' + laurelCol + ';margin-left:8px;line-height:1.4”>' + laurelSign + laurels + 'L</div>'
       + '<div style=”font-family:Cinzel,serif;font-size:0.86rem;font-weight:700;color:var(--ink);line-height:1.4”>' + escHtml(name) + stravaTag + '</div>'
       + '<div style=”font-family:Crimson Pro,serif;font-size:0.66rem;color:var(--ink-light);font-style:italic;margin-top:2px”>' + sub + '</div>'
       + note
-      + '<div>' + hypeBtn + '</div>'
+      + '<div style=”clear:both”>' + hypeBtn + '</div>'
       + '</div>';
   }).join('');
 }
@@ -7348,6 +7348,7 @@ async function toggleWorkoutReaction(workoutId, emoji) {
   var added = idx < 0;
   if (idx >= 0) { arr.splice(idx, 1); } else { arr.push(currentHowlerId); }
   await saveState();
+  showToast(added ? '🔥 Hyped!' : 'Hype removed');
   // Reload the annals panel so the button updates
   var pannals = document.getElementById('pannals-' + w.player_id);
   if (pannals) { pannals.dataset.loaded = ''; loadCardAnnals(w.player_id, pannals); }
