@@ -1526,6 +1526,7 @@
               <tr><td><strong>Race Day</strong></td><td>January 17, 2027 — Rock 'n' Roll Arizona Half Marathon</td></tr>
               <tr><td><strong>Location</strong></td><td>Tempe Beach Park, Tempe, AZ</td></tr>
               <tr><td><strong>Core Training Days</strong></td><td>4 days per week minimum (any activity, 15 minutes minimum)</td></tr>
+              <tr><td><strong>Week Streak Minimum</strong></td><td>Runs must be ≥ 1 mile · Timed workouts must be ≥ 15 min · Sub-minimum efforts do not count toward streaks or Gauntlet challenges</td></tr>
               <tr><td><strong>Book Bonus</strong></td><td>Ladders up per book: Red Rising +25, Golden Son +50, Morning Star +75, Iron Gold +100, Dark Age +125, Light Bringer +150, Red God +250</td></tr>
               <tr><td><strong>Archprimus</strong></td><td>Player with most Laurels leads the pack ★</td></tr>
               <tr><td><strong>Peerless Gold</strong></td><td>Reach Peerless Scarred (16,000L) and your card turns gold — earned, not chosen ✦</td></tr>
@@ -2860,8 +2861,11 @@ function calcPlayerStats(pid) {
       if (w.miles > maxSingleRun) maxSingleRun = w.miles;
     }
     // Only count toward weeks if the workout qualifies
+    // Runs require at least 1 mile (≈10 min effort); timed workouts require 15 min
+    const isRun = ['long_run','easy_run','tempo','walk_run','race'].includes(w.workout);
     const qualifies = SYSTEM_WK.includes(w.workout) ? false
       : TIMED_WK.includes(w.workout) ? (w.minutes||0) >= 15
+      : isRun ? (w.miles||0) >= 1
       : true;
     if (qualifies) {
       const wk = getWeekKey(w.date);
@@ -5561,20 +5565,11 @@ function loadCardAnnals(pid, el) {
     var laurelSign = laurels >= 0 ? '+' : '';
     var laurelCol = laurels < 0 ? '#9a1010' : hc;
     var sub = formatDate(w.date) + (detail ? ' · ' + detail : '');
-    var hypers = (w.reactions && Array.isArray(w.reactions['🔥'])) ? w.reactions['🔥'] : [];
-    var myHype = currentHowlerId && hypers.includes(currentHowlerId);
-    var isOwn  = w.player_id === currentHowlerId;
-    var hypeLabel = myHype ? '🔥 Hyped' : '🔥 Hype';
-    var hypeCount = hypers.length > 0 ? ' <span style=”font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)”>' + hypers.length + '</span>' : '';
-    var hypeBtn = (!isOwn && currentHowlerId)
-      ? '<button onclick=”event.stopPropagation();toggleWorkoutReaction(\'' + w.id + '\',\'🔥\')” style=”background:' + (myHype?'rgba(200,144,10,0.15)':'transparent') + ';border:1.5px solid ' + (myHype?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;margin-top:6px;font-family:Crimson Pro,serif;line-height:1.4;-webkit-tap-highlight-color:transparent”>' + hypeLabel + hypeCount + '</button>'
-      : (hypers.length > 0 ? '<span style=”font-size:0.72rem;color:var(--amber);margin-top:4px;display:inline-block”>🔥 ' + hypers.length + '</span>' : '');
     return '<div style=”padding:10px 0;border-bottom:1px solid rgba(122,80,6,0.09);overflow:hidden”>'
       + '<div style=”float:right;font-family:Cinzel,serif;font-size:0.82rem;font-weight:700;color:' + laurelCol + ';margin-left:8px;line-height:1.4”>' + laurelSign + laurels + 'L</div>'
       + '<div style=”font-family:Cinzel,serif;font-size:0.86rem;font-weight:700;color:var(--ink);line-height:1.4”>' + escHtml(name) + stravaTag + '</div>'
       + '<div style=”font-family:Crimson Pro,serif;font-size:0.66rem;color:var(--ink-light);font-style:italic;margin-top:2px”>' + sub + '</div>'
       + note
-      + (hypeBtn ? '<div style=”margin-top:4px”>' + hypeBtn + '</div>' : '')
       + '</div>';
   }).join('');
 }
