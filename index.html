@@ -5564,7 +5564,7 @@ function loadCardAnnals(pid, el) {
     var hypers = (w.reactions && Array.isArray(w.reactions['🔥'])) ? w.reactions['🔥'] : [];
     var myHype = currentHowlerId && hypers.includes(currentHowlerId);
     var isOwn  = w.player_id === currentHowlerId;
-    var hypeLabel = myHype ? '🔥 Hyped' : '🤍 Hype';
+    var hypeLabel = myHype ? '🔥 Hyped' : '🔥 Hype';
     var hypeCount = hypers.length > 0 ? ' <span style=”font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)”>' + hypers.length + '</span>' : '';
     var hypeBtn = (!isOwn && currentHowlerId)
       ? '<button onclick=”event.stopPropagation();toggleWorkoutReaction(\'' + w.id + '\',\'🔥\')” style=”background:' + (myHype?'rgba(200,144,10,0.15)':'transparent') + ';border:1.5px solid ' + (myHype?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;margin-top:6px;font-family:Crimson Pro,serif;line-height:1.4;-webkit-tap-highlight-color:transparent”>' + hypeLabel + hypeCount + '</button>'
@@ -6206,7 +6206,7 @@ function renderChronicle() {
     </div>
     <div class="ch-entry-back" style="--house-color:${houseColor}">
       <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--ink-light);margin-bottom:10px">${escHtml(displayName)} &middot; ${formatDate(w.date)}</div>
-      ${isBonus ? `<div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-mid);margin-bottom:12px">${w.quote||''}</div>` : `<div style="margin-bottom:12px;width:100%">${buildHypersList(w)}</div><div style="display:flex;gap:10px;width:100%"><button onclick="event.stopPropagation();openEditWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">&#9998; Edit</button><button onclick="event.stopPropagation();removeWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.4);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer">&#10005; Remove</button></div>`}
+      ${isBonus ? `<div style="font-family:'Crimson Pro',serif;font-style:italic;font-size:0.85rem;color:var(--ink-mid);margin-bottom:12px">${w.quote||''}</div>` : `<div style="margin-bottom:10px;width:100%">${buildHypersList(w)}</div>${(()=>{ var backHypers=(w.reactions&&Array.isArray(w.reactions['🔥']))?w.reactions['🔥']:[];var backHyped=currentHowlerId&&backHypers.includes(currentHowlerId);var isOwnBack=w.player_id===currentHowlerId;return (!isOwnBack&&currentHowlerId)?'<div style="margin-bottom:10px">'+('<button onclick="event.stopPropagation();toggleWorkoutReaction(\''+w.id+'\',\'🔥\')" style="background:'+(backHyped?'rgba(200,144,10,0.15)':'transparent')+';border:1.5px solid '+(backHyped?'var(--amber)':'var(--border)')+';border-radius:4px;padding:4px 12px;font-size:0.75rem;cursor:pointer;font-family:Crimson Pro,serif;line-height:1.4;-webkit-tap-highlight-color:transparent">'+(backHyped?'🔥 Hyped':'🔥 Hype')+(backHypers.length>0?' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">'+backHypers.length+'</span>':'')+'</button>')+'</div>':''; })()}<div style="display:flex;gap:10px;width:100%"><button onclick="event.stopPropagation();openEditWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid var(--border-strong);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-mid);cursor:pointer">&#9998; Edit</button><button onclick="event.stopPropagation();removeWorkout('${w.id}')" style="flex:1;background:transparent;border:1px solid rgba(154,16,16,0.4);border-radius:4px;padding:9px 8px;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;color:var(--house-red);cursor:pointer">&#10005; Remove</button></div>`}
       <button onclick="event.stopPropagation();this.closest('.ch-entry-wrap').classList.remove('flipped')" style="background:transparent;border:none;font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.1em;color:var(--ink-light);cursor:pointer;margin-top:8px;opacity:0.7">&#10005; close</button>
     </div>
     </div>`;
@@ -7423,7 +7423,7 @@ function reactionBarHTML(obj, idVal, fnPrefix) {
       var safeId = idVal.replace(/"/g,'');
       bar += '<button data-id="' + safeId + '" data-emoji="🔥" data-fn="toggleReaction" onclick="handleReaction(this,event)" ';
       bar += 'style="background:' + (wHyped?'rgba(122,80,6,0.15)':'transparent') + ';border:1.5px solid ' + (wHyped?'var(--amber)':'var(--border)') + ';border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;line-height:1.4;font-family:Crimson Pro,serif;-webkit-tap-highlight-color:transparent">';
-      bar += (wHyped ? '🔥 Hyped' : '🤍 Hype');
+      bar += (wHyped ? '🔥 Hyped' : '🔥 Hype');
       if (wHypers.length > 0) bar += ' <span style="font-family:Cinzel,serif;font-size:0.55rem;color:var(--amber)">' + wHypers.length + '</span>';
       bar += '</button>';
     }
