@@ -5957,8 +5957,11 @@ function renderWeeklyReport() {
   const el = document.getElementById('weekly-effort-report');
   if (!el) return;
   const SYSTEM_WK = ['milestone_bonus','duel_win','duel_loss','trashtalk_fee','trashtalk_pot','motivate_fee','motivate_gift'];
+  const BONUS_WK   = ['milestone_bonus','duel_win']; // gauntlet wins & badges — have dates & labels
   const TIMED_WK = ['peloton','cardio','strength','mobility'];
   const RUN_WK = ['long_run','easy_run','tempo','walk_run','race'];
+
+  const thisWk = getWeekKey(getAZDate());
 
   const allWeeks = [...new Set(
     state.workouts.filter(w => !SYSTEM_WK.includes(w.workout)).map(w => getWeekKey(w.date))
@@ -5976,25 +5979,50 @@ function renderWeeklyReport() {
   };
 
   const playerData = state.players.map(p => {
+    const s = getStats(p.id);
+    const streakBonus = s.streak >= 2 ? (s.streak - 1) * 10 : 0;
+
+    // Hype laurels earned (given by this player)
+    const hypeDateMap = {};
+    state.workouts.forEach(w => {
+      if (w.player_id === p.id) return;
+      const hypers = (w.reactions && Array.isArray(w.reactions['🔥'])) ? w.reactions['🔥'] : [];
+      if (hypers.indexOf(p.id) >= 0) { const d = w.date||''; hypeDateMap[d] = (hypeDateMap[d]||0)+1; }
+    });
+    const hypeL = Object.values(hypeDateMap).reduce((s,n) => s + Math.min(n,5), 0);
+
     const weeks = allWeeks.map(wk => {
-      const wkWorkouts = state.workouts.filter(w =>
+      const trialWkts = state.workouts.filter(w =>
         w.player_id === p.id && !SYSTEM_WK.includes(w.workout) && getWeekKey(w.date) === wk
       );
-      const trialL = wkWorkouts.reduce((s,w) => s + (w.laurels_base||0), 0);
-      const trials = wkWorkouts.length;
-      const qualDays = new Set(wkWorkouts.filter(w => {
+      const bonusWkts = state.workouts.filter(w =>
+        w.player_id === p.id && BONUS_WK.includes(w.workout) && getWeekKey(w.date) === wk
+      );
+      const trialL = trialWkts.reduce((s,w) => s + (w.laurels_base||0), 0);
+      const gauntletL = bonusWkts.reduce((s,w) => s + (w.laurels_base||0), 0);
+      const gauntletItems = bonusWkts.map(w => w.milestone_label || (w.workout==='duel_win' ? '⚔ Duel Win' : '✦ Bonus')).filter(Boolean);
+      const trials = trialWkts.length;
+      const qualDays = new Set(trialWkts.filter(w => {
         if (TIMED_WK.includes(w.workout)) return (w.minutes||0) >= 15;
         if (RUN_WK.includes(w.workout)) return (w.miles||0) >= 1;
         return false;
       }).map(w => w.date));
       const isPerfect = qualDays.size >= 4;
-      const bonusL = isPerfect ? 25 : 0;
-      return { wk, trialL, bonusL, trials, isPerfect, total: trialL + bonusL, workouts: wkWorkouts };
+      const perfL = isPerfect ? 25 : 0;
+      const runMiles = +trialWkts.filter(w => RUN_WK.includes(w.workout)).reduce((s,w)=>s+(w.miles||0),0).toFixed(1);
+      return { wk, trialL, gauntletL, gauntletItems, perfL, trials, isPerfect, runMiles, workouts: trialWkts,
+               weekTotal: trialL + gauntletL + perfL };
     });
+
+    const bestTrialL = Math.max(0, ...weeks.map(w => w.trialL));
     const grandTrialL = weeks.reduce((s,w) => s + w.trialL, 0);
-    const grandBonusL = weeks.reduce((s,w) => s + w.bonusL, 0);
+    const grandGauntletL = weeks.reduce((s,w) => s + w.gauntletL, 0);
+    const grandPerfL = weeks.reduce((s,w) => s + w.perfL, 0);
     const perfectCount = weeks.filter(w => w.isPerfect).length;
-    return { player: p, weeks, grandTrialL, grandBonusL, grandTotal: grandTrialL + grandBonusL, perfectCount };
+    const grandTotal = grandTrialL + grandGauntletL + grandPerfL;
+    const totalTrials = weeks.reduce((s,w) => s + w.trials, 0);
+    return { player: p, weeks, grandTrialL, grandGauntletL, grandPerfL, grandTotal,
+             perfectCount, bestTrialL, totalTrials, streakBonus, hypeL };
   });
 
   function fmtWk(wk) {
@@ -6005,61 +6033,90 @@ function renderWeeklyReport() {
   const html = playerData.map(pd => {
     const p = pd.player;
     const houseColor = HOUSES[p.house] || 'var(--amber)';
-    const activeWeeks = pd.weeks.filter(w => w.trials > 0);
+    const activeWeeks = pd.weeks.filter(w => w.trials > 0 || w.gauntletL > 0);
+    const efficiency = pd.totalTrials > 0 ? (pd.grandTrialL / pd.totalTrials).toFixed(1) : '—';
+    const fullTotal = pd.grandTotal + pd.streakBonus + pd.hypeL;
 
-    const rows = activeWeeks.map(w => {
-      const weekLabel = fmtWk(w.wk) + ' week';
+    const rows = activeWeeks.map((w, i) => {
+      const isCurrent = w.wk === thisWk;
+      const isBest = w.trialL === pd.bestTrialL && w.trialL > 0;
+      const prevW = activeWeeks[i - 1];
+      const delta = prevW ? w.trialL - prevW.trialL : null;
       const topTypes = Object.entries(
-        w.workouts.reduce((acc,wo) => { acc[wo.workout] = (acc[wo.workout]||0)+1; return acc; }, {})
+        w.workouts.reduce((acc,wo) => { acc[wo.workout]=(acc[wo.workout]||0)+1; return acc; }, {})
       ).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t]) => WORKOUT_LABELS[t]||t).join(', ');
 
-      return `<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
-        <div>
-          <div style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--ink)">${fmtWk(w.wk)}</div>
-          <div style="font-family:'Crimson Pro',serif;font-size:0.68rem;color:var(--ink-light);font-style:italic">${topTypes}</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--ink-mid)">${w.trials}</div>
-          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.06em;color:var(--ink-light)">TRIALS</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--ink)">${w.trialL}L</div>
-          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.06em;color:var(--ink-light)">EFFORT</div>
-        </div>
-        <div style="text-align:center;min-width:48px">
-          ${w.isPerfect
-            ? `<div style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--amber);font-weight:700">✦ +25L</div><div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.06em;color:var(--amber)">PERFECT</div>`
-            : `<div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--ink-light)">${w.total}L</div><div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.06em;color:var(--ink-light)">${w.qualDays||''}TOTAL</div>`
-          }
+      const rowBg = isCurrent ? 'background:rgba(200,144,10,0.07);margin:0 -14px;padding:6px 14px;' : 'padding:6px 0;';
+      const borderStyle = isCurrent ? 'border-bottom:1px solid rgba(200,144,10,0.25);' : 'border-bottom:1px solid var(--border);';
+
+      const gauntletHTML = w.gauntletItems.length
+        ? `<div style="font-family:'Cinzel',serif;font-size:0.55rem;color:#2e7d32;font-weight:700">+${w.gauntletL}L</div>`
+          + w.gauntletItems.map(lbl => `<div style="font-family:'Crimson Pro',serif;font-size:0.6rem;color:#2e7d32;font-style:italic">${lbl}</div>`).join('')
+        : `<div style="font-family:'Cinzel',serif;font-size:0.55rem;color:var(--ink-light)">—</div>`;
+
+      const perfHTML = w.isPerfect
+        ? `<div style="font-family:'Cinzel',serif;font-size:0.55rem;color:var(--amber);font-weight:700">✦ +25L</div>`
+        : `<div style="font-family:'Cinzel',serif;font-size:0.55rem;color:var(--ink-light)">—</div>`;
+
+      const deltaHTML = delta !== null
+        ? `<span style="font-size:0.55rem;color:${delta>0?'#2e7d32':delta<0?'#9a1010':'var(--ink-light)'}">${delta>0?'↑':'↓'}${Math.abs(delta)}L</span>`
+        : '';
+
+      return `<div style="${rowBg}${borderStyle}">
+        ${isCurrent ? `<div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.1em;color:var(--amber);font-weight:700;margin-bottom:3px">▶ CURRENT WEEK</div>` : ''}
+        <div style="display:grid;grid-template-columns:1fr auto auto auto auto;gap:6px;align-items:start">
+          <div>
+            <div style="font-family:'Cinzel',serif;font-size:0.6rem;color:${isCurrent?'var(--amber)':'var(--ink)'};font-weight:${isCurrent?'700':'400'}">
+              ${isBest ? '👑 ' : ''}${fmtWk(w.wk)} ${deltaHTML}
+            </div>
+            <div style="font-family:'Crimson Pro',serif;font-size:0.65rem;color:var(--ink-light);font-style:italic">${topTypes}${w.runMiles > 0 ? ' · '+w.runMiles+'mi' : ''}</div>
+          </div>
+          <div style="text-align:center;padding-top:1px">
+            <div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--ink-mid)">${w.trials}</div>
+            <div style="font-family:'Cinzel',serif;font-size:0.44rem;letter-spacing:0.05em;color:var(--ink-light)">TRIALS</div>
+          </div>
+          <div style="text-align:center;padding-top:1px">
+            <div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--ink);font-weight:${isBest?'700':'400'}">${w.trialL}L</div>
+            <div style="font-family:'Cinzel',serif;font-size:0.44rem;letter-spacing:0.05em;color:var(--ink-light)">EFFORT</div>
+          </div>
+          <div style="text-align:right;padding-top:1px">${gauntletHTML}</div>
+          <div style="text-align:right;padding-top:1px">${perfHTML}</div>
         </div>
       </div>`;
     }).join('');
+
+    const streakNote = pd.streakBonus > 0
+      ? `<div style="font-family:'Crimson Pro',serif;font-size:0.65rem;color:var(--ink-light);font-style:italic;padding:4px 0 2px">🔥 ${pd.streakBonus}L streak bonus · ${pd.hypeL > 0 ? pd.hypeL+'L hype · ' : ''}not week-attributable</div>`
+      : '';
 
     return `<div style="background:var(--parchment);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow)">
       <div style="padding:10px 14px;border-bottom:1.5px solid var(--border);background:var(--parchment-dark);display:flex;justify-content:space-between;align-items:center">
         <div>
           <div style="font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;color:${houseColor}">${p.name.split(' ')[0]}</div>
-          <div style="font-family:'Crimson Pro',serif;font-size:0.68rem;color:var(--ink-light);font-style:italic">${pd.perfectCount} perfect week${pd.perfectCount!==1?'s':''}</div>
+          <div style="font-family:'Crimson Pro',serif;font-size:0.68rem;color:var(--ink-light);font-style:italic">${pd.perfectCount} perfect wk${pd.perfectCount!==1?'s':''} · ${efficiency}L/trial avg</div>
         </div>
         <div style="text-align:right">
-          <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;color:var(--ink)">${pd.grandTotal}L</div>
-          <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.08em;color:var(--ink-light)">${pd.grandTrialL}L effort · ${pd.grandBonusL}L bonus</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;color:var(--ink)">${fullTotal}L</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.06em;color:var(--ink-light)">${pd.grandTrialL}L trials · ${pd.grandGauntletL+pd.grandPerfL+pd.streakBonus+pd.hypeL}L bonuses</div>
         </div>
       </div>
       <div style="padding:0 14px 6px">
-        <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;padding:5px 0;border-bottom:2px solid var(--border)">
-          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.08em;color:var(--ink-light)">WEEK OF</div>
-          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.08em;color:var(--ink-light);text-align:center">TRIALS</div>
-          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.08em;color:var(--ink-light);text-align:center">EFFORT L</div>
-          <div style="font-family:'Cinzel',serif;font-size:0.48rem;letter-spacing:0.08em;color:var(--ink-light);text-align:center">BONUS</div>
+        <div style="display:grid;grid-template-columns:1fr auto auto auto auto;gap:6px;padding:5px 0;border-bottom:2px solid var(--border)">
+          <div style="font-family:'Cinzel',serif;font-size:0.44rem;letter-spacing:0.07em;color:var(--ink-light)">WEEK OF</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.44rem;letter-spacing:0.07em;color:var(--ink-light);text-align:center">TRIALS</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.44rem;letter-spacing:0.07em;color:var(--ink-light);text-align:center">EFFORT</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.44rem;letter-spacing:0.07em;color:#2e7d32;text-align:right">GAUNTLET</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.44rem;letter-spacing:0.07em;color:var(--amber);text-align:right">PERF WK</div>
         </div>
         ${rows}
-        <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;padding:7px 0 3px;border-top:2px solid var(--border);margin-top:2px">
+        <div style="display:grid;grid-template-columns:1fr auto auto auto auto;gap:6px;padding:7px 0 3px;border-top:2px solid var(--border);margin-top:2px">
           <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:var(--ink)">TOTAL</div>
-          <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:var(--ink);text-align:center">${activeWeeks.reduce((s,w)=>s+w.trials,0)}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:var(--ink);text-align:center">${pd.totalTrials}</div>
           <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:var(--ink);text-align:center">${pd.grandTrialL}L</div>
-          <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:var(--amber);text-align:center">${pd.grandBonusL > 0 ? '+'+pd.grandBonusL+'L' : '—'}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:#2e7d32;text-align:right">${pd.grandGauntletL > 0 ? '+'+pd.grandGauntletL+'L' : '—'}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;font-weight:700;color:var(--amber);text-align:right">${pd.grandPerfL > 0 ? '+'+pd.grandPerfL+'L' : '—'}</div>
         </div>
+        ${streakNote}
       </div>
     </div>`;
   }).join('');
