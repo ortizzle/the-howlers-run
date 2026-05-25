@@ -2895,11 +2895,9 @@ function calcPlayerStats(pid) {
   const allWeekKeys = Array.from(weekSet).sort();
   let streak = 0;
   if (allWeekKeys.length > 0) {
-    // Compare week keys like '2026-W22' numerically — new Date() cannot parse this format
+    // Week keys are now Monday date strings ('YYYY-MM-DD') — plain date math works
     const wkDiff = function(a, b) {
-      const [yA, nA] = a.split('-W').map(Number);
-      const [yB, nB] = b.split('-W').map(Number);
-      return (yB - yA) * 53 + (nB - nA);
+      return Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / (7 * 24 * 60 * 60 * 1000));
     };
     const thisWeek = getWeekKey(getAZDate());
     const cursor = allWeekKeys[allWeekKeys.length - 1];
@@ -3285,9 +3283,11 @@ function toRoman(n) {
 
 function getWeekKey(dateStr) {
   const d = new Date(dateStr + 'T12:00:00');
-  const jan1 = new Date(d.getFullYear(), 0, 1);
-  const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
-  return `${d.getFullYear()}-W${week}`;
+  const day = d.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const daysToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + daysToMonday);
+  return monday.toISOString().split('T')[0]; // 'YYYY-MM-DD' of the Monday
 }
 
 // ── WEEK STATS HELPERS ───────────────────────────────────────────────────────
