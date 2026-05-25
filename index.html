@@ -6049,9 +6049,9 @@ function renderWeeklyReport() {
       const rowBg = isCurrent ? 'background:rgba(200,144,10,0.07);margin:0 -14px;padding:6px 14px;' : 'padding:6px 0;';
       const borderStyle = isCurrent ? 'border-bottom:1px solid rgba(200,144,10,0.25);' : 'border-bottom:1px solid var(--border);';
 
+      const dropId = 'gwdrop-' + p.id + '-' + w.wk.replace(/-/g,'');
       const gauntletHTML = w.gauntletItems.length
-        ? `<div style="font-family:'Cinzel',serif;font-size:0.55rem;color:#2e7d32;font-weight:700">+${w.gauntletL}L</div>`
-          + w.gauntletItems.map(lbl => `<div style="font-family:'Crimson Pro',serif;font-size:0.6rem;color:#2e7d32;font-style:italic">${lbl}</div>`).join('')
+        ? `<div onclick="event.stopPropagation();var d=document.getElementById('${dropId}');d.style.display=d.style.display==='none'?'block':'none'" style="font-family:'Cinzel',serif;font-size:0.55rem;color:#2e7d32;font-weight:700;cursor:pointer;white-space:nowrap">+${w.gauntletL}L ▾</div>`
         : `<div style="font-family:'Cinzel',serif;font-size:0.55rem;color:var(--ink-light)">—</div>`;
 
       const perfHTML = w.isPerfect
@@ -6060,6 +6060,12 @@ function renderWeeklyReport() {
 
       const deltaHTML = delta !== null
         ? `<span style="font-size:0.55rem;color:${delta>0?'#2e7d32':delta<0?'#9a1010':'var(--ink-light)'}">${delta>0?'↑':'↓'}${Math.abs(delta)}L</span>`
+        : '';
+
+      const gauntletDropdown = w.gauntletItems.length
+        ? `<div id="${dropId}" style="display:none;margin:4px 0 2px;padding:6px 8px;background:rgba(46,125,50,0.06);border-radius:4px;border-left:2px solid #2e7d32">
+            ${w.gauntletItems.map(lbl => `<div style="font-family:'Crimson Pro',serif;font-size:0.72rem;color:#2e7d32;font-style:italic;padding:1px 0">${lbl}</div>`).join('')}
+          </div>`
         : '';
 
       return `<div style="${rowBg}${borderStyle}">
@@ -6082,6 +6088,7 @@ function renderWeeklyReport() {
           <div style="text-align:right;padding-top:1px">${gauntletHTML}</div>
           <div style="text-align:right;padding-top:1px">${perfHTML}</div>
         </div>
+        ${gauntletDropdown}
       </div>`;
     }).join('');
 
