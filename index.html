@@ -8975,7 +8975,10 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 4000);
+  // Scale duration with message length: 5s base + 40ms per character, capped at 10s
+  const duration = Math.min(10000, 5000 + msg.length * 40);
+  clearTimeout(t._toastTimer);
+  t._toastTimer = setTimeout(() => t.classList.remove('show'), duration);
 }
 
 function escHtml(s) {
