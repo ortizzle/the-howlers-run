@@ -2513,7 +2513,7 @@ async function loadState() {
     if (hasGistConfig()) {
       const { gistId, token } = getGistConfig();
       const res = await fetch('https://api.github.com/gists/' + gistId, {
-        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }, cache: 'no-store'
       });
       if (!res.ok) throw new Error('Gist HTTP ' + res.status);
       const json = await res.json();
@@ -2527,7 +2527,7 @@ async function loadState() {
       // If content is truncated, fetch raw_url instead
       if (fileObj && fileObj.truncated && fileObj.raw_url) {
         const rawRes = await fetch(fileObj.raw_url, {
-          headers: { 'Authorization': 'token ' + token }
+          headers: { 'Authorization': 'token ' + token }, cache: 'no-store'
         });
         fc = await rawRes.text();
       }
@@ -2640,14 +2640,14 @@ async function _doSave() {
       let remoteState = null;
       try {
         const checkRes = await fetch('https://api.github.com/gists/' + gistId, {
-          headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+          headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }, cache: 'no-store'
         });
         if (checkRes.ok) {
           const checkJson = await checkRes.json();
           const fileObj = checkJson.files && (checkJson.files['howlers-data.json'] || checkJson.files[Object.keys(checkJson.files).find(k=>k.endsWith('.json'))]);
           if (fileObj) {
             const fc = fileObj.truncated && fileObj.raw_url
-              ? await (await fetch(fileObj.raw_url, { headers: { 'Authorization': 'token ' + token } })).text()
+              ? await (await fetch(fileObj.raw_url, { headers: { 'Authorization': 'token ' + token }, cache: 'no-store' })).text()
               : fileObj.content;
             if (fc) remoteState = JSON.parse(fc);
           }
@@ -2726,6 +2726,7 @@ async function _doSave() {
       const res = await fetch('https://api.github.com/gists/' + gistId, {
         method: 'PATCH',
         headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        cache: 'no-store',
         body: JSON.stringify({ files: { 'howlers-data.json': { content: JSON.stringify(state) } } })
       });
       if (!res.ok) throw new Error('Gist HTTP ' + res.status);
@@ -2771,7 +2772,7 @@ async function testGistConnection() {
   result.textContent = 'Gist ID: ' + gistId + '\nToken: ' + token.substring(0,8) + '...';
   try {
     const res = await fetch('https://api.github.com/gists/' + gistId, {
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }, cache: 'no-store'
     });
     const txt = await res.text();
     if (res.ok) {
@@ -5477,6 +5478,7 @@ async function _doForceRestore() {
             'Accept': 'application/vnd.github.v3+json',
             'Content-Type': 'application/json'
           },
+          cache: 'no-store',
           body: JSON.stringify({ files: { 'howlers-data.json': { content: JSON.stringify(imported) } } })
         });
         if (!res.ok) {
@@ -5512,14 +5514,14 @@ async function purgeWorkoutById(wid) {
   try {
     // Fetch current Gist
     const res = await fetch('https://api.github.com/gists/' + gistId, {
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }, cache: 'no-store'
     });
     if (!res.ok) throw new Error('Fetch failed: ' + res.status);
     const json = await res.json();
     const fileObj = json.files && (json.files['howlers-data.json'] || json.files[Object.keys(json.files).find(k=>k.endsWith('.json'))]);
     if (!fileObj) throw new Error('No data file found in Gist');
     const fc = fileObj.truncated && fileObj.raw_url
-      ? await (await fetch(fileObj.raw_url, { headers: { 'Authorization': 'token ' + token } })).text()
+      ? await (await fetch(fileObj.raw_url, { headers: { 'Authorization': 'token ' + token }, cache: 'no-store' })).text()
       : fileObj.content;
     const gistData = JSON.parse(fc);
     const before = gistData.workouts.length;
@@ -5530,6 +5532,7 @@ async function purgeWorkoutById(wid) {
     const writeRes = await fetch('https://api.github.com/gists/' + gistId, {
       method: 'PATCH',
       headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      cache: 'no-store',
       body: JSON.stringify({ files: { 'howlers-data.json': { content: JSON.stringify(gistData) } } })
     });
     if (!writeRes.ok) throw new Error('Write failed: ' + writeRes.status);
