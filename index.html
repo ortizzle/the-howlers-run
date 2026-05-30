@@ -2600,7 +2600,6 @@ async function loadState() {
     console.error('Load error:', e);
     showToast('⚠️ Sync error: ' + e.message);
   }
-  repairBadgeLaurels(); // backfill laurel rewards for any badges stamped without postBadgeHowl
   renderAll();
   checkMentionNotifications();
 
@@ -4974,23 +4973,6 @@ function getPronounNote() {
   return notes.length ? 'Pronouns: ' + notes.join(', ') + '.' : '';
 }
 let _statsCache = {};
-// Ensure every badge in badges_awarded has its corresponding milestone_bonus laurel workout.
-// Badges can be stamped by buildStatsCache without postBadgeHowl being called (e.g. Strava sync,
-// back-dated entries, or page reload crossing the threshold). This repairs those silently.
-function repairBadgeLaurels() {
-  var repaired = false;
-  state.players.forEach(function(p) {
-    (state.badges_awarded[p.id] || []).forEach(function(bk) {
-      var rewardId = 'badge_reward_' + p.id + '_' + bk;
-      if (!state.workouts.some(function(w) { return w.id === rewardId; })) {
-        postBadgeHowl(p.id, bk);
-        repaired = true;
-      }
-    });
-  });
-  if (repaired) saveState();
-}
-
 function buildStatsCache() {
   const prevCache = Object.assign({}, _statsCache);
   _statsCache = {};
