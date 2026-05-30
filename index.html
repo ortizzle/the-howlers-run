@@ -9354,7 +9354,7 @@ async function stravaSyncActivities() {
       var wkOpts = ['long_run','easy_run','tempo','walk_run','peloton','strength','mobility','cardio'].map(function(w) {
         return '<option value="' + w + '"' + (w === mapped.workout ? ' selected' : '') + '>' + WK_LABELS[w] + '</option>';
       }).join('');
-      return '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:6px;padding:12px" data-strava-id="' + a.id + '">' +
+      return '<div style="background:var(--parchment-dark);border:1px solid var(--border);border-radius:6px;padding:12px" data-strava-id="' + a.id + '" data-strava-name="' + (a.name||'').replace(/"/g,'&quot;') + '">' +
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
           '<div>' +
             '<div style="font-family:Cinzel,serif;font-size:0.65rem;font-weight:700;color:var(--ink)">' + (a.name || 'Activity') + '</div>' +
@@ -9391,6 +9391,8 @@ function stravaLogOne(stravaId, miles, minutes, date) {
   if (!pid) { showToast('Select a Howler first.'); return; }
   var player = state.players.find(function(p) { return p.id === pid; });
   if (!player) return;
+  var card = document.querySelector('[data-strava-id="' + stravaId + '"]');
+  var stravaName = card ? (card.dataset.stravaName || '') : '';
   var TIMED = ['peloton','cardio','strength','mobility'];
   var ts = Date.now();
   var entry = {
@@ -9401,6 +9403,7 @@ function stravaLogOne(stravaId, miles, minutes, date) {
     timestamp: new Date().toISOString(),
     strava_id: stravaId
   };
+  if (stravaName) entry.notes = stravaName;
   if (miles > 0) entry.miles = miles;
   if (minutes > 0) entry.minutes = minutes;
   var baseLaurels = calcLaurels(entry.workout, entry.miles, entry.minutes);
