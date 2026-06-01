@@ -1076,6 +1076,13 @@
   }
   .player-card.gone-dark .card-summary { opacity: 0.82; }
   .player-card.gone-dark { border-left-color: #b8986040 !important; }
+  .player-card.frozen {
+    background: linear-gradient(135deg, #fff0f8, #fce4f3, #f9d0eb, #fce4f3, #fff0f8) !important;
+    border-color: rgba(219,39,119,0.35) !important;
+    box-shadow: 0 0 18px rgba(219,39,119,0.15), 0 2px 8px rgba(0,0,0,0.06) !important;
+  }
+  .player-card.frozen .card-name { background: linear-gradient(90deg,#db2777,#ec4899,#f472b6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .frozen-badge { display:inline-block; font-family:'Cinzel',serif; font-size:0.5rem; font-weight:700; letter-spacing:0.12em; padding:2px 7px; border-radius:20px; background:rgba(219,39,119,0.12); color:#db2777; border:1px solid rgba(219,39,119,0.3); margin-left:6px; vertical-align:middle; }
 
   /* SOVEREIGN BUTTON */
   .sovereign-btn {
@@ -2360,7 +2367,7 @@ const WORKOUT_NAMES = {
   motivate_fee:'🐺 Motivation Offering', motivate_gift:'🎁 Pack Gift'
 };
 
-let state = { players: [], workouts: [], howls: [], duels: [], challenges_won: {}, badges_awarded: {}, pack_quests: [] };
+let state = { players: [], workouts: [], howls: [], duels: [], challenges_won: {}, badges_awarded: {}, pack_quests: [], frozen_players: {} };
 let refreshInterval = null;
 
 // ─── JSONBIN CONFIG ───────────────────────────────────────────────────────────
@@ -2599,6 +2606,12 @@ async function loadState() {
     setSyncStatus('error');
     console.error('Load error:', e);
     showToast('⚠️ Sync error: ' + e.message);
+  }
+  // Auto-freeze Jermainus effective June 1 if not already set
+  if (!state.frozen_players) state.frozen_players = {};
+  var jermId = state.players.find(function(p){ return p.name && p.name.toLowerCase().includes('jermainus'); });
+  if (jermId && !state.frozen_players[jermId.id]) {
+    state.frozen_players[jermId.id] = { since: '2026-06-01', return_date: null };
   }
   renderAll();
   checkMentionNotifications();
@@ -3922,6 +3935,9 @@ async function qlSubmit() {
   if (!workout) { showToast('Select a workout type.'); return; }
   if (!date)    { showToast('Enter a date.'); return; }
   if (date < '2026-04-13') { showToast('No trials before April 13, 2026.'); return; }
+  if (isPlayerFrozen(pid)) { showToast('⚔️ This Howler is dormant. They must howl "I\'m back in boyo!" to return.'); return; }
+  var frozenInfo = (state.frozen_players || {})[pid];
+  if (frozenInfo && frozenInfo.return_date && date < frozenInfo.return_date) { showToast('Cannot backdate trials before your return on ' + frozenInfo.return_date + '.'); return; }
   if (date > getAZDate()) { showToast('Cannot log a future date.'); return; }
   if (['long_run','tempo','easy_run'].includes(workout) && miles === 0) { showToast('Enter miles for this workout.'); return; }
   var longRunMin = date >= '2026-06-01' ? 8.8 : 6;
@@ -5858,7 +5874,8 @@ function renderPlayers() {
     var books  = buildBooks(p);
     var extras = buildExtras(s);
 
-    var cardClass = 'player-card' + (isPrimus ? ' primus' : '') + (isPeerless ? ' peerless-gold' : '') + (isGoneDark ? ' gone-dark' : '');
+    var isFrozen = isPlayerFrozen(p.id);
+    var cardClass = 'player-card' + (isPrimus ? ' primus' : '') + (isPeerless ? ' peerless-gold' : '') + (isGoneDark ? ' gone-dark' : '') + (isFrozen ? ' frozen' : '');
 
     html += '<div class="pcard-wrap">'
       + '<div class="' + cardClass + '" style="--house-color:' + houseColor + '">'
@@ -5881,7 +5898,7 @@ function renderPlayers() {
       // summary row
       + '<div class="card-summary" onclick="event.stopPropagation();this.closest(\'.player-card\').classList.toggle(\'card-open\')">'
       +   '<div class="card-name-block">'
-      +     '<div class="card-name">' + (isPrimus ? '<span style="color:#e8b830;text-shadow:0 0 6px rgba(232,184,48,0.5);margin-right:3px">\u265b</span>' : '') + escHtml(p.name) + '</div>'
+      +     '<div class="card-name">' + (isPrimus ? '<span style="color:#e8b830;text-shadow:0 0 6px rgba(232,184,48,0.5);margin-right:3px">\u265b</span>' : '') + escHtml(p.name) + (isFrozen ? '<span class="frozen-badge">\u2744\ufe0f DORMANT</span>' : '') + '</div>'
       +     '<div class="card-sub">' + escHtml(p.subtitle || (p.house + ' House')) + '</div>'
       +   '</div>'
       +   '<div class="card-quick-stats">'
@@ -7481,6 +7498,11 @@ async function postHowl(replyToId, replyToName, activityRef) {
   if (msgEl) { delete msgEl.dataset.sovereignMode; delete msgEl.dataset.sovereignTarget; delete msgEl.dataset.sovereignTargetHouse; delete msgEl.dataset.sovereignTargetId; }
   if (!state.howls) state.howls = [];
   state.howls.push(howl);
+  // Frozen player return trigger
+  if (isPlayerFrozen(pid) && /i'?m back in boyo/i.test(msgText)) {
+    unfreezePlayer(pid);
+    return;
+  }
 
   // ── LAUREL TRANSFER: trashtalk & motivate ────────────────────────────────
   var ts = Date.now();
@@ -8729,6 +8751,12 @@ async function saveEditPlayer() {
 }
 
 async function removePlayer(pid, name) {
+  if ((state.frozen_players || {})[pid]) {
+    var pin = getAdminPin();
+    if (!pin) { showToast('Admin PIN required to remove a dormant Howler. Set one in Setup.'); return; }
+    var entered = prompt('Enter admin PIN to remove ' + name + ' (dormant):');
+    if (entered !== pin) { showToast('Incorrect PIN.'); return; }
+  }
   if (!confirm(`Remove ${name} from the pack? Their workout history will also be deleted.`)) return;
   state.players = state.players.filter(p => p.id !== pid);
   state.workouts = state.workouts.filter(w => w.player_id !== pid);
@@ -9102,6 +9130,28 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─── PLAYER PIN LOCK ─────────────────────────────────────────────────────────
 function pinKey(pid) { return 'howlers_pin_' + pid; }
 function getAdminPin() { return localStorage.getItem('howlers_admin_pin') || ''; }
+
+function isPlayerFrozen(pid) {
+  var f = (state.frozen_players || {})[pid];
+  if (!f || !f.since) return false;
+  if (f.return_date) return false; // already returned
+  return getAZDate() >= f.since;
+}
+
+function unfreezePlayer(pid) {
+  if (!state.frozen_players) state.frozen_players = {};
+  if (!state.frozen_players[pid]) return;
+  state.frozen_players[pid].return_date = getAZDate();
+  saveState();
+  var p = state.players.find(function(pl){ return pl.id === pid; });
+  var name = p ? p.name.split(' ')[0] : 'Howler';
+  state.howls.push({ id:'unfreeze_'+pid+'_'+Date.now(), player_id:'system', player_laurels:9999,
+    message:'🐺 ' + name + ' is BACK IN THE PACK! The chains are broken. The hunt resumes. Per aspera ad astra. ⚔️',
+    date:getAZDate(), timestamp:new Date().toISOString(), reactions:{} });
+  buildStatsCache();
+  renderAll();
+  showToast('⚔️ ' + name + ' has returned to the pack!');
+}
 function isDeviceLocked() { return !!localStorage.getItem('howlers_locked_player'); }
 function getLockedPlayer() { return localStorage.getItem('howlers_locked_player') || ''; }
 
@@ -9394,6 +9444,7 @@ function stravaLogOne(stravaId, miles, minutes, date) {
   if (!pid) { showToast('Select a Howler first.'); return; }
   var player = state.players.find(function(p) { return p.id === pid; });
   if (!player) return;
+  if (isPlayerFrozen(pid)) { showToast('⚔️ This Howler is dormant — cannot log Strava activity.'); return; }
   var card = document.querySelector('[data-strava-id="' + stravaId + '"]');
   var stravaName = card ? (card.dataset.stravaName || '') : '';
   var TIMED = ['peloton','cardio','strength','mobility'];
