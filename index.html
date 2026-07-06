@@ -3164,18 +3164,18 @@ function buildSwordProgress(pid, s) {
   // drawn once and the molten fill is revealed with a clip rect, so the curve
   // and taper stay true at any percentage (the old wedge-fill never matched).
   var sid = ++_swordSeq; // unique ids per render — same player can appear twice
-  var bladeStart = 96, bladeTip = 550;
+  var bladeStart = 96, bladeTip = 548;
   var fillW = bladeStart + (bladeTip - bladeStart) * pct / 100;
-  // Reaping-scythe profile: broad belly off the shaft, then the blade kicks
-  // upward into a hooked tip. The bottom edge is the concave cutting edge.
-  var blade = 'M96 52 C250 46 400 42 488 28 C520 23 542 14 550 2 C544 20 528 30 506 35 C380 58 230 68 96 74 Z';
+  // slingBlade profile from the book art: a long straight haft, then a deep
+  // crescent-moon hook with a thin horn curling back toward the wielder.
+  var blade = 'M96 64 C220 60 320 58 388 52 C452 46 512 30 530 4 C548 30 546 62 522 78 C504 90 480 90 466 82 C492 78 512 64 518 46 C520 34 514 26 506 30 C492 40 448 52 400 58 C320 66 200 70 96 78 Z';
 
   return '<div style="margin-bottom:8px">' +
     '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">' +
     '<span style="font-family:Cormorant SC,serif;font-size:0.9rem;font-weight:700;color:' + hc + '">' + rank.name + '</span>' +
     '<span style="font-family:Cormorant SC,serif;font-size:0.75rem;color:var(--ink-light)">' + (nextRank ? nextRank.name : '★ MAX') + '</span>' +
     '</div>' +
-    '<svg viewBox="0 0 560 84" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto;overflow:visible">' +
+    '<svg viewBox="0 0 560 100" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto;overflow:visible">' +
     '<defs>' +
     '<linearGradient id="sg' + sid + '" x1="0" x2="1" y1="0" y2="0">' +
     '<stop offset="0%" stop-color="#7a1010"/>' +
@@ -3183,31 +3183,31 @@ function buildSwordProgress(pid, s) {
     '<stop offset="80%" stop-color="#e8842c"/>' +
     '<stop offset="100%" stop-color="#ffd76a"/>' +
     '</linearGradient>' +
-    '<clipPath id="sc' + sid + '"><rect x="0" y="0" width="' + fillW.toFixed(1) + '" height="84"/></clipPath>' +
+    '<clipPath id="sc' + sid + '"><rect x="0" y="0" width="' + fillW.toFixed(1) + '" height="100"/></clipPath>' +
     '<clipPath id="sb' + sid + '"><path d="' + blade + '"/></clipPath>' +
     '</defs>' +
-    '<circle cx="14" cy="65" r="8" fill="#8c6a1d"/>' +
-    '<circle cx="14" cy="65" r="3" fill="' + hc + '"/>' +
-    '<rect x="20" y="58" width="3.5" height="14" fill="#c9a227"/>' +
-    '<rect x="24" y="58" width="52" height="14" rx="5" fill="#4a3222"/>' +
-    '<line x1="36" y1="58" x2="36" y2="72" stroke="#2e1e12" stroke-width="1.5"/>' +
-    '<line x1="47" y1="58" x2="47" y2="72" stroke="#2e1e12" stroke-width="1.5"/>' +
-    '<line x1="58" y1="58" x2="58" y2="72" stroke="#2e1e12" stroke-width="1.5"/>' +
-    '<line x1="69" y1="58" x2="69" y2="72" stroke="#2e1e12" stroke-width="1.5"/>' +
-    '<rect x="76" y="58" width="3.5" height="14" fill="#c9a227"/>' +
-    '<path d="M84 46 Q95 65 84 84 Q75 65 84 46 Z" fill="#8c6a1d"/>' +
-    '<path d="M84 50 Q92 65 84 80" fill="none" stroke="' + hc + '" stroke-width="2" opacity="0.75"/>' +
+    '<circle cx="14" cy="72" r="8" fill="#8c6a1d"/>' +
+    '<circle cx="14" cy="72" r="3" fill="' + hc + '"/>' +
+    '<rect x="20" y="65" width="3.5" height="14" fill="#c9a227"/>' +
+    '<rect x="24" y="65" width="52" height="14" rx="5" fill="#4a3222"/>' +
+    '<line x1="36" y1="65" x2="36" y2="79" stroke="#2e1e12" stroke-width="1.5"/>' +
+    '<line x1="47" y1="65" x2="47" y2="79" stroke="#2e1e12" stroke-width="1.5"/>' +
+    '<line x1="58" y1="65" x2="58" y2="79" stroke="#2e1e12" stroke-width="1.5"/>' +
+    '<line x1="69" y1="65" x2="69" y2="79" stroke="#2e1e12" stroke-width="1.5"/>' +
+    '<rect x="76" y="65" width="3.5" height="14" fill="#c9a227"/>' +
+    '<path d="M84 53 Q95 72 84 91 Q75 72 84 53 Z" fill="#8c6a1d"/>' +
+    '<path d="M84 57 Q92 72 84 87" fill="none" stroke="' + hc + '" stroke-width="2" opacity="0.75"/>' +
     '<path d="' + blade + '" fill="#2b2118"/>' +
     '<g clip-path="url(#sc' + sid + ')">' +
     '<path d="' + blade + '" fill="url(#sg' + sid + ')"/>' +
-    '<path d="M96 52 C250 46 400 42 488 28 C520 23 542 14 550 2" fill="none" stroke="#ffffff" opacity="0.18" stroke-width="1.5"/>' +
+    '<path d="M96 64 C220 60 320 58 388 52 C452 46 512 30 530 4" fill="none" stroke="#ffffff" opacity="0.18" stroke-width="1.5"/>' +
     '</g>' +
     (pct < 100 ?
       '<g clip-path="url(#sb' + sid + ')">' +
-      '<rect x="' + (fillW - 8).toFixed(1) + '" y="0" width="8" height="84" fill="#ffe9a8" opacity="0.35"/>' +
-      '<rect x="' + (fillW - 3.5).toFixed(1) + '" y="0" width="3.5" height="84" fill="#ffe9a8"/>' +
+      '<rect x="' + (fillW - 8).toFixed(1) + '" y="0" width="8" height="100" fill="#ffe9a8" opacity="0.35"/>' +
+      '<rect x="' + (fillW - 3.5).toFixed(1) + '" y="0" width="3.5" height="100" fill="#ffe9a8"/>' +
       '</g>' : '') +
-    '<path d="M104 59 C260 53 400 48 494 31 C520 26 538 18 546 9" fill="none" stroke="#000000" opacity="0.15" stroke-width="1"/>' +
+    '<path d="M104 70 C240 66 340 62 402 56 C452 51 500 40 518 22" fill="none" stroke="#000000" opacity="0.15" stroke-width="1"/>' +
     '</svg>' +
     '<div style="display:flex;justify-content:space-between;font-family:Cormorant SC,serif;font-size:0.6rem;color:var(--ink-light);margin-top:4px">' +
     '<span>' + laurels.toLocaleString() + 'L</span>' +
