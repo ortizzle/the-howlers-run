@@ -590,13 +590,15 @@ function renderLog() {
       el('p', { text: 'Scan a barcode, snap a photo of your plate or a nutrition label, or add something by hand.' })));
     return;
   }
-  for (const [mealKey, mealName] of MEALS) {
-    const group = entries.filter(e => e.meal === mealKey);
-    if (!group.length) continue;
+  // Meal groups run in the order the day actually happened (a 05:40 pre-workout gel sits above breakfast).
+  const groups = MEALS.map(([mealKey, mealName]) => ({ mealKey, mealName, group: entries.filter(e => e.meal === mealKey) })).filter(g => g.group.length)
+    .map(g => Object.assign(g, { first: g.group.reduce((m, e) => (e.time && e.time < m ? e.time : m), '99:99') }))
+    .sort((a, b) => a.first.localeCompare(b.first) || mealIndex(a.mealKey) - mealIndex(b.mealKey));
+  for (const { mealKey, mealName, group } of groups) {
     const kcal = group.reduce((s, e) => s + entryTotals(e).kcal, 0);
     const section = el('section', { class: 'meal' },
       el('div', { class: 'meal-head' }, el('span', { class: 'meal-title', text: mealName }), el('span', { class: 'meal-kcal', text: fmtK(kcal) + ' kcal' })));
-    for (const e of group) {
+    for (const e of group.slice().sort((a, b) => String(a.time || '').localeCompare(String(b.time || '')) || (a.createdAt || 0) - (b.createdAt || 0))) {
       const tot = entryTotals(e);
       const meta = [fmtServ(e.servings) + ' × ' + (e.serving.label || '1 serving'), contextLabel(e.context), e.time].filter(Boolean).join(' · ');
       section.appendChild(el('button', { class: 'entry', type: 'button', 'aria-label': 'Edit ' + e.name, onclick: () => openEditSheet(e.id) },
