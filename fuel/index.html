@@ -1514,8 +1514,8 @@ function seedSampleDays(n) {
     cookie: { name: 'Chocolate chip cookie', serving: { label: '1 cookie (30 g)', grams: 30 }, per: { kcal: 140, protein: 1.5, carbs: 20, fat: 7, fiber: 0.5 }, source: 'quick' },
     yog: { name: 'Greek yogurt, plain', serving: { label: '1 cup (245 g)', grams: 245 }, per: { kcal: 145, protein: 25, carbs: 9, fat: 0, fiber: 0 }, source: 'upc', barcode: '012345678905' }
   };
-  const add = (date, meal, time, ctx, food, servings) => addEntry(Object.assign({}, food, { date, meal, time, context: ctx, servings: servings || 1 }));
-  const today = AZ.today();
+  const today = AZ.today(), nowHM = AZ.timeHM();
+  const add = (date, meal, time, ctx, food, servings) => { if (date === today && time > nowHM) return; addEntry(Object.assign({}, food, { date, meal, time, context: ctx, servings: servings || 1 })); };
   for (let i = n - 1; i >= 0; i--) {
     const date = AZ.addDays(today, -i); const dow = AZ.weekday(date);
     const weekend = dow === 0 || dow === 6; const runDay = dow === 2 || dow === 4 || dow === 6;
@@ -1608,10 +1608,7 @@ function columnChart(container, { items, target, tipText, unit = '', height = 17
     hit.addEventListener('focus', show); hit.addEventListener('blur', hide); hit.addEventListener('click', show);
     svg.appendChild(hit);
   });
-  if (target) {
-    svg.appendChild(svgEl('line', { x1: padL, x2: width - padR, y1: y(target), y2: y(target), stroke: 'var(--ink-dim)', 'stroke-width': 1 }));
-    const t = svgEl('text', { x: width - padR, y: y(target) - 4, 'text-anchor': 'end' }); t.textContent = 'target ' + fmtK(target); svg.appendChild(t);
-  }
+  if (target) svg.appendChild(svgEl('line', { x1: padL, x2: width - padR, y1: y(target), y2: y(target), stroke: 'var(--ink-dim)', 'stroke-width': 1, 'stroke-dasharray': '0' }));
   container.appendChild(svg);
 }
 function rowBars(container, rows) {
