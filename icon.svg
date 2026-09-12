@@ -1,12 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <rect width="200" height="200" rx="20" fill="#1a0a0a"/>
-  <rect width="200" height="200" rx="20" fill="url(#bg)"/>
-  <defs>
-    <radialGradient id="bg" cx="50%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#3a0808"/>
-      <stop offset="100%" stop-color="#0d0505"/>
-    </radialGradient>
-  </defs>
-  <text x="100" y="130" font-size="110" text-anchor="middle" font-family="serif">🐺</text>
-  <text x="100" y="180" font-size="18" text-anchor="middle" font-family="Georgia,serif" fill="#c8900a" letter-spacing="3">HOWLERS</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <defs>
+      <linearGradient id="dbg" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#120a06"/>
+        <stop offset="100%" stop-color="#0d0808"/>
+      </linearGradient>
+      <linearGradient id="dshield" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#2a0808"/>
+        <stop offset="100%" stop-color="#1a0606"/>
+      </linearGradient>
+      <linearGradient id="dh" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#ff4040"/>
+        <stop offset="30%" stop-color="#d46010"/>
+        <stop offset="100%" stop-color="#f0d040"/>
+      </linearGradient>
+    </defs>
+    <!-- Background -->
+    <rect width="512" height="512" fill="url(#dbg)"/>
+    <!-- Shield shape -->
+    <path d="M256,480 Q80,400 80,240 L80,90 Q168,70 256,50 Q344,70 432,90 L432,240 Q432,400 256,480 Z" fill="url(#dshield)" stroke="#9a1010" stroke-width="8"/>
+    <!-- Shield inner border -->
+    <path d="M256,450 Q108,378 108,240 L108,112 Q180,95 256,78 Q332,95 404,112 L404,240 Q404,378 256,450 Z" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.5"/>
+    <!-- H letterform -->
+    <text x="256" y="345" font-family="Georgia, 'Times New Roman', serif" font-size="270" font-weight="700" text-anchor="middle" fill="url(#dh)">H</text>
+  </svg>
