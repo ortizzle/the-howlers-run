@@ -9,16 +9,16 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fuel">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#f6f6f4" id="meta-theme-color">
+<meta name="theme-color" content="#f3eee5" id="meta-theme-color">
 <link rel="icon" type="image/svg+xml" id="pwa-favicon">
 <link rel="apple-touch-icon" sizes="180x180" id="pwa-apple-icon">
 <script>
 (function () {
-  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#15171b"/><text x="256" y="345" font-family="Manrope, Helvetica, Arial, sans-serif" font-size="280" font-weight="800" text-anchor="middle" fill="#ffffff">F</text><circle cx="392" cy="128" r="34" fill="#b8302f"/><circle cx="392" cy="212" r="34" fill="#c28f0a"/><circle cx="392" cy="296" r="34" fill="#4257d9"/></svg>';
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#172a45"/><text x="256" y="345" font-family="Manrope, Helvetica, Arial, sans-serif" font-size="280" font-weight="800" text-anchor="middle" fill="#fffcf7">F</text><circle cx="392" cy="128" r="34" fill="#b8302f"/><circle cx="392" cy="212" r="34" fill="#a37a00"/><circle cx="392" cy="296" r="34" fill="#4257d9"/></svg>';
   var encoded = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   document.getElementById('pwa-favicon').href = encoded;
   document.getElementById('pwa-apple-icon').href = encoded;
-  var manifest = { name: 'Fuel', short_name: 'Fuel', description: 'Food, calories and macros', start_url: './', scope: './', display: 'standalone', background_color: '#f6f6f4', theme_color: '#f6f6f4', icons: [{ src: encoded, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }] };
+  var manifest = { name: 'Fuel', short_name: 'Fuel', description: 'Food, calories and macros', start_url: './', scope: './', display: 'standalone', background_color: '#f3eee5', theme_color: '#f3eee5', icons: [{ src: encoded, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }] };
   var link = document.createElement('link'); link.rel = 'manifest';
   link.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' }));
   document.head.appendChild(link);
@@ -28,28 +28,30 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* ---------- Design tokens: one system, light and dark. Color is reserved for data (macros) and state. ---------- */
+  /* ---------- Design tokens: Harbor — deep blue and brown, light and dark. Color is reserved for data (macros) and state. ---------- */
   :root {
     color-scheme: light;
-    --bg: #f6f6f4; --surface: #ffffff; --surface-2: #f1f1ef; --surface-3: #e7e7e4;
-    --ink: #15171b; --ink-mid: #4b5058; --ink-dim: #7c8290;
-    --line: rgba(21,23,27,.08); --line-strong: rgba(21,23,27,.18);
-    --btn-bg: #15171b; --btn-ink: #ffffff;
-    --track: #e9e9e6; --grid: #e6e6e3; --axis: #cfcfcb; --bar: #6b7380;
+    --bg: #f3eee5; --surface: #fffcf7; --surface-2: #f2ece1; --surface-3: #e7dfd0;
+    --ink: #172a45; --ink-mid: #3f4e6e; --ink-dim: #6f7a8c;
+    --line: rgba(23,42,69,.10); --line-strong: rgba(23,42,69,.22);
+    --btn-bg: #172a45; --btn-ink: #fffcf7;
+    --accent: #8a5a2b; --accent-ink: #fffcf7;
+    --track: #e9e2d4; --grid: #e6dfd1; --axis: #cdc4b3; --bar: #5d6f91;
     --protein: #b8302f; --carbs: #a37a00; --fat: #4257d9; --fiber: #2f8a4e;
-    --danger: #d0342c; --ok: #1f8a4c; --warn: #b7791f;
+    --danger: #c0392b; --ok: #2e8b57; --warn: #b7791f;
+    --shadow: 0 1px 2px rgba(23,42,69,.05), 0 6px 20px rgba(23,42,69,.06);
     --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --radius: 12px; --radius-lg: 18px;
-    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]):not([data-fuel-scheme="light"]) {
       color-scheme: dark;
-      --bg: #0e1013; --surface: #16181d; --surface-2: #1d2026; --surface-3: #262a31;
-      --ink: #f2f3f5; --ink-mid: #b1b6bf; --ink-dim: #7d8391;
-      --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.18);
-      --btn-bg: #f2f3f5; --btn-ink: #0e1013;
-      --track: #262a31; --grid: #23272e; --axis: #363b44; --bar: #9aa3b2;
+      --bg: #0e1626; --surface: #172236; --surface-2: #1e2b44; --surface-3: #283753;
+      --ink: #f1e9dc; --ink-mid: #c3bbac; --ink-dim: #8b91a0;
+      --line: rgba(241,233,220,.10); --line-strong: rgba(241,233,220,.22);
+      --btn-bg: #d2a06f; --btn-ink: #1c1208;
+      --accent: #d2a06f; --accent-ink: #1c1208;
+      --track: #263450; --grid: #24324c; --axis: #37476a; --bar: #8fa3c7;
       --protein: #d9455e; --carbs: #bd8b1f; --fat: #7488ff; --fiber: #3aae6c;
       --danger: #ff6b5f; --ok: #4cc98a; --warn: #f0b73a;
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
@@ -57,32 +59,34 @@
   }
   :root[data-theme="dark"], :root[data-fuel-scheme="dark"] {
     color-scheme: dark;
-    --bg: #0e1013; --surface: #16181d; --surface-2: #1d2026; --surface-3: #262a31;
-    --ink: #f2f3f5; --ink-mid: #b1b6bf; --ink-dim: #7d8391;
-    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.18);
-    --btn-bg: #f2f3f5; --btn-ink: #0e1013;
-    --track: #262a31; --grid: #23272e; --axis: #363b44; --bar: #9aa3b2;
+    --bg: #0e1626; --surface: #172236; --surface-2: #1e2b44; --surface-3: #283753;
+    --ink: #f1e9dc; --ink-mid: #c3bbac; --ink-dim: #8b91a0;
+    --line: rgba(241,233,220,.10); --line-strong: rgba(241,233,220,.22);
+    --btn-bg: #d2a06f; --btn-ink: #1c1208;
+    --accent: #d2a06f; --accent-ink: #1c1208;
+    --track: #263450; --grid: #24324c; --axis: #37476a; --bar: #8fa3c7;
     --protein: #d9455e; --carbs: #bd8b1f; --fat: #7488ff; --fiber: #3aae6c;
     --danger: #ff6b5f; --ok: #4cc98a; --warn: #f0b73a;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
   }
   :root[data-fuel-scheme="light"] {
     color-scheme: light;
-    --bg: #f6f6f4; --surface: #ffffff; --surface-2: #f1f1ef; --surface-3: #e7e7e4;
-    --ink: #15171b; --ink-mid: #4b5058; --ink-dim: #7c8290;
-    --line: rgba(21,23,27,.08); --line-strong: rgba(21,23,27,.18);
-    --btn-bg: #15171b; --btn-ink: #ffffff;
-    --track: #e9e9e6; --grid: #e6e6e3; --axis: #cfcfcb; --bar: #6b7380;
+    --bg: #f3eee5; --surface: #fffcf7; --surface-2: #f2ece1; --surface-3: #e7dfd0;
+    --ink: #172a45; --ink-mid: #3f4e6e; --ink-dim: #6f7a8c;
+    --line: rgba(23,42,69,.10); --line-strong: rgba(23,42,69,.22);
+    --btn-bg: #172a45; --btn-ink: #fffcf7;
+    --accent: #8a5a2b; --accent-ink: #fffcf7;
+    --track: #e9e2d4; --grid: #e6dfd1; --axis: #cdc4b3; --bar: #5d6f91;
     --protein: #b8302f; --carbs: #a37a00; --fat: #4257d9; --fiber: #2f8a4e;
-    --danger: #d0342c; --ok: #1f8a4c; --warn: #b7791f;
-    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);
+    --danger: #c0392b; --ok: #2e8b57; --warn: #b7791f;
+    --shadow: 0 1px 2px rgba(23,42,69,.05), 0 6px 20px rgba(23,42,69,.06);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { -webkit-text-size-adjust: 100%; }
   body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.45; min-height: 100vh; -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; }
   button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   input, select, textarea { font: inherit; font-size: 16px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 10px 12px; min-height: 44px; width: 100%; }
   textarea { min-height: 96px; resize: vertical; }
   a { color: var(--ink); }
@@ -97,6 +101,9 @@
   .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; }
   .seg button { min-height: 44px; padding: 0 14px; border-radius: 999px; font-weight: 600; font-size: 14px; color: var(--ink-mid); white-space: nowrap; }
   .seg button.active { background: var(--btn-bg); color: var(--btn-ink); }
+  .workout-strip { display: flex; align-items: center; gap: 8px; margin: 10px 4px 0; font-size: 13px; color: var(--ink-mid); }
+  .workout-strip svg { width: 18px; height: 18px; color: var(--accent); flex: none; }
+  .workout-strip b { color: var(--accent); font-weight: 700; }
   .seg.wide { width: 100%; } .seg.wide button { flex: 1; padding: 0 8px; }
   .icon-btn { min-width: 44px; min-height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: var(--ink-mid); }
   .icon-btn:active { background: var(--surface-2); }
@@ -130,7 +137,7 @@
   .macro .bar > div { height: 100%; border-radius: 4px; background: var(--mc); width: 0; transition: width .4s ease; }
   .macro .bar > div.over { background: var(--danger); }
   .macro.protein { --mc: var(--protein); } .macro.carbs { --mc: var(--carbs); } .macro.fat { --mc: var(--fat); } .macro.fiber { --mc: var(--fiber); }
-  .link-btn { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; color: var(--ink-mid); padding: 0 4px; }
+  .link-btn { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; color: var(--accent); padding: 0 4px; }
   .link-btn svg { width: 18px; height: 18px; }
 
   /* ---------- Log ---------- */
@@ -179,7 +186,7 @@
   .stepper .sv { min-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
   .status { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: var(--radius); background: var(--surface-2); font-size: 14px; color: var(--ink-mid); margin: 10px 0; }
   .status.err { color: var(--danger); border: 1px solid var(--danger); background: transparent; }
-  .spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line-strong); border-top-color: var(--ink); animation: spin .8s linear infinite; flex: none; }
+  .spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line-strong); border-top-color: var(--accent); animation: spin .8s linear infinite; flex: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ---------- Sheets & modal ---------- */
@@ -286,6 +293,7 @@
       <button class="icon-btn" id="date-next" type="button" aria-label="Next day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <section class="card summary" id="summary" aria-live="polite"></section>
+    <div id="workout-strip" class="workout-strip hidden"></div>
     <div id="day-ai"></div>
     <section id="log"></section>
   </section>
@@ -413,7 +421,7 @@ function svgIcon(d, size) {
   s.appendChild(svgEl('path', { d }));
   return s;
 }
-const ICON = { close: 'M6 6l12 12M18 6L6 18', spark: 'M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z', plate: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0' };
+const ICON = { run: 'M22 12h-4l-3 9L9 3l-3 9H2', close: 'M6 6l12 12M18 6L6 18', spark: 'M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z', plate: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0' };
 function fmtK(n) { return Math.round(Number(n) || 0).toLocaleString('en-US'); }
 function fmtG(n) { const r = Math.round((Number(n) || 0) * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); }
 function fmtServ(n) { return String(Math.round(n * 100) / 100); }
@@ -528,7 +536,7 @@ function dayTotals(entries) {
 /* =====================================================================
    4. Rendering — log view
    ===================================================================== */
-function render() { renderHeader(); renderSummary(); renderDayAI(); renderLog(); if (state.view === 'insights') renderInsights(); }
+function render() { renderHeader(); renderSummary(); renderWorkoutStrip(); renderDayAI(); renderLog(); if (state.view === 'insights') renderInsights(); }
 
 function renderHeader() {
   const lbl = $('date-label'); clear(lbl);
@@ -546,7 +554,7 @@ function ringSVG(pct) {
   const r = (size - stroke) / 2, c = 2 * Math.PI * r, cx = size / 2;
   svg.appendChild(svgEl('circle', { cx, cy: cx, r, fill: 'none', stroke: 'var(--track)', 'stroke-width': stroke }));
   const fill = Math.min(1, Math.max(0, pct));
-  if (fill > 0) svg.appendChild(svgEl('circle', { cx, cy: cx, r, fill: 'none', stroke: pct > 1.05 ? 'var(--danger)' : 'var(--ink)', 'stroke-width': stroke, 'stroke-dasharray': (fill * c) + ' ' + c, 'stroke-linecap': 'round', transform: 'rotate(-90 ' + cx + ' ' + cx + ')' }));
+  if (fill > 0) svg.appendChild(svgEl('circle', { cx, cy: cx, r, fill: 'none', stroke: pct > 1.05 ? 'var(--danger)' : 'var(--accent)', 'stroke-width': stroke, 'stroke-dasharray': (fill * c) + ' ' + c, 'stroke-linecap': 'round', transform: 'rotate(-90 ' + cx + ' ' + cx + ')' }));
   return svg;
 }
 function macroRow(key, label, val, target) {
@@ -580,6 +588,16 @@ function renderDayAI() {
   const btn = el('button', { class: 'link-btn', type: 'button' }, svgIcon(ICON.spark, 18), 'Summarize ' + (state.date === AZ.today() ? 'today' : 'this day') + ' with Claude');
   btn.addEventListener('click', () => summarizeDay(state.date, out, btn));
   box.append(btn, out);
+}
+function renderWorkoutStrip() {
+  const box = $('workout-strip'); clear(box);
+  if (!Howlers.connected() || !Howlers.cache()) { box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  const ws = Howlers.forDate(state.date);
+  box.appendChild(svgIcon(ICON.run, 18));
+  if (!ws.length) { box.appendChild(el('span', { text: 'Rest day' })); return; }
+  const parts = ws.map(w => w.label + (w.miles ? ' ' + fmtG(w.miles) + ' mi' : '') + (w.minutes ? ' · ' + w.minutes + ' min' : ''));
+  box.append(el('b', { text: ws.some(w => w.run) ? 'Run day' : 'Training day' }), el('span', { text: ' · ' + parts.join(' + ') }));
 }
 function renderLog() {
   const log = $('log'); clear(log);
@@ -791,6 +809,8 @@ function normalizeUSDA(f) {
 }
 const FoodDB = {
   OFF_FIELDS: 'code,product_name,product_name_en,brands,serving_size,serving_quantity,nutriments,image_front_small_url',
+  usdaKey() { return Store.get('usda_key') || 'DEMO_KEY'; },   // USDA's shared demo key works without signup (about 30 lookups an hour)
+  usingDemoKey() { return !Store.get('usda_key'); },
   rememberProduct(product) { const all = Store.get('products', {}) || {}; if (!product.barcode) return; all[product.barcode] = Object.assign({}, product, { savedAt: Date.now() }); Store.set('products', all); },
   localProduct(code) { const all = Store.get('products', {}) || {}; for (const c of codeVariants(code)) if (all[c]) return all[c]; return null; },
   async lookupBarcode(code, onStatus) {
@@ -811,9 +831,9 @@ const FoodDB = {
         }
       } catch (e) { lastErr = e; }
     }
-    if (Store.get('usda_key')) {
+    {
       try {
-        if (onStatus) onStatus('Checking USDA…');
+        if (onStatus) onStatus('Checking USDA FoodData Central…');
         const hits = await this.searchUSDA(code);
         const exact = hits.find(h => h.barcode && codeVariants(code).includes(h.barcode)) || (hits.length === 1 ? hits[0] : null);
         if (exact) return { product: Object.assign({}, exact, { barcode: code }), from: 'usda' };
@@ -823,12 +843,11 @@ const FoodDB = {
     return { product: null, from: 'none' };
   },
   async searchUSDA(query) {
-    const key = Store.get('usda_key');
-    if (!key) throw new Error('NO_USDA_KEY');
+    const key = this.usdaKey();
     const url = 'https://api.nal.usda.gov/fdc/v1/foods/search?api_key=' + encodeURIComponent(key) + '&query=' + encodeURIComponent(query) + '&pageSize=12&dataType=' + encodeURIComponent('Foundation,SR Legacy,Branded');
     const r = await fetch(url);
     if (r.status === 401 || r.status === 403) throw new Error('USDA rejected the API key');
-    if (r.status === 429) throw new Error('USDA rate limit reached — try again in a minute');
+    if (r.status === 429) throw new Error(this.usingDemoKey() ? 'USDA demo-key limit reached (about 30 lookups an hour). Add your own free key in Settings.' : 'USDA rate limit reached — try again in a minute');
     if (!r.ok) throw new Error('USDA returned ' + r.status);
     const j = await r.json();
     return (j.foods || []).map(normalizeUSDA).filter(Boolean);
@@ -859,7 +878,8 @@ function dayPrompt(date) {
   return 'Summarize ' + (isToday ? "today's" : "this day's") + ' food log for the user (second person, warm but specific, no generic advice, no medical claims). ' +
     (isToday ? 'It is now ' + AZ.timeHM() + ' Arizona time. ' : 'The day is over. ') +
     'Daily targets: ' + T.kcal + ' kcal, protein ' + T.protein + ' g, carbs ' + T.carbs + ' g, fat ' + T.fat + ' g, fiber ' + T.fiber + ' g. ' +
-    'Totals so far: ' + Math.round(t.kcal) + ' kcal, protein ' + Math.round(t.protein) + ', carbs ' + Math.round(t.carbs) + ', fat ' + Math.round(t.fat) + ', fiber ' + Math.round(t.fiber) + '.\nEntries (meal · time · context · item · portion · numbers):\n' + lines.join('\n') +
+    'Totals so far: ' + Math.round(t.kcal) + ' kcal, protein ' + Math.round(t.protein) + ', carbs ' + Math.round(t.carbs) + ', fat ' + Math.round(t.fat) + ', fiber ' + Math.round(t.fiber) + '. ' +
+    (Howlers.forDate(date).length ? 'Workouts this day (from The Howlers): ' + Howlers.forDate(date).map(w => w.label + (w.miles ? ' ' + fmtG(w.miles) + ' mi' : '') + (w.minutes ? ' ' + w.minutes + ' min' : '')).join(', ') + '. ' : '') + '\nEntries (meal · time · context · item · portion · numbers):\n' + lines.join('\n') +
     '\n\nRespond with ONLY valid JSON, no markdown fences: {"headline":"max 10 words","summary":"2 or 3 sentences on how the day stacks up against the targets, citing the numbers","suggestions":["up to 3 short, concrete ideas for the rest of the day; an empty array if the day is over or already on track"]}';
 }
 function rangePrompt(S, range) {
@@ -873,9 +893,10 @@ function rangePrompt(S, range) {
     byMeal: S.meals.map(m => ({ meal: m.label, entries: m.count, sharePct: r(m.share * 100), avgPerDay: r(m.perDay) })),
     byTimeOfDay: S.hours.map(h => ({ hours: h.label, sharePct: r(h.share * 100) })),
     topFoods: S.topFoods.map(f => ({ name: f.name, times: f.count, avgKcal: r(f.avg) })),
-    weekdayAvgKcal: r(S.weekday), weekendAvgKcal: r(S.weekend)
+    weekdayAvgKcal: r(S.weekday), weekendAvgKcal: r(S.weekend),
+    training: S.hasWorkouts ? { runDays: S.training.run.n, restDays: S.training.rest.n, runDayAvg: { kcal: r(S.training.run.kcal), protein: r(S.training.run.protein), carbs: r(S.training.run.carbs) }, restDayAvg: { kcal: r(S.training.rest.kcal), protein: r(S.training.rest.protein), carbs: r(S.training.rest.carbs) }, runDates: S.runDays.map(d => d.date) } : null
   };
-  return 'You are reviewing ' + range + ' days of a personal food log (Arizona). The user is training for a half marathon and wants to understand how and what they eat, not just the macros. Photo and text entries are estimates. Data (JSON):\n' + JSON.stringify(compact) +
+  return 'You are reviewing ' + range + ' days of a personal food log (Arizona). The user is training for a half marathon and wants to understand how and what they eat, not just the macros. Photo and text entries are estimates. If "training" is present, run days come from their running app (The Howlers); compare fueling on run days vs rest days. Data (JSON):\n' + JSON.stringify(compact) +
     '\n\nWrite for the user in second person. Be specific and grounded in these numbers, no generic advice, no medical claims. Respond with ONLY valid JSON, no markdown fences: {"headline":"one line, max 12 words","patterns":["3 to 5 observations about how and what they eat, each citing numbers"],"wins":["1 to 3 things going well"],"watchouts":["1 to 3 things to watch, each with a number"],"experiment":"one concrete thing to try next week"}';
 }
 function parseJSONLoose(raw) {
@@ -1011,6 +1032,87 @@ async function summarizeDay(date, out, btn) {
     statusLine(st, aiErrorMessage(e), 'err');
     if (String(e && e.message) === 'NO_KEY') out.appendChild(el('button', { class: 'btn ghost', type: 'button', text: 'Open Settings', onclick: () => openSettings() }));
   } finally { btn.disabled = false; }
+}
+
+/* =====================================================================
+   7b. The Howlers — read-only workouts from the Howlers Gist. Both apps live on ortizzle.github.io, so the
+       Howlers' own Gist keys in localStorage are reused on a phone that runs both; otherwise enter them in Settings.
+   ===================================================================== */
+const Howlers = {
+  RUN_TYPES: ['long_run', 'easy_run', 'tempo', 'walk_run', 'race', 'optional_run'],
+  OTHER_TYPES: ['peloton', 'strength', 'mobility', 'cardio', 'optional_other'],
+  LABELS: { long_run: 'Long run', tempo: 'Tempo', easy_run: 'Easy run', walk_run: 'Walk/run', race: 'Race', optional_run: 'Run', peloton: 'Peloton', strength: 'Strength', mobility: 'Mobility', cardio: 'Cardio', optional_other: 'Cross-train' },
+  config() {
+    const own = Store.get('howlers', null);
+    if (own && own.gistId && own.token) return { gistId: own.gistId, token: own.token, playerId: own.playerId || '', shared: false };
+    try {
+      const id = localStorage.getItem('howlers_gist_id'), token = localStorage.getItem('howlers_gist_token');
+      if (id && token) return { gistId: id, token, playerId: localStorage.getItem('howlers_current_player') || '', shared: true };
+    } catch (e) {}
+    return null;
+  },
+  connected() { return !!this.config(); },
+  cache() { return Store.get('howlers_cache', null); },
+  forDate(date) { const c = this.cache(); return c && c.byDate && c.byDate[date] ? c.byDate[date] : []; },
+  async refresh(force) {
+    const cfg = this.config(); if (!cfg) return null;
+    const c = this.cache();
+    if (!force && c && c.playerId === (cfg.playerId || c.playerId) && Date.now() - c.fetchedAt < 30 * 60000) return c;
+    const res = await fetch('https://api.github.com/gists/' + encodeURIComponent(cfg.gistId), { headers: { 'Authorization': 'Bearer ' + cfg.token, 'Accept': 'application/vnd.github+json' }, cache: 'no-store' });
+    if (!res.ok) throw new Error('The Howlers Gist answered ' + res.status);
+    const gist = await res.json();
+    const file = gist.files && (gist.files['howlers-data.json'] || gist.files[Object.keys(gist.files).find(k => k.endsWith('.json'))]);
+    if (!file) throw new Error('No data file in the Howlers Gist');
+    const text = file.truncated ? await (await fetch(file.raw_url)).text() : file.content;
+    const st = JSON.parse(text || '{}');
+    const players = (st.players || []).map(p => ({ id: String(p.id), name: String(p.name || p.id) }));
+    const me = cfg.playerId || (players[0] ? players[0].id : '');
+    const byDate = {}; let count = 0;
+    for (const w of (st.workouts || [])) {
+      if (!w || String(w.player_id) !== me || !w.date) continue;
+      const run = this.RUN_TYPES.includes(w.workout);
+      if (!run && !this.OTHER_TYPES.includes(w.workout)) continue;
+      (byDate[w.date] = byDate[w.date] || []).push({ type: w.workout, label: this.LABELS[w.workout] || String(w.workout), miles: Number(w.miles) || 0, minutes: Number(w.minutes) || 0, run });
+      count++;
+    }
+    const out = { fetchedAt: Date.now(), playerId: me, players, byDate, count };
+    Store.set('howlers_cache', out);
+    return out;
+  }
+};
+function renderHowlersSettings(box) {
+  clear(box);
+  const cfg = Howlers.config(); const cache = Howlers.cache();
+  const status = el('div', { class: 'note' });
+  const refreshBtn = el('button', { class: 'btn', type: 'button', text: 'Refresh workouts' });
+  const doRefresh = async () => {
+    refreshBtn.disabled = true; statusLine(status, 'Reading the Howlers Gist…', 'busy');
+    try { const c = await Howlers.refresh(true); renderHowlersSettings(box); render(); toast('Loaded ' + c.count + ' workouts'); }
+    catch (e) { statusLine(status, String((e && e.message) || e), 'err'); refreshBtn.disabled = false; }
+  };
+  refreshBtn.addEventListener('click', doRefresh);
+  if (cfg) {
+    const who = cache && cache.players.find(p => p.id === (cfg.playerId || cache.playerId));
+    status.textContent = (cfg.shared ? 'Connected through The Howlers on this device' : 'Connected with the Gist below') + (who ? ' · ' + who.name : '') + (cache ? ' · ' + cache.count + ' workouts, refreshed ' + new Date(cache.fetchedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : ' · not loaded yet');
+    box.append(status);
+    if (cache && cache.players.length > 1) {
+      const sel = el('select', { 'aria-label': 'Howler' }, cache.players.map(p => el('option', { value: p.id, text: p.name, selected: p.id === cache.playerId ? true : null })));
+      sel.addEventListener('change', () => { const own = Store.get('howlers', null) || { gistId: cfg.gistId, token: cfg.token }; own.playerId = sel.value; Store.set('howlers', own); doRefresh(); });
+      box.append(el('div', { class: 'field' }, el('label', { text: 'Whose workouts' }), sel));
+    }
+    const row = el('div', { class: 'btn-row' }, refreshBtn);
+    if (!cfg.shared) row.appendChild(el('button', { class: 'btn ghost', type: 'button', text: 'Disconnect', onclick: () => { Store.remove('howlers'); Store.remove('howlers_cache'); renderHowlersSettings(box); render(); } }));
+    box.append(row);
+    return;
+  }
+  const idIn = el('input', { type: 'text', placeholder: 'Gist ID', 'aria-label': 'Howlers Gist ID', autocomplete: 'off', style: 'font-family:ui-monospace,monospace' });
+  const tokIn = el('input', { type: 'password', placeholder: 'GitHub token with gist scope', 'aria-label': 'Howlers Gist token', autocomplete: 'off', style: 'font-family:ui-monospace,monospace' });
+  const connect = el('button', { class: 'btn', type: 'button', text: 'Connect', onclick: async () => {
+    const gistId = idIn.value.trim(), token = tokIn.value.trim(); if (!gistId || !token) { toast('Enter the Gist ID and token'); return; }
+    Store.set('howlers', { gistId, token, playerId: '' }); await doRefresh();
+  } });
+  status.textContent = 'Not connected. On a phone that also runs The Howlers, Fuel picks up its Gist keys automatically; otherwise paste them here.';
+  box.append(status, el('div', { class: 'field' }, idIn), el('div', { class: 'field' }, tokIn), connect);
 }
 
 /* =====================================================================
@@ -1326,8 +1428,8 @@ function renderQuickTab(pane) {
       el('div', { class: 'qk', text: fmtK(f.per.kcal) + ' kcal' })));
     clear(usdaBox);
     if (q.length >= 2) {
-      if (Store.get('usda_key')) usdaBox.appendChild(el('button', { class: 'btn ghost', type: 'button', text: 'Search USDA for "' + search.value.trim() + '"', style: 'margin-top:10px', onclick: () => searchUSDA(search.value.trim()) }));
-      else usdaBox.appendChild(el('div', { class: 'note', text: 'Tip: add a free USDA FoodData Central key in Settings to search 400k+ foods.' }));
+      usdaBox.appendChild(el('button', { class: 'btn ghost', type: 'button', text: 'Search USDA for "' + search.value.trim() + '"', style: 'margin-top:10px', onclick: () => searchUSDA(search.value.trim()) }));
+      if (FoodDB.usingDemoKey()) usdaBox.appendChild(el('div', { class: 'note', text: 'USDA search runs on a shared demo key (about 30 lookups an hour). Add your own free key in Settings for unlimited use.' }));
     }
   };
   const searchUSDA = async (q) => {
@@ -1462,6 +1564,7 @@ function openSettings() {
     el('button', { class: 'btn', type: 'button', text: 'Save', style: 'width:auto;flex:none', onclick: () => { const v = usdaIn.value.trim(); if (!v) return; Store.set('usda_key', v); usdaIn.value = ''; usdaIn.placeholder = '•••••••• (saved)'; toast('USDA key saved'); } }),
     el('button', { class: 'btn ghost', type: 'button', text: 'Clear', style: 'width:auto;flex:none', onclick: () => { Store.remove('usda_key'); usdaIn.placeholder = 'optional'; toast('USDA key removed'); } }));
   const exportBox = el('div');
+  const howlersBox = el('div'); renderHowlersSettings(howlersBox);
   const entryCount = Object.values(state.data.records).filter(r => r.type === 'entry' && !r.deleted).length;
   const stats = el('div', { class: 'note', text: entryCount + ' entries stored on this device · ' + Object.keys(Store.get('products', {}) || {}).length + ' remembered barcodes' });
   s.body.append(
@@ -1473,8 +1576,9 @@ function openSettings() {
       el('div', { class: 'note', text: AI.mode() === 'preview' ? 'This preview supplies AI itself; a key is only needed in the deployed app.' : 'Stored only in this browser. Calls go straight from your phone to Anthropic — nothing passes through a server.' })),
     el('div', { class: 'field' }, el('label', { text: 'Claude model' }), modelSel,
       el('div', { class: 'note', text: 'Sonnet 5 is the default: fast and cheap for photos and summaries. Switch to Opus 5 if estimates feel off.' })),
-    el('div', { class: 'field' }, el('label', { text: 'USDA FoodData Central key (food search)' }), usdaRow,
-      el('div', { class: 'note' }, 'Free, instant signup at ', el('a', { href: 'https://fdc.nal.usda.gov/api-key-signup', target: '_blank', rel: 'noopener', text: 'fdc.nal.usda.gov' }), '. Without it, Quick add uses the built-in list.')),
+    el('div', { class: 'field' }, el('label', { text: 'USDA FoodData Central key (barcode fallback + food search)' }), usdaRow,
+      el('div', { class: 'note' }, 'Free, instant signup at ', el('a', { href: 'https://fdc.nal.usda.gov/api-key-signup', target: '_blank', rel: 'noopener', text: 'fdc.nal.usda.gov' }), '. Until then, lookups use USDA\'s shared demo key (about 30 an hour).')),
+    el('div', { class: 'field', style: 'margin-top:16px' }, el('label', { text: 'The Howlers workouts' }), howlersBox),
     el('div', { class: 'field', style: 'margin-top:16px' }, el('label', { text: 'Data' }), stats,
       el('div', { class: 'btn-row' },
         el('button', { class: 'btn', type: 'button', text: 'Load 2 sample weeks', onclick: () => { seedSampleDays(14); render(); toast('Two sample weeks loaded'); closeSheet(); } }),
@@ -1575,7 +1679,12 @@ function computeStats(days) {
   const hours = byHour.map((k, i) => ({ label: HOUR_BUCKETS[i][0], name: HOUR_BUCKETS[i][1], kcal: k, share: k / totalK }));
   const topFoods = Object.values(foods).sort((a, b) => b.count - a.count || b.kcal - a.kcal).slice(0, 8).map(f => ({ name: f.name, count: f.count, avg: f.kcal / f.count }));
   const pk = avg.protein * 4, ck = avg.carbs * 4, fk = avg.fat * 9, mk = (pk + ck + fk) || 1;
-  return { days: perDay, n, avg, kcalHit, overDays, proteinHit, contexts, meals, hours, topFoods, split: { protein: pk / mk, carbs: ck / mk, fat: fk / mk }, weekday: weekdayN ? weekdayK / weekdayN : 0, weekend: weekendN ? weekendK / weekendN : 0, targets: T };
+  const hasWorkouts = Howlers.connected() && !!Howlers.cache();
+  const runDays = hasWorkouts ? logged.filter(d => Howlers.forDate(d.date).some(w => w.run)) : [];
+  const restDays = hasWorkouts ? logged.filter(d => !Howlers.forDate(d.date).some(w => w.run)) : [];
+  const avgOf = (arr, k) => arr.length ? arr.reduce((s, d) => s + d.totals[k], 0) / arr.length : 0;
+  const training = { run: { n: runDays.length, kcal: avgOf(runDays, 'kcal'), protein: avgOf(runDays, 'protein'), carbs: avgOf(runDays, 'carbs') }, rest: { n: restDays.length, kcal: avgOf(restDays, 'kcal'), protein: avgOf(restDays, 'protein'), carbs: avgOf(restDays, 'carbs') } };
+  return { days: perDay, n, avg, kcalHit, overDays, proteinHit, contexts, meals, hours, topFoods, split: { protein: pk / mk, carbs: ck / mk, fat: fk / mk }, weekday: weekdayN ? weekdayK / weekdayN : 0, weekend: weekendN ? weekendK / weekendN : 0, targets: T, hasWorkouts, runDays, restDays, training };
 }
 function niceStep(max) {
   const raw = Math.max(1, max) / 3; const pow = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw / pow;
@@ -1668,6 +1777,16 @@ function renderInsights() {
   const c4 = el('section', { class: 'card' }, el('h3', { text: 'By meal' }), el('div', { class: 'sub', text: 'Share of calories · average per logged day' }));
   const rows4 = el('div', { class: 'rows' }); c4.appendChild(rows4); box.appendChild(c4);
   rowBars(rows4, S.meals.map(m => ({ label: m.label, v: m.kcal, text: Math.round(m.share * 100) + '% · ' + fmtK(m.perDay) + ' / day' })));
+  // Training days (from The Howlers)
+  if (S.hasWorkouts) {
+    const Tr = S.training;
+    const cell = (k, v) => el('td', { text: k === 'kcal' ? fmtK(v) : fmtG(v) + ' g' });
+    const c45 = el('section', { class: 'card' }, el('h3', { text: 'Run days vs rest days' }), el('div', { class: 'sub', text: 'Runs from The Howlers · daily averages in this range' }),
+      el('table', { class: 'table' }, el('thead', {}, el('tr', {}, el('th', { text: '' }), el('th', { text: 'Run days (' + Tr.run.n + ')' }), el('th', { text: 'Rest days (' + Tr.rest.n + ')' }))),
+        el('tbody', {}, [['Calories', 'kcal'], ['Protein', 'protein'], ['Carbs', 'carbs']].map(([l, k]) => el('tr', {}, el('td', { text: l }), cell(k, Tr.run[k]), cell(k, Tr.rest[k]))))));
+    if (!Tr.run.n) c45.appendChild(el('div', { class: 'note', text: 'No run days in this range yet.' }));
+    box.appendChild(c45);
+  }
   // When
   const c5 = el('section', { class: 'card' }, el('h3', { text: 'When you eat' }), el('div', { class: 'sub', text: 'Share of calories by time of day' }));
   const chart5 = el('div', { class: 'chart' }); c5.appendChild(chart5);
@@ -1706,7 +1825,7 @@ function applyScheme(mode) {
   const root = document.documentElement;
   if (mode === 'system') root.removeAttribute('data-fuel-scheme'); else root.setAttribute('data-fuel-scheme', mode);
   const dark = mode === 'dark' || (mode === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const meta = $('meta-theme-color'); if (meta) meta.setAttribute('content', dark ? '#0e1013' : '#f6f6f4');
+  const meta = $('meta-theme-color'); if (meta) meta.setAttribute('content', dark ? '#0e1626' : '#f3eee5');
   saveSettings();
 }
 function showView(v) {
@@ -1744,8 +1863,9 @@ function init() {
   window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (state.view === 'insights') renderInsights(); }, 200); });
   render();
   AI.init();
+  if (Howlers.connected()) Howlers.refresh(false).then(() => { renderWorkoutStrip(); if (state.view === 'insights') renderInsights(); }).catch(() => {});
 }
-window.Fuel = { state, AZ, Store, addEntry, updateEntry, deleteEntry, entriesFor, dayTotals, computeStats, render, renderInsights, showView, Scanner, FoodDB, AI, parseEstimate, parseJSONLoose, normalizeOFF, normalizeUSDA, normalizeBarcode, upcEToA, codeVariants, openScanSheet, openPhotoSheet, openAddSheet, openEditSheet, openSettings, seedSampleDays, applyScheme, closeSheet, MEALS, CONTEXTS };
+window.Fuel = { state, AZ, Store, Howlers, addEntry, updateEntry, deleteEntry, entriesFor, dayTotals, computeStats, render, renderInsights, showView, Scanner, FoodDB, AI, parseEstimate, parseJSONLoose, normalizeOFF, normalizeUSDA, normalizeBarcode, upcEToA, codeVariants, openScanSheet, openPhotoSheet, openAddSheet, openEditSheet, openSettings, seedSampleDays, applyScheme, closeSheet, MEALS, CONTEXTS };
 init();
 })();
 </script>
