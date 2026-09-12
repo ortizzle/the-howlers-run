@@ -1,5 +1,5 @@
 // Howlers Service Worker — background polling + OS notifications
-const ICON = './icon.svg';
+const ICON = './icon-192.png';
 
 let _gistId = '';
 let _gistToken = '';
@@ -121,3 +121,46 @@ async function poll() {
     console.warn('[Howlers SW] poll error:', err);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Offline shell. Chrome will only build a real home-screen app for a site whose
+   service worker can serve it, so navigations are network-first (a deploy still
+   lands immediately when online) with the last good copy as the offline
+   fallback. Only same-origin GETs are touched — the Gist API and everything
+   else always goes straight to the network.
+   --------------------------------------------------------------------------- */
+const SHELL_CACHE = 'howlers-shell-v1';
+const SHELL = [
+  './index.html', './manifest.webmanifest', './icon.svg',
+  './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(SHELL_CACHE).then(c => Promise.allSettled(SHELL.map(u => c.add(u)))));
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys =>
+    Promise.all(keys.filter(k => k !== SHELL_CACHE).map(k => caches.delete(k)))));
+});
+
+self.addEventListener('fetch', e => {
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  let url;
+  try { url = new URL(req.url); } catch (err) { return; }
+  if (url.origin !== self.location.origin) return;
+
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req).then(res => {
+        const copy = res.clone();
+        caches.open(SHELL_CACHE).then(c => c.put('./index.html', copy)).catch(() => {});
+        return res;
+      }).catch(() => caches.match('./index.html').then(hit => hit || Response.error()))
+    );
+    return;
+  }
+
+  e.respondWith(caches.match(req).then(hit => hit || fetch(req)));
+});
