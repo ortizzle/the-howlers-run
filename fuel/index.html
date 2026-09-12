@@ -1,221 +1,220 @@
 <!DOCTYPE html>
-<html lang="en" data-fuel-theme="forge">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fuel</title>
 <meta name="application-name" content="Fuel">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fuel">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#14110f" id="meta-theme-color">
+<meta name="theme-color" content="#f6f6f4" id="meta-theme-color">
+<link rel="icon" type="image/svg+xml" id="pwa-favicon">
+<link rel="apple-touch-icon" sizes="180x180" id="pwa-apple-icon">
+<script>
+(function () {
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#15171b"/><text x="256" y="345" font-family="Manrope, Helvetica, Arial, sans-serif" font-size="280" font-weight="800" text-anchor="middle" fill="#ffffff">F</text><circle cx="392" cy="128" r="34" fill="#b8302f"/><circle cx="392" cy="212" r="34" fill="#c28f0a"/><circle cx="392" cy="296" r="34" fill="#4257d9"/></svg>';
+  var encoded = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+  document.getElementById('pwa-favicon').href = encoded;
+  document.getElementById('pwa-apple-icon').href = encoded;
+  var manifest = { name: 'Fuel', short_name: 'Fuel', description: 'Food, calories and macros', start_url: './', scope: './', display: 'standalone', background_color: '#f6f6f4', theme_color: '#f6f6f4', icons: [{ src: encoded, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }] };
+  var link = document.createElement('link'); link.rel = 'manifest';
+  link.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' }));
+  document.head.appendChild(link);
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* ---------- Theme tokens: three committed looks, switchable in Settings during prototype review ---------- */
+  /* ---------- Design tokens: one system, light and dark. Color is reserved for data (macros) and state. ---------- */
   :root {
-    /* FORGE — iron, ember, and gold. Dark companion to The Howlers. */
-    --bg: #14110f; --bg-2: #1a1512; --surface: #221c18; --surface-2: #2b2420; --surface-3: #352c26;
-    --ink: #f3eadb; --ink-mid: #cdbfa6; --ink-dim: #8f8271;
-    --accent: #c9a227; --accent-2: #d46010; --accent-ink: #1a1408;
-    --line: rgba(201,162,39,.22); --line-strong: rgba(201,162,39,.5);
-    --protein: #d9483b; --carbs: #e0b43a; --fat: #9b7bd6; --fiber: #5ea36a;
-    --danger: #d64533; --ok: #56b36a; --warn: #e0a030;
-    --font-display: 'Cormorant SC', Georgia, 'Times New Roman', serif;
-    --font-body: 'Spectral', Georgia, 'Times New Roman', serif;
-    --font-num: 'Spectral', Georgia, serif;
-    --radius: 10px; --radius-lg: 18px;
-    --shadow: 0 8px 28px rgba(0,0,0,.45);
-    --header-bg: linear-gradient(180deg, #2b1a10 0%, #14110f 100%);
-    --ring-track: rgba(255,255,255,.08);
-    --texture-opacity: .05;
-    --scheme: dark;
+    color-scheme: light;
+    --bg: #f6f6f4; --surface: #ffffff; --surface-2: #f1f1ef; --surface-3: #e7e7e4;
+    --ink: #15171b; --ink-mid: #4b5058; --ink-dim: #7c8290;
+    --line: rgba(21,23,27,.08); --line-strong: rgba(21,23,27,.18);
+    --btn-bg: #15171b; --btn-ink: #ffffff;
+    --track: #e9e9e6; --grid: #e6e6e3; --axis: #cfcfcb; --bar: #6b7380;
+    --protein: #b8302f; --carbs: #a37a00; --fat: #4257d9; --fiber: #2f8a4e;
+    --danger: #d0342c; --ok: #1f8a4c; --warn: #b7791f;
+    --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --radius: 12px; --radius-lg: 18px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);
   }
-  [data-fuel-theme="ledger"] {
-    /* LEDGER — ration-book paper and ink. Light sibling of the Howlers' Gold of Luna palette. */
-    --bg: #f4ecd8; --bg-2: #ede2c8; --surface: #fbf6ea; --surface-2: #f1e8d3; --surface-3: #e7dbbd;
-    --ink: #221b13; --ink-mid: #4e4230; --ink-dim: #7d6e58;
-    --accent: #7d6414; --accent-2: #9a1010; --accent-ink: #fbf6ea;
-    --line: rgba(120,95,30,.25); --line-strong: rgba(120,95,30,.55);
-    --protein: #a83232; --carbs: #b8860b; --fat: #4a5d8a; --fiber: #3c7a45;
-    --danger: #a52a1e; --ok: #2f7d3d; --warn: #b27a10;
-    --shadow: 0 4px 18px rgba(120,95,30,.18);
-    --header-bg: linear-gradient(180deg, #ede2c8 0%, #f4ecd8 100%);
-    --ring-track: rgba(60,40,10,.10);
-    --texture-opacity: .04;
-    --scheme: light;
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]):not([data-fuel-scheme="light"]) {
+      color-scheme: dark;
+      --bg: #0e1013; --surface: #16181d; --surface-2: #1d2026; --surface-3: #262a31;
+      --ink: #f2f3f5; --ink-mid: #b1b6bf; --ink-dim: #7d8391;
+      --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.18);
+      --btn-bg: #f2f3f5; --btn-ink: #0e1013;
+      --track: #262a31; --grid: #23272e; --axis: #363b44; --bar: #9aa3b2;
+      --protein: #d9455e; --carbs: #bd8b1f; --fat: #7488ff; --fiber: #3aae6c;
+      --danger: #ff6b5f; --ok: #4cc98a; --warn: #f0b73a;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+    }
   }
-  [data-fuel-theme="lab"] {
-    /* LAB — cool navy dashboard, mono numerals. The clinical alternative. */
-    --bg: #0d1320; --bg-2: #101828; --surface: #172033; --surface-2: #1e2a40; --surface-3: #26344e;
-    --ink: #e8eef8; --ink-mid: #b3bfd3; --ink-dim: #7a879c;
-    --accent: #35d0a5; --accent-2: #4f8cff; --accent-ink: #06231b;
-    --line: rgba(120,150,200,.18); --line-strong: rgba(120,150,200,.4);
-    --protein: #ff6b6b; --carbs: #ffd166; --fat: #6ea8fe; --fiber: #35d0a5;
-    --danger: #ff5c5c; --ok: #35d0a5; --warn: #ffb547;
-    --font-display: 'Inter', -apple-system, system-ui, sans-serif;
-    --font-body: 'Inter', -apple-system, system-ui, sans-serif;
-    --font-num: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-    --radius: 12px; --radius-lg: 20px;
-    --shadow: 0 10px 30px rgba(0,0,0,.5);
-    --header-bg: linear-gradient(180deg, #111a2c 0%, #0d1320 100%);
-    --ring-track: rgba(255,255,255,.08);
-    --texture-opacity: 0;
-    --scheme: dark;
+  :root[data-theme="dark"], :root[data-fuel-scheme="dark"] {
+    color-scheme: dark;
+    --bg: #0e1013; --surface: #16181d; --surface-2: #1d2026; --surface-3: #262a31;
+    --ink: #f2f3f5; --ink-mid: #b1b6bf; --ink-dim: #7d8391;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.18);
+    --btn-bg: #f2f3f5; --btn-ink: #0e1013;
+    --track: #262a31; --grid: #23272e; --axis: #363b44; --bar: #9aa3b2;
+    --protein: #d9455e; --carbs: #bd8b1f; --fat: #7488ff; --fiber: #3aae6c;
+    --danger: #ff6b5f; --ok: #4cc98a; --warn: #f0b73a;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
   }
-  [data-fuel-theme="lab"] .brand-title { letter-spacing: .18em; font-weight: 700; }
-  [data-fuel-theme="lab"] .meal-title { letter-spacing: .12em; text-transform: uppercase; font-size: 12px; }
-  [data-fuel-theme="lab"] .num { font-family: var(--font-num); font-weight: 600; }
+  :root[data-fuel-scheme="light"] {
+    color-scheme: light;
+    --bg: #f6f6f4; --surface: #ffffff; --surface-2: #f1f1ef; --surface-3: #e7e7e4;
+    --ink: #15171b; --ink-mid: #4b5058; --ink-dim: #7c8290;
+    --line: rgba(21,23,27,.08); --line-strong: rgba(21,23,27,.18);
+    --btn-bg: #15171b; --btn-ink: #ffffff;
+    --track: #e9e9e6; --grid: #e6e6e3; --axis: #cfcfcb; --bar: #6b7380;
+    --protein: #b8302f; --carbs: #a37a00; --fat: #4257d9; --fiber: #2f8a4e;
+    --danger: #d0342c; --ok: #1f8a4c; --warn: #b7791f;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);
+  }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { -webkit-text-size-adjust: 100%; color-scheme: var(--scheme); }
-  body {
-    background: var(--bg); color: var(--ink);
-    font-family: var(--font-body); font-size: 16px; line-height: 1.45;
-    min-height: 100vh; overscroll-behavior-y: none;
-    -webkit-font-smoothing: antialiased;
-  }
-  body::before {
-    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    opacity: var(--texture-opacity);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
+  html { -webkit-text-size-adjust: 100%; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.45; min-height: 100vh; -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; }
   button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-  input, select, textarea { font: inherit; font-size: 16px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; min-height: 44px; width: 100%; }
-  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  input, select, textarea { font: inherit; font-size: 16px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 10px 12px; min-height: 44px; width: 100%; }
   textarea { min-height: 96px; resize: vertical; }
-  a { color: var(--accent); }
+  a { color: var(--ink); }
   .hidden { display: none !important; }
-  .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+  .num { font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
-  /* ---------- App shell ---------- */
-  .app { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; padding: 0 16px; padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
-  header.top {
-    position: sticky; top: 0; z-index: 20; margin: 0 -16px; padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
-    background: var(--header-bg); border-bottom: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  }
-  .brand { display: flex; flex-direction: column; line-height: 1.05; }
-  .brand-title { font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: .08em; color: var(--accent); }
-  .brand-sub { font-size: 12px; color: var(--ink-dim); letter-spacing: .04em; margin-top: 2px; }
-  .top-actions { display: flex; gap: 6px; align-items: center; }
-  .icon-btn { min-width: 44px; min-height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: var(--ink-mid); border: 1px solid transparent; }
+  /* ---------- Shell ---------- */
+  .app { max-width: 560px; margin: 0 auto; padding: 0 16px; padding-bottom: calc(108px + env(safe-area-inset-bottom)); }
+  header.top { position: sticky; top: 0; z-index: 20; margin: 0 -16px; padding: calc(10px + env(safe-area-inset-top)) 16px 10px; background: var(--bg); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .brand { font-weight: 800; font-size: 22px; letter-spacing: -.01em; }
+  .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; }
+  .seg button { min-height: 44px; padding: 0 14px; border-radius: 999px; font-weight: 600; font-size: 14px; color: var(--ink-mid); white-space: nowrap; }
+  .seg button.active { background: var(--btn-bg); color: var(--btn-ink); }
+  .seg.wide { width: 100%; } .seg.wide button { flex: 1; padding: 0 8px; }
+  .icon-btn { min-width: 44px; min-height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: var(--ink-mid); }
   .icon-btn:active { background: var(--surface-2); }
-  .icon-btn svg { width: 24px; height: 24px; }
-  .chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--ink-mid); font-size: 13px; font-family: var(--font-display); letter-spacing: .06em; text-transform: uppercase; }
-  .chip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--surface); }
-
+  .icon-btn svg { width: 22px; height: 22px; }
   .preview-banner { margin: 10px 0 0; padding: 8px 12px; border-radius: var(--radius); background: var(--surface-2); border: 1px dashed var(--line-strong); font-size: 13px; color: var(--ink-mid); }
 
-  /* ---------- Date bar ---------- */
-  .datebar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 14px 0 12px; }
-  .datebar .date-label { flex: 1; text-align: center; font-family: var(--font-display); font-size: 20px; letter-spacing: .06em; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--radius); }
-  .datebar .date-label small { font-family: var(--font-body); font-size: 12px; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
+  .datebar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 12px 0 10px; }
+  .date-label { flex: 1; min-height: 44px; display: flex; align-items: baseline; justify-content: center; gap: 8px; font-weight: 700; font-size: 18px; border-radius: var(--radius); }
+  .date-label small { font-weight: 500; font-size: 13px; color: var(--ink-dim); }
 
-  /* ---------- Summary card ---------- */
+  /* ---------- Cards & summary ---------- */
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 16px; }
-  .summary { display: grid; grid-template-columns: 136px 1fr; gap: 14px; align-items: center; }
-  @media (max-width: 360px) { .summary { grid-template-columns: 1fr; justify-items: center; } }
-  .ring-wrap { position: relative; width: 136px; height: 136px; }
-  .ring-wrap svg { width: 136px; height: 136px; display: block; }
+  .card + .card { margin-top: 12px; }
+  .card h3 { font-size: 15px; font-weight: 700; }
+  .card .sub { font-size: 13px; color: var(--ink-dim); margin-top: 2px; }
+  .summary { display: grid; grid-template-columns: 124px 1fr; gap: 16px; align-items: center; }
+  @media (max-width: 340px) { .summary { grid-template-columns: 1fr; justify-items: center; } }
+  .ring-wrap { position: relative; width: 124px; height: 124px; }
+  .ring-wrap svg { width: 124px; height: 124px; display: block; }
   .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1; }
-  .ring-center .big { font-family: var(--font-num); font-size: 30px; font-weight: 600; color: var(--ink); }
-  .ring-center .small { font-size: 11px; color: var(--ink-dim); margin-top: 4px; letter-spacing: .06em; text-transform: uppercase; }
-  .ring-center .rem { font-size: 12px; color: var(--accent); margin-top: 6px; }
+  .ring-center .big { font-size: 27px; font-weight: 800; letter-spacing: -.02em; }
+  .ring-center .small { font-size: 11px; color: var(--ink-dim); margin-top: 5px; }
+  .ring-center .rem { font-size: 12px; font-weight: 600; color: var(--ink-mid); margin-top: 5px; }
   .macros { display: flex; flex-direction: column; gap: 9px; width: 100%; }
   .macro { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; column-gap: 8px; row-gap: 4px; align-items: baseline; font-size: 13px; }
-  .macro .lbl { grid-column: 1; grid-row: 1; color: var(--ink-mid); font-family: var(--font-display); letter-spacing: .06em; font-size: 14px; }
-  .macro .val { grid-column: 2; grid-row: 1; color: var(--ink); font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 13px; }
-  .macro .val small { color: var(--ink-dim); font-size: 11px; }
-  .macro .bar { grid-column: 1 / 3; grid-row: 2; height: 8px; border-radius: 6px; background: var(--ring-track); overflow: hidden; }
-  .macro .bar > div { height: 100%; border-radius: 6px; width: 0; transition: width .4s ease; }
-  [data-fuel-theme="lab"] .macro .val { font-size: 12px; letter-spacing: -.02em; }
-  [data-fuel-theme="lab"] .macro .lbl { font-size: 13px; }
-  .macro.protein .bar > div { background: var(--protein); }
-  .macro.carbs .bar > div { background: var(--carbs); }
-  .macro.fat .bar > div { background: var(--fat); }
-  .macro.fiber .bar > div { background: var(--fiber); }
-  .macro .bar > div.over { background: var(--danger) !important; }
+  .macro .lbl { grid-column: 1; grid-row: 1; font-weight: 600; color: var(--ink-mid); display: inline-flex; align-items: center; gap: 6px; }
+  .macro .lbl i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--mc); }
+  .macro .val { grid-column: 2; grid-row: 1; font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 600; }
+  .macro .val small { color: var(--ink-dim); font-weight: 500; font-size: 11px; }
+  .macro .bar { grid-column: 1 / 3; grid-row: 2; height: 6px; border-radius: 4px; background: var(--track); overflow: hidden; }
+  .macro .bar > div { height: 100%; border-radius: 4px; background: var(--mc); width: 0; transition: width .4s ease; }
+  .macro .bar > div.over { background: var(--danger); }
+  .macro.protein { --mc: var(--protein); } .macro.carbs { --mc: var(--carbs); } .macro.fat { --mc: var(--fat); } .macro.fiber { --mc: var(--fiber); }
+  .link-btn { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; color: var(--ink-mid); padding: 0 4px; }
+  .link-btn svg { width: 18px; height: 18px; }
 
   /* ---------- Log ---------- */
-  .meal { margin-top: 18px; }
-  .meal-head { display: flex; align-items: baseline; justify-content: space-between; padding: 0 4px 6px; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
-  .meal-title { font-family: var(--font-display); font-size: 18px; letter-spacing: .08em; color: var(--accent); }
-  .meal-kcal { font-family: var(--font-num); font-size: 13px; color: var(--ink-dim); }
-  .entry { width: 100%; text-align: left; display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; min-height: 60px; padding: 8px 6px; border-radius: var(--radius); border-bottom: 1px solid var(--line); }
+  .meal { margin-top: 16px; }
+  .meal-head { display: flex; align-items: baseline; justify-content: space-between; padding: 0 2px 6px; }
+  .meal-title { font-weight: 700; font-size: 15px; }
+  .meal-kcal { font-size: 13px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+  .entry { width: 100%; text-align: left; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; min-height: 60px; padding: 10px 12px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); margin-bottom: 6px; }
   .entry:active { background: var(--surface-2); }
-  .entry .src { width: 34px; height: 34px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 17px; }
-  .entry .name { font-weight: 600; font-size: 16px; line-height: 1.2; }
-  .entry .name .brand { font-weight: 400; color: var(--ink-dim); font-size: 13px; }
-  .entry .portion { font-size: 13px; color: var(--ink-dim); margin-top: 2px; }
-  .entry .kcal { font-family: var(--font-num); font-size: 18px; font-weight: 600; text-align: right; }
-  .entry .pcf { display: flex; gap: 5px; justify-content: flex-end; margin-top: 3px; }
-  .pill { font-family: var(--font-num); font-size: 11px; padding: 1px 6px; border-radius: 6px; background: var(--surface-2); color: var(--ink-mid); border-left: 3px solid var(--line-strong); white-space: nowrap; }
-  .pill.p { border-left-color: var(--protein); } .pill.c { border-left-color: var(--carbs); } .pill.f { border-left-color: var(--fat); }
-  .empty { text-align: center; padding: 34px 12px; color: var(--ink-dim); }
-  .empty h3 { font-family: var(--font-display); font-size: 22px; color: var(--ink-mid); letter-spacing: .06em; margin-bottom: 8px; font-weight: 600; }
+  .entry .name { font-weight: 600; font-size: 15px; line-height: 1.25; }
+  .entry .name .brand { font-weight: 500; color: var(--ink-dim); }
+  .entry .meta { font-size: 12.5px; color: var(--ink-dim); margin-top: 3px; }
+  .entry .kcal { font-weight: 700; font-size: 17px; text-align: right; font-variant-numeric: tabular-nums; }
+  .mac { display: flex; gap: 6px; justify-content: flex-end; margin-top: 3px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .mac .p { color: var(--protein); } .mac .c { color: var(--carbs); } .mac .f { color: var(--fat); } .mac .fb { color: var(--fiber); }
+  .mac .sep { color: var(--line-strong); font-weight: 400; }
+  .empty { text-align: center; padding: 36px 12px; color: var(--ink-dim); }
+  .empty h3 { font-size: 18px; font-weight: 700; color: var(--ink-mid); margin-bottom: 6px; }
   .empty p { font-size: 14px; max-width: 320px; margin: 0 auto; }
 
   /* ---------- Capture bar ---------- */
-  .capture-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: var(--bg-2); border-top: 1px solid var(--line); }
+  .capture-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
   .capture-inner { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-  .cap-btn { min-height: 64px; border-radius: 14px; border: 1px solid var(--line-strong); background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-family: var(--font-display); font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
-  .cap-btn svg { width: 24px; height: 24px; color: var(--accent); }
-  .cap-btn:active { background: var(--surface-2); transform: translateY(1px); }
-  .cap-btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
-  .cap-btn.primary svg { color: var(--accent-ink); }
+  .cap-btn { min-height: 58px; border-radius: 14px; border: 1px solid var(--line-strong); background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-weight: 600; font-size: 13px; }
+  .cap-btn svg { width: 22px; height: 22px; }
+  .cap-btn:active { transform: translateY(1px); }
+  .cap-btn.primary { background: var(--btn-bg); color: var(--btn-ink); border-color: transparent; }
 
-  /* ---------- Buttons ---------- */
-  .btn { min-height: 46px; padding: 10px 16px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface-2); color: var(--ink); font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+  /* ---------- Buttons & forms ---------- */
+  .btn { min-height: 46px; padding: 10px 16px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
   .btn:active { transform: translateY(1px); }
-  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .btn.primary { background: var(--btn-bg); color: var(--btn-ink); border-color: transparent; }
   .btn.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
   .btn.ghost { background: transparent; }
   .btn[disabled] { opacity: .5; pointer-events: none; }
   .btn-row { display: flex; gap: 10px; margin-top: 12px; }
   .btn-row .btn { flex: 1; }
-
-  /* ---------- Sheets & modals ---------- */
-  .sheet-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.6); display: flex; align-items: flex-end; justify-content: center; }
-  .sheet { width: 100%; max-width: 600px; max-height: 92vh; max-height: 92dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--surface); border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-top: 1px solid var(--line-strong); padding: 10px 16px calc(20px + env(safe-area-inset-bottom)); box-shadow: var(--shadow); }
-  .sheet-grip { width: 42px; height: 5px; border-radius: 3px; background: var(--line-strong); margin: 2px auto 10px; }
-  .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
-  .sheet-head h2 { font-family: var(--font-display); font-size: 22px; letter-spacing: .06em; font-weight: 600; color: var(--accent); }
-  .sheet-head .sub { font-size: 13px; color: var(--ink-dim); }
   .field { margin-bottom: 12px; }
-  .field label { display: block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 5px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--ink-dim); margin-bottom: 5px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
   .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .note { font-size: 13px; color: var(--ink-dim); margin: 8px 0; }
-  .tabs { display: flex; gap: 6px; margin-bottom: 12px; background: var(--surface-2); padding: 4px; border-radius: 12px; }
-  .tab { flex: 1; min-height: 44px; border-radius: 9px; font-family: var(--font-display); letter-spacing: .06em; font-size: 14px; color: var(--ink-mid); }
-  .tab.active { background: var(--accent); color: var(--accent-ink); }
   .stepper { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden; background: var(--surface-2); }
-  .stepper button { width: 44px; height: 44px; font-size: 22px; color: var(--accent); }
-  .stepper .sv { min-width: 56px; text-align: center; font-family: var(--font-num); font-weight: 600; }
+  .stepper button { width: 44px; height: 44px; font-size: 22px; color: var(--ink); }
+  .stepper .sv { min-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
   .status { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: var(--radius); background: var(--surface-2); font-size: 14px; color: var(--ink-mid); margin: 10px 0; }
-  .status.err { color: var(--danger); border: 1px solid var(--danger); }
-  .spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line-strong); border-top-color: var(--accent); animation: spin .8s linear infinite; flex: none; }
+  .status.err { color: var(--danger); border: 1px solid var(--danger); background: transparent; }
+  .spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line-strong); border-top-color: var(--ink); animation: spin .8s linear infinite; flex: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* product card & results */
-  .product { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: start; padding: 12px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line); margin-bottom: 12px; }
-  .product img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; background: var(--surface-3); }
-  .product .ph { width: 64px; height: 64px; border-radius: 8px; background: var(--surface-3); display: flex; align-items: center; justify-content: center; font-size: 26px; }
-  .product .pname { font-weight: 600; line-height: 1.2; }
+  /* ---------- Sheets & modal ---------- */
+  .sheet-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.5); display: flex; align-items: flex-end; justify-content: center; }
+  .sheet { width: 100%; max-width: 600px; max-height: 92vh; max-height: 92dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--surface); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 10px 16px calc(20px + env(safe-area-inset-bottom)); box-shadow: var(--shadow); }
+  .sheet-grip { width: 40px; height: 5px; border-radius: 3px; background: var(--line-strong); margin: 2px auto 10px; }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  .sheet-head h2 { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+  .sheet-head .sub { font-size: 13px; color: var(--ink-dim); }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
+  .modal-box { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 16px; padding: 22px; max-width: 90vw; width: 340px; box-shadow: var(--shadow); }
+  .modal-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+  .modal-box p { color: var(--ink-mid); font-size: 15px; }
+  .modal-buttons { display: flex; gap: 12px; margin-top: 20px; }
+  .modal-buttons button { flex: 1; min-height: 44px; border-radius: 10px; font-size: 16px; font-weight: 600; }
+  .btn-primary { background: var(--btn-bg); color: var(--btn-ink); }
+  .btn-secondary { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line-strong); }
+  .toast { position: fixed; left: 50%; bottom: calc(106px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px); z-index: 300; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; opacity: 0; transition: all .25s ease; pointer-events: none; max-width: 90vw; text-align: center; box-shadow: var(--shadow); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- Product card, results, lists, scanner ---------- */
+  .product { display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: start; padding: 12px; border-radius: var(--radius); background: var(--surface-2); margin-bottom: 12px; }
+  .product img { width: 56px; height: 56px; object-fit: cover; border-radius: 10px; background: var(--surface-3); }
+  .product .ph { width: 56px; height: 56px; border-radius: 10px; background: var(--surface-3); display: flex; align-items: center; justify-content: center; color: var(--ink-dim); }
+  .product .ph svg { width: 24px; height: 24px; }
+  .product .pname { font-weight: 700; line-height: 1.2; }
   .product .pbrand { color: var(--ink-dim); font-size: 13px; }
   .product .pserv { font-size: 13px; color: var(--ink-mid); margin-top: 4px; }
-  .macro-line { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-  .macro-line .pill { font-size: 12px; padding: 3px 8px; }
-  .result-item { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 10px 6px; border-bottom: 1px solid var(--line); }
-  .result-item input[type=checkbox] { width: 22px; height: 22px; min-height: 0; accent-color: var(--accent); }
+  .product .mac { justify-content: flex-start; margin-top: 6px; font-size: 13px; }
+  .result-item { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--line); }
+  .result-item input[type=checkbox] { width: 22px; height: 22px; min-height: 0; accent-color: var(--ink); }
   .result-item .rname { font-weight: 600; line-height: 1.2; }
   .result-item .rportion { font-size: 13px; color: var(--ink-dim); }
-  .result-item .rk { font-family: var(--font-num); font-weight: 600; text-align: right; }
-  .conf { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; padding: 1px 6px; border-radius: 6px; margin-left: 6px; border: 1px solid var(--line-strong); color: var(--ink-dim); vertical-align: middle; }
+  .result-item .rk { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+  .conf { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 1px 6px; border-radius: 6px; margin-left: 6px; border: 1px solid var(--line-strong); color: var(--ink-dim); vertical-align: middle; }
   .conf.high { color: var(--ok); border-color: var(--ok); } .conf.low { color: var(--warn); border-color: var(--warn); }
   .result-item .rstep { grid-column: 2 / 4; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-dim); }
   .quick-list { max-height: 44vh; overflow-y: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--line); border-radius: var(--radius); }
@@ -223,59 +222,78 @@
   .quick-item:active { background: var(--surface-2); }
   .quick-item .qn { font-weight: 600; font-size: 15px; }
   .quick-item .qs { font-size: 12px; color: var(--ink-dim); }
-  .quick-item .qk { font-family: var(--font-num); white-space: nowrap; color: var(--ink-mid); }
+  .quick-item .qk { white-space: nowrap; color: var(--ink-mid); font-variant-numeric: tabular-nums; }
   .preview-img { width: 100%; max-height: 240px; object-fit: contain; border-radius: var(--radius); background: var(--surface-3); display: block; margin-bottom: 10px; }
   .scan-box { position: relative; width: 100%; aspect-ratio: 4 / 3; max-width: 100%; background: #000; border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
   .scan-box video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .scan-box .reticle { position: absolute; left: 12%; right: 12%; top: 34%; bottom: 34%; border: 2px solid var(--accent); border-radius: 8px; box-shadow: 0 0 0 999px rgba(0,0,0,.35); pointer-events: none; }
-  .scan-box .reticle::after { content: ''; position: absolute; left: 6px; right: 6px; top: 50%; height: 2px; background: var(--accent-2); opacity: .9; animation: scanline 1.6s ease-in-out infinite alternate; }
+  .scan-box .reticle { position: absolute; left: 12%; right: 12%; top: 34%; bottom: 34%; border: 2px solid #fff; border-radius: 8px; box-shadow: 0 0 0 999px rgba(0,0,0,.35); pointer-events: none; }
+  .scan-box .reticle::after { content: ''; position: absolute; left: 6px; right: 6px; top: 50%; height: 2px; background: #fff; opacity: .8; animation: scanline 1.6s ease-in-out infinite alternate; }
   @keyframes scanline { from { transform: translateY(-28px); } to { transform: translateY(28px); } }
-  .theme-opts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .theme-opt { min-height: 64px; border-radius: 12px; border: 2px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-family: var(--font-display); letter-spacing: .08em; font-size: 13px; text-transform: uppercase; }
-  .theme-opt.active { border-color: var(--accent); }
-  .theme-opt .sw { display: flex; gap: 3px; }
-  .theme-opt .sw i { width: 14px; height: 14px; border-radius: 4px; display: block; }
   .kv { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
-  .kv span:last-child { color: var(--ink-dim); text-align: right; }
 
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
-  .modal-box { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 16px; padding: 22px; max-width: 90vw; width: 340px; box-shadow: var(--shadow); }
-  .modal-box h3 { font-family: var(--font-display); font-size: 20px; letter-spacing: .06em; color: var(--accent); margin-bottom: 8px; }
-  .modal-box p { color: var(--ink-mid); font-size: 15px; }
-  .modal-buttons { display: flex; gap: 12px; margin-top: 20px; }
-  .modal-buttons button { flex: 1; min-height: 44px; border-radius: 10px; font-size: 16px; font-weight: 600; }
-  .btn-primary { background: var(--accent); color: var(--accent-ink); }
-  .btn-secondary { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line-strong); }
-
-  .toast { position: fixed; left: 50%; bottom: calc(110px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px); z-index: 300; background: var(--surface-3); color: var(--ink); border: 1px solid var(--line-strong); padding: 10px 16px; border-radius: 999px; font-size: 14px; opacity: 0; transition: all .25s ease; pointer-events: none; max-width: 90vw; text-align: center; box-shadow: var(--shadow); }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* ---------- Insights ---------- */
+  .filters { margin: 12px 0; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .stat { padding: 10px 12px; border-radius: var(--radius); background: var(--surface-2); }
+  .stat .v { font-size: 20px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+  .stat .l { font-size: 11.5px; color: var(--ink-dim); margin-top: 3px; }
+  .chart { position: relative; margin-top: 12px; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart text { font-family: var(--font); font-size: 11px; fill: var(--ink-dim); }
+  .chart .hit { fill: transparent; cursor: pointer; }
+  .tip { position: absolute; z-index: 5; background: var(--ink); color: var(--bg); padding: 6px 9px; border-radius: 8px; font-size: 12px; font-weight: 600; pointer-events: none; white-space: nowrap; transform: translate(-50%, -100%); box-shadow: var(--shadow); }
+  .split { display: flex; height: 10px; gap: 2px; border-radius: 6px; overflow: hidden; margin-top: 10px; }
+  .split > div { height: 100%; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 13px; color: var(--ink-mid); }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 6px; vertical-align: -1px; }
+  .rows { margin-top: 6px; }
+  .rows .row { display: grid; grid-template-columns: 1fr auto; row-gap: 4px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .rows .row:last-child { border-bottom: 0; }
+  .rows .row .rl { font-weight: 600; }
+  .rows .row .rv { color: var(--ink-dim); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rows .row .bar { grid-column: 1 / 3; height: 6px; background: var(--track); border-radius: 4px; overflow: hidden; }
+  .rows .row .bar > div { height: 100%; background: var(--bar); border-radius: 4px; }
+  .ai-box { margin-top: 12px; }
+  .ai-box h4 { font-size: 14px; font-weight: 700; margin: 12px 0 4px; }
+  .ai-box p { font-size: 14px; color: var(--ink-mid); }
+  .ai-box ul { padding-left: 18px; font-size: 14px; color: var(--ink-mid); }
+  .ai-box li { margin: 4px 0; }
+  .ai-box .headline { font-weight: 700; font-size: 15px; color: var(--ink); }
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+  .table th, .table td { text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  .table th { font-weight: 600; color: var(--ink-dim); }
+  .table th:first-child, .table td:first-child { text-align: left; }
 </style>
 </head>
 <body>
 <div class="app" id="app">
   <header class="top">
-    <div class="brand">
-      <div class="brand-title">FUEL</div>
-      <div class="brand-sub">food · calories · macros</div>
+    <div class="brand">Fuel</div>
+    <div class="seg" role="tablist" aria-label="View">
+      <button id="nav-log" type="button" class="active" role="tab" aria-selected="true">Log</button>
+      <button id="nav-insights" type="button" role="tab" aria-selected="false">Insights</button>
     </div>
-    <div class="top-actions">
-      <button class="chip" id="theme-chip" type="button" aria-label="Switch theme"><span class="dot"></span><span id="theme-chip-label">Forge</span></button>
-      <button class="icon-btn" id="btn-settings" type="button" aria-label="Settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-      </button>
-    </div>
+    <button class="icon-btn" id="btn-settings" type="button" aria-label="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+    </button>
   </header>
   <div id="preview-banner" class="preview-banner hidden"></div>
-  <div class="datebar">
-    <button class="icon-btn" id="date-prev" type="button" aria-label="Previous day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <button class="date-label" id="date-label" type="button" aria-label="Jump to today"></button>
-    <button class="icon-btn" id="date-next" type="button" aria-label="Next day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
-  </div>
-  <section class="card summary" id="summary" aria-live="polite"></section>
-  <section id="log"></section>
+
+  <section id="logview">
+    <div class="datebar">
+      <button class="icon-btn" id="date-prev" type="button" aria-label="Previous day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="date-label" id="date-label" type="button" aria-label="Jump to today"></button>
+      <button class="icon-btn" id="date-next" type="button" aria-label="Next day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <section class="card summary" id="summary" aria-live="polite"></section>
+    <div id="day-ai"></div>
+    <section id="log"></section>
+  </section>
+
+  <section id="insights" class="hidden"></section>
 </div>
 
-<nav class="capture-bar" aria-label="Capture">
+<nav class="capture-bar" id="capture-bar" aria-label="Capture">
   <div class="capture-inner">
     <button class="cap-btn" id="cap-scan" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5v14M7 5v14M10 5v14M12 5v14M16 5v14M19 5v14M21 5v14"/></svg>
@@ -310,12 +328,12 @@ const AZ = {
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   },
   daysBetween(a, b) { return Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000); },
-  // Pure string arithmetic so the browser's own timezone can never shift the day.
   addDays(dateStr, n) {
     const [y, m, d] = dateStr.split('-').map(Number);
     const t = new Date(Date.UTC(y, m - 1, d + n));
     return t.getUTCFullYear() + '-' + String(t.getUTCMonth() + 1).padStart(2, '0') + '-' + String(t.getUTCDate()).padStart(2, '0');
   },
+  weekday(dateStr) { return new Date(dateStr + 'T12:00:00').getDay(); },
   hour() { return Number(new Intl.DateTimeFormat('en-US', { timeZone: this.tz, hour: 'numeric', hourCycle: 'h23' }).format(new Date())) || 0; },
   timeHM() { return new Intl.DateTimeFormat('en-GB', { timeZone: this.tz, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date()); }
 };
@@ -388,29 +406,30 @@ function el(tag, attrs, ...kids) {
   return node;
 }
 function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs) { const n = document.createElementNS(SVG_NS, tag); for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v); return n; }
 function svgIcon(d, size) {
-  const ns = 'http://www.w3.org/2000/svg';
-  const s = document.createElementNS(ns, 'svg');
-  s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('width', size || 22); s.setAttribute('height', size || 22);
-  s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2');
-  s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round');
-  const p = document.createElementNS(ns, 'path'); p.setAttribute('d', d); s.appendChild(p);
+  const s = svgEl('svg', { viewBox: '0 0 24 24', width: size || 22, height: size || 22, fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+  s.appendChild(svgEl('path', { d }));
   return s;
 }
-const ICON = { close: 'M6 6l12 12M18 6L6 18' };
-function fmtK(n) { return String(Math.round(Number(n) || 0)); }
+const ICON = { close: 'M6 6l12 12M18 6L6 18', spark: 'M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z', plate: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0' };
+function fmtK(n) { return Math.round(Number(n) || 0).toLocaleString('en-US'); }
 function fmtG(n) { const r = Math.round((Number(n) || 0) * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); }
-function fmtServ(n) { const r = Math.round(n * 100) / 100; return String(r); }
+function fmtServ(n) { return String(Math.round(n * 100) / 100); }
 function round1(n) { return Math.round((Number(n) || 0) * 10) / 10; }
-function pill(cls, text) { return el('span', { class: 'pill ' + cls, text }); }
-function macroPills(per, mult) {
+function cap(s) { s = String(s || ''); return s.charAt(0).toUpperCase() + s.slice(1); }
+function macroText(per, mult, withFiber) {
   const m = mult || 1;
-  return [pill('p', 'P ' + fmtG(per.protein * m)), pill('c', 'C ' + fmtG(per.carbs * m)), pill('f', 'F ' + fmtG(per.fat * m))];
+  const sep = () => el('span', { class: 'sep', text: '·' });
+  const parts = [el('span', { class: 'p', text: 'P ' + fmtG(per.protein * m) }), sep(), el('span', { class: 'c', text: 'C ' + fmtG(per.carbs * m) }), sep(), el('span', { class: 'f', text: 'F ' + fmtG(per.fat * m) })];
+  if (withFiber && per.fiber) parts.push(sep(), el('span', { class: 'fb', text: 'Fiber ' + fmtG(per.fiber * m) }));
+  return el('div', { class: 'mac' }, parts);
 }
 function stepper({ value, step = 0.5, min = 0.25, max = 50, onChange, format }) {
   let v = value;
   const fmt = format || fmtServ;
-  const display = el('span', { class: 'sv num', text: fmt(v) });
+  const display = el('span', { class: 'sv', text: fmt(v) });
   const set = (nv) => { v = Math.min(max, Math.max(min, Math.round(nv * 100) / 100)); display.textContent = fmt(v); onChange(v); };
   const wrap = el('div', { class: 'stepper' },
     el('button', { type: 'button', 'aria-label': 'Less', text: '−', onclick: () => set(v - step) }),
@@ -426,24 +445,28 @@ function titleCase(s) {
   if (s !== s.toUpperCase()) return s;
   return s.toLowerCase().replace(/(^|\s|[-("])([a-z])/g, (m, a, b) => a + b.toUpperCase());
 }
+function segControl(options, value, onChange, extraClass) {
+  const seg = el('div', { class: 'seg wide' + (extraClass ? ' ' + extraClass : ''), role: 'tablist' });
+  const draw = (cur) => { clear(seg); for (const [v, label] of options) seg.appendChild(el('button', { type: 'button', role: 'tab', class: v === cur ? 'active' : '', 'aria-selected': v === cur ? 'true' : 'false', text: label, onclick: () => { draw(v); onChange(v); } })); };
+  draw(value);
+  return seg;
+}
 
 /* =====================================================================
    3. State & data model (records with id/updatedAt/tombstones — Gist-sync ready)
    ===================================================================== */
 const DEFAULT_TARGETS = { kcal: 2200, protein: 160, carbs: 230, fat: 75, fiber: 30 };
-const MEALS = [['breakfast', 'Breakfast'], ['lunch', 'Lunch'], ['dinner', 'Dinner'], ['snack', 'Snacks']];
-const SOURCE_ICON = { upc: '🏷️', photo: '📷', manual: '✏️', ai: '✨', quick: '⚡', usda: '📚' };
-const SOURCE_LABEL = { upc: 'Barcode', photo: 'Photo estimate', manual: 'Manual', ai: 'AI estimate', quick: 'Quick add', usda: 'USDA' };
-const THEMES = {
-  forge: { label: 'Forge', color: '#14110f', sw: ['#c9a227', '#d46010', '#221c18'] },
-  ledger: { label: 'Ledger', color: '#ede2c8', sw: ['#7d6414', '#9a1010', '#fbf6ea'] },
-  lab: { label: 'Lab', color: '#0d1320', sw: ['#35d0a5', '#4f8cff', '#172033'] }
-};
+const MEALS = [['breakfast', 'Breakfast'], ['lunch', 'Lunch'], ['dinner', 'Dinner'], ['snack', 'Snack'], ['preworkout', 'Pre-workout'], ['postworkout', 'Post-workout']];
+const CONTEXTS = [['home', 'Home-cooked'], ['takeout', 'Takeout'], ['restaurant', 'Restaurant'], ['work', 'At work'], ['onthego', 'On the go'], ['packaged', 'Packaged'], ['social', 'Social / event'], ['other', 'Other']];
+const SOURCE_LABEL = { upc: 'Scanned', photo: 'Photo estimate', manual: 'Manual', ai: 'Described', quick: 'Quick add', usda: 'USDA' };
+const MODELS = [['claude-sonnet-5', 'Sonnet 5 · default'], ['claude-opus-5', 'Opus 5 · most capable'], ['claude-haiku-4-5', 'Haiku 4.5 · cheapest']];
 
 const state = {
   date: AZ.today(),
+  view: 'log',
+  insightsRange: 7,
   data: Store.get('data', { records: {} }),
-  settings: Object.assign({ targets: Object.assign({}, DEFAULT_TARGETS), theme: 'forge' }, Store.get('settings', {}) || {}),
+  settings: Object.assign({ targets: Object.assign({}, DEFAULT_TARGETS), scheme: 'system', model: 'claude-sonnet-5' }, Store.get('settings', {}) || {}),
   preview: !!window.FUEL_PREVIEW
 };
 if (!state.data || typeof state.data !== 'object') state.data = { records: {} };
@@ -454,7 +477,11 @@ function saveData() { if (!Store.set('data', state.data)) toast('Storage is full
 function saveSettings() { Store.set('settings', state.settings); }
 function uid() { return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8); }
 function mealIndex(m) { const i = MEALS.findIndex(x => x[0] === m); return i < 0 ? 99 : i; }
+function mealLabel(m) { const f = MEALS.find(x => x[0] === m); return f ? f[1] : cap(m); }
+function contextLabel(c) { const f = CONTEXTS.find(x => x[0] === c); return f ? f[1] : 'Other'; }
 function guessMeal() { const h = AZ.hour(); if (h < 10) return 'breakfast'; if (h < 14) return 'lunch'; if (h < 17) return 'snack'; if (h < 21) return 'dinner'; return 'snack'; }
+function lastContext() { const c = Store.get('last_context', 'home'); return CONTEXTS.some(x => x[0] === c) ? c : 'home'; }
+function currentModel() { const m = state.settings.model; return MODELS.some(x => x[0] === m) ? m : 'claude-sonnet-5'; }
 function cleanPer(per) {
   per = per || {};
   return { kcal: Math.max(0, Math.round(Number(per.kcal) || 0)), protein: Math.max(0, round1(per.protein)), carbs: Math.max(0, round1(per.carbs)), fat: Math.max(0, round1(per.fat)), fiber: Math.max(0, round1(per.fiber)) };
@@ -463,10 +490,12 @@ function scalePer(per, mult) { const o = {}; for (const k of ['kcal', 'protein',
 
 function addEntry(e) {
   const id = uid(); const now = Date.now();
+  const context = CONTEXTS.some(c => c[0] === e.context) ? e.context : lastContext();
   state.data.records[id] = {
     id, type: 'entry',
     date: e.date || state.date,
     meal: MEALS.some(m => m[0] === e.meal) ? e.meal : guessMeal(),
+    context,
     time: e.time || AZ.timeHM(),
     name: String(e.name || 'Untitled').slice(0, 120),
     brand: e.brand ? String(e.brand).slice(0, 80) : '',
@@ -478,6 +507,7 @@ function addEntry(e) {
     note: e.note ? String(e.note).slice(0, 300) : '',
     createdAt: now, updatedAt: now
   };
+  Store.set('last_context', context);
   saveData();
   return id;
 }
@@ -496,9 +526,9 @@ function dayTotals(entries) {
 }
 
 /* =====================================================================
-   4. Rendering
+   4. Rendering — log view
    ===================================================================== */
-function render() { renderHeader(); renderSummary(); renderLog(); }
+function render() { renderHeader(); renderSummary(); renderDayAI(); renderLog(); if (state.view === 'insights') renderInsights(); }
 
 function renderHeader() {
   const lbl = $('date-label'); clear(lbl);
@@ -511,16 +541,23 @@ function renderHeader() {
 }
 
 function ringSVG(pct) {
-  const ns = 'http://www.w3.org/2000/svg'; const size = 136, stroke = 11;
-  const svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', '0 0 ' + size + ' ' + size);
+  const size = 124, stroke = 10;
+  const svg = svgEl('svg', { viewBox: '0 0 ' + size + ' ' + size, 'aria-hidden': 'true' });
   const r = (size - stroke) / 2, c = 2 * Math.PI * r, cx = size / 2;
-  const mk = (color, dash) => { const k = document.createElementNS(ns, 'circle'); k.setAttribute('cx', cx); k.setAttribute('cy', cx); k.setAttribute('r', r); k.setAttribute('fill', 'none'); k.setAttribute('stroke', color); k.setAttribute('stroke-width', stroke); if (dash) { k.setAttribute('stroke-dasharray', dash); k.setAttribute('stroke-linecap', 'round'); k.setAttribute('transform', 'rotate(-90 ' + cx + ' ' + cx + ')'); } return k; };
-  svg.appendChild(mk('var(--ring-track)', null));
+  svg.appendChild(svgEl('circle', { cx, cy: cx, r, fill: 'none', stroke: 'var(--track)', 'stroke-width': stroke }));
   const fill = Math.min(1, Math.max(0, pct));
-  if (fill > 0) svg.appendChild(mk(pct > 1 ? 'var(--danger)' : 'var(--accent)', (fill * c) + ' ' + c));
+  if (fill > 0) svg.appendChild(svgEl('circle', { cx, cy: cx, r, fill: 'none', stroke: pct > 1.05 ? 'var(--danger)' : 'var(--ink)', 'stroke-width': stroke, 'stroke-dasharray': (fill * c) + ' ' + c, 'stroke-linecap': 'round', transform: 'rotate(-90 ' + cx + ' ' + cx + ')' }));
   return svg;
 }
-
+function macroRow(key, label, val, target) {
+  const p = target > 0 ? val / target : 0;
+  const fillEl = el('div', { class: p > 1.05 ? 'over' : '' });
+  fillEl.style.width = Math.min(100, p * 100).toFixed(1) + '%';
+  return el('div', { class: 'macro ' + key },
+    el('span', { class: 'lbl' }, el('i'), label),
+    el('div', { class: 'bar' }, fillEl),
+    el('span', { class: 'val' }, fmtG(val), el('small', { text: ' / ' + fmtG(target) + ' g' })));
+}
 function renderSummary() {
   const box = $('summary'); clear(box);
   const entries = entriesFor(state.date);
@@ -528,25 +565,22 @@ function renderSummary() {
   const pct = T.kcal > 0 ? t.kcal / T.kcal : 0;
   const remaining = Math.round(T.kcal - t.kcal);
   const center = el('div', { class: 'ring-center' },
-    el('div', { class: 'big num', text: fmtK(t.kcal) }),
+    el('div', { class: 'big', text: fmtK(t.kcal) }),
     el('div', { class: 'small', text: 'of ' + fmtK(T.kcal) + ' kcal' }),
-    el('div', { class: 'rem num', text: remaining >= 0 ? fmtK(remaining) + ' left' : fmtK(-remaining) + ' over', style: remaining < 0 ? 'color:var(--danger)' : '' }));
+    el('div', { class: 'rem', text: remaining >= 0 ? fmtK(remaining) + ' left' : fmtK(-remaining) + ' over', style: remaining < 0 ? 'color:var(--danger)' : '' }));
   const ring = el('div', { class: 'ring-wrap' }, ringSVG(pct), center);
   const macros = el('div', { class: 'macros' });
-  for (const [key, label] of [['protein', 'Protein'], ['carbs', 'Carbs'], ['fat', 'Fat'], ['fiber', 'Fiber']]) {
-    const target = Number(T[key]) || 0; const val = t[key];
-    const p = target > 0 ? val / target : 0;
-    const fillEl = el('div', { class: p > 1.05 ? 'over' : '' });
-    fillEl.style.width = Math.min(100, p * 100).toFixed(1) + '%';
-    const row = el('div', { class: 'macro ' + key },
-      el('span', { class: 'lbl', text: label }),
-      el('div', { class: 'bar' }, fillEl),
-      el('span', { class: 'val' }, fmtG(val), el('small', { text: ' / ' + fmtG(target) + ' g' })));
-    macros.appendChild(row);
-  }
+  for (const [key, label] of [['protein', 'Protein'], ['carbs', 'Carbs'], ['fat', 'Fat'], ['fiber', 'Fiber']]) macros.appendChild(macroRow(key, label, t[key], Number(T[key]) || 0));
   box.append(ring, macros);
 }
-
+function renderDayAI() {
+  const box = $('day-ai'); clear(box);
+  if (!entriesFor(state.date).length) return;
+  const out = el('div');
+  const btn = el('button', { class: 'link-btn', type: 'button' }, svgIcon(ICON.spark, 18), 'Summarize ' + (state.date === AZ.today() ? 'today' : 'this day') + ' with Claude');
+  btn.addEventListener('click', () => summarizeDay(state.date, out, btn));
+  box.append(btn, out);
+}
 function renderLog() {
   const log = $('log'); clear(log);
   const entries = entriesFor(state.date);
@@ -556,31 +590,27 @@ function renderLog() {
       el('p', { text: 'Scan a barcode, snap a photo of your plate or a nutrition label, or add something by hand.' })));
     return;
   }
-  for (const [mealKey, mealLabel] of MEALS) {
+  for (const [mealKey, mealName] of MEALS) {
     const group = entries.filter(e => e.meal === mealKey);
     if (!group.length) continue;
     const kcal = group.reduce((s, e) => s + entryTotals(e).kcal, 0);
     const section = el('section', { class: 'meal' },
-      el('div', { class: 'meal-head' }, el('span', { class: 'meal-title', text: mealLabel }), el('span', { class: 'meal-kcal num', text: fmtK(kcal) + ' kcal' })));
+      el('div', { class: 'meal-head' }, el('span', { class: 'meal-title', text: mealName }), el('span', { class: 'meal-kcal', text: fmtK(kcal) + ' kcal' })));
     for (const e of group) {
       const tot = entryTotals(e);
-      const portion = fmtServ(e.servings) + ' × ' + (e.serving.label || '1 serving');
-      const row = el('button', { class: 'entry', type: 'button', 'aria-label': 'Edit ' + e.name, onclick: () => openEditSheet(e.id) },
-        el('div', { class: 'src', text: SOURCE_ICON[e.source] || '🍽️', title: SOURCE_LABEL[e.source] || '' }),
+      const meta = [fmtServ(e.servings) + ' × ' + (e.serving.label || '1 serving'), contextLabel(e.context), e.time].filter(Boolean).join(' · ');
+      section.appendChild(el('button', { class: 'entry', type: 'button', 'aria-label': 'Edit ' + e.name, onclick: () => openEditSheet(e.id) },
         el('div', {},
           el('div', { class: 'name' }, e.name, e.brand ? el('span', { class: 'brand', text: ' · ' + e.brand }) : null),
-          el('div', { class: 'portion', text: portion })),
-        el('div', {},
-          el('div', { class: 'kcal num', text: fmtK(tot.kcal) }),
-          el('div', { class: 'pcf' }, macroPills(e.per, e.servings))));
-      section.appendChild(row);
+          el('div', { class: 'meta', text: meta })),
+        el('div', {}, el('div', { class: 'kcal', text: fmtK(tot.kcal) }), macroText(e.per, e.servings))));
     }
     log.appendChild(section);
   }
 }
 
 /* =====================================================================
-   5. Sheets (bottom panels)
+   5. Sheets (bottom panels) and shared cards
    ===================================================================== */
 let currentSheet = null;
 function openSheet({ title, sub }) {
@@ -612,39 +642,40 @@ function statusLine(container, text, kind) {
   if (kind === 'busy') container.appendChild(el('div', { class: 'spinner' }));
   container.appendChild(el('span', { text }));
 }
-function mealSelect(value) {
-  return el('select', { 'aria-label': 'Meal' }, MEALS.map(([v, l]) => el('option', { value: v, text: l, selected: v === value ? true : null })));
-}
+function mealSelect(value) { return el('select', { 'aria-label': 'Meal' }, MEALS.map(([v, l]) => el('option', { value: v, text: l, selected: v === value ? true : null }))); }
+function contextSelect(value) { return el('select', { 'aria-label': 'Context' }, CONTEXTS.map(([v, l]) => el('option', { value: v, text: l, selected: v === value ? true : null }))); }
 
 /* ---------- Product card: one known food with a serving size → log it ---------- */
 function renderProductCard(container, product, { source, onAdded, barcode }) {
-  let servings = 1; let meal = guessMeal();
+  let servings = 1, meal = guessMeal(), context = lastContext();
   const per = cleanPer(product.per);
   const grams = product.serving && Number(product.serving.grams) || null;
-  const imgEl = product.image ? el('img', { src: product.image, alt: '' }) : el('div', { class: 'ph', text: SOURCE_ICON[source] || '🍽️' });
-  if (product.image) imgEl.addEventListener('error', () => imgEl.replaceWith(el('div', { class: 'ph', text: '🍽️' })));
-  const total = el('div', { class: 'note num' });
+  const imgEl = product.image ? el('img', { src: product.image, alt: '' }) : el('div', { class: 'ph' }, svgIcon(ICON.plate, 24));
+  if (product.image) imgEl.addEventListener('error', () => imgEl.replaceWith(el('div', { class: 'ph' }, svgIcon(ICON.plate, 24))));
+  const total = el('div', { class: 'note' });
   const refreshTotal = () => { const t = scalePer(per, servings); clear(total); total.append('= ' + fmtK(t.kcal) + ' kcal · P ' + fmtG(t.protein) + ' · C ' + fmtG(t.carbs) + ' · F ' + fmtG(t.fat) + (t.fiber ? ' · fiber ' + fmtG(t.fiber) : '')); };
-  const st = stepper({ value: 1, onChange: (v) => { servings = v; if (gramsIn) gramsIn.value = grams ? fmtG(grams * v) : ''; refreshTotal(); } });
   let gramsIn = null;
-  const controls = el('div', { class: 'grid-2', style: 'align-items:end' },
-    el('div', { class: 'field' }, el('label', { text: 'Servings' }), st),
-    el('div', { class: 'field' }, el('label', { text: 'Meal' }), mealSelect(meal)));
-  controls.querySelector('select').addEventListener('change', (e) => { meal = e.target.value; });
+  const st = stepper({ value: 1, onChange: (v) => { servings = v; if (gramsIn) gramsIn.value = grams ? fmtG(grams * v) : ''; refreshTotal(); } });
+  const mealSel = mealSelect(meal); mealSel.addEventListener('change', () => { meal = mealSel.value; });
+  const ctxSel = contextSelect(context); ctxSel.addEventListener('change', () => { context = ctxSel.value; });
   if (grams) {
     gramsIn = numInput({ value: fmtG(grams), 'aria-label': 'Grams eaten' });
     gramsIn.addEventListener('input', () => { const g = numVal(gramsIn, 0); if (g > 0) { servings = Math.round((g / grams) * 100) / 100; st.setValue(servings); } });
-    controls.appendChild(el('div', { class: 'field' }, el('label', { text: 'Or grams eaten' }), gramsIn));
   }
+  const controls = el('div', { class: 'grid-2', style: 'align-items:end' },
+    el('div', { class: 'field' }, el('label', { text: 'Servings' }), st),
+    el('div', { class: 'field' }, el('label', { text: 'Meal' }), mealSel),
+    el('div', { class: 'field' }, el('label', { text: 'Context' }), ctxSel),
+    gramsIn ? el('div', { class: 'field' }, el('label', { text: 'Or grams eaten' }), gramsIn) : el('div'));
   const card = el('div', { class: 'product' }, imgEl,
     el('div', {},
       el('div', { class: 'pname', text: product.name }),
       product.brand ? el('div', { class: 'pbrand', text: product.brand }) : null,
       el('div', { class: 'pserv', text: 'Per ' + ((product.serving && product.serving.label) || '1 serving') + ': ' + fmtK(per.kcal) + ' kcal' }),
-      el('div', { class: 'macro-line' }, macroPills(per, 1), per.fiber ? pill('', 'fiber ' + fmtG(per.fiber)) : null),
+      macroText(per, 1, true),
       product.per100 && per.kcal ? el('div', { class: 'pserv', text: 'Per 100 g: ' + fmtK(product.per100.kcal) + ' kcal · P ' + fmtG(product.per100.protein) + ' · C ' + fmtG(product.per100.carbs) + ' · F ' + fmtG(product.per100.fat) }) : null));
   const addBtn = el('button', { class: 'btn primary', type: 'button', text: 'Add to log', onclick: () => {
-    addEntry({ name: product.name, brand: product.brand, source, barcode: barcode || product.barcode || null, servings, meal, serving: product.serving, per });
+    addEntry({ name: product.name, brand: product.brand, source, barcode: barcode || product.barcode || null, servings, meal, context, serving: product.serving, per });
     if (product.barcode || barcode) FoodDB.rememberProduct(Object.assign({}, product, { barcode: product.barcode || barcode }));
     render(); toast('Logged ' + product.name);
     if (onAdded) onAdded();
@@ -658,7 +689,7 @@ function renderProductCard(container, product, { source, onAdded, barcode }) {
 function renderEstimateResults(container, result, { source, onAdded, barcode }) {
   clear(container);
   const items = result.items.map(it => Object.assign({ checked: true, servings: 1 }, it));
-  let meal = guessMeal();
+  let meal = guessMeal(), context = lastContext();
   if (!items.length) {
     container.appendChild(el('div', { class: 'status err' }, el('span', { text: result.notes || 'No food was recognized.' })));
     return;
@@ -669,27 +700,30 @@ function renderEstimateResults(container, result, { source, onAdded, barcode }) 
   for (const it of items) {
     const cb = el('input', { type: 'checkbox', checked: true, 'aria-label': 'Include ' + it.name });
     cb.addEventListener('change', () => { it.checked = cb.checked; refreshBtn(); });
-    const kcalEl = el('div', { class: 'rk num', text: fmtK(it.per.kcal) });
-    const pcf = el('div', { class: 'pcf' }, macroPills(it.per, 1));
-    const st = stepper({ value: 1, step: 0.5, min: 0.25, onChange: (v) => { it.servings = v; kcalEl.textContent = fmtK(it.per.kcal * v); clear(pcf); pcf.append(...macroPills(it.per, v)); refreshBtn(); } });
+    const kcalEl = el('div', { class: 'rk', text: fmtK(it.per.kcal) });
+    const macEl = el('div');
+    macEl.appendChild(macroText(it.per, 1));
+    const st = stepper({ value: 1, step: 0.5, min: 0.25, onChange: (v) => { it.servings = v; kcalEl.textContent = fmtK(it.per.kcal * v); clear(macEl); macEl.appendChild(macroText(it.per, v)); refreshBtn(); } });
     list.appendChild(el('div', { class: 'result-item' }, cb,
       el('div', {},
         el('div', { class: 'rname' }, it.name, el('span', { class: 'conf ' + it.confidence, text: it.confidence })),
         el('div', { class: 'rportion', text: it.portion + (it.grams ? ' · ~' + fmtK(it.grams) + ' g' : '') })),
-      el('div', {}, kcalEl, pcf),
+      el('div', {}, kcalEl, macEl),
       el('div', { class: 'rstep' }, el('span', { text: 'Portion ×' }), st)));
   }
-  const mealField = el('div', { class: 'field', style: 'margin-top:10px' }, el('label', { text: 'Meal' }), mealSelect(meal));
-  mealField.querySelector('select').addEventListener('change', (e) => { meal = e.target.value; });
+  const mealSel = mealSelect(meal); mealSel.addEventListener('change', () => { meal = mealSel.value; });
+  const ctxSel = contextSelect(context); ctxSel.addEventListener('change', () => { context = ctxSel.value; });
   addBtn.addEventListener('click', () => {
     const sel = items.filter(i => i.checked);
-    for (const it of sel) addEntry({ name: it.name, source, barcode: barcode || null, servings: it.servings, meal, serving: { label: it.portion, grams: it.grams }, per: it.per, note: it.confidence === 'low' ? 'low-confidence estimate' : '' });
+    for (const it of sel) addEntry({ name: it.name, source, barcode: barcode || null, servings: it.servings, meal, context, serving: { label: it.portion, grams: it.grams }, per: it.per, note: it.confidence === 'low' ? 'low-confidence estimate' : '' });
     if (barcode && sel.length === 1) FoodDB.rememberProduct({ name: sel[0].name, brand: '', barcode, serving: { label: sel[0].portion, grams: sel[0].grams }, per: sel[0].per, per100: null, image: null, source: 'photo' });
     render(); toast('Logged ' + sel.length + (sel.length === 1 ? ' item' : ' items'));
     if (onAdded) onAdded();
   });
   refreshBtn();
-  container.append(list, result.notes ? el('div', { class: 'note', text: result.notes }) : null, mealField, addBtn);
+  container.append(list, result.notes ? el('div', { class: 'note', text: result.notes }) : null,
+    el('div', { class: 'grid-2', style: 'margin-top:10px' }, el('div', { class: 'field' }, el('label', { text: 'Meal' }), mealSel), el('div', { class: 'field' }, el('label', { text: 'Context' }), ctxSel)),
+    addBtn);
 }
 
 /* =====================================================================
@@ -800,10 +834,9 @@ const FoodDB = {
 };
 
 /* =====================================================================
-   7. AI estimates — Claude vision (browser-direct with your key) or the artifact preview's built-in sampler
+   7. Claude — estimates, day summaries, trend analysis (browser-direct with your key, or the preview host's sampler)
    ===================================================================== */
-const AI_MODEL = 'claude-opus-5';
-const AI_SYSTEM = 'You are a careful nutrition estimator for a personal food log. You answer with JSON only.';
+const AI_SYSTEM = 'You are a careful, specific nutrition assistant inside a personal food log. You answer with JSON only.';
 function buildPrompt({ text, hasImage }) {
   const said = text ? String(text).replace(/"/g, "'").slice(0, 1500) : '';
   const lead = hasImage
@@ -818,14 +851,40 @@ function buildPrompt({ text, hasImage }) {
     'Respond with ONLY valid JSON — no markdown fences, no commentary — in exactly this shape:\n' +
     '{"items":[{"name":"string","portion":"string such as 1 cup (150 g)","grams":number or null,"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"fiber_g":number,"confidence":"low" or "medium" or "high"}],"notes":"one short sentence of caveats"}';
 }
+function dayPrompt(date) {
+  const es = entriesFor(date); const t = dayTotals(es); const T = state.settings.targets; const isToday = date === AZ.today();
+  const lines = es.map(e => { const x = entryTotals(e); return [mealLabel(e.meal), e.time, contextLabel(e.context), e.name + (e.brand ? ' (' + e.brand + ')' : ''), fmtServ(e.servings) + ' × ' + e.serving.label, Math.round(x.kcal) + ' kcal', 'P ' + Math.round(x.protein), 'C ' + Math.round(x.carbs), 'F ' + Math.round(x.fat), 'fiber ' + Math.round(x.fiber)].join(' · '); });
+  return 'Summarize ' + (isToday ? "today's" : "this day's") + ' food log for the user (second person, warm but specific, no generic advice, no medical claims). ' +
+    (isToday ? 'It is now ' + AZ.timeHM() + ' Arizona time. ' : 'The day is over. ') +
+    'Daily targets: ' + T.kcal + ' kcal, protein ' + T.protein + ' g, carbs ' + T.carbs + ' g, fat ' + T.fat + ' g, fiber ' + T.fiber + ' g. ' +
+    'Totals so far: ' + Math.round(t.kcal) + ' kcal, protein ' + Math.round(t.protein) + ', carbs ' + Math.round(t.carbs) + ', fat ' + Math.round(t.fat) + ', fiber ' + Math.round(t.fiber) + '.\nEntries (meal · time · context · item · portion · numbers):\n' + lines.join('\n') +
+    '\n\nRespond with ONLY valid JSON, no markdown fences: {"headline":"max 10 words","summary":"2 or 3 sentences on how the day stacks up against the targets, citing the numbers","suggestions":["up to 3 short, concrete ideas for the rest of the day; an empty array if the day is over or already on track"]}';
+}
+function rangePrompt(S, range) {
+  const r = (n) => Math.round(n);
+  const compact = {
+    days: S.days.map(d => ({ date: d.date, weekday: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][AZ.weekday(d.date)], kcal: r(d.totals.kcal), protein: r(d.totals.protein), carbs: r(d.totals.carbs), fat: r(d.totals.fat), fiber: r(d.totals.fiber), entries: d.entries.length })),
+    targets: S.targets, daysLogged: S.n, daysWithin10pct: S.kcalHit, daysOver: S.overDays, daysProteinTargetMet: S.proteinHit,
+    averages: { kcal: r(S.avg.kcal), protein: r(S.avg.protein), carbs: r(S.avg.carbs), fat: r(S.avg.fat), fiber: r(S.avg.fiber) },
+    calorieSplit: { protein: r(S.split.protein * 100), carbs: r(S.split.carbs * 100), fat: r(S.split.fat * 100) },
+    byContext: S.contexts.map(c => ({ context: c.label, entries: c.count, kcal: r(c.kcal), sharePct: r(c.share * 100), avgPerEntry: r(c.avg) })),
+    byMeal: S.meals.map(m => ({ meal: m.label, entries: m.count, sharePct: r(m.share * 100), avgPerDay: r(m.perDay) })),
+    byTimeOfDay: S.hours.map(h => ({ hours: h.label, sharePct: r(h.share * 100) })),
+    topFoods: S.topFoods.map(f => ({ name: f.name, times: f.count, avgKcal: r(f.avg) })),
+    weekdayAvgKcal: r(S.weekday), weekendAvgKcal: r(S.weekend)
+  };
+  return 'You are reviewing ' + range + ' days of a personal food log (Arizona). The user is training for a half marathon and wants to understand how and what they eat, not just the macros. Photo and text entries are estimates. Data (JSON):\n' + JSON.stringify(compact) +
+    '\n\nWrite for the user in second person. Be specific and grounded in these numbers, no generic advice, no medical claims. Respond with ONLY valid JSON, no markdown fences: {"headline":"one line, max 12 words","patterns":["3 to 5 observations about how and what they eat, each citing numbers"],"wins":["1 to 3 things going well"],"watchouts":["1 to 3 things to watch, each with a number"],"experiment":"one concrete thing to try next week"}';
+}
+function parseJSONLoose(raw) {
+  if (raw && typeof raw === 'object') return raw;
+  let t = String(raw || '').trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  const a = t.indexOf('{'), b = t.lastIndexOf('}');
+  if (a >= 0 && b > a) t = t.slice(a, b + 1);
+  return JSON.parse(t);
+}
 function parseEstimate(raw) {
-  let obj = raw;
-  if (typeof raw === 'string') {
-    let t = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
-    const a = t.indexOf('{'), b = t.lastIndexOf('}');
-    if (a >= 0 && b > a) t = t.slice(a, b + 1);
-    obj = JSON.parse(t);
-  }
+  const obj = parseJSONLoose(raw);
   if (!obj || typeof obj !== 'object' || !Array.isArray(obj.items)) throw new Error('BAD_JSON');
   const items = obj.items.map(it => ({
     name: String((it && it.name) || 'Item').slice(0, 80),
@@ -860,24 +919,20 @@ function blobToBase64(blob) {
 async function callClaudeDirect({ prompt, imageBase64, mediaType }) {
   const key = Store.get('anthropic_key');
   if (!key) throw new Error('NO_KEY');
+  const model = currentModel();
   const content = [];
   if (imageBase64) content.push({ type: 'image', source: { type: 'base64', media_type: mediaType || 'image/jpeg', data: imageBase64 } });
   content.push({ type: 'text', text: prompt });
-  const body = { model: AI_MODEL, max_tokens: 4096, system: AI_SYSTEM, output_config: { effort: 'medium' }, messages: [{ role: 'user', content }] };
-  const attempt = (withFallbacks) => fetch('https://api.anthropic.com/v1/messages', {
+  const body = { model, max_tokens: 4096, system: AI_SYSTEM, messages: [{ role: 'user', content }] };
+  if (!/haiku/.test(model)) body.output_config = { effort: 'medium' };
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: Object.assign({ 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      withFallbacks ? { 'anthropic-beta': 'server-side-fallback-2026-07-01' } : {}),
-    body: JSON.stringify(withFallbacks ? Object.assign({ fallbacks: 'default' }, body) : body)
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify(body)
   });
-  let res = await attempt(true);
-  if (res.status === 400) {
-    const errText = await res.text();
-    if (/fallback/i.test(errText)) res = await attempt(false); // account/API not on the fallback beta — retry plain
-    else throw new Error('Claude rejected the request: ' + errText.slice(0, 160));
-  }
   if (res.status === 401) throw new Error('BAD_KEY');
   if (res.status === 429) throw new Error('Claude rate limit — try again shortly');
+  if (res.status === 400) { const t = await res.text(); throw new Error('Claude rejected the request: ' + t.slice(0, 160)); }
   if (!res.ok) throw new Error('Claude API error ' + res.status);
   const data = await res.json();
   if (data.stop_reason === 'refusal') throw new Error('REFUSED');
@@ -899,27 +954,29 @@ const AI = {
   hasKey() { return !!Store.get('anthropic_key'); },
   mode() { if (this.sampleFn) return 'preview'; if (this.hasKey()) return 'direct'; return null; },
   canImages() { const m = this.mode(); if (m === 'preview') return !!(this.limits && this.limits.images); return m === 'direct'; },
-  async estimate({ text, imageBlob, onStatus }) {
+  async json(prompt, { imageBlob = null, tier = 'default' } = {}) {
     await this.ready;
-    const prompt = buildPrompt({ text, hasImage: !!imageBlob });
     const mode = this.mode();
     if (!mode) throw new Error('NO_KEY');
     if (mode === 'preview') {
-      if (onStatus) onStatus('Asking Claude (preview)… this can take a little while');
-      const opts = { modelTier: imageBlob ? 'default' : 'quick' };
+      const opts = { modelTier: tier };
       if (imageBlob) opts.images = imageBlob;
-      const data = await this.sampleFn.json(AI_SYSTEM + '\n\n' + prompt, opts);
-      return parseEstimate(data);
+      return await this.sampleFn.json(AI_SYSTEM + '\n\n' + prompt, opts);
     }
-    if (onStatus) onStatus('Asking Claude… usually 5–20 seconds');
     const imageBase64 = imageBlob ? await blobToBase64(imageBlob) : null;
-    const textOut = await callClaudeDirect({ prompt, imageBase64, mediaType: imageBlob ? (imageBlob.type || 'image/jpeg') : null });
-    return parseEstimate(textOut);
+    const text = await callClaudeDirect({ prompt, imageBase64, mediaType: imageBlob ? (imageBlob.type || 'image/jpeg') : null });
+    return parseJSONLoose(text);
+  },
+  async estimate({ text, imageBlob, onStatus }) {
+    await this.ready;
+    if (onStatus) onStatus(this.mode() === 'preview' ? 'Asking Claude (preview)… this can take a little while' : 'Asking Claude… usually 5–20 seconds');
+    const data = await this.json(buildPrompt({ text, hasImage: !!imageBlob }), { imageBlob, tier: imageBlob ? 'default' : 'quick' });
+    return parseEstimate(data);
   }
 };
 function aiErrorMessage(e) {
   const m = String((e && (e.message || e.code)) || e);
-  if (m === 'NO_KEY') return 'AI estimates need a Claude API key. Add one in Settings.';
+  if (m === 'NO_KEY') return 'This uses Claude. Add your API key in Settings (everything else works without it).';
   if (m === 'BAD_KEY') return 'Claude rejected the API key — check it in Settings.';
   if (m === 'REFUSED') return 'Claude declined to analyze this one. Try another photo or describe it in text.';
   if (m === 'BAD_JSON' || /JSON/.test(m)) return 'Claude answered in an unexpected format. Try again.';
@@ -928,9 +985,34 @@ function aiErrorMessage(e) {
   if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return 'Could not reach Claude' + (state.preview ? ' (network is blocked in the preview build).' : ' — check your connection.');
   return m.slice(0, 200);
 }
+function renderAIBox({ headline, paragraphs = [], lists = [], footer }) {
+  const card = el('div', { class: 'card ai-box' });
+  if (headline) card.appendChild(el('div', { class: 'headline', text: String(headline) }));
+  for (const p of paragraphs) if (p) card.appendChild(el('p', { text: String(p), style: 'margin-top:6px' }));
+  for (const [title, items] of lists) {
+    if (!Array.isArray(items) || !items.length) continue;
+    card.appendChild(el('h4', { text: title }));
+    card.appendChild(el('ul', {}, items.slice(0, 6).map(i => el('li', { text: String(i) }))));
+  }
+  if (footer) card.appendChild(el('p', { text: String(footer), style: 'margin-top:8px' }));
+  return card;
+}
+async function summarizeDay(date, out, btn) {
+  clear(out);
+  const st = el('div'); out.appendChild(st); statusLine(st, 'Asking Claude…', 'busy');
+  btn.disabled = true;
+  try {
+    const r = await AI.json(dayPrompt(date), { tier: 'quick' });
+    clear(out);
+    out.appendChild(renderAIBox({ headline: r.headline, paragraphs: [r.summary], lists: [['Ideas for the rest of the day', r.suggestions]] }));
+  } catch (e) {
+    statusLine(st, aiErrorMessage(e), 'err');
+    if (String(e && e.message) === 'NO_KEY') out.appendChild(el('button', { class: 'btn ghost', type: 'button', text: 'Open Settings', onclick: () => openSettings() }));
+  } finally { btn.disabled = false; }
+}
 
 /* =====================================================================
-   8. Barcode scanner — native BarcodeDetector where available, ZXing (lazy-loaded) elsewhere
+   8. Barcode scanner — native BarcodeDetector (Chrome / Android) first, ZXing (lazy-loaded) elsewhere
    ===================================================================== */
 const ZXING_URLS = ['https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js', 'https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js'];
 function loadScript(src) {
@@ -965,6 +1047,10 @@ const Scanner = {
       this.engine = 'native';
       const det = new window.BarcodeDetector({ formats: this.FORMATS });
       this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+      try { // Android Chrome: ask the camera to keep refocusing on the barcode
+        const track = this.stream.getVideoTracks()[0]; const caps = track.getCapabilities ? track.getCapabilities() : {};
+        if (caps.focusMode && caps.focusMode.includes('continuous')) await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+      } catch (e) {}
       video.srcObject = this.stream;
       await video.play().catch(() => {});
       this.active = true;
@@ -1041,7 +1127,7 @@ function cameraErrorMessage(e) {
 }
 
 /* =====================================================================
-   9. Flows
+   9. Capture flows
    ===================================================================== */
 function openScanSheet() {
   const s = openSheet({ title: 'Scan barcode', sub: 'Aim at the UPC / EAN on the package' });
@@ -1052,7 +1138,7 @@ function openScanSheet() {
   const codeIn = el('input', { type: 'text', inputmode: 'numeric', autocomplete: 'off', placeholder: 'Barcode digits', 'aria-label': 'Barcode digits' });
   const lookupBtn = el('button', { class: 'btn', type: 'button', text: 'Look up', style: 'width:auto;flex:none' });
   const fileIn = el('input', { type: 'file', accept: 'image/*', class: 'hidden', 'aria-label': 'Photo of a barcode' });
-  const photoBtn = el('button', { class: 'btn ghost', type: 'button', text: '📷 Use a photo of the barcode', style: 'margin-top:8px', onclick: () => fileIn.click() });
+  const photoBtn = el('button', { class: 'btn ghost', type: 'button', text: 'Use a photo of the barcode', style: 'margin-top:8px', onclick: () => fileIn.click() });
   const result = el('div', { style: 'margin-top:12px' });
   s.body.append(box, status,
     el('div', { class: 'field', style: 'margin-top:12px' }, el('label', { text: 'Or type the barcode' }), el('div', { style: 'display:flex;gap:8px' }, codeIn, lookupBtn)),
@@ -1084,9 +1170,9 @@ function openScanSheet() {
     clear(container);
     container.append(
       el('div', { class: 'note', text: isError ? 'You can still log it:' : 'No match — but the label on the package has everything we need:' }),
-      el('button', { class: 'btn primary', type: 'button', text: '📷 Photograph the Nutrition Facts label', onclick: () => openPhotoSheet({ barcode: code }) }),
+      el('button', { class: 'btn primary', type: 'button', text: 'Photograph the Nutrition Facts label', onclick: () => openPhotoSheet({ barcode: code }) }),
       el('div', { style: 'height:8px' }),
-      el('button', { class: 'btn', type: 'button', text: '✏️ Enter it by hand', onclick: () => openAddSheet({ tab: 'custom', prefill: { barcode: code } }) }),
+      el('button', { class: 'btn', type: 'button', text: 'Enter it by hand', onclick: () => openAddSheet({ tab: 'custom', prefill: { barcode: code } }) }),
       el('div', { style: 'height:8px' }),
       el('button', { class: 'btn ghost', type: 'button', text: 'Scan again', onclick: () => { clear(container); startCam(); } }));
   };
@@ -1101,7 +1187,7 @@ function openScanSheet() {
     statusLine(status, 'Starting camera…', 'busy');
     Scanner.start(video, onCode, (st, err) => {
       if (st === 'loading') statusLine(status, 'Loading barcode decoder…', 'busy');
-      else if (st === 'native' || st === 'zxing') statusLine(status, 'Hold the barcode inside the frame, 6–10 inches away.' + (st === 'zxing' ? '' : ' (native decoder)'), 'busy');
+      else if (st === 'native' || st === 'zxing') statusLine(status, 'Hold the barcode inside the frame, 6–10 inches away.', 'busy');
       else if (st === 'error') statusLine(status, 'Scanner error: ' + String((err && err.message) || err).slice(0, 100), 'err');
     }).catch((e) => { box.classList.add('hidden'); statusLine(status, cameraErrorMessage(e), 'err'); });
   };
@@ -1128,12 +1214,12 @@ function openPhotoSheet({ barcode } = {}) {
   const result = el('div');
   const takeIn = el('input', { type: 'file', accept: 'image/*', capture: 'environment', class: 'hidden', 'aria-label': 'Take a photo' });
   const pickIn = el('input', { type: 'file', accept: 'image/*', class: 'hidden', 'aria-label': 'Choose a photo' });
-  const takeBtn = el('button', { class: 'btn primary', type: 'button', text: '📷 Take photo', onclick: () => takeIn.click() });
-  const pickBtn = el('button', { class: 'btn', type: 'button', text: '🖼️ Choose from library', onclick: () => pickIn.click() });
+  const takeBtn = el('button', { class: 'btn primary', type: 'button', text: 'Take photo', onclick: () => takeIn.click() });
+  const pickBtn = el('button', { class: 'btn', type: 'button', text: 'Choose from library', onclick: () => pickIn.click() });
   const btnRow = el('div', { class: 'btn-row', style: 'margin-top:0' }, takeBtn, pickBtn);
   const hint = el('input', { type: 'text', placeholder: 'e.g. "6 oz chicken, dressing is olive oil"', 'aria-label': 'Context the photo cannot show', autocomplete: 'off' });
   const hintField = el('div', { class: 'field', style: 'margin-top:12px' }, el('label', { text: 'Optional: what the photo can\'t show' }), hint);
-  const rerun = el('button', { class: 'btn ghost hidden', type: 'button', text: '↻ Analyze again with that context', style: 'margin-top:8px', onclick: () => { if (lastFile) handle(lastFile); } });
+  const rerun = el('button', { class: 'btn ghost hidden', type: 'button', text: 'Analyze again with that context', style: 'margin-top:8px', onclick: () => { if (lastFile) handle(lastFile); } });
   const gate = el('div');
   let lastFile = null;
   s.body.append(gate, btnRow, hintField, rerun, preview, status, result, takeIn, pickIn);
@@ -1142,14 +1228,14 @@ function openPhotoSheet({ barcode } = {}) {
     await AI.ready;
     clear(gate);
     if (!AI.mode()) {
-      gate.append(el('div', { class: 'status err' }, el('span', { text: 'Photo analysis uses Claude vision. Add your Anthropic API key in Settings to enable it (the app works fully without it).' })),
+      gate.append(el('div', { class: 'status err' }, el('span', { text: 'Photo analysis uses Claude. Add your API key in Settings to enable it (the app works fully without it).' })),
         el('button', { class: 'btn', type: 'button', text: 'Open Settings', style: 'margin-bottom:12px', onclick: () => openSettings() }));
       takeBtn.disabled = true; pickBtn.disabled = true;
     } else if (!AI.canImages()) {
       gate.append(el('div', { class: 'status err' }, el('span', { text: 'This preview can ask Claude, but not with images. Photo analysis works in the deployed app with an API key.' })));
       takeBtn.disabled = true; pickBtn.disabled = true;
     } else {
-      gate.appendChild(el('div', { class: 'note', text: AI.mode() === 'preview' ? 'AI is provided by the preview host — no API key needed here.' : 'Sent directly from this phone to Claude with your key. One photo ≈ a cent or two.' }));
+      gate.appendChild(el('div', { class: 'note', text: AI.mode() === 'preview' ? 'AI is provided by the preview host — no API key needed here.' : 'Sent directly from this phone to Claude with your key. One photo costs about a cent.' }));
     }
   };
   refreshGate();
@@ -1211,13 +1297,10 @@ const QUICK_FOODS = [
 
 function openAddSheet({ tab = 'quick', prefill } = {}) {
   const s = openSheet({ title: 'Add food', sub: 'Quick list, describe it, or enter numbers' });
-  const tabs = el('div', { class: 'tabs' });
   const pane = el('div');
-  s.body.append(tabs, pane);
-  const TABS = [['quick', 'Quick add'], ['describe', 'Describe'], ['custom', 'Custom']];
+  const tabs = segControl([['quick', 'Quick add'], ['describe', 'Describe'], ['custom', 'Custom']], tab, (key) => show(key));
+  s.body.append(tabs, el('div', { style: 'height:12px' }), pane);
   const show = (key) => {
-    clear(tabs);
-    for (const [k, l] of TABS) tabs.appendChild(el('button', { class: 'tab' + (k === key ? ' active' : ''), type: 'button', text: l, onclick: () => show(k) }));
     clear(pane);
     if (key === 'quick') renderQuickTab(pane);
     else if (key === 'describe') renderDescribeTab(pane);
@@ -1241,7 +1324,7 @@ function renderQuickTab(pane) {
       el('div', { class: 'qk', text: fmtK(f.per.kcal) + ' kcal' })));
     clear(usdaBox);
     if (q.length >= 2) {
-      if (Store.get('usda_key')) usdaBox.appendChild(el('button', { class: 'btn ghost', type: 'button', text: '📚 Search USDA for "' + search.value.trim() + '"', style: 'margin-top:10px', onclick: () => searchUSDA(search.value.trim()) }));
+      if (Store.get('usda_key')) usdaBox.appendChild(el('button', { class: 'btn ghost', type: 'button', text: 'Search USDA for "' + search.value.trim() + '"', style: 'margin-top:10px', onclick: () => searchUSDA(search.value.trim()) }));
       else usdaBox.appendChild(el('div', { class: 'note', text: 'Tip: add a free USDA FoodData Central key in Settings to search 400k+ foods.' }));
     }
   };
@@ -1268,7 +1351,7 @@ function renderDescribeTab(pane) {
   const ta = el('textarea', { placeholder: 'e.g. 2 scrambled eggs, 2 slices sourdough with butter, black coffee', 'aria-label': 'Describe what you ate' });
   const status = el('div', { class: 'status hidden' });
   const result = el('div');
-  const btn = el('button', { class: 'btn primary', type: 'button', text: '✨ Estimate with Claude' });
+  const btn = el('button', { class: 'btn primary', type: 'button', text: 'Estimate with Claude' });
   const gate = el('div');
   pane.append(gate, el('div', { class: 'field' }, el('label', { text: 'What did you eat?' }), ta), btn, status, result);
   (async () => {
@@ -1299,8 +1382,9 @@ function renderCustomTab(pane, prefill) {
   const carb = numInput({ placeholder: '0', 'aria-label': 'Carb grams' });
   const fat = numInput({ placeholder: '0', 'aria-label': 'Fat grams' });
   const fiber = numInput({ placeholder: '0', 'aria-label': 'Fiber grams' });
-  let servings = 1; let meal = guessMeal();
+  let servings = 1, meal = guessMeal(), context = lastContext();
   const sel = mealSelect(meal); sel.addEventListener('change', () => { meal = sel.value; });
+  const ctxSel = contextSelect(context); ctxSel.addEventListener('change', () => { context = ctxSel.value; });
   const st = stepper({ value: 1, onChange: (v) => { servings = v; } });
   const barcodeNote = prefill.barcode ? el('div', { class: 'note', text: 'Barcode ' + prefill.barcode + ' will be remembered, so the next scan finds it instantly.' }) : null;
   const add = el('button', { class: 'btn primary', type: 'button', text: 'Add to log', onclick: () => {
@@ -1309,7 +1393,7 @@ function renderCustomTab(pane, prefill) {
     if (!per.kcal && !per.protein && !per.carbs && !per.fat) { kcal.focus(); toast('Enter at least calories or one macro'); return; }
     if (!per.kcal) per.kcal = per.protein * 4 + per.carbs * 4 + per.fat * 9;
     const product = { name: n, brand: brand.value.trim(), serving: { label: servLabel.value.trim() || '1 serving', grams: numVal(grams) || null }, per: cleanPer(per), per100: null, image: null, barcode: prefill.barcode || null, source: 'manual' };
-    addEntry({ name: product.name, brand: product.brand, source: prefill.barcode ? 'upc' : 'manual', barcode: product.barcode, servings, meal, serving: product.serving, per: product.per });
+    addEntry({ name: product.name, brand: product.brand, source: prefill.barcode ? 'upc' : 'manual', barcode: product.barcode, servings, meal, context, serving: product.serving, per: product.per });
     if (product.barcode) FoodDB.rememberProduct(product);
     render(); toast('Logged ' + n); closeSheet();
   } });
@@ -1319,6 +1403,7 @@ function renderCustomTab(pane, prefill) {
     el('div', { class: 'grid-2' }, el('div', { class: 'field' }, el('label', { text: 'Calories / serving' }), kcal), el('div', { class: 'field' }, el('label', { text: 'Grams / serving' }), grams)),
     el('div', { class: 'grid-4' }, el('div', { class: 'field' }, el('label', { text: 'Protein' }), pro), el('div', { class: 'field' }, el('label', { text: 'Carbs' }), carb), el('div', { class: 'field' }, el('label', { text: 'Fat' }), fat), el('div', { class: 'field' }, el('label', { text: 'Fiber' }), fiber)),
     el('div', { class: 'grid-2', style: 'align-items:end' }, el('div', { class: 'field' }, el('label', { text: 'Servings' }), st), el('div', { class: 'field' }, el('label', { text: 'Meal' }), sel)),
+    el('div', { class: 'field' }, el('label', { text: 'Context' }), ctxSel),
     el('div', { class: 'note', text: 'Leave calories blank and they are computed from the macros (4 / 4 / 9).' }),
     add);
 }
@@ -1329,16 +1414,17 @@ function openEditSheet(id) {
   const name = el('input', { type: 'text', value: e.name, 'aria-label': 'Name', autocomplete: 'off' });
   const brand = el('input', { type: 'text', value: e.brand || '', placeholder: 'optional', 'aria-label': 'Brand', autocomplete: 'off' });
   const servLabel = el('input', { type: 'text', value: e.serving.label || '', 'aria-label': 'Serving size', autocomplete: 'off' });
-  const kcal = numInput({ value: fmtK(e.per.kcal), 'aria-label': 'Calories per serving' });
+  const kcal = numInput({ value: fmtK(e.per.kcal).replace(/,/g, ''), 'aria-label': 'Calories per serving' });
   const pro = numInput({ value: fmtG(e.per.protein), 'aria-label': 'Protein' });
   const carb = numInput({ value: fmtG(e.per.carbs), 'aria-label': 'Carbs' });
   const fat = numInput({ value: fmtG(e.per.fat), 'aria-label': 'Fat' });
   const fiber = numInput({ value: fmtG(e.per.fiber || 0), 'aria-label': 'Fiber' });
-  let servings = e.servings, meal = e.meal;
+  let servings = e.servings, meal = e.meal, context = e.context || 'home';
   const sel = mealSelect(meal); sel.addEventListener('change', () => { meal = sel.value; });
+  const ctxSel = contextSelect(context); ctxSel.addEventListener('change', () => { context = ctxSel.value; });
   const st = stepper({ value: servings, step: 0.25, min: 0.25, onChange: (v) => { servings = v; } });
   const save = el('button', { class: 'btn primary', type: 'button', text: 'Save', onclick: () => {
-    updateEntry(id, { name: name.value.trim() || e.name, brand: brand.value.trim(), serving: { label: servLabel.value.trim() || '1 serving', grams: e.serving.grams }, per: cleanPer({ kcal: numVal(kcal), protein: numVal(pro), carbs: numVal(carb), fat: numVal(fat), fiber: numVal(fiber) }), servings, meal });
+    updateEntry(id, { name: name.value.trim() || e.name, brand: brand.value.trim(), serving: { label: servLabel.value.trim() || '1 serving', grams: e.serving.grams }, per: cleanPer({ kcal: numVal(kcal), protein: numVal(pro), carbs: numVal(carb), fat: numVal(fat), fiber: numVal(fiber) }), servings, meal, context });
     render(); toast('Saved'); closeSheet();
   } });
   const del = el('button', { class: 'btn danger', type: 'button', text: 'Delete', onclick: () => {
@@ -1348,6 +1434,7 @@ function openEditSheet(id) {
     el('div', { class: 'field' }, el('label', { text: 'Name' }), name),
     el('div', { class: 'grid-2' }, el('div', { class: 'field' }, el('label', { text: 'Brand' }), brand), el('div', { class: 'field' }, el('label', { text: 'Serving size' }), servLabel)),
     el('div', { class: 'grid-2', style: 'align-items:end' }, el('div', { class: 'field' }, el('label', { text: 'Servings' }), st), el('div', { class: 'field' }, el('label', { text: 'Meal' }), sel)),
+    el('div', { class: 'field' }, el('label', { text: 'Context' }), ctxSel),
     el('div', { class: 'note', text: 'Per serving:' }),
     el('div', { class: 'grid-4' }, el('div', { class: 'field' }, el('label', { text: 'kcal' }), kcal), el('div', { class: 'field' }, el('label', { text: 'Protein' }), pro), el('div', { class: 'field' }, el('label', { text: 'Carbs' }), carb), el('div', { class: 'field' }, el('label', { text: 'Fat' }), fat)),
     el('div', { class: 'grid-2' }, el('div', { class: 'field' }, el('label', { text: 'Fiber' }), fiber), el('div')),
@@ -1356,14 +1443,14 @@ function openEditSheet(id) {
 }
 
 function openSettings() {
-  const s = openSheet({ title: 'Settings', sub: 'Targets, look, keys, data' });
+  const s = openSheet({ title: 'Settings', sub: 'Targets, appearance, Claude, data' });
   const T = state.settings.targets;
   const tIn = {}; for (const k of ['kcal', 'protein', 'carbs', 'fat', 'fiber']) tIn[k] = numInput({ value: String(T[k]), 'aria-label': k + ' target' });
   const saveTargets = () => { for (const k in tIn) { const v = numVal(tIn[k], T[k]); if (v > 0) T[k] = Math.round(v); } saveSettings(); renderSummary(); };
   Object.values(tIn).forEach(i => i.addEventListener('change', saveTargets));
-  const themeOpts = el('div', { class: 'theme-opts' });
-  const drawThemes = () => { clear(themeOpts); for (const [k, t] of Object.entries(THEMES)) themeOpts.appendChild(el('button', { class: 'theme-opt' + (state.settings.theme === k ? ' active' : ''), type: 'button', onclick: () => { applyTheme(k); drawThemes(); } }, el('span', { class: 'sw' }, t.sw.map(c => { const i = el('i'); i.style.background = c; return i; })), el('span', { text: t.label }))); };
-  drawThemes();
+  const scheme = segControl([['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], state.settings.scheme || 'system', (v) => applyScheme(v));
+  const modelSel = el('select', { 'aria-label': 'Claude model' }, MODELS.map(([v, l]) => el('option', { value: v, text: l, selected: v === currentModel() ? true : null })));
+  modelSel.addEventListener('change', () => { state.settings.model = modelSel.value; saveSettings(); toast('Model: ' + modelSel.options[modelSel.selectedIndex].text); });
   const keyIn = el('input', { type: 'password', placeholder: Store.get('anthropic_key') ? '•••••••• (saved)' : 'sk-ant-…', 'aria-label': 'Anthropic API key', autocomplete: 'off', style: 'font-family:ui-monospace,monospace' });
   const keyRow = el('div', { style: 'display:flex;gap:8px' }, keyIn,
     el('button', { class: 'btn', type: 'button', text: 'Save', style: 'width:auto;flex:none', onclick: () => { const v = keyIn.value.trim(); if (!v) return; Store.set('anthropic_key', v); keyIn.value = ''; keyIn.placeholder = '•••••••• (saved)'; toast('API key saved on this device'); } }),
@@ -1379,67 +1466,287 @@ function openSettings() {
     el('div', { class: 'field' }, el('label', { text: 'Daily targets' }),
       el('div', { class: 'grid-2' }, el('div', { class: 'field' }, el('label', { text: 'Calories' }), tIn.kcal), el('div', { class: 'field' }, el('label', { text: 'Fiber g' }), tIn.fiber)),
       el('div', { class: 'grid-3' }, el('div', { class: 'field' }, el('label', { text: 'Protein g' }), tIn.protein), el('div', { class: 'field' }, el('label', { text: 'Carbs g' }), tIn.carbs), el('div', { class: 'field' }, el('label', { text: 'Fat g' }), tIn.fat))),
-    el('div', { class: 'field' }, el('label', { text: 'Look (prototype review)' }), themeOpts),
-    el('div', { class: 'field', style: 'margin-top:16px' }, el('label', { text: 'Claude API key (photo + text estimates)' }), keyRow,
+    el('div', { class: 'field' }, el('label', { text: 'Appearance' }), scheme),
+    el('div', { class: 'field', style: 'margin-top:16px' }, el('label', { text: 'Claude API key (photos, descriptions, summaries)' }), keyRow,
       el('div', { class: 'note', text: AI.mode() === 'preview' ? 'This preview supplies AI itself; a key is only needed in the deployed app.' : 'Stored only in this browser. Calls go straight from your phone to Anthropic — nothing passes through a server.' })),
+    el('div', { class: 'field' }, el('label', { text: 'Claude model' }), modelSel,
+      el('div', { class: 'note', text: 'Sonnet 5 is the default: fast and cheap for photos and summaries. Switch to Opus 5 if estimates feel off.' })),
     el('div', { class: 'field' }, el('label', { text: 'USDA FoodData Central key (food search)' }), usdaRow,
       el('div', { class: 'note' }, 'Free, instant signup at ', el('a', { href: 'https://fdc.nal.usda.gov/api-key-signup', target: '_blank', rel: 'noopener', text: 'fdc.nal.usda.gov' }), '. Without it, Quick add uses the built-in list.')),
     el('div', { class: 'field', style: 'margin-top:16px' }, el('label', { text: 'Data' }), stats,
       el('div', { class: 'btn-row' },
-        el('button', { class: 'btn', type: 'button', text: 'Load sample day', onclick: () => { seedSampleDay(); render(); toast('Sample day loaded for ' + AZ.pretty(state.date)); closeSheet(); } }),
+        el('button', { class: 'btn', type: 'button', text: 'Load 2 sample weeks', onclick: () => { seedSampleDays(14); render(); toast('Two sample weeks loaded'); closeSheet(); } }),
         el('button', { class: 'btn', type: 'button', text: 'Export JSON', onclick: () => { clear(exportBox); const ta = el('textarea', { readonly: true, 'aria-label': 'Exported data', style: 'min-height:140px;font-family:ui-monospace,monospace;font-size:12px' }); ta.value = JSON.stringify(state.data, null, 1); exportBox.append(ta, el('button', { class: 'btn ghost', type: 'button', text: 'Copy to clipboard', onclick: async () => { try { await navigator.clipboard.writeText(ta.value); toast('Copied'); } catch (e) { ta.select(); toast('Select all and copy'); } } })); } })),
       exportBox,
       el('button', { class: 'btn danger', type: 'button', text: 'Clear all data on this device', style: 'margin-top:10px', onclick: () => showModal({ title: 'Clear everything?', message: 'All logged entries and remembered barcodes on this device will be erased. Keys and targets stay.', confirmText: 'Erase', cancelText: 'Keep', danger: true, onConfirm: () => { state.data = { records: {} }; saveData(); Store.remove('products'); render(); closeSheet(); toast('Cleared'); } }) })),
-    el('div', { class: 'note', style: 'margin-top:18px' }, 'Fuel prototype v0.1 · data lives in this browser (Gist sync can be added later) · dates use Arizona time'));
+    el('div', { class: 'note', style: 'margin-top:18px' }, 'Fuel prototype v0.2 · data lives in this browser (Gist sync can be added later) · dates use Arizona time'));
 }
 
-function seedSampleDay() {
-  const d = state.date;
-  const items = [
-    { meal: 'breakfast', time: '07:10', name: 'Oatmeal with blueberries', source: 'photo', servings: 1, serving: { label: '1 bowl (~300 g)', grams: 300 }, per: { kcal: 290, protein: 9, carbs: 54, fat: 5, fiber: 7 } },
-    { meal: 'breakfast', time: '07:12', name: 'Black coffee', source: 'quick', servings: 2, serving: { label: '12 oz' }, per: { kcal: 4, protein: 0.4, carbs: 0, fat: 0, fiber: 0 } },
-    { meal: 'lunch', time: '12:20', name: 'Chicken burrito bowl', brand: 'Chipotle', source: 'ai', servings: 1, serving: { label: '1 bowl' }, per: { kcal: 705, protein: 46, carbs: 72, fat: 24, fiber: 12 } },
-    { meal: 'snack', time: '15:30', name: 'Greek Yogurt, Plain Nonfat', brand: 'Sample Brand', source: 'upc', barcode: '012345678905', servings: 1, serving: { label: '1 container (170 g)', grams: 170 }, per: { kcal: 90, protein: 18, carbs: 5, fat: 0, fiber: 0 } },
-    { meal: 'snack', time: '15:32', name: 'Almonds', source: 'quick', servings: 1, serving: { label: '1 oz (28 g)', grams: 28 }, per: { kcal: 164, protein: 6, carbs: 6, fat: 14, fiber: 3.5 } },
-    { meal: 'dinner', time: '18:45', name: 'Salmon, baked', source: 'manual', servings: 1.5, serving: { label: '4 oz (113 g)', grams: 113 }, per: { kcal: 234, protein: 25, carbs: 0, fat: 14, fiber: 0 } },
-    { meal: 'dinner', time: '18:46', name: 'Sweet potato, baked', source: 'quick', servings: 1, serving: { label: '1 medium (114 g)', grams: 114 }, per: { kcal: 103, protein: 2.3, carbs: 24, fat: 0.2, fiber: 3.8 } },
-    { meal: 'dinner', time: '18:47', name: 'Broccoli, steamed', source: 'quick', servings: 1, serving: { label: '1 cup (156 g)', grams: 156 }, per: { kcal: 55, protein: 3.7, carbs: 11, fat: 0.6, fiber: 5.1 } }
-  ];
-  items.forEach(it => addEntry(Object.assign({}, it, { date: d })));
+/* ---------- Deterministic sample data: two weeks with realistic variety, so Insights has something to say ---------- */
+function seedSampleDays(n) {
+  let seed = 20260912;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+  const F = {
+    coffee: { name: 'Black coffee', serving: { label: '12 oz' }, per: { kcal: 4, protein: 0.4, carbs: 0, fat: 0, fiber: 0 }, source: 'quick' },
+    oats: { name: 'Oatmeal with blueberries', serving: { label: '1 bowl (~300 g)', grams: 300 }, per: { kcal: 290, protein: 9, carbs: 54, fat: 5, fiber: 7 }, source: 'photo' },
+    eggs: { name: 'Eggs & sourdough toast', serving: { label: '2 eggs + 2 slices' }, per: { kcal: 404, protein: 22, carbs: 51, fat: 12, fiber: 2 }, source: 'ai' },
+    yogurt: { name: 'Greek yogurt & granola', serving: { label: '1 bowl' }, per: { kcal: 395, protein: 31, carbs: 45, fat: 10, fiber: 4 }, source: 'photo' },
+    shake: { name: 'Whey protein shake', serving: { label: '1 scoop + milk' }, per: { kcal: 242, protein: 32, carbs: 15, fat: 6.5, fiber: 0 }, source: 'quick' },
+    bowl: { name: 'Chicken burrito bowl', brand: 'Chipotle', serving: { label: '1 bowl' }, per: { kcal: 705, protein: 46, carbs: 72, fat: 24, fiber: 12 }, source: 'ai' },
+    sandwich: { name: 'Turkey sandwich', serving: { label: '1 sandwich' }, per: { kcal: 480, protein: 28, carbs: 52, fat: 16, fiber: 4 }, source: 'photo' },
+    salad: { name: 'Chicken Caesar salad', serving: { label: '1 salad' }, per: { kcal: 520, protein: 38, carbs: 14, fat: 34, fiber: 4 }, source: 'photo' },
+    leftovers: { name: 'Leftover stir-fry', serving: { label: '1 plate' }, per: { kcal: 560, protein: 34, carbs: 58, fat: 20, fiber: 6 }, source: 'photo' },
+    sushi: { name: 'Sushi (10 pc) & miso', serving: { label: '1 order' }, per: { kcal: 640, protein: 30, carbs: 92, fat: 14, fiber: 3 }, source: 'ai' },
+    salmon: { name: 'Salmon, sweet potato, broccoli', serving: { label: '1 plate' }, per: { kcal: 392, protein: 31, carbs: 35, fat: 15, fiber: 9 }, source: 'photo' },
+    stirfry: { name: 'Chicken stir-fry with rice', serving: { label: '1 plate' }, per: { kcal: 610, protein: 40, carbs: 70, fat: 17, fiber: 5 }, source: 'photo' },
+    pizza: { name: 'Pepperoni pizza', serving: { label: '3 slices' }, per: { kcal: 855, protein: 36, carbs: 105, fat: 33, fiber: 7 }, source: 'ai' },
+    tacos: { name: 'Street tacos (4) & rice', serving: { label: '1 order' }, per: { kcal: 780, protein: 38, carbs: 84, fat: 30, fiber: 8 }, source: 'ai' },
+    burger: { name: 'Cheeseburger & fries', serving: { label: '1 meal' }, per: { kcal: 905, protein: 34, carbs: 88, fat: 45, fiber: 6 }, source: 'ai' },
+    pasta: { name: 'Pasta bolognese', serving: { label: '1 plate' }, per: { kcal: 640, protein: 32, carbs: 78, fat: 20, fiber: 6 }, source: 'photo' },
+    almonds: { name: 'Almonds', serving: { label: '1 oz (28 g)', grams: 28 }, per: { kcal: 164, protein: 6, carbs: 6, fat: 14, fiber: 3.5 }, source: 'quick' },
+    bar: { name: 'Protein bar', brand: 'Sample Brand', serving: { label: '1 bar (52 g)', grams: 52 }, per: { kcal: 210, protein: 12, carbs: 24, fat: 9, fiber: 5 }, source: 'upc', barcode: '012345678905' },
+    apple: { name: 'Apple', serving: { label: '1 medium (182 g)', grams: 182 }, per: { kcal: 95, protein: 0.5, carbs: 25, fat: 0.3, fiber: 4.4 }, source: 'quick' },
+    banana: { name: 'Banana', serving: { label: '1 medium (118 g)', grams: 118 }, per: { kcal: 105, protein: 1.3, carbs: 27, fat: 0.4, fiber: 3.1 }, source: 'quick' },
+    choc: { name: 'Dark chocolate', serving: { label: '1 oz (28 g)', grams: 28 }, per: { kcal: 170, protein: 2, carbs: 13, fat: 12, fiber: 3 }, source: 'upc', barcode: '012345678905' },
+    beer: { name: 'Beer', serving: { label: '12 oz' }, per: { kcal: 153, protein: 1.6, carbs: 13, fat: 0, fiber: 0 }, source: 'quick' },
+    gel: { name: 'Energy gel', serving: { label: '1 packet (32 g)', grams: 32 }, per: { kcal: 100, protein: 0, carbs: 22, fat: 0, fiber: 0 }, source: 'upc', barcode: '012345678905' },
+    cookie: { name: 'Chocolate chip cookie', serving: { label: '1 cookie (30 g)', grams: 30 }, per: { kcal: 140, protein: 1.5, carbs: 20, fat: 7, fiber: 0.5 }, source: 'quick' },
+    yog: { name: 'Greek yogurt, plain', serving: { label: '1 cup (245 g)', grams: 245 }, per: { kcal: 145, protein: 25, carbs: 9, fat: 0, fiber: 0 }, source: 'upc', barcode: '012345678905' }
+  };
+  const add = (date, meal, time, ctx, food, servings) => addEntry(Object.assign({}, food, { date, meal, time, context: ctx, servings: servings || 1 }));
+  const today = AZ.today();
+  for (let i = n - 1; i >= 0; i--) {
+    const date = AZ.addDays(today, -i); const dow = AZ.weekday(date);
+    const weekend = dow === 0 || dow === 6; const runDay = dow === 2 || dow === 4 || dow === 6;
+    if (runDay) add(date, 'preworkout', '05:40', 'home', F.gel);
+    add(date, 'breakfast', weekend ? '08:30' : '07:05', 'home', F.coffee, 2);
+    add(date, 'breakfast', weekend ? '08:40' : '07:10', 'home', pick([F.oats, F.eggs, F.yogurt, F.oats]));
+    if (runDay) add(date, 'postworkout', '07:30', 'home', F.shake);
+    if (weekend) add(date, 'lunch', '12:45', pick(['restaurant', 'takeout', 'home']), pick([F.sushi, F.bowl, F.leftovers, F.tacos]));
+    else add(date, 'lunch', '12:20', pick(['work', 'work', 'takeout']), pick([F.sandwich, F.salad, F.bowl, F.leftovers]));
+    add(date, 'snack', '15:30', pick(['work', 'packaged', 'home']), pick([F.almonds, F.bar, F.apple, F.banana, F.yog]));
+    if (weekend) { add(date, 'dinner', '18:50', pick(['restaurant', 'takeout', 'social']), pick([F.pizza, F.burger, F.tacos, F.pasta])); if (rnd() < 0.7) add(date, 'dinner', '19:30', 'social', F.beer, rnd() < 0.5 ? 1 : 2); }
+    else add(date, 'dinner', '18:40', pick(['home', 'home', 'home', 'takeout']), pick([F.salmon, F.stirfry, F.pasta, F.salmon, F.leftovers]));
+    if (rnd() < 0.5) add(date, 'snack', '21:00', 'home', pick([F.choc, F.cookie, F.apple]));
+  }
 }
 
 /* =====================================================================
-   10. Theme & init
+   10. Insights — trends over 7 / 14 / 30 days, plus Claude's read of the numbers
    ===================================================================== */
-function applyTheme(name) {
-  if (!THEMES[name]) name = 'forge';
-  state.settings.theme = name;
-  document.documentElement.setAttribute('data-fuel-theme', name);
-  const meta = $('meta-theme-color'); if (meta) meta.setAttribute('content', THEMES[name].color);
-  const lbl = $('theme-chip-label'); if (lbl) lbl.textContent = THEMES[name].label;
+const HOUR_BUCKETS = [['5–8', 'Early'], ['8–11', 'Morning'], ['11–14', 'Midday'], ['14–17', 'Afternoon'], ['17–20', 'Evening'], ['20–23', 'Night'], ['23–5', 'Late']];
+function hourBucket(time) {
+  const h = parseInt(String(time || '12:00').slice(0, 2), 10);
+  if (!Number.isFinite(h) || h < 5) return 6;
+  if (h < 8) return 0; if (h < 11) return 1; if (h < 14) return 2; if (h < 17) return 3; if (h < 20) return 4; if (h < 23) return 5; return 6;
+}
+function computeStats(days) {
+  const T = state.settings.targets;
+  const perDay = days.map(d => { const es = entriesFor(d); return { date: d, entries: es, totals: dayTotals(es), logged: es.length > 0 }; });
+  const logged = perDay.filter(x => x.logged); const n = logged.length;
+  const sum = { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+  logged.forEach(x => { for (const k in sum) sum[k] += x.totals[k]; });
+  const avg = {}; for (const k in sum) avg[k] = n ? sum[k] / n : 0;
+  const kcalHit = logged.filter(x => Math.abs(x.totals.kcal - T.kcal) <= T.kcal * 0.1).length;
+  const overDays = logged.filter(x => x.totals.kcal > T.kcal * 1.1).length;
+  const proteinHit = logged.filter(x => x.totals.protein >= T.protein).length;
+  const byContext = {}, byMeal = {}, byHour = new Array(7).fill(0), foods = {};
+  let weekdayK = 0, weekdayN = 0, weekendK = 0, weekendN = 0;
+  for (const d of logged) {
+    const dow = AZ.weekday(d.date);
+    if (dow === 0 || dow === 6) { weekendK += d.totals.kcal; weekendN++; } else { weekdayK += d.totals.kcal; weekdayN++; }
+    for (const e of d.entries) {
+      const t = entryTotals(e);
+      const c = CONTEXTS.some(x => x[0] === e.context) ? e.context : 'other';
+      byContext[c] = byContext[c] || { count: 0, kcal: 0 }; byContext[c].count++; byContext[c].kcal += t.kcal;
+      const m = MEALS.some(x => x[0] === e.meal) ? e.meal : 'snack';
+      byMeal[m] = byMeal[m] || { count: 0, kcal: 0 }; byMeal[m].count++; byMeal[m].kcal += t.kcal;
+      byHour[hourBucket(e.time)] += t.kcal;
+      const key = e.name.trim().toLowerCase();
+      foods[key] = foods[key] || { name: e.name, count: 0, kcal: 0 }; foods[key].count++; foods[key].kcal += t.kcal;
+    }
+  }
+  const totalK = sum.kcal || 1;
+  const contexts = Object.entries(byContext).map(([k, v]) => ({ key: k, label: contextLabel(k), count: v.count, kcal: v.kcal, share: v.kcal / totalK, avg: v.kcal / v.count })).sort((a, b) => b.kcal - a.kcal);
+  const meals = MEALS.map(([k, l]) => byMeal[k] ? { key: k, label: l, count: byMeal[k].count, kcal: byMeal[k].kcal, share: byMeal[k].kcal / totalK, perDay: byMeal[k].kcal / (n || 1) } : null).filter(Boolean);
+  const hours = byHour.map((k, i) => ({ label: HOUR_BUCKETS[i][0], name: HOUR_BUCKETS[i][1], kcal: k, share: k / totalK }));
+  const topFoods = Object.values(foods).sort((a, b) => b.count - a.count || b.kcal - a.kcal).slice(0, 8).map(f => ({ name: f.name, count: f.count, avg: f.kcal / f.count }));
+  const pk = avg.protein * 4, ck = avg.carbs * 4, fk = avg.fat * 9, mk = (pk + ck + fk) || 1;
+  return { days: perDay, n, avg, kcalHit, overDays, proteinHit, contexts, meals, hours, topFoods, split: { protein: pk / mk, carbs: ck / mk, fat: fk / mk }, weekday: weekdayN ? weekdayK / weekdayN : 0, weekend: weekendN ? weekendK / weekendN : 0, targets: T };
+}
+function niceStep(max) {
+  const raw = Math.max(1, max) / 3; const pow = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw / pow;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * pow;
+}
+function columnChart(container, { items, target, tipText, unit = '', height = 170, labelMax = false }) {
+  clear(container);
+  const width = Math.max(240, Math.min(560, container.clientWidth || 358));
+  const padL = 36, padR = 8, padT = 14, padB = 22;
+  const plotW = width - padL - padR, plotH = height - padT - padB;
+  const maxVal = Math.max(1, ...items.map(i => i.value), target || 0);
+  const step = niceStep(maxVal); const top = Math.max(step, Math.ceil((maxVal * 1.05) / step) * step);
+  const y = (v) => padT + plotH - (v / top) * plotH;
+  const svg = svgEl('svg', { viewBox: '0 0 ' + width + ' ' + height, width, height, role: 'img' });
+  for (let v = 0; v <= top + 0.001; v += step) {
+    svg.appendChild(svgEl('line', { x1: padL, x2: width - padR, y1: y(v), y2: y(v), stroke: v === 0 ? 'var(--axis)' : 'var(--grid)', 'stroke-width': 1 }));
+    const t = svgEl('text', { x: padL - 6, y: y(v) + 4, 'text-anchor': 'end' }); t.textContent = fmtK(v) + unit; svg.appendChild(t);
+  }
+  const slot = plotW / items.length; const bw = Math.min(24, Math.max(3, slot - 2));
+  const tip = el('div', { class: 'tip hidden' }); container.appendChild(tip);
+  const maxItem = items.reduce((m, it) => (it.value > (m ? m.value : -1) ? it : m), null);
+  items.forEach((it, i) => {
+    const x = padL + slot * i + (slot - bw) / 2; const yTop = y(it.value); const h = Math.max(0, padT + plotH - yTop);
+    const r = Math.min(4, bw / 2, h);
+    if (h > 0) svg.appendChild(svgEl('path', { d: 'M' + x + ',' + (padT + plotH) + ' v' + (-(h - r)) + ' a' + r + ',' + r + ' 0 0 1 ' + r + ',' + (-r) + ' h' + (bw - 2 * r) + ' a' + r + ',' + r + ' 0 0 1 ' + r + ',' + r + ' v' + (h - r) + ' z', fill: it.over ? 'var(--danger)' : 'var(--bar)' }));
+    if (it.label) { const t = svgEl('text', { x: x + bw / 2, y: height - 6, 'text-anchor': 'middle' }); t.textContent = it.label; svg.appendChild(t); }
+    if (labelMax && it === maxItem && it.value > 0) { const t = svgEl('text', { x: x + bw / 2, y: yTop - 5, 'text-anchor': 'middle', style: 'fill:var(--ink);font-weight:600' }); t.textContent = fmtK(it.value) + unit; svg.appendChild(t); }
+    const hit = svgEl('rect', { class: 'hit', x: padL + slot * i, y: padT, width: slot, height: plotH, tabindex: '0' });
+    const show = () => { tip.textContent = tipText(it); tip.classList.remove('hidden'); tip.style.left = ((x + bw / 2) / width * 100) + '%'; tip.style.top = Math.max(0, yTop - 6) + 'px'; };
+    const hide = () => tip.classList.add('hidden');
+    hit.addEventListener('pointerenter', show); hit.addEventListener('pointerleave', hide);
+    hit.addEventListener('focus', show); hit.addEventListener('blur', hide); hit.addEventListener('click', show);
+    svg.appendChild(hit);
+  });
+  if (target) {
+    svg.appendChild(svgEl('line', { x1: padL, x2: width - padR, y1: y(target), y2: y(target), stroke: 'var(--ink-dim)', 'stroke-width': 1 }));
+    const t = svgEl('text', { x: width - padR, y: y(target) - 4, 'text-anchor': 'end' }); t.textContent = 'target ' + fmtK(target); svg.appendChild(t);
+  }
+  container.appendChild(svg);
+}
+function rowBars(container, rows) {
+  clear(container);
+  const m = Math.max(1, ...rows.map(r => r.v));
+  for (const r of rows) {
+    const fill = el('div'); fill.style.width = ((r.v / m) * 100).toFixed(1) + '%';
+    container.appendChild(el('div', { class: 'row' }, el('span', { class: 'rl', text: r.label }), el('span', { class: 'rv', text: r.text }), el('div', { class: 'bar' }, fill)));
+  }
+}
+function stat(value, label) { return el('div', { class: 'stat' }, el('div', { class: 'v', text: String(value) }), el('div', { class: 'l', text: label })); }
+function tableToggle(rows, headers) {
+  const table = el('table', { class: 'table hidden' }, el('thead', {}, el('tr', {}, headers.map(h => el('th', { text: h })))), el('tbody', {}, rows.map(r => el('tr', {}, r.map(c => el('td', { text: String(c) }))))));
+  const btn = el('button', { class: 'link-btn', type: 'button', text: 'Show table' });
+  btn.addEventListener('click', () => { const hidden = table.classList.toggle('hidden'); btn.textContent = hidden ? 'Show table' : 'Hide table'; });
+  return el('div', {}, btn, table);
+}
+function xLabel(date, range) {
+  const dow = AZ.weekday(date);
+  if (range <= 14) return ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dow];
+  const day = Number(date.slice(8, 10));
+  return (day % 5 === 0 || day === 1) ? String(day) : '';
+}
+function renderInsights() {
+  const box = $('insights'); clear(box);
+  const range = state.insightsRange || 7;
+  const today = AZ.today(); const days = []; for (let i = range - 1; i >= 0; i--) days.push(AZ.addDays(today, -i));
+  const S = computeStats(days);
+  box.appendChild(segControl([[7, 'Last 7 days'], [14, 'Last 14 days'], [30, 'Last 30 days']], range, (v) => { state.insightsRange = Number(v); renderInsights(); }, 'filters'));
+  if (!S.n) {
+    box.appendChild(el('section', { class: 'card' }, el('div', { class: 'empty' }, el('h3', { text: 'Nothing logged in this range' }), el('p', { text: 'Log a few days and trends show up here. Settings can load two sample weeks to see how it looks.' }))));
+    return;
+  }
+  // Calories per day
+  const c1 = el('section', { class: 'card' }, el('h3', { text: 'Calories per day' }), el('div', { class: 'sub', text: S.n + ' of ' + days.length + ' days logged · target ' + fmtK(S.targets.kcal) + ' kcal' }));
+  c1.appendChild(el('div', { class: 'stats' }, stat(fmtK(S.avg.kcal), 'avg kcal per day'), stat(S.kcalHit + ' / ' + S.n, 'days within 10%'), stat(String(S.overDays), 'days over')));
+  const chart1 = el('div', { class: 'chart' }); c1.appendChild(chart1);
+  c1.appendChild(tableToggle(S.days.map(d => [AZ.pretty(d.date), d.logged ? fmtK(d.totals.kcal) : '—', d.logged ? fmtG(d.totals.protein) : '—', d.logged ? fmtG(d.totals.carbs) : '—', d.logged ? fmtG(d.totals.fat) : '—']), ['Day', 'kcal', 'P', 'C', 'F']));
+  if (S.weekday && S.weekend) c1.appendChild(el('div', { class: 'note', text: 'Weekdays average ' + fmtK(S.weekday) + ' kcal, weekends ' + fmtK(S.weekend) + '.' }));
+  box.appendChild(c1);
+  columnChart(chart1, { items: S.days.map(d => ({ label: xLabel(d.date, range), value: d.totals.kcal, over: d.totals.kcal > S.targets.kcal * 1.1, d })), target: S.targets.kcal, tipText: (it) => AZ.pretty(it.d.date) + ' · ' + fmtK(it.value) + ' kcal · P ' + fmtG(it.d.totals.protein) + ' · C ' + fmtG(it.d.totals.carbs) + ' · F ' + fmtG(it.d.totals.fat) });
+  // Macros
+  const c2 = el('section', { class: 'card' }, el('h3', { text: 'Macros' }), el('div', { class: 'sub', text: 'Daily averages against targets' }));
+  const macros = el('div', { class: 'macros', style: 'margin-top:12px' });
+  for (const [key, label] of [['protein', 'Protein'], ['carbs', 'Carbs'], ['fat', 'Fat'], ['fiber', 'Fiber']]) macros.appendChild(macroRow(key, label, S.avg[key], Number(S.targets[key]) || 0));
+  const split = el('div', { class: 'split' }, ['protein', 'carbs', 'fat'].map(k => { const d = el('div'); d.style.width = (S.split[k] * 100).toFixed(1) + '%'; d.style.background = 'var(--' + k + ')'; return d; }));
+  const legend = el('div', { class: 'legend' }, ['protein', 'carbs', 'fat'].map(k => { const i = el('i'); i.style.background = 'var(--' + k + ')'; return el('span', {}, i, cap(k) + ' ' + Math.round(S.split[k] * 100) + '%'); }));
+  c2.append(macros, el('div', { class: 'sub', style: 'margin-top:14px', text: 'Share of calories' }), split, legend, el('div', { class: 'note', text: 'Protein target met on ' + S.proteinHit + ' of ' + S.n + ' days.' }));
+  box.appendChild(c2);
+  // Where
+  const c3 = el('section', { class: 'card' }, el('h3', { text: 'Where the calories come from' }), el('div', { class: 'sub', text: 'By context · share of calories · entries · average per entry' }));
+  const rows3 = el('div', { class: 'rows' }); c3.appendChild(rows3); box.appendChild(c3);
+  rowBars(rows3, S.contexts.map(c => ({ label: c.label, v: c.kcal, text: Math.round(c.share * 100) + '% · ' + c.count + ' · avg ' + fmtK(c.avg) })));
+  // By meal
+  const c4 = el('section', { class: 'card' }, el('h3', { text: 'By meal' }), el('div', { class: 'sub', text: 'Share of calories · average per logged day' }));
+  const rows4 = el('div', { class: 'rows' }); c4.appendChild(rows4); box.appendChild(c4);
+  rowBars(rows4, S.meals.map(m => ({ label: m.label, v: m.kcal, text: Math.round(m.share * 100) + '% · ' + fmtK(m.perDay) + ' / day' })));
+  // When
+  const c5 = el('section', { class: 'card' }, el('h3', { text: 'When you eat' }), el('div', { class: 'sub', text: 'Share of calories by time of day' }));
+  const chart5 = el('div', { class: 'chart' }); c5.appendChild(chart5);
+  c5.appendChild(tableToggle(S.hours.map(h => [h.name + ' (' + h.label + ')', Math.round(h.share * 100) + '%', fmtK(h.kcal)]), ['Window', 'Share', 'kcal']));
+  box.appendChild(c5);
+  columnChart(chart5, { items: S.hours.map(h => ({ label: h.label, value: Math.round(h.share * 100), over: false, h })), unit: '%', height: 150, labelMax: true, tipText: (it) => it.h.name + ' · ' + it.value + '% · ' + fmtK(it.h.kcal) + ' kcal' });
+  // Most logged
+  const c6 = el('section', { class: 'card' }, el('h3', { text: 'Most logged' }), el('div', { class: 'sub', text: 'Times logged · average calories' }));
+  for (const f of S.topFoods) c6.appendChild(el('div', { class: 'kv' }, el('span', { text: f.name }), el('span', { class: 'num', style: 'color:var(--ink-dim)', text: f.count + '× · ' + fmtK(f.avg) + ' kcal' })));
+  box.appendChild(c6);
+  // Analysis
+  const c7 = el('section', { class: 'card' }, el('h3', { text: 'Analysis' }), el('div', { class: 'sub', text: 'Claude reads the numbers above and points out patterns. Nothing is sent but the aggregates.' }));
+  const out = el('div');
+  const btn = el('button', { class: 'btn primary', type: 'button', text: 'Analyze these ' + S.n + ' days', style: 'margin-top:12px' });
+  btn.addEventListener('click', async () => {
+    clear(out); const st = el('div'); out.appendChild(st); statusLine(st, 'Asking Claude…', 'busy'); btn.disabled = true;
+    try {
+      const r = await AI.json(rangePrompt(S, range), { tier: 'quick' });
+      clear(out);
+      out.appendChild(renderAIBox({ headline: r.headline, lists: [['Patterns', r.patterns], ['Going well', r.wins], ['Watch', r.watchouts]], footer: r.experiment ? 'Try next week: ' + r.experiment : '' }));
+    } catch (e) {
+      statusLine(st, aiErrorMessage(e), 'err');
+      if (String(e && e.message) === 'NO_KEY') out.appendChild(el('button', { class: 'btn ghost', type: 'button', text: 'Open Settings', onclick: () => openSettings() }));
+    } finally { btn.disabled = false; }
+  });
+  c7.append(btn, out);
+  box.appendChild(c7);
+}
+
+/* =====================================================================
+   11. Appearance, views, init
+   ===================================================================== */
+function applyScheme(mode) {
+  if (!['system', 'light', 'dark'].includes(mode)) mode = 'system';
+  state.settings.scheme = mode;
+  const root = document.documentElement;
+  if (mode === 'system') root.removeAttribute('data-fuel-scheme'); else root.setAttribute('data-fuel-scheme', mode);
+  const dark = mode === 'dark' || (mode === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const meta = $('meta-theme-color'); if (meta) meta.setAttribute('content', dark ? '#0e1013' : '#f6f6f4');
   saveSettings();
 }
+function showView(v) {
+  state.view = v === 'insights' ? 'insights' : 'log';
+  const isLog = state.view === 'log';
+  $('logview').classList.toggle('hidden', !isLog);
+  $('insights').classList.toggle('hidden', isLog);
+  $('capture-bar').classList.toggle('hidden', !isLog);
+  $('nav-log').classList.toggle('active', isLog); $('nav-log').setAttribute('aria-selected', String(isLog));
+  $('nav-insights').classList.toggle('active', !isLog); $('nav-insights').setAttribute('aria-selected', String(!isLog));
+  if (!isLog) renderInsights();
+  window.scrollTo(0, 0);
+}
 function init() {
-  applyTheme(state.settings.theme);
+  applyScheme(state.settings.scheme);
+  try { if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyScheme(state.settings.scheme)); } catch (e) {}
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
   if (state.preview) {
-    const b = $('preview-banner'); b.textContent = 'Preview build — camera scanning and barcode lookup need the real deployment (network is blocked here). Manual entry, themes, and the layout are fully live; photo and text estimates run through the preview host.';
+    const b = $('preview-banner'); b.textContent = 'Preview build with two sample weeks loaded. Camera scanning and barcode lookup need the real deployment (network is blocked here); the log, insights, manual entry and appearance are fully live, and Claude features run through the preview host.';
     b.classList.remove('hidden');
-    if (!Store.get('seeded') && entriesFor(AZ.today()).length === 0) { seedSampleDay(); Store.set('seeded', true); }
+    if (!Store.get('seeded_v2') && Object.values(state.data.records).filter(r => r.type === 'entry' && !r.deleted).length === 0) { seedSampleDays(14); Store.set('seeded_v2', true); }
   }
   $('date-prev').addEventListener('click', () => { state.date = AZ.addDays(state.date, -1); render(); });
   $('date-next').addEventListener('click', () => { state.date = AZ.addDays(state.date, 1); render(); });
   $('date-label').addEventListener('click', () => { state.date = AZ.today(); render(); });
   $('btn-settings').addEventListener('click', openSettings);
-  $('theme-chip').addEventListener('click', () => { const keys = Object.keys(THEMES); applyTheme(keys[(keys.indexOf(state.settings.theme) + 1) % keys.length]); });
+  $('nav-log').addEventListener('click', () => showView('log'));
+  $('nav-insights').addEventListener('click', () => showView('insights'));
   $('cap-scan').addEventListener('click', () => openScanSheet());
   $('cap-photo').addEventListener('click', () => openPhotoSheet());
   $('cap-add').addEventListener('click', () => openAddSheet());
   document.addEventListener('visibilitychange', () => { if (document.hidden) Scanner.stop(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+  let resizeTimer = null;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (state.view === 'insights') renderInsights(); }, 200); });
   render();
   AI.init();
 }
-window.Fuel = { state, AZ, Store, addEntry, updateEntry, deleteEntry, entriesFor, dayTotals, render, Scanner, FoodDB, AI, parseEstimate, normalizeOFF, normalizeUSDA, normalizeBarcode, upcEToA, codeVariants, openScanSheet, openPhotoSheet, openAddSheet, openEditSheet, openSettings, seedSampleDay, applyTheme, closeSheet };
+window.Fuel = { state, AZ, Store, addEntry, updateEntry, deleteEntry, entriesFor, dayTotals, computeStats, render, renderInsights, showView, Scanner, FoodDB, AI, parseEstimate, parseJSONLoose, normalizeOFF, normalizeUSDA, normalizeBarcode, upcEToA, codeVariants, openScanSheet, openPhotoSheet, openAddSheet, openEditSheet, openSettings, seedSampleDays, applyScheme, closeSheet, MEALS, CONTEXTS };
 init();
 })();
 </script>
