@@ -129,9 +129,9 @@ async function poll() {
    fallback. Only same-origin GETs are touched — the Gist API and everything
    else always goes straight to the network.
    --------------------------------------------------------------------------- */
-const SHELL_CACHE = 'howlers-shell-v1';
+const SHELL_CACHE = 'howlers-shell-v2';
 const SHELL = [
-  './index.html', './manifest.webmanifest', './icon.svg',
+  './index.html', './ortiz-drive.js', './manifest.webmanifest', './icon.svg',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'
 ];
 
