@@ -22,6 +22,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@400;500;600;700&family=Spectral:ital,wght@0,300;0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="ortiz-drive.js"></script>
 <style>
   :root {
     /* Gold of Luna — ivory, wine crimson, restrained gold. House colors below are untouched. */
@@ -1125,6 +1126,20 @@
   }
   .toast.show { transform: translateY(0); opacity: 1; }
 
+  /* GOOGLE DRIVE COPY */
+  .drive-btn {
+    display: block; width: 100%; min-height: 48px; margin: 6px 0;
+    background: var(--parchment-dark); border: 1.5px solid var(--border-strong); border-radius: var(--radius);
+    padding: 10px 12px; font-family: 'Cormorant SC', serif; font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.08em; color: var(--ink-mid); cursor: pointer; text-align: center;
+  }
+  .drive-btn:disabled { opacity: 0.6; }
+  .drive-hint { font-family: 'Spectral', serif; font-style: italic; font-size: 0.8rem; color: var(--ink-light); line-height: 1.45; }
+  .drive-gate { display: flex; gap: 8px; align-items: stretch; margin-top: 8px; }
+  .drive-gate .form-input { flex: 1; min-height: 48px; text-align: center; letter-spacing: 0.3em; font-family: monospace; }
+  .drive-gate .drive-btn { width: auto; margin: 0; padding: 10px 16px; }
+  #drive-bar .drive-btn { margin: 0 0 14px; }
+
   /* MISC */
   .divider {
     border: none;
@@ -1278,6 +1293,7 @@
 
   <!-- TAB: LEADERBOARD -->
   <div class="tab-content active" id="tab-leaderboard">
+    <div id="drive-bar"></div>
     <div id="coaching-nudge-card" style="display:none;border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.1);margin-bottom:14px;border:1.5px solid var(--border)">
       <div id="nudge-coach-header" style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,0,0,0.06)">
         <span id="nudge-coach-icon" style="font-size:1.1rem">🎯</span>
@@ -1725,6 +1741,9 @@
     </div>
 
     <button onclick="submitSetup()" style="width:100%;background:var(--ink);color:var(--amber-pale);border:2px solid var(--ink);border-radius:var(--radius);padding:12px 20px;font-family:'Cormorant SC',serif;font-size:0.8rem;font-weight:700;letter-spacing:0.15em;cursor:pointer">✦ CONNECT THE PACK ✦</button>
+
+    <!-- GOOGLE DRIVE COPY (admin device only) -->
+    <div id="setup-drive" style="margin-top:20px;border-top:1px solid var(--border);padding-top:6px"></div>
 
     <!-- ADVANCED -->
     <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
@@ -2533,6 +2552,7 @@ async function loadState() {
       // Secrets (API key, Strava secret) are never stored in the Gist — localStorage only.
     }
     setSyncStatus('live');
+    _howlersLoaded = true;
   checkForNewActivityNotifications(prevState);
   if (_swReg) seedServiceWorker(_swReg);
   checkQuestMilestones();
@@ -2566,6 +2586,7 @@ async function loadState() {
   }
   renderAll();
   checkMentionNotifications();
+  OrtizDrive.check();
 
   // Generate coaching nudge now that state is populated with real data.
   // The startup switchTab('leaderboard') fires before loadState completes, so
@@ -2743,6 +2764,7 @@ async function _doSave() {
     setSyncStatus('live');
     checkAndPostWeeklyRecap();
     checkAndPostDailyRecap();
+    OrtizDrive.check();
   } catch(e) {
     setSyncStatus('error');
     console.error('Save error:', e);
@@ -2819,6 +2841,7 @@ function openSetup() {
   if (stEl) stEl.textContent = localStorage.getItem('howlers_strava_access_token') ? '✓ Connected' : '';
   var ap = document.getElementById('setup-admin-pin');
   if (ap) ap.value = localStorage.getItem('howlers_admin_pin') ? '••••' : '';
+  renderDriveSetup();
   showSetupScreen();
 }
 
@@ -5934,6 +5957,7 @@ function renderAll() {
   checkUnreadHowls();
   markAllPlayersSeen();
   applyLockState();
+  OrtizDrive.mountBar(document.getElementById('drive-bar'), { className: 'drive-btn' });
 }
 
 function renderPlayers() {
@@ -9320,6 +9344,86 @@ document.addEventListener('DOMContentLoaded', () => {
     window.history.replaceState({}, '', window.location.pathname);
     stravaExchangeCode(_stravaCode);
   }
+});
+
+// ─── GOOGLE DRIVE COPY ───────────────────────────────────────────────────────
+// Kids' phones share this origin and this Setup screen, so Drive is offered only
+// on a device where someone has proven the admin PIN once. The copy is the same
+// state Export JSON writes (Restore reads it back); secrets never ride along.
+var _howlersLoaded = false;
+var DRIVE_ADMIN_KEY = 'howlers_drive_admin';
+var DRIVE_SECRET_KEY = /^(anthropic_?key|api_?key|.*token|.*secret|pin|.*_pin|pin_?hash|.*password|gist_?id|bin_?id)$/i;
+
+function driveAdminDevice() {
+  return localStorage.getItem(DRIVE_ADMIN_KEY) === '1' && !!getAdminPin();
+}
+
+function driveScrub(v) {
+  if (Array.isArray(v)) return v.map(driveScrub);
+  if (!v || typeof v !== 'object') return v;
+  var out = {};
+  Object.keys(v).forEach(function(k) { if (!DRIVE_SECRET_KEY.test(k)) out[k] = driveScrub(v[k]); });
+  return out;
+}
+
+// Before the first good Gist load, state is the empty default — saving it would
+// overwrite today's real copy, so refuse instead.
+function driveData() {
+  if (!_howlersLoaded) throw new Error('not loaded yet');
+  return driveScrub(JSON.parse(JSON.stringify(state)));
+}
+
+function renderDriveSetup() {
+  var box = document.getElementById('setup-drive');
+  if (!box) return;
+  box.textContent = '';
+  if (driveAdminDevice()) {
+    box.appendChild(OrtizDrive.settingsBlock({ labelClass: 'form-label', buttonClass: 'drive-btn', hintClass: 'drive-hint' }));
+    return;
+  }
+  var label = document.createElement('div');
+  label.className = 'form-label';
+  label.style.marginTop = '14px';
+  label.textContent = 'Google Drive copy';
+  box.appendChild(label);
+  var hint = document.createElement('div');
+  hint.className = 'drive-hint';
+  hint.textContent = getAdminPin()
+    ? 'Admin only. Enter the admin PIN once to turn on daily Drive copies from this device.'
+    : 'Admin only. Set an Admin PIN above first, then come back here.';
+  box.appendChild(hint);
+  if (!getAdminPin()) return;
+  var row = document.createElement('div');
+  row.className = 'drive-gate';
+  var input = document.createElement('input');
+  input.type = 'password';
+  input.inputMode = 'numeric';
+  input.maxLength = 4;
+  input.placeholder = '••••';
+  input.className = 'form-input';
+  input.setAttribute('aria-label', 'Admin PIN');
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'drive-btn';
+  btn.textContent = 'Unlock';
+  btn.addEventListener('click', function() {
+    if ((input.value || '').trim() !== getAdminPin()) { input.value = ''; showToast('Wrong PIN.'); return; }
+    localStorage.setItem(DRIVE_ADMIN_KEY, '1');
+    renderDriveSetup();
+  });
+  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') btn.click(); });
+  row.appendChild(input);
+  row.appendChild(btn);
+  box.appendChild(row);
+}
+
+OrtizDrive.init({
+  app: 'The Howlers',
+  prefix: 'howlers',
+  getData: driveData,
+  toast: showToast,
+  allowed: driveAdminDevice,
+  onChange: function() { OrtizDrive.mountBar(document.getElementById('drive-bar'), { className: 'drive-btn' }); }
 });
 
 // ─── PLAYER PIN LOCK ─────────────────────────────────────────────────────────
