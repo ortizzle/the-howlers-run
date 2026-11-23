@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf6ec">
+<title>Iron Rain · Gold of Luna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #faf6ec; --panel: #fffdf7; --panel2: #f4ecda; --ink: #1e1a14; --ink2: #3c3222; --muted: #7a6a50;
+  --line: rgba(153,120,32,.22); --accent: #9a1010; --accent-soft: rgba(154,16,16,.09); --on-accent: #fff;
+  --gold: #b08a1e; --green: #3f7a4e; --fh: 'Cormorant SC', Georgia, serif; --fb: 'Spectral', Georgia, serif;
+}
+/*BASE_CSS*/
+header { text-align: center; padding: 22px 0 12px; }
+.brand { font-family: var(--fh); font-weight: 700; font-size: 30px; letter-spacing: .08em; line-height: 1; }
+.brand-sub { font-style: italic; color: var(--muted); font-size: 14px; margin-top: 4px; }
+.rule { height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 14px 0; }
+.sec { margin-top: 22px; }
+.sec-t { font-family: var(--fh); font-weight: 700; font-size: 21px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.sec-t small { font-family: var(--fb); font-style: italic; font-weight: 400; font-size: 13px; color: var(--muted); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-top: 10px; box-shadow: 0 2px 12px rgba(153,120,32,.1); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+.stat { text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 4px; }
+.stat b { display: block; font-family: var(--fh); font-size: 22px; line-height: 1.1; }
+.stat span { font-size: 11px; color: var(--muted); letter-spacing: .06em; }
+.private { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 8px; display: flex; gap: 6px; align-items: center; }
+.chart text { font-family: 'Spectral', serif; font-size: 10px; fill: #7a6a50; }
+.ladder { display: flex; flex-direction: column-reverse; gap: 3px; }
+.rung { display: flex; align-items: center; gap: 10px; font-size: 13px; min-height: 30px; }
+.rung .lvl { width: 44px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rung .bx { flex: 1; height: 26px; border-radius: 5px; border: 1px dashed var(--line); display: flex; align-items: center; padding: 0 10px; font-size: 12px; color: var(--muted); }
+.rung.done .bx { background: var(--accent); border: 1px solid var(--accent); color: #fff; }
+.rung.ms .bx { border-style: solid; border-color: var(--gold); }
+.rung.ms.done .bx { background: linear-gradient(90deg, #9a1010, #b08a1e); }
+.rung.cap .bx { background: repeating-linear-gradient(45deg, rgba(154,16,16,.12) 0 6px, transparent 6px 12px); border-style: solid; color: var(--accent); }
+.hold { display: flex; gap: 14px; align-items: center; }
+.hold .seal { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--gold); display: grid; place-items: center; font-size: 28px; flex: 0 0 auto; background: radial-gradient(circle, #fff8e0, #f0e0b0); }
+.hold p { font-size: 14px; }
+.hold b { font-family: var(--fh); font-size: 18px; display: block; }
+.wk { display: grid; grid-template-columns: 70px 1fr 56px; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.wk:first-child { border-top: 0; }
+.wk .pts { font-family: var(--fh); font-size: 20px; text-align: right; }
+.wk .seg { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: var(--panel2); }
+.wk .meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.badges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.badge { text-align: center; padding: 12px 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.badge .ic { font-size: 26px; filter: grayscale(1); opacity: .45; }
+.badge.t1 .ic, .badge.t2 .ic, .badge.t3 .ic { filter: none; opacity: 1; }
+.badge b { display: block; font-family: var(--fh); font-size: 14px; margin-top: 2px; }
+.badge span { font-size: 11px; color: var(--muted); }
+.tierpips { display: flex; justify-content: center; gap: 4px; margin-top: 4px; }
+.tierpips i { width: 8px; height: 8px; border-radius: 50%; background: var(--panel2); border: 1px solid var(--line); }
+.tierpips i.b { background: #a0572a; } .tierpips i.s { background: #a8b0bb; } .tierpips i.g { background: #c9a227; }
+.codex td { padding: 7px 4px; border-top: 1px solid var(--line); font-size: 14px; vertical-align: top; }
+.codex td:last-child { text-align: right; font-weight: 600; white-space: nowrap; }
+.codex tr.h td { font-family: var(--fh); font-weight: 700; font-size: 16px; padding-top: 14px; border-top: 0; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="proto-bar">Prototype B · Gold of Luna · demo data, simulated Dec 18 · <a href="index.html">all prototypes</a></div>
+<div class="wrap">
+  <header><div class="brand">The Iron Rain</div><div class="brand-sub" id="sub"></div></header>
+  <div class="members" id="members"></div>
+  <div class="rule"></div>
+  <div id="main"></div>
+</div>
+<button class="fab" id="fab" type="button">✦ Log Trial</button>
+<script>
+/*ENGINE*/
+
+const CAT_COLORS = { consistency: '#9a1010', effort: '#b08a1e', progress: '#3f7a4e', habits: '#6a5a8a' };
+
+function weightChart(w, m) {
+  const W = 520, H = 220, L = 34, R = 10, T = 12, B = 24;
+  const x0 = SEASON.start, x1 = addDays(SEASON.today, 3);
+  const span = daysBetween(x0, x1);
+  const lo = Math.min(...w.series.map(p => p.lbs)) - 2, hi = Math.max(w.start, ...w.series.map(p => p.lbs)) + 1;
+  const X = d => L + daysBetween(x0, d) / span * (W - L - R), Y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const g = s('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'chart', width: '100%', role: 'img', 'aria-label': 'Weight trend' });
+  // healthy pace corridor 0.5–1%/week
+  const corr = d => { const wks = daysBetween(x0, d) / 7; return [w.start * (1 - 0.005 * wks), w.start * (1 - 0.01 * wks)]; };
+  const pts1 = [x0, x1].map(d => X(d) + ',' + Y(corr(d)[0])), pts2 = [x1, x0].map(d => X(d) + ',' + Y(corr(d)[1]));
+  g.appendChild(s('polygon', { points: pts1.concat(pts2).join(' '), fill: 'rgba(63,122,78,.12)' }));
+  // grid
+  for (let v = Math.ceil(lo); v <= hi; v += 2) {
+    g.appendChild(s('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'rgba(153,120,32,.15)' }));
+    g.appendChild(s('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end' }, v));
+  }
+  // goal
+  if (w.goalLbs <= lo) g.appendChild(s('text', { x: W - R, y: H - B - 4, 'text-anchor': 'end', style: 'fill:#b08a1e' }, 'goal ' + w.goalLbs.toFixed(1) + ' ↓'));
+  else {
+    g.appendChild(s('line', { x1: L, x2: W - R, y1: Y(w.goalLbs), y2: Y(w.goalLbs), stroke: '#b08a1e', 'stroke-dasharray': '5 4', 'stroke-width': 1.5 }));
+    g.appendChild(s('text', { x: W - R, y: Y(w.goalLbs) - 4, 'text-anchor': 'end', style: 'fill:#b08a1e' }, 'goal −' + m.goalPct + '%'));
+  }
+  ['2026-12-01', '2026-12-08', '2026-12-15'].forEach(d => g.appendChild(s('text', { x: X(d), y: H - 6, 'text-anchor': 'middle' }, fmtShort(d))));
+  w.series.forEach(p => g.appendChild(s('circle', { cx: X(p.date), cy: Y(p.lbs), r: 3, fill: 'rgba(30,26,20,.28)' })));
+  g.appendChild(s('polyline', { points: w.series.map(p => X(p.date) + ',' + Y(p.trend)).join(' '), fill: 'none', stroke: '#9a1010', 'stroke-width': 3, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+  const last = w.series[w.series.length - 1];
+  g.appendChild(s('circle', { cx: X(last.date), cy: Y(last.trend), r: 5, fill: '#9a1010', stroke: '#fff', 'stroke-width': 2 }));
+  return g;
+}
+
+function minutesChart(sc) {
+  const W = 520, H = 180, L = 30, B = 24, T = 14;
+  const wks = sc.weeks; const vals = wks.map(w => w.days.reduce((a, d) => a + (sc.day[d] ? sc.day[d].min : 0), 0));
+  const max = Math.max(200, ...vals) * 1.1, bw = (W - L - 10) / wks.length;
+  const g = s('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'chart', width: '100%' });
+  wks.forEach((w, i) => {
+    const hgt = vals[i] / max * (H - T - B), x = L + i * bw + bw * 0.2;
+    g.appendChild(s('rect', { x, y: H - B - hgt, width: bw * 0.6, height: hgt, rx: 4, fill: w.complete ? '#9a1010' : 'rgba(154,16,16,.4)' }));
+    g.appendChild(s('text', { x: x + bw * 0.3, y: H - B - hgt - 4, 'text-anchor': 'middle', style: 'fill:#1e1a14;font-weight:600' }, vals[i] + 'm'));
+    g.appendChild(s('text', { x: x + bw * 0.3, y: H - 6, 'text-anchor': 'middle' }, 'Wk of ' + fmtShort(w.key)));
+  });
+  return g;
+}
+
+function ladder(w) {
+  const lad = h('div', { class: 'ladder' });
+  const actual = (w.start - w.low) / w.start * 100;
+  for (let p = 0.5; p <= 6; p += 0.5) {
+    const ms = RULES.milestones.find(x => x[0] === p);
+    const done = w.credited >= p, capped = !done && actual >= p;
+    lad.appendChild(h('div', { class: 'rung' + (done ? ' done' : '') + (ms ? ' ms' : '') + (capped ? ' cap' : '') },
+      h('span', { class: 'lvl' }, '−' + p.toFixed(1) + '%'),
+      h('span', { class: 'bx' }, done ? '+' + RULES.stepPts + (ms ? ' · ' + ms[2] + ' +' + ms[1] : '') : capped ? 'reached — unlocks next week (1%/wk pace cap)' : ms ? ms[2] + ' · +' + ms[1] : '+' + RULES.stepPts)));
+  }
+  return lad;
+}
+
+function codex() {
+  const t = h('table', { class: 'codex', style: 'width:100%;border-collapse:collapse' });
+  const rows = [
+    ['h', 'I · Show Up (Consistency)'],
+    ['Active Day — ' + RULES.activeDayMin + '+ min of anything', '+' + RULES.activeDay],
+    ['Weekly Standard — ' + RULES.standardDays + ' Active Days (Mon–Sun)', '+' + RULES.standard],
+    ['Chain — each straight Standard week adds +10% to the week', 'up to ×1.5'],
+    ['Miss a week? Chain drops one link, not to zero', '—'],
+    ['h', 'II · Effort (every activity equal)'],
+    ['Per 10 min: Easy / Steady / Hard', '1 / 2 / 3'],
+    ['Daily effort cap', RULES.effortCap],
+    ['h', 'III · Progress (opt-in, private)'],
+    ['Weekly weigh-in', '+' + RULES.weighIn],
+    ['Each new 0.5% low on the 7-day trend', '+' + RULES.stepPts],
+    ['Credit capped at 1% per week (healthy pace)', '—'],
+    ['Milestones at 5% · 10% · 15%', '+100 · +150 · +200'],
+    ['Holiday Hold: Jan 4 trend ≤ Dec 1 + 0.5%', '+' + HOLIDAY_HOLD.reward],
+    ['Fitness track instead: personal record (2/wk)', '+' + RULES.pr],
+    ['h', 'IV · Habits'],
+    ['Up to 3 chosen daily habits', '+' + RULES.habit + ' each'],
+  ];
+  rows.forEach(r => t.appendChild(r[0] === 'h' ? h('tr', { class: 'h' }, h('td', { colspan: 2 }, r[1])) : h('tr', null, h('td', null, r[0]), h('td', null, r[1]))));
+  return t;
+}
+
+function render() {
+  const all = scoreAll(), sc = all[S.me], m = sc.m;
+  document.getElementById('sub').textContent = SEASON.name + ' · Dec 1 – Mar 21 · ' + fmtDow(SEASON.today);
+  const mem = clear(document.getElementById('members'));
+  MEMBERS.forEach(x => mem.appendChild(h('button', { class: 'mchip' + (x.id === S.me ? ' on' : ''), type: 'button', onclick: () => { S.me = x.id; render(); } },
+    h('span', { class: 'dot', style: 'background:' + x.house }, x.name[0]), x.name)));
+  const main = clear(document.getElementById('main'));
+
+  if (m.track === 'weight' && sc.weight) {
+    const w = sc.weight;
+    main.appendChild(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, 'The Ascent', h('small', null, 'trend line, not daily noise')),
+      h('div', { class: 'stats' },
+        h('div', { class: 'stat' }, h('b', null, w.start.toFixed(1)), h('span', null, 'START')),
+        h('div', { class: 'stat' }, h('b', null, w.trend.toFixed(1)), h('span', null, 'TREND')),
+        h('div', { class: 'stat' }, h('b', { style: 'color:var(--accent)' }, '−' + w.pctLost.toFixed(1) + '%'), h('span', null, 'LOST')),
+        h('div', { class: 'stat' }, h('b', null, w.pacePct.toFixed(2) + '%'), h('span', null, 'PER WEEK'))),
+      h('div', { class: 'panel' }, weightChart(w, m),
+        h('div', { class: 'private' }, '🔒 Pounds are visible only to you. The pack sees ' + (m.share ? '% lost.' : 'nothing — sharing is off.'))),
+      h('div', { class: 'private' }, h('span', { style: 'display:inline-block;width:14px;height:10px;background:rgba(63,122,78,.25);border-radius:2px' }), 'Green band = healthy pace (0.5–1% per week)')));
+
+    main.appendChild(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, 'Milestone Ladder', h('small', null, w.credited.toFixed(1) + '% credited')), h('div', { class: 'panel' }, ladder(w))));
+
+    main.appendChild(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, 'The Holiday Hold'),
+      h('div', { class: 'panel hold' }, h('div', { class: 'seal' }, w.holdOk ? '🛡️' : '⚠️'),
+        h('p', null, h('b', null, w.holdOk ? 'Holding the line' : 'Above the line'),
+          'Finish Jan 4 with your trend no more than 0.5% above Dec 1 → +' + HOLIDAY_HOLD.reward + ' Merit. Maintaining through the holidays counts as winning. ',
+          h('i', null, daysBetween(SEASON.today, HOLIDAY_HOLD.end) + ' days left.')))));
+  } else {
+    main.appendChild(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, 'The Ascent', h('small', null, 'fitness track')),
+      h('div', { class: 'stats' },
+        h('div', { class: 'stat' }, h('b', null, sc.totalMin), h('span', null, 'MINUTES')),
+        h('div', { class: 'stat' }, h('b', null, sc.activeDays.length), h('span', null, 'ACTIVE DAYS')),
+        h('div', { class: 'stat' }, h('b', { style: 'color:var(--accent)' }, sc.prs), h('span', null, 'RECORDS')),
+        h('div', { class: 'stat' }, h('b', null, '×' + sc.curWeek.mult.toFixed(1)), h('span', null, 'CHAIN'))),
+      h('div', { class: 'panel' }, minutesChart(sc),
+        h('div', { class: 'private' }, '⚡ Fitness track: progress Merit comes from personal records (Peloton output, fastest mile, longest ride) — no scale involved.'))));
+    const prs = S.prs.filter(p => p.member === m.id && p.date <= SEASON.today);
+    main.appendChild(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, 'Records Broken'),
+      h('div', { class: 'panel' }, prs.length ? prs.map(p => h('div', { class: 'ledger-row' }, h('span', { class: 'ld' }, fmtShort(p.date)), h('span', { class: 'll' }, p.label), h('span', { class: 'lp' }, '+' + RULES.pr))) : h('i', null, 'No records yet this season.'))));
+  }
+
+  // Weekly scorecards
+  const wkPanel = h('div', { class: 'panel' });
+  sc.weeks.slice().reverse().forEach(w => {
+    const parts = { consistency: 0, effort: 0, progress: 0, habits: 0 };
+    sc.ledger.filter(e => weekKey(e.date) === w.key).forEach(e => parts[e.cat] += e.pts);
+    const seg = h('div', { class: 'seg' }); Object.keys(parts).forEach(k => seg.appendChild(h('i', { style: 'flex:' + (parts[k] || 0.001) + ';background:' + CAT_COLORS[k] })));
+    wkPanel.appendChild(h('div', { class: 'wk' }, h('div', null, h('b', null, fmtShort(w.key)), h('div', { class: 'meta' }, w.complete ? 'final' : 'in progress')),
+      h('div', null, seg, h('div', { class: 'meta' }, w.active + ' Active Days · ' + (w.standard ? '✦ Standard' : 'no Standard') + ' · ×' + w.mult.toFixed(1))),
+      h('div', { class: 'pts' }, sc.byWeek[w.key] || 0)));
+  });
+  main.appendChild(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, 'Weekly Scorecards', h('small', null, 'Total ' + sc.total + ' · ' + sc.rank.rank.name)), wkPanel,
+    h('div', { class: 'private' }, ['consistency', 'effort', 'progress', 'habits'].map(k => h('span', null, h('span', { style: 'display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:' + CAT_COLORS[k] }), k[0].toUpperCase() + k.slice(1) + ' ')))));
+
+  // Badges
+  const bg = h('div', { class: 'badges' });
+  badges(sc).forEach(b => {
+    const pips = h('div', { class: 'tierpips' }); ['b', 's', 'g'].forEach((c, i) => pips.appendChild(h('i', { class: i < b.tier ? c : '' })));
+    bg.appendChild(h('div', { class: 'badge t' + b.tier }, h('div', { class: 'ic' }, b.icon), h('b', null, b.name), h('span', null, b.v + (b.next ? ' / ' + b.next : ' ✓')), pips));
+  });
+  main.appendChild(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, 'Honors'), h('div', { style: 'margin-top:10px' }, bg)));
+
+  main.appendChild(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, 'The Merit Codex'), h('div', { class: 'panel' }, codex())));
+}
+document.getElementById('fab').addEventListener('click', () => openLog(render));
+render();
+</script>
+</body>
+</html>

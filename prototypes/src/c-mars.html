@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1c0907">
+<title>Iron Rain · Pack Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1c0907; --panel: #2a0f0b; --panel2: #3a1712; --ink: #fbe9e0; --ink2: #ffd9c2; --muted: #c99a88;
+  --line: rgba(255,140,100,.18); --accent: #ff6a3d; --accent-soft: rgba(255,106,61,.16); --on-accent: #1c0907;
+  --fh: 'Oswald', 'Arial Narrow', sans-serif; --fb: 'Spectral', Georgia, serif;
+}
+/*BASE_CSS*/
+body { background: radial-gradient(120% 60% at 50% 0%, #4a140c 0%, #1c0907 60%) fixed, #1c0907; }
+header { padding: 20px 0 6px; display: flex; justify-content: space-between; align-items: flex-end; }
+.brand { font-family: var(--fh); font-weight: 700; font-size: 32px; line-height: .95; letter-spacing: .02em; text-transform: uppercase; }
+.brand span { color: var(--accent); }
+.count { text-align: right; font-family: var(--fh); font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.count b { display: block; font-size: 28px; color: var(--ink); line-height: 1; }
+.tabs { display: flex; gap: 6px; margin: 14px 0 4px; position: sticky; top: 0; z-index: 20; padding: 8px 0; background: linear-gradient(var(--bg) 80%, transparent); }
+.tab { flex: 1; min-height: 44px; border-radius: 12px; font-family: var(--fh); font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); }
+.tab.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.h2 { font-family: var(--fh); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 18px 0 8px; display: flex; justify-content: space-between; }
+.pcard { position: relative; overflow: hidden; border-radius: 18px; padding: 14px 14px 12px; margin-bottom: 10px; background: var(--panel); border: 1px solid var(--line); }
+.pcard::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--house); }
+.pcard.me { box-shadow: 0 0 0 1.5px var(--accent) inset; }
+.ptop { display: flex; align-items: center; gap: 12px; }
+.ppos { font-family: var(--fh); font-size: 28px; font-weight: 700; color: var(--muted); width: 24px; }
+.pname { flex: 1; font-family: var(--fh); font-size: 22px; line-height: 1.05; }
+.pname small { display: block; font-family: var(--fb); font-size: 12px; color: var(--muted); }
+.ppts { font-family: var(--fh); font-size: 30px; font-weight: 700; text-align: right; line-height: 1; }
+.ppts small { display: block; font-size: 11px; color: var(--muted); letter-spacing: .1em; font-weight: 400; }
+.pips { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 12px; }
+.pip { height: 26px; border-radius: 7px; background: var(--panel2); display: grid; place-items: center; font-size: 10px; color: var(--muted); font-family: var(--fh); }
+.pip.act { background: var(--accent); color: var(--on-accent); }
+.pip.part { background: rgba(255,106,61,.35); color: var(--ink); }
+.pip.today { box-shadow: 0 0 0 1.5px var(--ink) inset; }
+.pip.fut { opacity: .35; }
+.pfoot { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.chip { font-size: 12px; padding: 3px 10px; border-radius: 99px; background: var(--panel2); color: var(--ink2); }
+.chip.hot { background: var(--accent-soft); color: var(--accent); }
+.flames { letter-spacing: -2px; }
+.gcard { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
+.gtop { display: flex; gap: 10px; align-items: center; }
+.gic { font-size: 26px; }
+.gname { flex: 1; font-family: var(--fh); font-size: 19px; line-height: 1.1; }
+.gname small { display: block; font-family: var(--fb); font-size: 13px; color: var(--muted); }
+.grew { font-family: var(--fh); color: var(--accent); font-size: 16px; }
+.grow { display: grid; grid-template-columns: 64px 1fr 54px; gap: 8px; align-items: center; font-size: 13px; margin-top: 8px; }
+.grow .v { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.win { margin-top: 10px; font-size: 13px; color: var(--accent); }
+.howl { display: flex; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+.howl:first-child { border-top: 0; }
+.hav { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; flex: 0 0 auto; }
+.hbody { flex: 1; font-size: 15px; }
+.hbody b { font-family: var(--fh); font-weight: 500; letter-spacing: .03em; }
+.hbody small { color: var(--muted); font-size: 12px; margin-left: 6px; }
+.compose { display: flex; gap: 8px; margin-bottom: 8px; }
+.compose input { flex: 1; min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); padding: 0 14px; font-size: 16px; font-family: var(--fb); }
+.compose button { min-width: 72px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font-family: var(--fh); letter-spacing: .06em; }
+.whoami { font-size: 13px; color: var(--muted); margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="proto-bar">Prototype C · Pack Board · demo data, simulated Dec 18 · <a href="index.html">all prototypes</a></div>
+<div class="wrap">
+  <header><div class="brand">The Iron<br><span>Rain</span></div><div class="count" id="count"></div></header>
+  <div class="members" id="members"></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="main"></div>
+</div>
+<button class="fab" id="fab" type="button">⚡ Log Trial</button>
+<script>
+/*ENGINE*/
+
+let TAB = 'pack';
+const TABS = [['pack', 'Pack'], ['gauntlet', 'Gauntlet'], ['howl', 'Howl']];
+
+function packCard(sc, pos) {
+  const m = sc.m, wk = sc.curWeek;
+  const pips = h('div', { class: 'pips' });
+  range(wk.key, addDays(wk.key, 6)).forEach(d => {
+    const di = sc.day[d];
+    pips.appendChild(h('div', { class: 'pip' + (di && di.min >= RULES.activeDayMin ? ' act' : di ? ' part' : '') + (d === SEASON.today ? ' today' : '') + (d > SEASON.today ? ' fut' : '') }, DOWS[dow(d)][0]));
+  });
+  const progress = m.track === 'weight' ? (m.share && sc.weight ? '▼ ' + sc.weight.pctLost.toFixed(1) + '% · ' + (sc.weight.holdOk ? '🛡️ Holding' : '⚠️ Hold at risk') : '🔒 Progress private') : '⚡ ' + sc.prs + (sc.prs === 1 ? ' record' : ' records');
+  return h('div', { class: 'pcard' + (m.id === S.me ? ' me' : ''), style: '--house:' + m.house },
+    h('div', { class: 'ptop' }, h('div', { class: 'ppos' }, pos),
+      h('div', { class: 'pname' }, m.name, h('small', null, sc.rank.rank.name + ' · ' + (m.track === 'weight' ? 'Weight track' : 'Fitness track'))),
+      h('div', { class: 'ppts' }, sc.total, h('small', null, 'MERIT'))),
+    pips,
+    h('div', { class: 'pfoot' },
+      h('span', { class: 'chip' + (wk.standard ? ' hot' : '') }, wk.standard ? '✦ Standard met' : wk.active + '/' + RULES.standardDays + ' Standard'),
+      h('span', { class: 'chip' + (sc.chain >= 2 ? ' hot' : '') }, h('span', { class: 'flames' }, sc.chain ? '🔥'.repeat(sc.chain) + ' ' : ''), sc.chain ? '×' + wk.mult.toFixed(1) : 'No chain yet'),
+      h('span', { class: 'chip' }, progress)));
+}
+
+function render() {
+  const all = scoreAll();
+  const left = daysBetween(SEASON.today, SEASON.end);
+  clear(document.getElementById('count')).appendChild(h('div', null, h('b', null, left), 'days left · ' + SEASON.name));
+  const mem = clear(document.getElementById('members'));
+  MEMBERS.forEach(x => mem.appendChild(h('button', { class: 'mchip' + (x.id === S.me ? ' on' : ''), type: 'button', onclick: () => { S.me = x.id; render(); } },
+    h('span', { class: 'dot', style: 'background:' + x.house }, x.name[0]), x.name)));
+  const tabs = clear(document.getElementById('tabs'));
+  TABS.forEach(t => tabs.appendChild(h('button', { class: 'tab' + (TAB === t[0] ? ' on' : ''), type: 'button', onclick: () => { TAB = t[0]; render(); } }, t[1])));
+  const main = clear(document.getElementById('main'));
+
+  if (TAB === 'pack') {
+    const ranked = MEMBERS.map(m => all[m.id]).sort((a, b) => b.total - a.total);
+    const metCount = ranked.filter(x => x.curWeek.standard).length;
+    main.appendChild(h('div', { class: 'h2' }, h('span', null, 'Leaderboard'), h('span', null, metCount + '/' + ranked.length + ' met the Standard')));
+    ranked.forEach((sc, i) => main.appendChild(packCard(sc, i + 1)));
+    main.appendChild(h('div', { class: 'h2' }, h('span', null, 'The Passage · Pack Milestones')));
+    passage(all).forEach(p => main.appendChild(h('div', { class: 'gcard' },
+      h('div', { class: 'gtop' }, h('div', { class: 'gic' }, p.icon), h('div', { class: 'gname' }, p.name, h('small', null, p.desc)), h('div', { class: 'grew' }, p.reward)),
+      h('div', { class: 'bar', style: 'margin-top:10px' }, h('i', { style: 'width:' + Math.min(100, p.val / p.goal * 100) + '%' })),
+      h('div', { class: 'grow', style: 'grid-template-columns:1fr auto' }, h('span', { class: 'v', style: 'text-align:left' }, p.val.toLocaleString() + ' / ' + p.goal.toLocaleString()), h('span', { class: 'v' }, Math.round(p.val / p.goal * 100) + '%')))));
+  }
+
+  if (TAB === 'gauntlet') {
+    main.appendChild(h('div', { class: 'h2' }, h('span', null, 'The Gauntlet · First to finish wins')));
+    gauntlet(all).forEach(c => {
+      const card = h('div', { class: 'gcard' }, h('div', { class: 'gtop' }, h('div', { class: 'gic' }, c.icon), h('div', { class: 'gname' }, c.name, h('small', null, c.desc)), h('div', { class: 'grew' }, '+' + c.reward)));
+      c.rows.forEach(r => card.appendChild(h('div', { class: 'grow' }, h('span', null, r.m.name), h('div', { class: 'bar' }, h('i', { style: 'width:' + (r.v / c.goal * 100) + '%;background:' + r.m.house })), h('span', { class: 'v' }, r.v + '/' + c.goal))));
+      if (c.winner) card.appendChild(h('div', { class: 'win' }, '🏆 Conquered by ' + c.winner.name));
+      main.appendChild(card);
+    });
+  }
+
+  if (TAB === 'howl') {
+    const inp = h('input', { type: 'text', placeholder: 'Howl at the pack…', maxlength: '240', enterkeyhint: 'send' });
+    const send = () => { const t = inp.value.trim(); if (!t) return; S.howls.unshift({ member: S.me, date: SEASON.today, text: t }); toast('Howl sent 🐺'); render(); };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+    main.appendChild(h('div', { class: 'h2' }, h('span', null, 'The Howler')));
+    main.appendChild(h('div', { class: 'compose' }, inp, h('button', { type: 'button', onclick: send }, 'Howl')));
+    const feed = h('div', { class: 'gcard' });
+    // auto howls from scoring events
+    const auto = [];
+    MEMBERS.forEach(m => { const sc = all[m.id]; if (sc.curWeek.standard) auto.push({ member: m.id, date: SEASON.today, text: '✦ met the Weekly Standard — chain climbs to ×' + (sc.curWeek.mult + RULES.chainStep).toFixed(1) + ' next week.', sys: true }); });
+    auto.concat(S.howls).forEach(x => { const m = MEM[x.member];
+      feed.appendChild(h('div', { class: 'howl' }, h('div', { class: 'hav', style: 'background:' + m.house }, m.name[0]),
+        h('div', { class: 'hbody' }, h('b', null, m.name), h('small', null, fmtShort(x.date) + (x.sys ? ' · auto' : '')), h('div', { style: x.sys ? 'color:var(--accent)' : '' }, x.text)))); });
+    main.appendChild(feed);
+    main.appendChild(h('div', { class: 'whoami' }, 'Posting as ' + MEM[S.me].name + ' (switch above).'));
+  }
+}
+document.getElementById('fab').addEventListener('click', () => openLog(render));
+render();
+</script>
+</body>
+</html>

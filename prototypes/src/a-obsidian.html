@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0c0b">
+<title>Iron Rain · Obsidian Command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0c0b; --panel: #171513; --panel2: #201d1a; --ink: #f1e9d8; --ink2: #e6d9b8; --muted: #9c8f78;
+  --line: rgba(201,162,39,.18); --accent: #c9a227; --accent-soft: rgba(201,162,39,.16); --on-accent: #17130a;
+  --crimson: #b3261e; --fh: 'Cinzel', Georgia, serif; --fb: 'Spectral', Georgia, serif;
+}
+/*BASE_CSS*/
+header { padding: 18px 0 10px; }
+.brand { font-family: var(--fh); font-weight: 900; font-size: 13px; letter-spacing: .32em; color: var(--accent); }
+.season { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin-top: 14px; }
+.card-t { font-family: var(--fh); font-size: 12px; letter-spacing: .2em; color: var(--muted); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.hero { display: grid; grid-template-columns: 150px 1fr; gap: 16px; align-items: center; }
+.ring-num { font-family: var(--fh); font-weight: 900; font-size: 40px; fill: var(--ink); }
+.ring-sub { font-size: 11px; fill: var(--muted); letter-spacing: .12em; }
+.hero-stats .big { font-family: var(--fh); font-weight: 900; font-size: 34px; color: var(--accent); line-height: 1; }
+.hero-stats .lbl { font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+.chain { display: flex; gap: 4px; margin: 4px 0 2px; }
+.chain i { width: 18px; height: 10px; border-radius: 6px; border: 1.5px solid var(--accent); opacity: .35; }
+.chain i.on { background: var(--accent); opacity: 1; }
+.week-dots { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 14px; }
+.wd { text-align: center; font-size: 11px; color: var(--muted); }
+.wd .c { height: 36px; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 4px; display: grid; place-items: center; font-size: 15px; }
+.wd .c.act { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.wd .c.part { background: var(--accent-soft); }
+.wd .c.today { box-shadow: 0 0 0 2px var(--ink2) inset; }
+.coach { display: flex; gap: 12px; align-items: flex-start; }
+.coach .av { width: 44px; height: 44px; border-radius: 50%; background: var(--crimson); display: grid; place-items: center; font-family: var(--fh); font-weight: 900; flex: 0 0 auto; }
+.coach p { font-style: italic; font-size: 15px; }
+.coach small { display: block; font-family: var(--fh); font-size: 11px; letter-spacing: .16em; color: var(--muted); margin-bottom: 2px; font-style: normal; }
+.rankrow { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-top: 8px; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal .h { font-size: 10px; text-align: center; color: var(--muted); }
+.cal .d { aspect-ratio: 1; border-radius: 8px; font-size: 11px; display: grid; place-items: center; color: var(--muted); background: var(--panel2); }
+.cal .d.l1 { background: rgba(201,162,39,.28); color: var(--ink); }
+.cal .d.l2 { background: rgba(201,162,39,.55); color: var(--on-accent); }
+.cal .d.l3 { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.cal .d.fut { opacity: .35; }
+.cal .d.today { box-shadow: 0 0 0 2px var(--ink2) inset; }
+.stack { display: flex; height: 14px; border-radius: 99px; overflow: hidden; margin: 6px 0 10px; }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 13px; }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; }
+.legend b { margin-left: auto; }
+.lb-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.lb-row:first-child { border-top: 0; }
+.lb-pos { width: 18px; font-family: var(--fh); color: var(--muted); }
+.lb-av { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; }
+.lb-name { flex: 1; font-size: 15px; }
+.lb-name small { display: block; font-size: 12px; color: var(--muted); }
+.lb-pts { font-family: var(--fh); font-weight: 700; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="proto-bar">Prototype A · Obsidian Command · demo data, simulated Dec 18 · <a href="index.html">all prototypes</a></div>
+<div class="wrap">
+  <header><div class="brand">THE IRON RAIN</div><div class="season" id="season"></div></header>
+  <div class="members" id="members"></div>
+  <div id="main"></div>
+</div>
+<button class="fab" id="fab" type="button">＋ Log Trial</button>
+<script>
+/*ENGINE*/
+
+const CAT_COLORS = { consistency: '#c9a227', effort: '#b3261e', progress: '#5d8a6a', habits: '#7a6aa8' };
+const CAT_LABEL = { consistency: 'Consistency', effort: 'Effort', progress: 'Progress', habits: 'Habits' };
+
+function ring(active) {
+  const R = 62, C = 2 * Math.PI * R, pct = Math.min(active / RULES.standardDays, 1);
+  return s('svg', { viewBox: '0 0 150 150', width: '150', height: '150' },
+    s('circle', { cx: 75, cy: 75, r: R, fill: 'none', stroke: 'rgba(201,162,39,.15)', 'stroke-width': 12 }),
+    s('circle', { cx: 75, cy: 75, r: R, fill: 'none', stroke: '#c9a227', 'stroke-width': 12, 'stroke-linecap': 'round',
+      'stroke-dasharray': (C * pct) + ' ' + C, transform: 'rotate(-90 75 75)' }),
+    s('text', { x: 75, y: 80, 'text-anchor': 'middle', class: 'ring-num' }, active + '/' + RULES.standardDays),
+    s('text', { x: 75, y: 102, 'text-anchor': 'middle', class: 'ring-sub' }, 'STANDARD'));
+}
+
+function render() {
+  const all = scoreAll(), sc = all[S.me], m = sc.m, wk = sc.curWeek;
+  const weekNo = Math.floor(daysBetween(weekKey(SEASON.start), SEASON.today) / 7) + 1;
+  document.getElementById('season').textContent = SEASON.name + ' · Week ' + weekNo + ' · ' + fmtDow(SEASON.today);
+
+  const mem = clear(document.getElementById('members'));
+  MEMBERS.forEach(x => mem.appendChild(h('button', { class: 'mchip' + (x.id === S.me ? ' on' : ''), type: 'button', onclick: () => { S.me = x.id; render(); } },
+    h('span', { class: 'dot', style: 'background:' + x.house }, x.name[0]), x.name)));
+
+  const main = clear(document.getElementById('main'));
+
+  // Hero
+  const wkPts = sc.byWeek[wk.key] || 0;
+  const chainLinks = h('div', { class: 'chain' }); for (let i = 0; i < RULES.chainMax; i++) chainLinks.appendChild(h('i', { class: i < sc.chain ? 'on' : '' }));
+  const dots = h('div', { class: 'week-dots' });
+  range(wk.key, addDays(wk.key, 6)).forEach(d => {
+    const di = sc.day[d], fut = d > SEASON.today;
+    const cls = 'c' + (di && di.min >= RULES.activeDayMin ? ' act' : di ? ' part' : '') + (d === SEASON.today ? ' today' : '');
+    dots.appendChild(h('div', { class: 'wd' }, h('div', { class: cls, style: fut ? 'opacity:.4' : '' }, di ? ACT[di.list[0].act].icon : ''), DOWS[dow(d)][0]));
+  });
+  main.appendChild(h('div', { class: 'card' },
+    h('div', { class: 'hero' }, ring(wk.active),
+      h('div', { class: 'hero-stats' },
+        h('div', { class: 'big' }, wkPts), h('div', { class: 'lbl' }, 'Merit this week'),
+        chainLinks, h('div', { class: 'lbl', style: 'margin:4px 0 0' }, 'Chain ×' + wk.mult.toFixed(1) + ' · ' + sc.chain + ' week' + (sc.chain === 1 ? '' : 's')))),
+    dots));
+
+  // Coach
+  main.appendChild(h('div', { class: 'card coach' }, h('div', { class: 'av' }, m.coach[0]),
+    h('p', null, h('small', null, 'COUNCIL OF ARES · ' + m.coach.toUpperCase()), coachLine(sc))));
+
+  // Season + rank
+  const r = sc.rank, toNext = r.next ? r.next.min - sc.total : 0;
+  const pct = r.next ? (sc.total - r.rank.min) / (r.next.min - r.rank.min) * 100 : 100;
+  main.appendChild(h('div', { class: 'card' },
+    h('div', { class: 'card-t' }, h('span', null, 'SEASON MERIT'), h('span', { class: 'tag', style: 'background:' + r.rank.color + ';color:#fff' }, r.rank.name)),
+    h('div', { class: 'hero-stats' }, h('div', { class: 'big' }, sc.total.toLocaleString())),
+    h('div', { class: 'bar', style: 'margin-top:12px' }, h('i', { style: 'width:' + pct + '%;background:' + (r.next ? r.next.color : r.rank.color) })),
+    h('div', { class: 'rankrow' }, h('span', null, r.rank.name), h('span', null, r.next ? toNext + ' to ' + r.next.name : 'Peerless Scarred'))));
+
+  // Habits
+  const hb = (S.habits[S.me][SEASON.today]) || [];
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, "TODAY'S HABITS"), h('span', null, '+' + RULES.habit + ' each')),
+    m.habits.map((name, i) => h('button', { class: 'habit' + (hb[i] ? ' on' : ''), type: 'button', onclick: () => toggleHabit(i, render) },
+      h('span', { class: 'box' }, hb[i] ? '✓' : ''), name, h('span', { class: 'pts' }, '+' + RULES.habit)))));
+
+  // December calendar
+  const cal = h('div', { class: 'cal' }); DOWS.forEach(d => cal.appendChild(h('div', { class: 'h' }, d[0])));
+  for (let i = 0; i < dow('2026-12-01'); i++) cal.appendChild(h('div'));
+  range('2026-12-01', '2026-12-31').forEach(d => {
+    const di = sc.day[d], lv = !di ? '' : di.min >= 60 ? ' l3' : di.min >= RULES.activeDayMin ? ' l2' : ' l1';
+    cal.appendChild(h('div', { class: 'd' + lv + (d > SEASON.today ? ' fut' : '') + (d === SEASON.today ? ' today' : '') }, toD(d).getUTCDate()));
+  });
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'IRON DECEMBER'), h('span', null, sc.activeDays.filter(d => d < '2027').length + ' / 20 days')), cal));
+
+  // Breakdown
+  const stack = h('div', { class: 'stack' }), legend = h('div', { class: 'legend' });
+  Object.keys(sc.cats).forEach(k => {
+    stack.appendChild(h('i', { style: 'flex:' + (sc.cats[k] || 0.001) + ';background:' + CAT_COLORS[k] }));
+    legend.appendChild(h('span', null, h('i', { style: 'background:' + CAT_COLORS[k] }), CAT_LABEL[k], h('b', null, sc.cats[k])));
+  });
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'WHERE YOUR MERIT COMES FROM')), stack, legend));
+
+  // Pack board
+  const lb = h('div');
+  MEMBERS.map(x => all[x.id]).sort((a, b) => b.total - a.total).forEach((x, i) => {
+    const sub = 'Chain ×' + x.curWeek.mult.toFixed(1) + ' · ' + x.curWeek.active + '/4 this wk' +
+      (x.m.track === 'weight' && x.m.share && x.weight ? ' · ▼' + x.weight.pctLost.toFixed(1) + '%' : x.m.track === 'fitness' ? ' · ' + x.prs + (x.prs === 1 ? ' PR' : ' PRs') : '');
+    lb.appendChild(h('div', { class: 'lb-row' }, h('span', { class: 'lb-pos' }, i + 1), h('span', { class: 'lb-av', style: 'background:' + x.m.house }, x.m.name[0]),
+      h('span', { class: 'lb-name' }, x.m.name, h('small', null, sub)), h('span', { class: 'lb-pts' }, x.total)));
+  });
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'THE PACK')), lb));
+
+  // Ledger
+  const led = h('div');
+  sc.ledger.slice(0, 10).forEach(e => led.appendChild(h('div', { class: 'ledger-row' }, h('span', { class: 'ld' }, fmtShort(e.date)), h('span', { class: 'll' }, e.label), h('span', { class: 'lp' }, '+' + e.pts))));
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'RECENT MERIT')), led));
+}
+document.getElementById('fab').addEventListener('click', () => openLog(render));
+render();
+</script>
+</body>
+</html>

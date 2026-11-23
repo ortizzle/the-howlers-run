@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Iron Rain Prototypes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #faf6ec; --panel: #fffdf7; --ink: #1e1a14; --muted: #6e5f46; --line: rgba(153,120,32,.25); --accent: #9a1010; --gold: #b08a1e; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0d0c0b; --panel: #171513; --ink: #f1e9d8; --muted: #9c8f78; --line: rgba(201,162,39,.2); --accent: #e0574e; --gold: #c9a227; } }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ink); font-family: 'Spectral', Georgia, serif; line-height: 1.55; padding: env(safe-area-inset-top) 16px 48px; }
+.wrap { max-width: 640px; margin: 0 auto; }
+h1 { font-family: 'Cinzel', serif; font-weight: 900; font-size: 34px; letter-spacing: .04em; margin-top: 28px; line-height: 1.1; }
+.lede { color: var(--muted); font-style: italic; margin-top: 6px; }
+h2 { font-family: 'Cinzel', serif; font-size: 18px; margin: 30px 0 10px; letter-spacing: .04em; }
+.protos { display: grid; gap: 10px; }
+a.p { display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-height: 76px; }
+.sw { width: 52px; height: 52px; border-radius: 12px; flex: 0 0 auto; border: 1px solid var(--line); }
+a.p b { font-family: 'Cinzel', serif; display: block; }
+a.p span { font-size: 14px; color: var(--muted); }
+.pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pl { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; font-size: 14px; }
+.pl b { font-family: 'Cinzel', serif; display: block; color: var(--accent); }
+.pl .w { font-size: 12px; color: var(--muted); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+td { padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+td:last-child { text-align: right; white-space: nowrap; font-weight: 600; }
+tr:first-child td { border-top: 0; }
+ul { padding-left: 20px; font-size: 15px; } li { margin: 6px 0; }
+.note { font-size: 13px; color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The Iron Rain</h1>
+  <p class="lede">Season II prototypes · starts Dec 1, 2026 · Peloton Tread, Bike, app classes & everything outside</p>
+
+  <h2>Three looks, one point system</h2>
+  <div class="protos">
+    <a class="p" href="a-obsidian.html"><div class="sw" style="background:linear-gradient(135deg,#0d0c0b 50%,#c9a227 50%)"></div><div><b>A · Obsidian Command</b><span>Dark &amp; gold. Today-first: Standard ring, chain, habits, Iron December calendar.</span></div></a>
+    <a class="p" href="b-luna.html"><div class="sw" style="background:linear-gradient(135deg,#faf6ec 50%,#9a1010 50%)"></div><div><b>B · Gold of Luna</b><span>The current Howlers parchment look. Progress-first: trend chart, milestone ladder, Holiday Hold.</span></div></a>
+    <a class="p" href="c-mars.html"><div class="sw" style="background:linear-gradient(135deg,#1c0907 50%,#ff6a3d 50%)"></div><div><b>C · Pack Board</b><span>Mars red, sporty type. Social-first: leaderboard cards, Gauntlet, Passage, Howl feed.</span></div></a>
+  </div>
+  <p class="note">All three use demo data and pretend today is Dec 18. Switch family members with the chips at the top, and tap <i>Log Trial</i> to see Merit preview live.</p>
+
+  <h2>Merit: the new point system</h2>
+  <div class="pillars">
+    <div class="pl"><b>I · Show Up</b>Active Days, the Weekly Standard, and the chain multiplier<div class="w">≈ 45% of a typical week</div></div>
+    <div class="pl"><b>II · Effort</b>Minutes × intensity. Tread, bike, yoga and hikes all count the same.<div class="w">≈ 20%</div></div>
+    <div class="pl"><b>III · Progress</b>Weight trend (opt-in, private) <i>or</i> personal records<div class="w">≈ 25%</div></div>
+    <div class="pl"><b>IV · Habits</b>3 daily habits you pick (steps, water, sleep…)<div class="w">≈ 10%</div></div>
+  </div>
+
+  <h2>The rules</h2>
+  <table>
+    <tr><td><b>Active Day</b>: 20+ min of any activity</td><td>+10</td></tr>
+    <tr><td><b>Weekly Standard</b>: 4 Active Days, Mon–Sun</td><td>+40</td></tr>
+    <tr><td><b>Chain</b>: each straight Standard week adds +10% to that week's Show Up + Effort. Missing a week drops one link, not all of them.</td><td>up to ×1.5</td></tr>
+    <tr><td><b>Effort</b>: per 10 min, Easy / Steady / Hard (daily cap 20)</td><td>1 / 2 / 3</td></tr>
+    <tr><td><b>Weekly weigh-in</b></td><td>+5</td></tr>
+    <tr><td><b>New low</b>: each 0.5% of starting weight, measured on a smoothed trend line instead of single weigh-ins</td><td>+25</td></tr>
+    <tr><td><b>Pace cap</b>: no more than 1% credited per week, so a crash diet earns nothing extra</td><td>—</td></tr>
+    <tr><td><b>Milestones</b>: 5% · 10% · 15%</td><td>+100 · 150 · 200</td></tr>
+    <tr><td><b>Holiday Hold</b>: trend on Jan 4 no more than 0.5% above Dec 1</td><td>+100</td></tr>
+    <tr><td><b>Fitness track</b> (instead of the scale): personal record, max 2 per week</td><td>+25</td></tr>
+    <tr><td><b>Habits</b>: up to 3 per day</td><td>+2 each</td></tr>
+  </table>
+
+  <h2>Why it's built this way</h2>
+  <ul>
+    <li><b>Consistency beats intensity.</b> Four 20-minute days earn more than one heroic 2-hour session. The daily effort cap and the Standard make sure of that.</li>
+    <li><b>Percent, not pounds.</b> Progress is measured as a % of your own starting weight, so it's fair across very different bodies. Pounds are visible only to you, and sharing your % with the pack is optional.</li>
+    <li><b>Trend, not the daily scale.</b> Water weight can swing the scale 2–3 lbs in a day. Points come from new lows on the smoothed trend, so one bad weigh-in can't cost you anything.</li>
+    <li><b>Healthy pace only.</b> Credit is capped at 1% per week. Losing faster than that earns nothing extra, and the remaining credit unlocks over the following weeks.</li>
+    <li><b>Kids stay off the scale.</b> Sedona and River default to the Fitness track (PRs, minutes, habits). Weight tracking is opt-in for adults.</li>
+    <li><b>December is the hardest month,</b> so the first challenge is to <i>hold</i> your weight through the holidays. Maintaining counts as a win.</li>
+    <li><b>Forgiving chain.</b> A missed week drops your chain by one link, not to zero, so one sick week doesn't wipe out a month of streak.</li>
+  </ul>
+
+  <h2>Carried over from The Howlers</h2>
+  <ul>
+    <li>Red Rising ranks: Red → Gray → Obsidian → Copper → Silver → Gold → Peerless</li>
+    <li>The Gauntlet: first-to-finish challenges (Iron December, Unbreakable Chain, Steed &amp; Tread, Beyond the Walls, The Thousand)</li>
+    <li>The Passage: pack-wide milestones · Badges with Bronze/Silver/Gold tiers</li>
+    <li>The Howler feed · Council of Ares coaches (static lines here; live AI in the real build)</li>
+    <li>Strava import, which covers the Tread and Bike too, since Peloton can auto-share workouts to Strava</li>
+  </ul>
+</div>
+</body>
+</html>
