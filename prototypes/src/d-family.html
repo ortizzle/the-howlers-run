@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121628">
+<title>Howlers Family Pack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Baloo+2:wght@500;700;800&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #121628; --panel: #1b2140; --panel2: #252c52; --ink: #f3ecdc; --ink2: #ffe3b0; --muted: #a2a3bf;
+  --line: rgba(242,169,59,.2); --accent: #f2a93b; --accent-soft: rgba(242,169,59,.16); --on-accent: #1a1405;
+  --pup: #ff8a5b; --teal: #4fc3b5; --fh: 'Cinzel', Georgia, serif; --fb: 'Spectral', Georgia, serif; --fp: 'Baloo 2', system-ui, sans-serif;
+}
+/*BASE_CSS*/
+body { background: radial-gradient(140% 50% at 50% 0%, #26305e 0%, #121628 65%) fixed, #121628; }
+header { padding: 18px 0 8px; display: flex; justify-content: space-between; align-items: flex-end; }
+.brand { font-family: var(--fh); font-weight: 900; font-size: 22px; letter-spacing: .06em; line-height: 1.05; }
+.brand small { display: block; font-family: var(--fb); font-weight: 400; font-size: 13px; color: var(--muted); letter-spacing: 0; margin-top: 3px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin-top: 14px; }
+.card-t { font-family: var(--fh); font-size: 12px; letter-spacing: .18em; color: var(--muted); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.card-t .r { font-family: var(--fb); letter-spacing: 0; font-size: 13px; }
+/* rank ladder */
+.ladder { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 6px; }
+.ladder .rg { height: 12px; border-radius: 4px; opacity: .3; position: relative; }
+.ladder .rg.done { opacity: 1; }
+.ladder .rg.cur { opacity: 1; box-shadow: 0 0 0 2px var(--ink) ; }
+.ladder-names { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 9px; color: var(--muted); text-align: center; margin-top: 4px; letter-spacing: .02em; }
+.ladder-names .cur { color: var(--ink); font-weight: 700; }
+.rank-line { display: flex; justify-content: space-between; align-items: baseline; }
+.rank-big { font-family: var(--fh); font-weight: 900; font-size: 26px; }
+.rank-pts { font-size: 14px; color: var(--muted); }
+/* week dots */
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.wd { text-align: center; font-size: 11px; color: var(--muted); }
+.wd .c { height: 40px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 4px; display: grid; place-items: center; font-size: 17px; }
+.wd .c.act { background: var(--accent); border-color: var(--accent); }
+.wd .c.part { background: var(--accent-soft); }
+.wd .c.today { box-shadow: 0 0 0 2px var(--ink2) inset; }
+.wd .c.fut { opacity: .35; }
+.wk-sum { display: flex; justify-content: space-between; margin-top: 12px; font-size: 14px; }
+.wk-sum b { font-family: var(--fh); color: var(--accent); font-size: 20px; }
+/* usuals */
+.usuals { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.usual { min-height: 60px; border-radius: 14px; background: var(--panel2); border: 1px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 0 12px; text-align: left; font-size: 15px; }
+.usual .ic { font-size: 24px; }
+.usual small { display: block; font-size: 12px; color: var(--muted); }
+.more-link { width: 100%; min-height: 44px; margin-top: 8px; border-radius: 12px; border: 1px dashed var(--line); color: var(--muted); font-size: 14px; }
+/* prompt */
+.prompt { background: linear-gradient(135deg, #2c2350, #1b2140); border-color: rgba(255,138,91,.35); }
+.prompt p { font-size: 15px; margin-bottom: 10px; }
+.prompt .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.prompt button { flex: 1 1 auto; min-height: 46px; border-radius: 12px; background: var(--panel2); border: 1px solid var(--line); font-size: 14px; padding: 0 12px; }
+.prompt button.yes { background: var(--pup); color: #2a0e02; border-color: var(--pup); font-weight: 600; }
+/* family board */
+.fam { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.fam:first-child { border-top: 0; }
+.fav { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; flex: 0 0 auto; }
+.fname { flex: 1; font-size: 15px; line-height: 1.2; }
+.fname small { display: block; font-size: 12px; color: var(--muted); }
+.mini { display: flex; gap: 3px; }
+.mini i { width: 9px; height: 9px; border-radius: 3px; background: var(--panel2); }
+.mini i.on { background: var(--accent); }
+.rpill { font-size: 11px; padding: 2px 8px; border-radius: 99px; color: #fff; margin-left: 6px; vertical-align: 2px; }
+.quest { margin-top: 12px; }
+.quest:first-of-type { margin-top: 0; }
+.qtop { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; gap: 8px; }
+.qtop small { color: var(--muted); }
+.qtop .rw { color: var(--accent); white-space: nowrap; }
+.imp { display: flex; gap: 12px; align-items: center; }
+.imp p { flex: 1; font-size: 14px; color: var(--muted); }
+.imp button { min-height: 46px; padding: 0 16px; border-radius: 12px; background: var(--panel2); border: 1px solid var(--accent); color: var(--accent); white-space: nowrap; }
+/* log sheet extras */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-btn { min-height: 44px; min-width: 56px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); font-size: 15px; }
+.chip-btn.on { border-color: var(--accent); background: var(--accent-soft); }
+.chip-btn.who.on { border-color: var(--house); background: var(--house); color: #fff; }
+.more-btn { min-height: 44px; margin-top: 14px; color: var(--accent); font-size: 14px; text-align: left; }
+.num-row { display: flex; gap: 10px; }
+.num { flex: 1; font-size: 12px; color: var(--muted); }
+.num input { display: block; width: 100%; margin-top: 4px; min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); padding: 0 12px; font-size: 17px; }
+.hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.gain { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; color: var(--ink); }
+.gain b { font-family: var(--fh); font-size: 26px; color: var(--accent); }
+.imp-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.imp-row.off { opacity: .45; }
+.imp-row small { display: block; color: var(--muted); font-size: 12px; }
+.toast { display: flex; align-items: center; gap: 12px; }
+.toast-act { min-height: 36px; padding: 0 12px; border-radius: 8px; background: var(--accent); color: var(--on-accent); font-weight: 600; }
+
+/* ---------- PUP MODE ---------- */
+body.pup { --accent: #ff8a5b; --accent-soft: rgba(255,138,91,.18); --on-accent: #2a0e02; --line: rgba(255,138,91,.22); }
+body.pup .card { border-radius: 24px; }
+.pup-hi { font-family: var(--fp); font-weight: 800; font-size: 34px; line-height: 1.05; margin-top: 8px; }
+.pup-hi small { display: block; font-family: var(--fp); font-weight: 500; font-size: 17px; color: var(--muted); }
+.paws { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.paw { text-align: center; font-family: var(--fp); font-size: 13px; color: var(--muted); }
+.paw .c { aspect-ratio: 1; border-radius: 50%; background: var(--panel2); display: grid; place-items: center; font-size: 22px; margin-bottom: 2px; filter: grayscale(1); opacity: .5; }
+.paw .c.on { background: var(--pup); filter: none; opacity: 1; }
+.paw .c.today { box-shadow: 0 0 0 3px var(--ink2); opacity: 1; }
+.pup-msg { font-family: var(--fp); font-size: 19px; font-weight: 700; text-align: center; margin-top: 12px; }
+.pup-msg small { display: block; font-weight: 500; font-size: 15px; color: var(--muted); }
+.big-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.big-act { min-height: 92px; border-radius: 22px; background: var(--panel2); border: 2px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: var(--fp); font-weight: 700; font-size: 17px; }
+.big-act .ic { font-size: 36px; line-height: 1; }
+.big-act:active { transform: scale(.97); }
+.pup-rank { font-family: var(--fp); font-weight: 800; font-size: 26px; }
+.badges4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; font-family: var(--fp); }
+.b4 .ic { font-size: 30px; filter: grayscale(1); opacity: .4; }
+.b4.t1 .ic, .b4.t2 .ic, .b4.t3 .ic { filter: none; opacity: 1; }
+.b4 b { display: block; font-size: 12px; line-height: 1.15; }
+.b4 small { font-size: 12px; color: var(--muted); }
+.stars { font-size: 11px; letter-spacing: 1px; }
+body.pup .fab { font-family: var(--fp); font-weight: 800; letter-spacing: 0; font-size: 19px; }
+</style>
+</head>
+<body>
+<div class="proto-bar">Prototype D · Family Pack + Pups · demo data, simulated Fri Dec 18 · <a href="index.html">all prototypes</a></div>
+<div class="wrap">
+  <header><div class="brand">THE HOWLERS<small id="season"></small></div></header>
+  <div class="members" id="members"></div>
+  <div id="main"></div>
+</div>
+<button class="fab" id="fab" type="button"></button>
+<script>
+/*ENGINE*/
+
+function ladderEl(sc) {
+  const r = sc.rank, L = r.list;
+  const bar = h('div', { class: 'ladder' }), names = h('div', { class: 'ladder-names' });
+  L.forEach((x, i) => { bar.appendChild(h('div', { class: 'rg' + (i < r.i ? ' done' : i === r.i ? ' cur' : ''), style: 'background:' + x.color })); names.appendChild(h('div', { class: i === r.i ? 'cur' : '' }, x.name)); });
+  return [bar, names];
+}
+function rankCard(sc, pup) {
+  const r = sc.rank, unit = sc.R.unit;
+  return h('div', { class: 'card' },
+    h('div', { class: 'rank-line' },
+      h('div', { class: pup ? 'pup-rank' : 'rank-big', style: 'color:' + r.rank.color }, r.rank.name + (pup ? ' Pup' : '')),
+      h('div', { class: 'rank-pts' }, sc.total + ' ' + unit + (r.next ? ' · ' + (r.next.min - sc.total) + ' to ' + r.next.name : ''))),
+    ladderEl(sc));
+}
+function tkdPrompt(render) {
+  // Most recent TKD day (today or earlier this week) with no taekwondo logged for either kid
+  for (let back = 0; back < 3; back++) {
+    const d = addDays(SEASON.today, -back);
+    if (!TKD_DAYS.includes(dow(d))) continue;
+    const went = KIDS.filter(k => S.workouts.some(w => w.member === k && w.date === d && w.act === 'tkd'));
+    if (went.length === KIDS.length) return null;
+    const missing = KIDS.filter(k => !went.includes(k));
+    const when = back === 0 ? 'tonight' : back === 1 ? 'yesterday' : DOWS[dow(d)];
+    const log = ids => { let wIds; const g = gainFor(ids, () => { wIds = logGroup(ids, { date: d, act: 'tkd', min: 60, felt: 'normal' }); }); render(); toast('🥋 ' + gainText(g), 'Undo', () => { S.workouts = S.workouts.filter(w => !wIds.includes(w.id)); render(); }); };
+    return h('div', { class: 'card prompt' }, h('p', null, '🥋 Taekwondo was ' + when + '. Did ' + missing.map(k => MEM[k].name).join(' & ') + ' go?'),
+      h('div', { class: 'row' },
+        missing.length > 1 ? h('button', { class: 'yes', type: 'button', onclick: () => log(missing) }, 'Both went') : null,
+        missing.map(k => h('button', { class: missing.length === 1 ? 'yes' : '', type: 'button', onclick: () => log([k]) }, missing.length > 1 ? 'Just ' + MEM[k].name : 'Yes, ' + MEM[k].name + ' went')),
+        h('button', { type: 'button', onclick: e => { e.target.closest('.prompt').remove(); toast('No worries. The streak is weekly, not daily.'); } }, 'Skipped')));
+  }
+  return null;
+}
+function familyBoard(all) {
+  const box = h('div');
+  MEMBERS.forEach(m => {
+    const sc = all[m.id], mini = h('div', { class: 'mini' });
+    range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => mini.appendChild(h('i', { class: sc.isActive(d) ? 'on' : '' })));
+    box.appendChild(h('div', { class: 'fam' }, h('div', { class: 'fav', style: 'background:' + m.house }, m.pup ? '🐾' : m.name[0]),
+      h('div', { class: 'fname' }, m.name, h('span', { class: 'rpill', style: 'background:' + sc.rank.rank.color }, sc.rank.rank.name),
+        h('small', null, sc.cur.active + '/' + sc.R.standardDays + ' this week' + (sc.cur.standard ? ' ✦' : '') + (sc.chain ? ' · ' + '🔥'.repeat(sc.chain) : ''))), mini));
+  });
+  return h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'THE FAMILY PACK'), h('span', { class: 'r' }, 'own ladders')), box);
+}
+function questsCard() {
+  const c = h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'FAMILY QUESTS'), h('span', { class: 'r' }, 'done together')));
+  familyQuests().forEach(q => c.appendChild(h('div', { class: 'quest' },
+    h('div', { class: 'qtop' }, h('span', null, q.icon + ' ' + q.name + ' ', h('small', null, q.val.toLocaleString() + '/' + q.goal.toLocaleString())), h('span', { class: 'rw' }, q.reward)),
+    h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, q.val / q.goal * 100) + '%' })))));
+  return c;
+}
+
+function renderPack(main, all) {
+  const sc = all[S.me], m = sc.m;
+  const week = h('div', { class: 'week' });
+  range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => {
+    const di = sc.day[d], on = sc.isActive(d);
+    week.appendChild(h('div', { class: 'wd' }, h('div', { class: 'c' + (on ? ' act' : di ? ' part' : '') + (d === SEASON.today ? ' today' : '') + (d > SEASON.today ? ' fut' : '') }, di ? ACT[di.list[di.list.length - 1].act].icon : ''), DOWS[dow(d)][0]));
+  });
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'THIS WEEK · ' + m.name.toUpperCase()), h('span', { class: 'r' }, 'Chain ×' + sc.cur.mult.toFixed(1))), week,
+    h('div', { class: 'wk-sum' }, h('span', null, sc.cur.standard ? '✦ Standard met' : sc.cur.active + ' of ' + sc.R.standardDays + ' Active Days'), h('span', null, h('b', null, sc.byWeek[sc.cur.key] || 0), ' Merit'))));
+  main.appendChild(rankCard(sc, false));
+  const us = h('div', { class: 'usuals' });
+  m.usuals.forEach(u => us.appendChild(h('button', { class: 'usual', type: 'button', onclick: () => quickUsual(u, render) }, h('span', { class: 'ic' }, ACT[u.act].icon),
+    h('span', null, ACT[u.act].name + ' ' + u.min + 'm', h('small', null, u.together ? '+ the pups · one tap' : 'one tap')))));
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'YOUR USUALS'), h('span', { class: 'r' }, 'tap = logged, undo for 5s')), us,
+    h('button', { class: 'more-link', type: 'button', onclick: () => openLog(render) }, 'Something else…')));
+  const p = tkdPrompt(render); if (p) main.appendChild(p);
+  main.appendChild(h('div', { class: 'card imp' }, h('p', null, '🚴 Peloton workouts: download the free CSV from onepeloton.com once a week and drop it here. No Strava needed.'),
+    h('button', { type: 'button', onclick: () => openImport(render) }, 'Import')));
+  main.appendChild(questsCard());
+  main.appendChild(familyBoard(all));
+  const led = h('div'); sc.ledger.slice(0, 8).forEach(e => led.appendChild(h('div', { class: 'ledger-row' }, h('span', { class: 'ld' }, fmtShort(e.date)), h('span', { class: 'll' }, e.label), h('span', { class: 'lp' }, '+' + e.pts))));
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'RECENT MERIT')), led));
+}
+
+function renderPup(main, all) {
+  const sc = all[S.me], m = sc.m, left = Math.max(0, sc.R.standardDays - sc.cur.active);
+  main.appendChild(h('div', { class: 'pup-hi' }, 'Hi ' + m.name + '! 🐾', h('small', null, sc.chain ? 'Your streak is on fire ' + '🔥'.repeat(sc.chain) : 'Every day you move earns a paw.')));
+  const paws = h('div', { class: 'paws' });
+  range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => paws.appendChild(h('div', { class: 'paw' }, h('div', { class: 'c' + (sc.isActive(d) ? ' on' : '') + (d === SEASON.today ? ' today' : '') }, '🐾'), DOWS[dow(d)].slice(0, 2))));
+  main.appendChild(h('div', { class: 'card' }, paws, h('div', { class: 'pup-msg' },
+    left ? left + ' more paw' + (left > 1 ? 's' : '') + ' this week!' : 'Pup Standard done! 🎉',
+    h('small', null, left ? 'Get ' + sc.R.standardDays + ' paws to keep your streak growing' : 'Anything else this week is bonus Paws'))));
+  const p = tkdPrompt(render); if (p) main.appendChild(p);
+  const acts = h('div', { class: 'big-acts' });
+  [{ act: 'tkd', min: 60 }, { act: 'dogwalk', min: 30 }, { act: 'park', min: 60 }, { act: 'play', min: 30 }, { act: 'ride', min: 30 }].forEach(u => acts.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => openLog(render, u) }, h('span', { class: 'ic' }, ACT[u.act].icon), ACT[u.act].name)));
+  acts.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => openLog(render) }, h('span', { class: 'ic' }, '➕'), 'Something else'));
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'I MOVED!')), acts));
+  main.appendChild(rankCard(sc, true));
+  const bg = h('div', { class: 'badges4' });
+  pupBadges(m.id).forEach(b => bg.appendChild(h('div', { class: 'b4 t' + b.tier }, h('div', { class: 'ic' }, b.icon), h('b', null, b.name), h('div', { class: 'stars' }, '★'.repeat(b.tier) + '☆'.repeat(3 - b.tier)), h('small', null, b.v + (b.tiers[b.tier] ? '/' + b.tiers[b.tier] : '')))));
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'MY BADGES')), bg));
+  main.appendChild(questsCard());
+  main.appendChild(familyBoard(all));
+}
+
+function render() {
+  const all = scoreAll(), me = MEM[S.me];
+  document.body.classList.toggle('pup', me.pup);
+  document.getElementById('season').textContent = (me.pup ? 'Howler Pups · ' : 'Family Pack · ') + SEASON.name;
+  document.getElementById('fab').textContent = me.pup ? '🐾 I moved!' : '＋ Log Trial';
+  const mem = clear(document.getElementById('members'));
+  MEMBERS.forEach(x => mem.appendChild(h('button', { class: 'mchip' + (x.id === S.me ? ' on' : ''), type: 'button', onclick: () => { S.me = x.id; render(); scrollTo(0, 0); } },
+    h('span', { class: 'dot', style: 'background:' + x.house }, x.pup ? '🐾' : x.name[0]), x.name)));
+  const main = clear(document.getElementById('main'));
+  (me.pup ? renderPup : renderPack)(main, all);
+}
+document.getElementById('fab').addEventListener('click', () => openLog(render));
+render();
+</script>
+</body>
+</html>
