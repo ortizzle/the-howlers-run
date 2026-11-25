@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf6ec">
+<meta name="description" content="The Howler Pack: the Ortiz family's fitness pack. Move together, climb from Red to Gold.">
+<title>The Howler Pack</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600;700&family=Baloo+2:wght@500;700;800&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* Gold of Luna — ivory parchment, wine crimson, restrained gold (from the original Howlers) */
+:root {
+  --bg: #faf6ec; --panel: #fffdf7; --panel2: #f2ead6; --ink: #1e1a14; --ink2: #3c3222; --muted: #6e5f46;
+  --line: rgba(153,120,32,.25); --accent: #9a1010; --accent-soft: rgba(154,16,16,.08); --on-accent: #fff;
+  --gold: #c9a227; --amber: #7d6414; --pup: #b0601e; --green: #2e7d32; --shadow: 0 2px 12px rgba(153,120,32,.13);
+  --fh: 'Cormorant SC', Georgia, serif; --fb: 'Spectral', Georgia, serif; --fp: 'Baloo 2', system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  color: var(--ink); font-family: var(--fb); font-size: 16px; line-height: 1.5; min-height: 100vh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(140px + env(safe-area-inset-bottom)) env(safe-area-inset-left); }
+body.pup { --accent: #b0601e; --accent-soft: rgba(176,96,30,.1); }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.wrap { max-width: 560px; margin: 0 auto; padding: 0 16px; }
+.preview-bar { background: var(--gold); color: #1e1a14; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 12px; padding: 6px 16px; }
+.preview-bar button { min-height: 36px; padding: 0 12px; border-radius: 8px; background: #1e1a14; color: #fff; font-size: 13px; }
+header.topbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 0 6px; }
+.brand { font-family: var(--fh); font-weight: 700; font-size: 26px; letter-spacing: .04em; line-height: 1.05; }
+.brand small { display: block; font-family: var(--fb); font-weight: 400; font-size: 13px; color: var(--muted); letter-spacing: 0; font-style: italic; }
+.top-actions { display: flex; align-items: center; gap: 6px; }
+.gear { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); font-size: 20px; background: var(--panel); }
+.sync-dot { width: 44px; height: 44px; display: grid; place-items: center; }
+.sync-dot::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: #b9ad94; }
+.sync-dot.ok::after { background: var(--green); } .sync-dot.error::after { background: #c62828; } .sync-dot.pending::after, .sync-dot.busy::after { background: var(--gold); animation: pulse 1s infinite alternate; }
+@keyframes pulse { to { opacity: .3; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-top: 14px; box-shadow: var(--shadow); }
+.card-t { font-family: var(--fh); font-size: 14px; font-weight: 700; letter-spacing: .14em; color: var(--muted); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.card-t .r { font-family: var(--fb); font-weight: 400; letter-spacing: 0; font-size: 13px; text-align: right; }
+.hint { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.bar { height: 8px; border-radius: 99px; background: var(--panel2); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+.season-banner { margin-top: 10px; border-radius: 14px; padding: 12px 14px; background: linear-gradient(120deg, rgba(154,16,16,.1), rgba(201,162,39,.2)); border: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.season-banner b { font-family: var(--fh); font-size: 19px; display: block; line-height: 1.1; }
+.season-banner small { color: var(--ink2); font-size: 13px; }
+.season-banner .left { text-align: right; font-family: var(--fh); font-weight: 700; font-size: 26px; line-height: 1; }
+.season-banner .left small { display: block; font-family: var(--fb); font-size: 11px; font-weight: 400; }
+/* pack cards (from the original main page) */
+.pack-head { display: flex; justify-content: space-between; align-items: baseline; margin: 18px 2px 10px; }
+.pack-head b { font-family: var(--fh); font-size: 22px; }
+.pack-head span { font-size: 13px; color: var(--muted); font-style: italic; }
+.pack-sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.player-grid { display: flex; flex-direction: column; gap: 14px; }
+.pcard-wrap { position: relative; }
+.pcard-wrap::before, .pcard-wrap::after { content: ''; position: absolute; left: 5px; right: -5px; border-radius: 11px; pointer-events: none; }
+.pcard-wrap::before { top: 5px; bottom: -5px; background: rgba(153,120,32,.07); }
+.pcard-wrap::after { top: 9px; bottom: -9px; background: rgba(153,120,32,.04); }
+.player-card { position: relative; z-index: 1; border-radius: 12px; border-left: 5px solid var(--house-color); background: var(--panel); overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 6px 16px rgba(0,0,0,.07), 0 0 0 1.5px rgba(153,120,32,.12); }
+.player-card.primus { box-shadow: 0 2px 6px rgba(0,0,0,.1), 0 6px 20px rgba(200,144,10,.2), 0 0 0 2.5px #c9a227; }
+.player-card.me:not(.primus) { box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 6px 16px rgba(0,0,0,.07), 0 0 0 1.5px var(--house-color); }
+.card-rank-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px 0; gap: 6px; }
+.card-rank-left, .card-rank-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.card-house-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--house-color); opacity: .75; }
+.card-house-label { font-family: var(--fh); font-size: 11px; font-weight: 700; letter-spacing: .16em; color: var(--house-color); }
+.card-rank-pill { font-family: var(--fh); font-size: 12px; font-weight: 700; letter-spacing: .06em; padding: 1px 8px; border-radius: 3px; color: #fff; }
+.card-arch { font-family: var(--fh); font-size: 12px; font-weight: 700; letter-spacing: .08em; padding: 1px 8px; border-radius: 3px; background: linear-gradient(to right, #c9a227, #e8b830); color: #fff; box-shadow: 0 1px 4px rgba(200,144,10,.4); }
+.card-quiet { font-size: 11px; padding: 2px 8px; border-radius: 3px; background: rgba(110,95,70,.12); color: var(--muted); }
+.card-summary { display: flex; align-items: center; gap: 10px; padding: 6px 14px 12px; min-height: 56px; width: 100%; text-align: left; }
+.card-name-block { flex: 1; min-width: 0; }
+.card-name { font-family: var(--fh); font-size: 22px; font-weight: 700; color: var(--house-color); line-height: 1.1; }
+.card-sub { font-size: 13px; color: var(--muted); font-style: italic; }
+.card-quick-stats { display: flex; gap: 14px; flex-shrink: 0; }
+.card-qstat { text-align: right; }
+.card-qstat-val { font-family: var(--fh); font-size: 21px; font-weight: 700; color: var(--house-color); line-height: 1; }
+.card-qstat-label { font-family: var(--fh); font-size: 10px; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+.card-chevron { font-size: 11px; color: var(--muted); transition: transform .25s; }
+.player-card.card-open .card-chevron { transform: rotate(180deg); }
+.card-detail { max-height: 0; overflow: hidden; transition: max-height .35s cubic-bezier(.4,0,.2,1); }
+.player-card.card-open .card-detail { max-height: 1600px; }
+.card-detail-inner { padding: 14px; border-top: 1px solid var(--line); }
+.card-tab-row { display: flex; background: var(--panel2); border-radius: 6px; margin-bottom: 14px; overflow: hidden; }
+.card-tab { flex: 1; min-height: 44px; font-family: var(--fh); font-size: 15px; font-weight: 700; letter-spacing: .05em; color: var(--muted); border-radius: 6px; }
+.card-tab.active { background: var(--house-color); color: #fff; }
+.sword { margin-bottom: 14px; }
+.sword-track { position: relative; height: 14px; border-radius: 3px 10px 10px 3px; background: var(--panel2); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,.12); }
+.sword-fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 3px 10px 10px 3px; }
+.sword-meta { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-top: 4px; }
+.sword-meta b { font-family: var(--fh); font-size: 15px; }
+.card-stat-row { display: flex; margin-bottom: 12px; background: rgba(153,120,32,.05); border-radius: 6px; overflow: hidden; }
+.card-stat-cell { flex: 1; text-align: center; padding: 8px 4px; border-right: 1px solid var(--line); }
+.card-stat-cell:last-child { border-right: 0; }
+.card-stat-val { display: block; font-family: var(--fh); font-size: 20px; font-weight: 700; color: var(--house-color); line-height: 1; }
+.card-stat-lbl { display: block; font-family: var(--fh); font-size: 10px; letter-spacing: .06em; color: var(--muted); margin-top: 3px; text-transform: uppercase; }
+.shared-prog, .ghost, .mini-badges { padding: 10px 0; border-top: 1px solid var(--line); }
+.shared-prog .lbl, .ghost .lbl { font-family: var(--fh); font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--amber); display: flex; justify-content: space-between; gap: 8px; }
+.ghost .track { height: 7px; border-radius: 4px; background: rgba(0,0,0,.07); overflow: hidden; margin: 5px 0 3px; }
+.ghost .track i { display: block; height: 100%; background: linear-gradient(90deg, var(--house-color), var(--gold)); border-radius: 4px; }
+.ghost small { font-size: 12px; color: var(--muted); font-style: italic; }
+.mini-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.mini-badges span { font-size: 12px; padding: 3px 9px; border-radius: 99px; background: var(--panel2); }
+.card-actions { display: flex; gap: 8px; margin-top: 10px; }
+.card-actions button { flex: 1; min-height: 44px; border-radius: 8px; border: 1px solid var(--line); font-family: var(--fh); font-size: 15px; font-weight: 700; color: var(--ink2); }
+.card-actions button.primary { background: var(--house-color); color: #fff; border-color: var(--house-color); }
+.annal { display: flex; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; align-items: center; }
+.annal:first-of-type { border-top: 0; }
+.annal .ad { width: 50px; color: var(--muted); font-size: 12px; flex: 0 0 auto; }
+.annal .ll { flex: 1; } .annal small { display: block; color: var(--muted); font-size: 12px; }
+.icon-btn { width: 44px; height: 44px; border-radius: 10px; color: var(--muted); font-size: 16px; flex: 0 0 auto; }
+/* logging */
+.logbox { margin-top: 16px; }
+.log-big { width: 100%; min-height: 58px; border-radius: 14px; background: var(--accent); color: var(--on-accent); font-family: var(--fh); font-weight: 700; font-size: 22px; letter-spacing: .05em; box-shadow: 0 6px 18px rgba(154,16,16,.25); }
+body.pup .log-big { font-family: var(--fp); font-weight: 800; letter-spacing: 0; box-shadow: 0 6px 18px rgba(176,96,30,.25); }
+.usuals { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.usual { min-height: 58px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 0 12px; text-align: left; font-size: 15px; box-shadow: var(--shadow); }
+.usual .ic { font-size: 24px; } .usual small { display: block; font-size: 12px; color: var(--muted); }
+.ai-btn { width: 100%; min-height: 48px; margin-top: 10px; border-radius: 12px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-soft); font-size: 15px; }
+.wrow { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; margin-top: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.wrow > span { font-size: 14px; color: var(--muted); }
+.wrow input { min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); padding: 0 12px; font-size: 17px; width: 100%; }
+.wrow button { min-height: 44px; padding: 0 16px; border-radius: 10px; background: var(--accent); color: #fff; font-weight: 600; }
+.wrow small { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.fab { position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 40; min-height: 52px; padding: 0 20px; border-radius: 999px; background: var(--accent); color: #fff; font-family: var(--fh); font-weight: 700; font-size: 18px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+body.pup .fab { font-family: var(--fp); font-weight: 800; }
+/* tab bar */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: repeat(4, 1fr); background: rgba(250,246,236,.97); border-top: 1px solid var(--line); padding: 4px 8px calc(4px + env(safe-area-inset-bottom)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.tabbar button { min-height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; color: var(--muted); }
+.tabbar button span { font-size: 20px; line-height: 1.15; }
+.tabbar button.on { color: var(--accent); font-weight: 600; }
+/* modal sheet */
+.modal-back { position: fixed; inset: 0; background: rgba(30,26,20,.45); z-index: 100; display: flex; align-items: flex-end; justify-content: center; animation: fade .15s; }
+.modal { width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; background: var(--panel); border-radius: 18px 18px 0 0; padding: 14px 16px calc(20px + env(safe-area-inset-bottom)); animation: up .22s ease-out; }
+@keyframes up { from { transform: translateY(40px); opacity: .4; } } @keyframes fade { from { opacity: 0; } }
+.modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.modal-title { font-family: var(--fh); font-weight: 700; font-size: 22px; }
+.modal-x { width: 44px; height: 44px; font-size: 28px; color: var(--muted); }
+.fld { display: block; font-family: var(--fh); font-weight: 700; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 14px 0 8px; }
+.fld small { font-family: var(--fb); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 12px; }
+.act-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.act-group { grid-column: 1 / -1; font-size: 12px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-top: 4px; }
+.act-btn { min-height: 52px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); display: flex; align-items: center; gap: 6px; justify-content: center; font-size: 14px; padding: 0 4px; }
+.act-btn.on, .chip-btn.on { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent) inset; }
+.act-ico { font-size: 18px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-btn { min-height: 44px; min-width: 52px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); font-size: 15px; }
+.chip-btn.who.on { border-color: var(--house); background: var(--house); color: #fff; box-shadow: none; }
+.txt { min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); padding: 0 12px; font-size: 16px; width: 100%; font-family: var(--fb); }
+.txt.num-sm { width: 110px; min-height: 44px; }
+.more-btn { min-height: 44px; margin-top: 12px; color: var(--accent); font-size: 14px; text-align: left; }
+.num-row { display: flex; gap: 10px; } .num { flex: 1; font-size: 12px; color: var(--muted); }
+.num input { display: block; width: 100%; margin-top: 4px; min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); padding: 0 12px; font-size: 17px; }
+.log-preview { margin: 16px 0 12px; text-align: center; color: var(--muted); }
+.gain { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; color: var(--ink); }
+.gain b { font-family: var(--fh); font-size: 28px; color: var(--accent); }
+.btn-primary { width: 100%; min-height: 52px; border-radius: 12px; background: var(--accent); color: #fff; font-family: var(--fh); font-weight: 700; font-size: 19px; letter-spacing: .04em; }
+.btn-ghost { width: 100%; min-height: 48px; margin-top: 10px; border-radius: 12px; border: 1px solid var(--accent); color: var(--accent); font-size: 15px; background: transparent; }
+.btn-ghost.danger { border-color: #c62828; color: #c62828; }
+.linkbtn { display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ai-text { width: 100%; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); padding: 12px; font-size: 16px; font-family: var(--fb); resize: vertical; }
+.ai-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 10px; align-items: center; }
+.ai-row .btn-primary { min-height: 48px; }
+.imp-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.imp-row.off { opacity: .45; } .imp-row .ll { flex: 1; } .imp-row small { display: block; color: var(--muted); font-size: 12px; }
+.toast { position: fixed; left: 50%; top: calc(12px + env(safe-area-inset-top)); transform: translate(-50%, -160%); z-index: 200; background: var(--ink); color: var(--bg); padding: 12px 16px; border-radius: 12px; font-size: 14px; max-width: calc(100% - 32px); transition: transform .25s; box-shadow: 0 6px 24px rgba(0,0,0,.3); display: flex; align-items: center; gap: 12px; }
+.toast.show { transform: translate(-50%, 0); }
+.toast-act { min-height: 36px; padding: 0 12px; border-radius: 8px; background: var(--gold); color: #1e1a14; font-weight: 700; flex: 0 0 auto; }
+/* week, metrics, rank */
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.wd { text-align: center; font-size: 11px; color: var(--muted); }
+.wd .c { height: 40px; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 4px; display: grid; place-items: center; font-size: 17px; }
+.wd .c.act { background: var(--accent); border-color: var(--accent); }
+.wd .c.part { background: var(--accent-soft); }
+.wd .c.today { box-shadow: 0 0 0 2px var(--ink2) inset; }
+.wd .c.fut, .paw .c.fut { opacity: .35; }
+.paws { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.paw { text-align: center; font-family: var(--fp); font-size: 13px; color: var(--muted); }
+.paw .c { aspect-ratio: 1; border-radius: 50%; background: var(--panel2); display: grid; place-items: center; font-size: 20px; margin-bottom: 2px; filter: grayscale(1); opacity: .5; }
+.paw .c.on { background: var(--pup); filter: none; opacity: 1; }
+.paw .c.today { box-shadow: 0 0 0 3px var(--ink2); opacity: 1; }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+.metric { background: var(--panel2); border-radius: 10px; padding: 10px 6px; text-align: center; }
+.metric b { display: block; font-family: var(--fh); font-size: 21px; line-height: 1.1; }
+.metric span { font-size: 11px; color: var(--muted); letter-spacing: .04em; }
+.metric.go b { color: var(--green); }
+.rank-line { display: flex; justify-content: space-between; align-items: baseline; }
+.rank-pts { font-size: 14px; color: var(--muted); }
+.ladder { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 6px; }
+.ladder .rg { height: 12px; border-radius: 4px; opacity: .25; }
+.ladder .rg.done { opacity: 1; } .ladder .rg.cur { opacity: 1; box-shadow: 0 0 0 2px var(--ink); }
+.ladder-names { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 9px; color: var(--muted); text-align: center; margin-top: 4px; }
+.ladder-names .cur { color: var(--ink); font-weight: 700; }
+/* race */
+.race { background: linear-gradient(160deg, #fffdf7, #f6ecc8); }
+.road { position: relative; height: 16px; margin: 26px 12px 14px; border-radius: 99px; background: var(--panel2); box-shadow: inset 0 1px 3px rgba(0,0,0,.12); }
+.road-fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 99px; background: linear-gradient(90deg, #9a1010, #c9a227); }
+.station { position: absolute; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; display: grid; place-items: center; font-size: 15px; }
+.station::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--panel); border: 2px solid var(--line); z-index: -1; }
+.station { z-index: 1; filter: grayscale(1); opacity: .75; } .station.done { filter: none; opacity: 1; } .station.done::before { border-color: var(--gold); }
+.runner { position: absolute; top: -26px; transform: translateX(-50%); font-size: 20px; pointer-events: none; }
+.race-line { font-size: 15px; }
+.prize { font-size: 14px; margin-top: 8px; color: var(--amber); }
+.lore-row { display: flex; gap: 10px; align-items: center; width: 100%; min-height: 48px; text-align: left; border-top: 1px solid var(--line); padding: 6px 0; font-size: 15px; }
+.lore-row.locked { color: var(--muted); } .lore-row .li { font-size: 20px; width: 28px; text-align: center; } .lore-row small { display: block; font-size: 12px; color: var(--muted); }
+.lore-text { font-size: 17px; line-height: 1.6; }
+.gloss { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.gloss .gi { font-size: 22px; width: 28px; text-align: center; } .gloss b { font-family: var(--fh); font-size: 18px; } .gloss p { font-size: 14px; color: var(--ink2); }
+/* primus */
+.prow { display: grid; grid-template-columns: 22px 70px 1fr 38px; gap: 8px; align-items: center; min-height: 34px; font-size: 15px; }
+.prow .pp { font-family: var(--fh); font-weight: 700; color: var(--gold); text-align: center; }
+.prow .pn { font-family: var(--fh); font-weight: 700; } .prow .pv { text-align: right; color: var(--muted); font-size: 13px; }
+/* coach */
+.coach { display: flex; gap: 12px; align-items: flex-start; border-left: 4px solid var(--coach); }
+.coach .av { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; background: var(--panel2); border: 2px solid var(--coach); flex: 0 0 auto; }
+.coach .cbody { flex: 1; } .coach small { display: block; font-family: var(--fh); font-weight: 700; font-size: 12px; letter-spacing: .12em; color: var(--coach); }
+.coach p { font-style: italic; font-size: 16px; margin-top: 2px; }
+.coach .ask { margin-top: 8px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); font-size: 14px; color: var(--ink2); }
+/* prompts, cheers, fuel */
+.prompt { background: linear-gradient(135deg, #fbefe2, #fffdf7); border-color: rgba(176,96,30,.35); }
+.prompt p { font-size: 15px; margin-bottom: 10px; }
+.prompt .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.prompt button { flex: 1 1 auto; min-height: 46px; border-radius: 12px; background: var(--panel2); border: 1px solid var(--line); font-size: 14px; padding: 0 12px; }
+.prompt button.yes { background: var(--pup); color: #fff; border-color: var(--pup); font-weight: 600; }
+.newfor { background: rgba(46,125,50,.07); border-color: rgba(46,125,50,.3); display: flex; gap: 10px; align-items: center; font-size: 15px; }
+.newfor > span:nth-child(2) { flex: 1; }
+.cheer-row { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.cheer-row:first-of-type { border-top: 0; } .cheer-row .ce { font-size: 24px; } .cheer-row .ct { flex: 1; line-height: 1.3; } .cheer-row .ct small { display: block; color: var(--muted); font-size: 12px; }
+.act-feed { padding: 12px 0; border-top: 1px solid var(--line); } .act-feed:first-of-type { border-top: 0; }
+.act-feed .who { display: flex; gap: 10px; align-items: center; font-size: 15px; } .act-feed .who small { display: block; color: var(--muted); font-size: 12px; }
+.fav { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; flex: 0 0 auto; }
+.emoji-row { display: flex; gap: 6px; margin-top: 8px; padding-left: 48px; flex-wrap: wrap; }
+.emoji-row button { min-width: 44px; min-height: 44px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); font-size: 18px; }
+.emoji-row button.note { font-size: 13px; padding: 0 10px; color: var(--muted); }
+.emoji-row button.done { border-color: var(--green); background: rgba(46,125,50,.1); }
+.fuel { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; } .fuel .fl { font-size: 14px; } .fuel .fl .bar { margin: 4px 0 8px; height: 7px; }
+.fuel a { min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 12px; border: 1px solid var(--accent); color: var(--accent); text-decoration: none; font-size: 14px; white-space: nowrap; }
+.dogrow { display: flex; gap: 10px; } .dog { flex: 1; text-align: center; border-radius: 12px; background: var(--panel2); padding: 10px 6px; font-size: 14px; color: var(--muted); } .dog b { display: block; font-family: var(--fp); font-size: 22px; color: var(--ink); }
+/* progress */
+.stats4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; } .stats4 .metric b { font-size: 18px; }
+.chart text { font-family: var(--fb); font-size: 10px; fill: var(--muted); }
+.private { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 8px; }
+.ladder2 { display: flex; flex-direction: column-reverse; gap: 3px; }
+.rung { display: flex; align-items: center; gap: 10px; font-size: 12px; min-height: 28px; }
+.rung .lvl { width: 44px; text-align: right; color: var(--muted); }
+.rung .bx { flex: 1; height: 24px; border-radius: 6px; border: 1px dashed var(--line); display: flex; align-items: center; padding: 0 10px; color: var(--muted); }
+.rung.done .bx { background: var(--accent); border: 1px solid var(--accent); color: #fff; font-weight: 600; }
+.rung.ms .bx { border-style: solid; border-color: var(--gold); }
+.rung.cap .bx { background: repeating-linear-gradient(45deg, rgba(154,16,16,.12) 0 6px, transparent 6px 12px); border-style: solid; color: var(--accent); }
+.hold { display: flex; gap: 14px; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; } .hold b { font-family: var(--fh); font-size: 18px; }
+.mix { display: grid; grid-template-columns: 28px 1fr 56px; gap: 8px; align-items: center; font-size: 13px; margin-top: 6px; } .mix .v { text-align: right; color: var(--muted); }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal .h { font-size: 10px; text-align: center; color: var(--muted); }
+.cal .d { aspect-ratio: 1; border-radius: 8px; font-size: 12px; display: grid; place-items: center; color: var(--muted); background: var(--panel2); }
+.cal .d.on { background: var(--accent); color: #fff; font-weight: 700; } .cal .d.fut { opacity: .35; } .cal .d.today { box-shadow: 0 0 0 2px var(--ink2) inset; }
+.wkrow { display: grid; grid-template-columns: 62px 1fr 48px; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.wkrow:first-of-type { border-top: 0; } .wkrow .seg { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: var(--panel2); }
+.wkrow .meta { font-size: 11px; color: var(--muted); margin-top: 3px; } .wkrow .pts { font-family: var(--fh); font-weight: 700; font-size: 19px; text-align: right; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.ledger-row { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.ledger-row:first-of-type { border-top: 0; } .ledger-row .ld { width: 50px; color: var(--muted); font-size: 12px; flex: 0 0 auto; padding-top: 2px; } .ledger-row .ll { flex: 1; } .ledger-row .lp { font-weight: 700; color: var(--accent); }
+.badges4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; font-family: var(--fp); }
+.b4 .ic { font-size: 30px; filter: grayscale(1); opacity: .4; } .b4.t1 .ic, .b4.t2 .ic, .b4.t3 .ic { filter: none; opacity: 1; }
+.b4 b { display: block; font-size: 12px; line-height: 1.15; } .b4 small { font-size: 12px; color: var(--muted); } .stars { font-size: 11px; letter-spacing: 1px; color: var(--gold); }
+.big-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.big-act { min-height: 86px; border-radius: 18px; background: var(--panel2); border: 2px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: var(--fp); font-weight: 700; font-size: 14px; text-align: center; padding: 4px; }
+.big-act .ic { font-size: 30px; line-height: 1; }
+/* goals */
+.goal { padding: 12px 0; border-top: 1px solid var(--line); } .goal:first-of-type { border-top: 0; }
+.goal-top { display: flex; gap: 10px; align-items: center; font-size: 15px; }
+.gi { font-size: 22px; width: 30px; text-align: center; flex: 0 0 auto; }
+.goal-top .gl { flex: 1; line-height: 1.25; } .goal-top .gl small { display: block; font-size: 12px; color: var(--muted); } .goal-top .gv { font-family: var(--fh); font-weight: 700; font-size: 16px; white-space: nowrap; }
+.goal .bar { margin: 8px 0 0 40px; } .goal.done .bar > i { background: var(--green); }
+.suggest { border: 1px dashed var(--accent); }
+.edit-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; } .edit-row .gl { flex: 1; }
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); font-size: 20px; }
+.stepper b { min-width: 46px; text-align: center; font-family: var(--fh); font-size: 17px; }
+.honors { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; font-size: 12px; color: var(--muted); }
+.honors .crest { aspect-ratio: 1; border-radius: 50%; border: 2px dashed var(--line); display: grid; place-items: center; font-size: 18px; margin-bottom: 4px; font-family: var(--fh); font-weight: 700; }
+.honors .crest.cur { border-style: solid; border-color: var(--accent); }
+/* settings */
+.set-sec { margin-top: 20px; } .set-sec:first-of-type { margin-top: 4px; }
+.set-sec h3 { font-family: var(--fh); font-size: 15px; letter-spacing: .12em; color: var(--accent); margin-bottom: 6px; }
+.set-sec > p { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 48px; font-size: 15px; width: 100%; text-align: left; }
+.toggle .sw { width: 50px; height: 30px; border-radius: 99px; background: var(--panel2); border: 1px solid var(--line); position: relative; flex: 0 0 auto; }
+.toggle .sw::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--muted); transition: left .15s; }
+.toggle.on .sw { background: var(--accent); } .toggle.on .sw::after { left: 23px; background: #fff; }
+/* welcome */
+.welcome { text-align: center; padding: 30px 4px 10px; }
+.crest-big { width: 96px; height: 96px; margin: 0 auto 10px; border-radius: 50%; display: grid; place-items: center; font-size: 52px; background: radial-gradient(circle, #fff8e0, #ecd9a0); border: 3px solid var(--gold); }
+.welcome h1 { font-family: var(--fh); font-size: 38px; line-height: 1.05; }
+.welcome .lede { font-style: italic; color: var(--muted); margin: 6px 0 10px; }
+.who-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.who-btn { min-height: 96px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--house); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-family: var(--fh); font-weight: 700; font-size: 20px; box-shadow: var(--shadow); }
+.who-btn small { font-family: var(--fb); font-weight: 400; font-size: 12px; color: var(--muted); }
+.who-dot { width: 36px; height: 36px; border-radius: 50%; background: var(--house); color: #fff; display: grid; place-items: center; font-size: 16px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="preview-bar" id="preview-bar" hidden>👀 Sample data · nothing is saved <button type="button" id="preview-exit">Leave</button></div>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">The Howler Pack<small id="season"></small></div>
+    <div class="top-actions"><button class="sync-dot off" id="sync-dot" type="button" aria-label="Sync status"></button><button class="gear" id="gear" type="button" aria-label="Settings">⚙️</button></div>
+  </header>
+  <main id="main"></main>
+</div>
+<button class="fab" id="fab" type="button" hidden></button>
+<nav class="tabbar" id="tabbar" aria-label="Sections"></nav>
+<script src="ortiz-drive.js"></script>
+<script>
+'use strict';
+/* ==========================================================================
+   THE HOWLER PACK — family fitness for the Ortiz pack.
+   One file, no build step. localStorage is the source of truth on each phone;
+   a private GitHub Gist syncs the family (safe merge + tombstones).
+   Weigh-ins never leave the phone: only Merit awards (and % lost, if shared) sync.
+   Sections: helpers · store · dates · sync · data · rules · scoring · race · primus
+             · awards · AI · UI primitives · log · reader · screens · settings · boot
+   ========================================================================== */
+
+// ───────────────────────── DOM helpers (no innerHTML with data, no inline handlers)
+function h(tag, attrs) {
+  const el = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'style') el.style.cssText = v;
+    else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (let i = 2; i < arguments.length; i++) kids(el, arguments[i]);
+  return el;
+}
+function kids(el, c) { if (c == null || c === false) return; if (Array.isArray(c)) { c.forEach(x => kids(el, x)); return; } el.appendChild(typeof c === 'object' ? c : document.createTextNode(String(c))); }
+const SVGNS = 'http://www.w3.org/2000/svg';
+function s(tag, attrs) { const el = document.createElementNS(SVGNS, tag); if (attrs) for (const k in attrs) if (attrs[k] != null) el.setAttribute(k, attrs[k]); for (let i = 2; i < arguments.length; i++) kids(el, arguments[i]); return el; }
+function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); return el; }
+
+// ───────────────────────── Store (namespaced, never throws)
+const Store = {
+  ns: 'pack_',
+  get(key, fallback = null) { try { const raw = localStorage.getItem(this.ns + key); return raw === null ? fallback : JSON.parse(raw); } catch (e) { return fallback; } },
+  set(key, value) { try { localStorage.setItem(this.ns + key, JSON.stringify(value)); return true; } catch (e) { return false; } },
+  remove(key) { try { localStorage.removeItem(this.ns + key); } catch (e) { /* ignore */ } },
+};
+
+// Per-phone state that sample-data mode must not touch (who I am, weigh-ins, dismissed notices)
+let PREVIEW = false;                 // sample-data mode: fixed "today", nothing saved or synced
+const PREVIEW_MEM = {};
+const Local = {
+  get(k, f) { return PREVIEW ? (k in PREVIEW_MEM ? PREVIEW_MEM[k] : f) : Store.get(k, f); },
+  set(k, v) { if (PREVIEW) PREVIEW_MEM[k] = v; else Store.set(k, v); },
+};
+
+// ───────────────────────── Dates — Arizona (no DST). Keys are 'YYYY-MM-DD'; math is done in UTC on those keys.
+const PREVIEW_TODAY = '2026-12-18';
+const AZ = {
+  tz: 'America/Phoenix',
+  today() { return PREVIEW ? PREVIEW_TODAY : new Intl.DateTimeFormat('en-CA', { timeZone: this.tz }).format(new Date()); },
+  hour() { return PREVIEW ? 12 : +new Intl.DateTimeFormat('en-US', { timeZone: this.tz, hour: 'numeric', hour12: false }).format(new Date()) % 24; },
+};
+const pad2 = n => (n < 10 ? '0' : '') + n;
+function toD(k) { const p = k.split('-'); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); }
+function toK(d) { return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate()); }
+function addDays(k, n) { const d = toD(k); d.setUTCDate(d.getUTCDate() + n); return toK(d); }
+function dow(k) { return (toD(k).getUTCDay() + 6) % 7; }           // 0 = Monday
+function weekKey(k) { return addDays(k, -dow(k)); }
+function daysBetween(a, b) { return Math.round((toD(b) - toD(a)) / 86400000); }
+function range(a, b) { const out = []; for (let k = a; k <= b; k = addDays(k, 1)) out.push(k); return out; }
+function monthEnd(k) { const d = toD(k); return toK(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0))); }
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const DOWS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+function fmtShort(k) { const d = toD(k); return MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate(); }
+function fmtDow(k) { return DOWS[dow(k)] + ' ' + fmtShort(k); }
+function rid(prefix) { return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+// ───────────────────────── Data: one record map, synced. Every record has id, type, updatedAt; deletes are tombstones.
+let DB = { records: {} };
+let _ver = 0;                         // bumps on every change; scoring caches key off it
+function loadLocal() { DB = Store.get('data', { records: {} }) || { records: {} }; if (!DB.records) DB.records = {}; _ver++; }
+// updatedAt always moves forward, so an edit or delete in the same millisecond still wins the merge
+function stamp(id) { const prev = DB.records[id]; return Math.max(Date.now(), prev ? (prev.updatedAt || 0) + 1 : 0); }
+function put(rec) { rec.updatedAt = stamp(rec.id); DB.records[rec.id] = rec; changed(); return rec; }
+function putMany(list) { list.forEach(r => { r.updatedAt = stamp(r.id); DB.records[r.id] = r; }); changed(); }
+function del(id) { const r = DB.records[id]; if (!r) return; DB.records[id] = Object.assign({}, r, { deleted: true, updatedAt: stamp(id) }); changed(); }
+function all(type) { const out = []; for (const id in DB.records) { const r = DB.records[id]; if (r.type === type && !r.deleted) out.push(r); } return out; }
+function rec(id) { const r = DB.records[id]; return r && !r.deleted ? r : null; }
+function changed() { _ver++; if (!PREVIEW) { Store.set('data', DB); Sync.soon(); } }
+
+// ───────────────────────── Sync: private Gist, fetch-merge-write, newest updatedAt wins, tombstones purged after 60 days
+const Sync = {
+  filename: 'howler-pack.json',
+  state: 'off', lastAt: 0, timer: null, busy: false, again: false,
+  id() { return Store.get('gist_id', ''); },
+  token() { return Store.get('gist_token', ''); },
+  on() { return !PREVIEW && !!(this.id() && this.token()); },
+  headers() { return { Authorization: 'Bearer ' + this.token(), Accept: 'application/vnd.github+json' }; },
+  async pullRemote() {
+    const res = await fetch('https://api.github.com/gists/' + this.id(), { headers: this.headers(), cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP_' + res.status);
+    const gist = await res.json(), file = gist.files && gist.files[this.filename];
+    if (!file) return { records: {} };
+    const text = file.truncated ? await (await fetch(file.raw_url, { cache: 'no-store' })).text() : file.content;
+    const parsed = JSON.parse(text || '{"records":{}}');
+    return parsed && parsed.records ? parsed : { records: {} };
+  },
+  merge(local, remote) {
+    const out = { records: Object.assign({}, remote.records) };
+    for (const id in (local.records || {})) { const a = local.records[id], b = out.records[id]; if (!b || (a.updatedAt || 0) > (b.updatedAt || 0)) out.records[id] = a; }
+    const cutoff = Date.now() - 60 * 86400000;
+    for (const id in out.records) { const r = out.records[id]; if (r.deleted && (r.updatedAt || 0) < cutoff) delete out.records[id]; }
+    return out;
+  },
+  soon() { if (!this.on()) return; clearTimeout(this.timer); this.timer = setTimeout(() => this.save(), 1500); this.set('pending'); },
+  set(st) { this.state = st; const dot = document.getElementById('sync-dot'); if (dot) { dot.className = 'sync-dot ' + st; dot.title = { ok: 'Synced', pending: 'Saving…', error: 'Sync problem: tap to retry', off: 'Not syncing (this phone only)', busy: 'Syncing…' }[st] || ''; } },
+  async save() {
+    if (!this.on()) return;
+    if (this.busy) { this.again = true; return; }
+    this.busy = true; this.set('busy');
+    try {
+      let merged = DB;
+      try { merged = this.merge(DB, await this.pullRemote()); } catch (e) { if (/HTTP_40[13]/.test(e.message)) throw e; }
+      const res = await fetch('https://api.github.com/gists/' + this.id(), { method: 'PATCH', cache: 'no-store',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, this.headers()),
+        body: JSON.stringify({ files: { [this.filename]: { content: JSON.stringify(merged) } } }) });
+      if (!res.ok) throw new Error('HTTP_' + res.status);
+      // keep anything typed while we were saving
+      DB = this.merge(DB, merged); Store.set('data', DB); _ver++;
+      this.lastAt = Date.now(); this.set('ok');
+    } catch (e) { this.set('error'); syncError(e); }
+    finally { this.busy = false; if (this.again) { this.again = false; this.save(); } }
+  },
+  async pull() {
+    if (!this.on() || this.busy) return false;
+    this.busy = true; this.set('busy');
+    try {
+      const before = JSON.stringify(DB.records).length;
+      DB = this.merge(DB, await this.pullRemote()); Store.set('data', DB); _ver++;
+      this.lastAt = Date.now(); this.set('ok');
+      return JSON.stringify(DB.records).length !== before;
+    } catch (e) { this.set('error'); syncError(e); return false; }
+    finally { this.busy = false; }
+  },
+  async create(token) {
+    const res = await fetch('https://api.github.com/gists', { method: 'POST', cache: 'no-store',
+      headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description: 'Howler Pack family data (private)', public: false, files: { [this.filename]: { content: JSON.stringify(DB) } } }) });
+    if (!res.ok) throw new Error('HTTP_' + res.status);
+    return (await res.json()).id;
+  },
+};
+let _lastSyncToast = 0;
+function syncError(e) {
+  if (Date.now() - _lastSyncToast < 60000) return; _lastSyncToast = Date.now();
+  toast(/HTTP_40[13]/.test(e.message) ? 'Sync key was refused. Check Settings → Family sync.' : /HTTP_404/.test(e.message) ? 'Family data not found. Check the sync link in Settings.' : 'Offline. Saved on this phone; it will sync later.');
+}
+
+// ───────────────────────── The pack (roster lives in synced records so it can be edited)
+const HOUSES = { Red: '#9a1010', Obsidian: '#1e3858', Violet: '#4a1878', Copper: '#8b4513', Gold: '#8a7000', Green: '#1a4818', Pink: '#9c2d6e', Blue: '#1a4a7a', Silver: '#4a5568' };
+const DEFAULT_ROSTER = [
+  { id: 'chris', name: 'Chris', role: 'proctor', house: 'Red', coach: 'dancer', pronouns: '', goalPct: 10, share: false, order: 1,
+    usuals: [{ act: 'tread', min: 30 }, { act: 'bike', min: 45 }, { act: 'strength', min: 20 }, { act: 'dogwalk', min: 30, together: true }] },
+  { id: 'kat', name: 'Kat', role: 'proctor', house: 'Obsidian', coach: 'matteo', pronouns: '', goalPct: 8, share: false, order: 2,
+    usuals: [{ act: 'bike', min: 30 }, { act: 'yoga', min: 20 }, { act: 'dogwalk', min: 30, together: true }, { act: 'park', min: 60, together: true }] },
+  { id: 'sedona', name: 'Sedona', role: 'pup', house: 'Violet', coach: 'mickey', pronouns: 'she/her', order: 3, usuals: [] },
+  { id: 'river', name: 'River', role: 'pup', house: 'Copper', coach: 'dancer', pronouns: 'she/her', order: 4, usuals: [] },
+];
+const DEFAULT_CFG = { id: 'cfg', type: 'cfg', tkdDays: [0, 3], dogs: [{ id: 'cookie', name: 'Cookie', icon: '🍪' }, { id: 'biscuit', name: 'Biscuit', icon: '🥨' }], prizes: {}, primusLeads: true };
+function members() { return all('member').sort((a, b) => (a.order || 9) - (b.order || 9)); }
+function M(id) { return rec('member_' + id) || { id, name: '?', role: 'pup', house: 'Silver', coach: 'dancer', usuals: [] }; }
+function isPup(id) { return M(id).role === 'pup'; }
+function houseColor(id) { return HOUSES[M(id).house] || '#6e5f46'; }
+function cfg() { return Object.assign({}, DEFAULT_CFG, rec('cfg') || {}); }
+function dogs() { return cfg().dogs; }
+function dogName(id) { const d = dogs().find(x => x.id === id); return d ? d.name : id; }
+function ensureFamily() {
+  const list = [];
+  if (!members().length) DEFAULT_ROSTER.forEach(m => list.push(Object.assign({ type: 'member' }, JSON.parse(JSON.stringify(m)), { id: 'member_' + m.id, mid: m.id })));
+  if (!rec('cfg')) list.push(JSON.parse(JSON.stringify(DEFAULT_CFG)));
+  if (list.length) putMany(list);
+}
+function me() { return Local.get('me', ''); }
+function memberIds() { return members().map(m => m.mid); }
+
+// ───────────────────────── Rules
+const RULES = {
+  proctor: { activeMin: 20, activeMetMin: 100, activeDay: 15, standardDays: 4, standard: 50, effortDiv: 10, effortCap: 40, goalMonth: 50, goalSeason: 150 },
+  pup:     { activeMin: 20, activeDay: 10, standardDays: 3, standard: 30, minPer: 5, minCap: 12, goalMonth: 25, goalSeason: 75 },
+  chainStep: 0.10, chainMax: 5, together: 5, togetherDailyMax: 2, cheer: 2, cheerDailyMax: 5,
+  weighIn: 5, stepPct: 0.5, stepPts: 25, weeklyPctCap: 1.0, milestones: [[5, 100], [10, 150], [15, 200]],
+  primus: 25, raceFinish: 50, raceCheckpoint: 25, hold: 100,
+};
+function R(id) { return isPup(id) ? RULES.pup : RULES.proctor; }
+
+// MET values ≈ Compendium of Physical Activities [easy, normal, brutal]; Tread/run/walk use ACSM equations when pace is known.
+const ACTIVITIES = [
+  { id: 'tread', name: 'Tread', long: 'Peloton Tread', icon: '🏃', group: 'Peloton', met: [4.5, 8, 10.5], detail: 'tread' },
+  { id: 'bike', name: 'Bike', long: 'Peloton Bike', icon: '🚴', group: 'Peloton', met: [5, 7, 9], detail: 'bike' },
+  { id: 'strength', name: 'Strength', long: 'Strength', icon: '🏋️', group: 'Peloton', met: [3.5, 5, 6] },
+  { id: 'yoga', name: 'Yoga', long: 'Yoga / Stretch', icon: '🧘', group: 'Peloton', met: [2.5, 3, 4] },
+  { id: 'bootcamp', name: 'Bootcamp', long: 'Bootcamp', icon: '🔥', group: 'Peloton', met: [6, 8, 9] },
+  { id: 'dogwalk', name: 'Dog Walk', long: 'Dog Walk', icon: '🐕', group: 'Together', met: [3, 3.5, 4.3], detail: 'dist' },
+  { id: 'park', name: 'Park', long: 'Park', icon: '🛝', group: 'Together', met: [3.5, 4.5, 5.8] },
+  { id: 'hike', name: 'Hike', long: 'Hike', icon: '⛰️', group: 'Together', met: [5.3, 6, 7.8], detail: 'dist' },
+  { id: 'ride', name: 'Bike Ride', long: 'Bike Ride', icon: '🚵', group: 'Together', met: [6, 8, 10], detail: 'dist' },
+  { id: 'swim', name: 'Swim', long: 'Swim', icon: '🏊', group: 'Together', met: [5.8, 7, 9.8] },
+  { id: 'tkd', name: 'Taekwondo', long: 'Taekwondo', icon: '🥋', group: 'Classes & Outside', met: [5.3, 7.5, 10.3] },
+  { id: 'run', name: 'Run', long: 'Run', icon: '👟', group: 'Classes & Outside', met: [8, 9.8, 11.5], detail: 'dist' },
+  { id: 'walk', name: 'Walk', long: 'Walk', icon: '🚶', group: 'Classes & Outside', met: [3, 3.5, 4.3], detail: 'dist' },
+  { id: 'sport', name: 'Sport', long: 'Sport', icon: '🏓', group: 'Classes & Outside', met: [4, 5, 7] },
+  { id: 'play', name: 'Active Play', long: 'Active Play', icon: '⚽', group: 'Classes & Outside', met: [3.5, 5, 6.5] },
+];
+const ACT = {}; ACTIVITIES.forEach(a => ACT[a.id] = a);
+const PUP_BUTTONS = ['tkd', 'dogwalk', 'park', 'play', 'run', 'walk', 'hike', 'yoga', 'ride', 'bike', 'tread'];
+const FELT = { easy: { i: 0, label: 'Easy', ico: '🙂' }, normal: { i: 1, label: 'Normal', ico: '😤' }, brutal: { i: 2, label: 'Brutal', ico: '🥵' } };
+function actLabel(w) { if (w.act === 'dogwalk' && w.dogs && w.dogs.length) return 'Walked ' + w.dogs.map(dogName).join(' & '); return ACT[w.act] ? ACT[w.act].long : w.act; }
+
+function acsmMet(mph, gradePct) { const v = mph * 26.8224, g = (gradePct || 0) / 100; const vo2 = mph >= 4.5 ? 3.5 + 0.2 * v + 0.9 * v * g : 3.5 + 0.1 * v + 1.8 * v * g; return vo2 / 3.5; }
+function bikeMet(w) { return w <= 50 ? 3.5 : w <= 89 ? 4.8 : w <= 100 ? 6.8 : w <= 160 ? 8.8 : w <= 200 ? 11 : 14; }
+function metFor(w) {
+  const a = ACT[w.act] || ACT.walk, d = w.detail || {}, f = FELT[w.felt] || FELT.normal;
+  if (w.act === 'tread' && d.mph) return { met: acsmMet(d.mph, d.incline), how: d.mph + ' mph · ' + (d.incline || 0) + '% incline' };
+  if (w.act === 'bike' && d.watts) return { met: bikeMet(d.watts), how: d.watts + ' W avg' };
+  if (a.detail === 'dist' && d.miles && w.min && ['run', 'walk', 'dogwalk', 'hike'].includes(w.act)) { const mph = d.miles / (w.min / 60); return { met: acsmMet(mph, 0), how: d.miles + ' mi · ' + mph.toFixed(1) + ' mph' }; }
+  return { met: a.met[f.i], how: f.label };
+}
+
+// Ranks per 13-week season; scaled to the season's length. They reset each season.
+const RANK_BASE = [
+  { name: 'Red', color: '#b3261e', p: 0, k: 0 }, { name: 'Gray', color: '#6b7078', p: 450, k: 250 }, { name: 'Obsidian', color: '#2c3e57', p: 1100, k: 550 },
+  { name: 'Copper', color: '#a0572a', p: 1900, k: 900 }, { name: 'Silver', color: '#8a929e', p: 2800, k: 1300 }, { name: 'Gold', color: '#b8920f', p: 3800, k: 1750 },
+  { name: 'Peerless', color: '#d4a82a', p: 4800, k: 2200 },
+];
+function ranksFor(id, season) { const scale = (daysBetween(season.start, season.end) + 1) / 91, pup = isPup(id); return RANK_BASE.map(r => ({ name: r.name, color: r.color, min: Math.round((pup ? r.k : r.p) * scale / 10) * 10 })); }
+function rankOf(id, pts, season) { const L = ranksFor(id, season); let i = 0; L.forEach((r, j) => { if (pts >= r.min) i = j; }); return { i, rank: L[i], next: L[i + 1] || null, list: L }; }
+
+// ───────────────────────── Seasons, races and lore. December is the trial run; then quarterly.
+const SEASONS = [
+  { id: 's0', name: 'The Passage', sub: 'Trial run', start: '2026-12-01', end: '2026-12-31', trial: true,
+    race: { name: 'Race to the New Year', unit: 'Pack Steps', goal: 75, stations: [
+      { at: 8, icon: '⛏️', name: 'The Mines of Lykos', lore: 'Darrow grows up in Lykos, a mining town deep under the surface of Mars. Reds like him dig for helium-3, the fuel that lets people live on other planets. Reds are the lowest Color in their world, but they are tough, loyal, and they love to sing and dance.' },
+      { at: 18, icon: '⚒', name: 'The Sons of Ares', lore: 'The Sons of Ares are a secret group working for a fairer world, where your Color does not decide your life. Dancer, one of their leaders, recruits Darrow. Ares was the Greek god of war; the Romans called him Mars, which is also the name of the planet.' },
+      { at: 28, icon: '🎭', name: "Mickey's Studio", lore: 'Mickey is a Violet. Violets are the artists, musicians and inventors. Mickey is a Carver: he can reshape a person, and he carefully remakes Darrow so he can pass as a Gold. He is dramatic, picky and very proud of his work.' },
+      { at: 40, icon: '🌸', name: "Matteo's Lessons", lore: 'Matteo is a Pink. He teaches Darrow how Golds talk, eat, walk and behave, so nobody can tell where he came from. Darrow has to practice every single day. Small habits, repeated, change everything.' },
+      { at: 55, icon: '🎄', name: 'Christmas Eve · The Institute Gates', by: '2026-12-24', lore: 'The Institute is a school where young Golds are tested. Students are sorted into twelve Houses named after Roman gods: Mars, Minerva, Jupiter, Apollo and more. Darrow is sorted into House Mars, the house of the god of war.' },
+      { at: 65, icon: '🐺', name: 'The Howlers', lore: 'In House Mars, Darrow gathers a loyal crew called the Howlers. They wear wolf cloaks, look out for each other, and never leave anyone behind. Their best fighter, Sevro, is also the smallest. That is us: a pack.' },
+      { at: 75, icon: '🎆', name: "New Year's Eve · Welcome to the Pack", by: '2026-12-31', lore: 'A Primus is the leader of a House. Darrow earns it by lifting the people around him, not by being the strongest. In our pack, a new Primus is crowned every week. Happy New Year, Howlers!' },
+    ] } },
+  { id: 's1', name: 'Season 1', sub: 'Iron Rain', start: '2027-01-01', end: '2027-03-31',
+    race: { name: 'Race to Spring', unit: 'Pack Steps', goal: 200, stations: [
+      { at: 25, icon: '🌈', name: 'The Colors', lore: 'Everyone in the Society is born into a Color with a job: Golds rule, Silvers handle money, Coppers run offices, Blues fly ships, Greens build computers, Grays keep order, Obsidians fight, Reds mine, and more. Darrow believes your Color should not decide who you can become.' },
+      { at: 55, icon: '🧊', name: 'The Obsidians', lore: 'Obsidians are giant warriors raised at the frozen poles. Ragnar, an Obsidian, becomes one of Darrow\'s truest friends. He is enormous, gentle with friends, and wiser than people expect.' },
+      { at: 100, icon: '💘', name: "Valentine's Day · Mustang", by: '2027-02-14', lore: 'Mustang is a clever Gold Darrow meets at the Institute. She wins people over by being kind and fair, and becomes a leader everyone trusts. Being smart about people is its own kind of strength.' },
+      { at: 125, icon: '🗡', name: 'Sevro', lore: 'Sevro is the smallest Howler and the fiercest friend. He is loud, funny and loyal to the bone. When the pack needs someone to show up, he is first through the door.' },
+      { at: 150, icon: '🛡', name: 'The Grays', lore: 'Grays are the soldiers and police of the Society: disciplined, practical, and very good at their jobs. They train every day, whether or not they feel like it. Consistency is their secret.' },
+      { at: 175, icon: '✦', name: 'The Peerless Scarred', lore: 'Golds who survive the Institute earn a scar on their face and the title Peerless Scarred. It means they finished something hard. Every Active Day this season is a small scar of our own.' },
+      { at: 200, icon: '🌱', name: 'First Day of Spring · Iron Rain', by: '2027-03-20', lore: 'The Iron Rain is a giant mission where everyone drops in together. It only works if the whole team lands. We just did that, together. Welcome to spring, Howlers.' },
+    ] } },
+  { id: 's2', name: 'Season 2', sub: 'The Institute', start: '2027-04-01', end: '2027-06-30', race: { name: 'Race to Summer', unit: 'Pack Steps', goal: 200, stations: [] } },
+  { id: 's3', name: 'Season 3', sub: 'Mars Rising', start: '2027-07-01', end: '2027-09-30', race: { name: 'Race to Fall', unit: 'Pack Steps', goal: 200, stations: [] } },
+  { id: 's4', name: 'Season 4', sub: 'Siege of Luna', start: '2027-10-01', end: '2027-12-31', race: { name: 'Race to the New Year', unit: 'Pack Steps', goal: 200, stations: [] } },
+];
+function seasonFor(day) { return SEASONS.find(x => x.start <= day && day <= x.end) || null; }
+function currentSeason() { const t = AZ.today(); return seasonFor(t) || (t < SEASONS[0].start ? SEASONS[0] : SEASONS[SEASONS.length - 1]); }
+function preseason() { return AZ.today() < SEASONS[0].start; }
+function nextSeason(se) { return SEASONS[SEASONS.indexOf(se) + 1] || null; }
+
+// ───────────────────────── Scoring (cached per data version)
+const _cache = {};
+function memo(key, fn) { const k = key + '@' + _ver + '@' + AZ.today(); if (!(k in _cache)) { if (Object.keys(_cache).length > 400) for (const x in _cache) delete _cache[x]; _cache[k] = fn(); } return _cache[k]; }
+function workoutsOf(id, a, b) { return all('workout').filter(w => w.member === id && w.date >= a && w.date <= b); }
+
+// Day map: minutes, MET-minutes, effort points, active? — the basis for everything else
+function days(id, se) {
+  return memo('days:' + id + ':' + se.id, () => {
+    const end = AZ.today() < se.end ? AZ.today() : se.end, r = R(id), pup = isPup(id), out = {};
+    workoutsOf(id, se.start, end).sort((a, b) => (a.date + (a.createdAt || 0)) < (b.date + (b.createdAt || 0)) ? -1 : 1).forEach(w => {
+      const d = out[w.date] || (out[w.date] = { min: 0, metMin: 0, eff: 0, tog: 0, list: [] });
+      const mm = metFor(w); d.min += w.min; d.metMin += mm.met * w.min; d.list.push(w);
+      const raw = pup ? Math.floor(w.min / r.minPer) : Math.round(mm.met * w.min / r.effortDiv), cap = pup ? r.minCap : r.effortCap;
+      w._eff = Math.max(0, Math.min(raw, cap - d.eff)); d.eff += w._eff; w._met = mm;
+    });
+    for (const k in out) out[k].active = out[k].min >= r.activeMin || (!pup && out[k].metMin >= r.activeMetMin);
+    return out;
+  });
+}
+function isActive(id, day, se) { const d = days(id, se || seasonFor(day) || currentSeason())[day]; return !!(d && d.active); }
+function activeDays(id, se, a, b) { const dm = days(id, se); return Object.keys(dm).filter(k => dm[k].active && (!a || k >= a) && (!b || k <= b)).length; }
+
+function score(id, se) {
+  se = se || currentSeason();
+  return memo('score:' + id + ':' + se.id, () => {
+    const today = AZ.today(), end = today < se.end ? today : se.end, r = R(id), pup = isPup(id), dm = days(id, se);
+    const ledger = [], add = (date, cat, label, pts, extra) => { if (pts) ledger.push(Object.assign({ date, cat, label, pts }, extra || {})); };
+    // effort + together
+    Object.keys(dm).sort().forEach(day => { const d = dm[day];
+      d.list.forEach(w => {
+        add(day, 'effort', actLabel(w) + ' · ' + w.min + ' min' + (pup ? '' : ' · ' + w._met.met.toFixed(1) + ' MET') + (w.by && w.by !== id ? ' (added by ' + M(w.by).name + ')' : ''), w._eff);
+        if (w.group && d.tog < RULES.togetherDailyMax) { d.tog++; const others = all('workout').filter(x => x.group === w.group && x.member !== id).map(x => M(x.member).name); if (others.length) add(day, 'together', 'Together with ' + others.join(' & '), RULES.together); }
+      }); });
+    // consistency, Standard, chain
+    const weeks = []; let chain = 0;
+    if (se.start <= end) for (let wk = weekKey(se.start); wk <= end; wk = addDays(wk, 7)) {
+      const wEnd = addDays(wk, 6), complete = wEnd < today, ds = range(wk, wEnd).filter(d => d >= se.start && d <= end);
+      let active = 0, std = false, base = 0;
+      ds.forEach(d => { const di = dm[d];
+        if (di && di.active) { active++; add(d, 'consistency', 'Active Day', r.activeDay); base += r.activeDay;
+          if (active === r.standardDays) { std = true; add(d, 'consistency', 'Weekly Standard met', r.standard); base += r.standard; } }
+        if (di) base += di.eff; });
+      const mult = 1 + RULES.chainStep * chain, bonus = Math.round(base * (mult - 1));
+      add(complete ? (wEnd < se.end ? wEnd : se.end) : end, 'consistency', 'Chain bonus ×' + mult.toFixed(1), bonus);
+      weeks.push({ key: wk, end: wEnd, complete, active, standard: std, mult, chainIn: chain });
+      if (complete) chain = std ? Math.min(chain + 1, RULES.chainMax) : Math.max(chain - 1, 0);
+    }
+    // cheers given
+    const cheerDays = {};
+    all('cheer').filter(c => c.from === id && c.date >= se.start && c.date <= end).forEach(c => { cheerDays[c.date] = (cheerDays[c.date] || 0) + 1; if (cheerDays[c.date] <= RULES.cheerDailyMax) add(c.date, 'together', 'Cheered ' + M(c.to).name + ' ' + c.emoji, RULES.cheer); });
+    // synced awards: progress (from private weigh-ins), goals, Primus
+    all('award').filter(a => a.member === id && a.date >= se.start && a.date <= se.end).forEach(a => add(a.date, a.cat, a.label, a.pts));
+    // race rewards are shared by everyone
+    raceRewards(se).forEach(x => add(x.date, 'bonus', x.label, x.pts));
+    let total = 0; const byWeek = {}, cats = { consistency: 0, effort: 0, progress: 0, together: 0, bonus: 0 };
+    ledger.forEach(e => { total += e.pts; byWeek[weekKey(e.date)] = (byWeek[weekKey(e.date)] || 0) + e.pts; cats[e.cat] = (cats[e.cat] || 0) + e.pts; });
+    ledger.sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+    const cur = weeks[weeks.length - 1] || { key: weekKey(today), active: 0, standard: false, mult: 1, chainIn: 0, complete: false };
+    return { id, se, total, ledger, weeks, cur, chain: cur.chainIn, byWeek, cats, days: dm, rank: rankOf(id, total, se) };
+  });
+}
+function weekMinutes(id, wk) { return all('workout').filter(w => w.member === id && weekKey(w.date) === wk && w.date <= AZ.today()).reduce((a, w) => a + w.min, 0); }
+
+// ───────────────────────── The seasonal race: everyone's Active Days + time together move the pack toward the destination
+function raceState(se) {
+  se = se || currentSeason();
+  return memo('race:' + se.id, () => {
+    const end = AZ.today() < se.end ? AZ.today() : se.end, ids = memberIds(), byDay = {};
+    ids.forEach(id => { const dm = days(id, se); for (const d in dm) if (dm[d].active) byDay[d] = (byDay[d] || 0) + 1; });
+    const groups = {}; all('workout').filter(w => w.group && w.date >= se.start && w.date <= end).forEach(w => { groups[w.group] = w.date; });
+    Object.values(groups).forEach(d => byDay[d] = (byDay[d] || 0) + 1);
+    let steps = 0; const reached = {};
+    range(se.start, end < se.start ? se.start : end).forEach(d => { steps += byDay[d] || 0; se.race.stations.forEach(st => { if (!reached[st.at] && steps >= st.at) reached[st.at] = d; }); if (!reached.goal && steps >= se.race.goal) reached.goal = d; });
+    const total = daysBetween(se.start, se.end) + 1, elapsed = Math.max(0, Math.min(total, daysBetween(se.start, AZ.today()) + 1));
+    const pace = elapsed ? steps / elapsed : 0, projected = Math.round(pace * total);
+    const next = se.race.stations.find(st => steps < st.at) || null;
+    return { steps, goal: se.race.goal, reached, next, pace, projected, elapsed, total, byDay };
+  });
+}
+function raceRewards(se) {
+  const rs = raceState(se), out = [];
+  se.race.stations.forEach(st => { if (st.by && rs.reached[st.at] && rs.reached[st.at] <= st.by) out.push({ date: rs.reached[st.at], label: 'Pack checkpoint on time: ' + st.name, pts: RULES.raceCheckpoint }); });
+  if (rs.reached.goal) out.push({ date: rs.reached.goal, label: 'The pack reached ' + se.race.name.replace('Race to ', '') + '!', pts: RULES.raceFinish });
+  return out;
+}
+
+// ───────────────────────── Weekly Primus: who beat their OWN target by the most (fair across kids and adults)
+function primusScores(wk, se) {
+  se = se || seasonFor(wk) || seasonFor(addDays(wk, 6)) || currentSeason();
+  return memo('primus:' + wk, () => memberIds().map(id => {
+    const r = R(id), dEnd = addDays(wk, 6), lim = dEnd < AZ.today() ? dEnd : AZ.today();
+    let active = 0; range(wk, lim).forEach(d => { const s2 = seasonFor(d); if (s2 && isActive(id, d, s2)) active++; });
+    const mins = weekMinutes(id, wk), prev = [1, 2, 3, 4].map(n => weekMinutes(id, addDays(wk, -7 * n))).filter(x => x > 0);
+    const avg = prev.length ? prev.reduce((a, b) => a + b, 0) / prev.length : 0, vsSelf = avg ? Math.min(mins / avg, 2) : (mins ? 1 : 0);
+    const together = new Set(all('workout').filter(w => w.member === id && w.group && weekKey(w.date) === wk).map(w => w.group)).size;
+    return { id, active, std: r.standardDays, mins, avg, score: Math.min(active / r.standardDays, 1.5) + 0.25 * vsSelf + 0.01 * together };
+  }).sort((a, b) => b.score - a.score || a.id.localeCompare(b.id)));
+}
+function primusOf(wk) { const sc = primusScores(wk); return sc[0] && sc[0].score > 0 ? sc[0].id : null; }
+function primusCount(id) { return all('award').filter(a => a.member === id && a.kind === 'primus').length; }
+
+// ───────────────────────── Goals: monthly + season. December goals are practice for 2027.
+const GOAL_TYPES = {
+  activeDays: { label: n => n + ' Active Days', icon: '📅', who: 'all', val: (id, a, b) => activeDays(id, seasonFor(a) || currentSeason(), a, b) },
+  standards:  { label: n => 'Hit the Standard ' + n + ' weeks', icon: '✦', who: 'all', val: (id, a, b) => score(id, seasonFor(a) || currentSeason()).weeks.filter(w => w.standard && w.end >= a && w.key <= b).length },
+  minutes:    { label: n => n.toLocaleString() + ' minutes moving', icon: '⏱️', who: 'all', step: 60, val: (id, a, b) => workoutsOf(id, a, b).reduce((x, w) => x + w.min, 0) },
+  tkd:        { label: n => n + ' Taekwondo classes', icon: '🥋', who: 'all', val: (id, a, b) => workoutsOf(id, a, b).filter(w => w.act === 'tkd').length },
+  dogs:       { label: n => 'Walk the dogs ' + n + ' times', icon: '🐕', who: 'all', val: (id, a, b) => workoutsOf(id, a, b).filter(w => w.act === 'dogwalk').length },
+  outside:    { label: n => n + ' outside sessions', icon: '🌵', who: 'all', val: (id, a, b) => workoutsOf(id, a, b).filter(w => ACT[w.act] && ACT[w.act].group !== 'Peloton').length },
+  peloton:    { label: n => n + ' Peloton classes', icon: '🚴', who: 'all', val: (id, a, b) => workoutsOf(id, a, b).filter(w => ACT[w.act] && ACT[w.act].group === 'Peloton').length },
+  weight:     { label: n => 'Trend down ' + n + '%', icon: '⚖️', who: 'proctor', private: true, step: 0.5, val: (id, a, b) => id === me() ? trendPctBetween(a, b) : 0 },
+};
+function periodOf(scope, day) { const se = seasonFor(day) || currentSeason(); return scope === 'month' ? day.slice(0, 7) : se.id; }
+function windowOf(scope, day) { if (scope === 'month') { const a = day.slice(0, 8) + '01'; return { a, b: monthEnd(a), name: MONTHS_FULL[+day.slice(5, 7) - 1] }; } const se = seasonFor(day) || currentSeason(); return { a: se.start, b: se.end, name: se.name }; }
+function goalsOf(id, scope, day) { const r = rec('goals_' + id + '_' + scope + '_' + periodOf(scope, day || goalDay())); return r ? r.list : null; }
+function goalDay() { return preseason() ? SEASONS[0].start : AZ.today(); }
+function goalStatus(id, g, scope, day) {
+  day = day || goalDay(); const win = windowOf(scope, day), T = GOAL_TYPES[g.type]; if (!T) return { v: 0, pct: 0, done: false, onPace: true };
+  const v = T.val(id, win.a, win.b), elapsed = Math.max(0, (daysBetween(win.a, AZ.today()) + 1)) / (daysBetween(win.a, win.b) + 1);
+  return { v, pct: Math.min(1, v / g.target), done: v >= g.target, onPace: v >= g.target * Math.min(1, elapsed) * 0.95 };
+}
+function suggestGoals(id, scope) {
+  const se = currentSeason(), dm = days(id, se), n = Math.max(1, Math.min(daysBetween(se.start, AZ.today()) + 1, 31));
+  const act = Object.keys(dm).filter(k => dm[k].active).length, perDay = act / n || (isPup(id) ? 3 / 7 : 4 / 7);
+  const out = [{ type: 'activeDays', target: Math.min(24, Math.max(8, Math.round(perDay * 30))) }];
+  if (isPup(id)) out.push({ type: 'tkd', target: 8 }); else out.push({ type: 'weight', target: scope === 'month' ? 2 : Math.min(M(id).goalPct || 6, 6) });
+  out.push({ type: 'dogs', target: 8 });
+  return out.slice(0, scope === 'month' ? 3 : 2);
+}
+
+// ───────────────────────── Private weigh-ins (this phone only) → synced Merit awards
+function weighins() { return Local.get('weighins', []) || []; }
+function saveWeighins(list) { Local.set('weighins', list); }
+function trendSeries(a, b) {
+  const ws = weighins().filter(w => w.date >= a && w.date <= b).sort((x, y) => x.date < y.date ? -1 : 1);
+  if (!ws.length) return null;
+  const start = ws[0].lbs; let t = start, low = start; const series = [];
+  ws.forEach(w => { t += 0.3 * (w.lbs - t); low = Math.min(low, t); series.push({ date: w.date, lbs: w.lbs, trend: t }); });
+  return { start, trend: t, low, series, pct: (start - t) / start * 100 };
+}
+function trendPctBetween(a, b) { const s2 = trendSeries(a, b); return s2 ? Math.max(0, Math.round(s2.pct * 10) / 10) : 0; }
+// Recompute this phone's progress awards for the season and write only what changed. Pounds never leave the phone.
+function syncProgressAwards() {
+  const id = me(); if (!id || isPup(id)) return;
+  const se = currentSeason(), ws = weighins().filter(w => w.date >= se.start && w.date <= se.end).sort((x, y) => x.date < y.date ? -1 : 1);
+  const want = {};
+  if (ws.length) {
+    const start = ws[0].lbs; let t = start, low = start, cred = 0; const wkStart = {}, seenWk = {};
+    ws.forEach(w => {
+      t += 0.3 * (w.lbs - t); low = Math.min(low, t); const wk = weekKey(w.date);
+      if (!seenWk[wk]) { seenWk[wk] = 1; wkStart[wk] = cred; want['aw_' + id + '_wi_' + wk] = { date: w.date, label: 'Weekly weigh-in', pts: RULES.weighIn }; }
+      const tgt = Math.floor(Math.min((start - low) / start * 100, wkStart[wk] + RULES.weeklyPctCap) / RULES.stepPct) * RULES.stepPct;
+      while (cred + RULES.stepPct <= tgt + 1e-9) { cred = Math.round((cred + RULES.stepPct) * 10) / 10;
+        want['aw_' + id + '_st_' + se.id + '_' + cred] = { date: w.date, label: 'New trend low · ' + cred.toFixed(1) + '% down', pts: RULES.stepPts };
+        RULES.milestones.forEach(ms => { if (Math.abs(cred - ms[0]) < 1e-9) want['aw_' + id + '_ms_' + se.id + '_' + ms[0]] = { date: w.date, label: 'Milestone: ' + ms[0] + '% down', pts: ms[1] }; }); }
+    });
+    // Holiday Hold (trial season): trend at the end no more than 0.5% above the start
+    if (se.trial && AZ.today() > se.end && t <= start * 1.005) want['aw_' + id + '_hold_' + se.id] = { date: se.end, label: 'Holiday Hold: held the line', pts: RULES.hold };
+    // shared % (only if this parent chooses to share)
+    if (M(id).share) want['pct_' + id + '_' + se.id] = { pctOnly: true, series: pctSeries(ws) };
+  }
+  const writes = [];
+  for (const key in want) {
+    const cur = rec(key), wv = want[key];
+    if (wv.pctOnly) { const next = { id: key, type: 'pct', member: id, season: se.id, series: wv.series }; if (!cur || JSON.stringify(cur.series) !== JSON.stringify(next.series)) writes.push(next); continue; }
+    if (!cur || cur.pts !== wv.pts || cur.date !== wv.date || cur.label !== wv.label) writes.push({ id: key, type: 'award', member: id, cat: 'progress', date: wv.date, label: wv.label, pts: wv.pts });
+  }
+  const stale = all('award').filter(a => a.member === id && a.cat === 'progress' && a.date >= se.start && a.date <= se.end && !want[a.id]).map(a => a.id);
+  if (!M(id).share) all('pct').filter(p => p.member === id).forEach(p => stale.push(p.id));
+  if (writes.length) putMany(writes);
+  stale.forEach(del);
+}
+function pctSeries(ws) { const start = ws[0].lbs; let t = start; return ws.map(w => { t += 0.3 * (w.lbs - t); return { d: w.date, p: Math.round((start - t) / start * 1000) / 10 }; }); }
+
+// Goal completions and Primus crowns become synced awards (deterministic ids, so phones agree)
+function syncGoalAndPrimusAwards() {
+  const id = me(), writes = [], today = AZ.today(); if (!id || preseason()) return;
+  ['month', 'season'].forEach(scope => {
+    const list = goalsOf(id, scope, today) || [], per = periodOf(scope, today);
+    list.forEach(g => { const key = 'aw_' + id + '_goal_' + scope + '_' + per + '_' + g.type;
+      if (goalStatus(id, g, scope, today).done && !rec(key)) writes.push({ id: key, type: 'award', member: id, cat: 'bonus', date: today, label: (scope === 'month' ? 'Monthly' : 'Season') + ' goal: ' + GOAL_TYPES[g.type].label(g.target), pts: R(id)[scope === 'month' ? 'goalMonth' : 'goalSeason'] }); });
+  });
+  // crown last week's Primus (any phone may write it; same id everywhere)
+  const se = currentSeason(), lastWk = addDays(weekKey(today), -7);
+  if (addDays(lastWk, 6) >= se.start && !all('award').some(a => a.kind === 'primus' && a.week === lastWk)) {
+    const p = primusOf(lastWk); if (p) writes.push({ id: 'aw_primus_' + lastWk, type: 'award', kind: 'primus', week: lastWk, member: p, cat: 'bonus', date: addDays(lastWk, 6) < se.start ? se.start : addDays(lastWk, 6), label: '♛ Primus of the week of ' + fmtShort(lastWk), pts: RULES.primus });
+  }
+  if (writes.length) putMany(writes);
+}
+
+// ───────────────────────── Claude (browser-direct; key lives only on this phone)
+const AI_MODEL = 'claude-opus-5-5';
+function getKey() {
+  const k = Store.get('anthropic_key', ''); if (k) return k;
+  try { const f = localStorage.getItem('fuel_anthropic_key'); return f ? JSON.parse(f) : ''; } catch (e) { return ''; }   // reuse Fuel's key on this phone
+}
+function keySource() { return Store.get('anthropic_key', '') ? 'pack' : getKey() ? 'fuel' : ''; }
+async function claude(body) {
+  const key = getKey(); if (!key) throw new Error('NO_KEY');
+  const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2026-10-21', 'anthropic-beta': 'server-side-fallback-2026-07-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify(Object.assign({ model: AI_MODEL, max_tokens: 16000, fallbacks: 'default' }, body)) });
+  if (!res.ok) throw new Error('HTTP_' + res.status);
+  const data = await res.json();
+  if (data.stop_reason === 'refusal') throw new Error('REFUSED');
+  if (data.stop_reason === 'max_tokens') throw new Error('TRUNCATED');
+  return data.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+}
+function aiErr(e) { return { NO_KEY: 'Add a Claude key in Settings ⚙️ for this.', REFUSED: 'That one was declined. Try again or log by hand.', HTTP_401: 'The Claude key was not accepted. Check Settings.', TRUNCATED: 'That was too long. Try one workout at a time.', HTTP_429: 'Claude is busy. Try again in a minute.' }[e.message] || 'Could not reach Claude (' + e.message + ').'; }
+
+// ───────────────────────── The Council of Coaches (from the original Howlers)
+const COACHES = {
+  dancer: { name: 'Dancer', title: 'DANCER COMMANDS', icon: '⚒', house: 'Red', color: '#9a1010',
+    voice: 'You are Dancer, a Red and a leader of the Sons of Ares from Red Rising, the one who prepares Darrow for what lies ahead. You are blunt, purposeful and do not coddle. You remind people why they show up.',
+    kid: 'With a child you stay direct and purposeful but warm, like a coach who believes in them.', open: ['Listen.', 'Remember why you started.', 'Good.'] },
+  mickey: { name: 'Mickey', title: 'THE CARVER SPEAKS', icon: '🎭', house: 'Violet', color: '#6d28d9',
+    voice: 'You are Mickey au Valii-Ven, a Violet Carver from Red Rising: an eccentric, theatrical, brilliant artist obsessed with form and craft. You speak with flair and precision, and you notice every detail like a sculptor.',
+    kid: 'With a child you are playful and dramatic in a fun way, delighted by their effort, never critical of their body.', open: ['Magnificent.', 'Darling, look at this.', 'A masterpiece in progress.'] },
+  matteo: { name: 'Matteo', title: 'MATTEO ADVISES', icon: '🌸', house: 'Pink', color: '#be185d',
+    voice: 'You are Matteo, a Pink from Red Rising who taught Darrow the manners and habits of the Golds. You are refined, precise and kind, and you think in terms of habits, strategy and positioning within the pack.',
+    kid: 'With a child you are gentle and encouraging, like a favorite teacher.', open: ['Well done.', 'Consider this.', 'Habits, little by little.'] },
+};
+function coachOf(id) { return COACHES[M(id).coach] || COACHES.dancer; }
+function coachStats(id) {
+  const sc = score(id), se = sc.se, wk = sc.cur, left = Math.max(0, R(id).standardDays - wk.active), today = AZ.today();
+  const last = all('workout').filter(w => w.member === id && w.date <= today).sort((a, b) => a.date < b.date ? 1 : -1)[0];
+  const ps = primusScores(weekKey(today)), place = ps.findIndex(x => x.id === id) + 1, rs = raceState(se);
+  const o = { name: M(id).name, role: isPup(id) ? 'kid' : 'parent', season: se.name + (se.trial ? ' (December trial run)' : ''),
+    activeDaysThisWeek: wk.active, weeklyTarget: R(id).standardDays, daysLeftInWeek: 6 - dow(today), standardMet: wk.standard, moreDaysNeeded: left,
+    chainWeeks: sc.chain, seasonMerit: sc.total, rank: sc.rank.rank.name, primusRacePlace: place + ' of ' + ps.length, timesPrimus: primusCount(id),
+    lastWorkout: last ? actLabel(last) + ' on ' + fmtDow(last.date) : 'none yet', packRace: rs.steps + ' of ' + rs.goal + ' ' + se.race.unit + ' toward ' + se.race.name,
+    cheersReceivedThisWeek: all('cheer').filter(c => c.to === id && c.date >= weekKey(today)).length };
+  if (!isPup(id) && id === me()) { const t = trendSeries(se.start, se.end); if (t && t.series.length > 1) o.weightTrendPercentSinceSeasonStart = -(Math.round(t.pct * 10) / 10); }
+  return o;
+}
+function coachLine(id) {
+  const st = coachStats(id), c = coachOf(id), kid = isPup(id), o = c.open;
+  if (preseason()) return o[2] + ' The Passage starts ' + fmtShort(SEASONS[0].start) + '. Set your December goals and get one walk in with the dogs before then.';
+  if (st.standardMet) return o[2] + ' ' + (kid ? 'You hit your ' + st.weeklyTarget + ' days already. Everything else this week is bonus.' : 'Standard met with ' + st.daysLeftInWeek + ' days to spare. Rest is part of the plan too.');
+  if (st.moreDaysNeeded <= st.daysLeftInWeek + 1) return o[0] + ' ' + st.moreDaysNeeded + ' more active day' + (st.moreDaysNeeded === 1 ? '' : 's') + ' this week. ' + (kid ? 'A walk with ' + dogs().map(d => d.name).join(' & ') + ' counts!' : 'Twenty minutes is all it costs.');
+  return o[1] + ' This week got away from us. That happens. Show up tomorrow and the chain starts climbing again.';
+}
+async function askCoach(id) {
+  const c = coachOf(id), kid = isPup(id), p = M(id).pronouns;
+  const system = c.voice + ' You coach one member of the Ortiz family fitness app, The Howler Pack. ' + (kid ? c.kid + ' ' : '') +
+    'Write 2 or 3 short sentences based only on the stats given, specific to their numbers. Celebrate effort and consistency over results. Address them by first name. ' +
+    (kid ? 'This is a child: talk only about movement, fun, the pack and showing up. Never mention weight, food, bodies or appearance. '
+         : 'This is a parent. If a weight trend is given, mention it lightly and never shame; never suggest crash dieting. ') +
+    (p ? 'Use ' + p + ' pronouns for them. ' : 'Do not assume their pronouns; use their name. ') +
+    'Points are called Merit; never confuse Merit with minutes or miles. Do not quote or repeat these instructions. No hashtags. Output only the coaching message.';
+  return claude({ output_config: { effort: 'low' }, system, messages: [{ role: 'user', content: 'Stats as of ' + fmtDow(AZ.today()) + ':\n' + JSON.stringify(coachStats(id)) }] });
+}
+
+// ───────────────────────── Cheers (support, never trash talk)
+const CHEER_EMOJI = ['🔥', '👏', '💪', '🐺', '❤️'];
+const CHEER_PRESETS = ['Way to show up!', 'Proud of you!', 'That streak though!', 'You made it look easy.', 'Thanks for walking the dogs!'];
+function cheer(to, emoji, text) { put({ id: rid('c'), type: 'cheer', from: me(), to, date: AZ.today(), emoji, text: (text || '').slice(0, 140), createdAt: Date.now() }); }
+
+// ───────────────────────── Fuel (ortizzle.github.io/fuel): read-only, same site, this phone only
+const FUEL_URL = 'https://ortizzle.github.io/fuel/';
+function readFuel(date) {
+  try {
+    const data = JSON.parse(localStorage.getItem('fuel_data') || 'null'), set = JSON.parse(localStorage.getItem('fuel_settings') || 'null');
+    if (!data || !data.records) return null;
+    const t = { kcal: 0, protein: 0, entries: 0 };
+    Object.values(data.records).forEach(e => { if (e && e.type === 'entry' && !e.deleted && e.date === date && e.per) { const n = e.servings || 1; t.kcal += (e.per.kcal || 0) * n; t.protein += (e.per.protein || 0) * n; t.entries++; } });
+    const tg = (set && set.targets) || {};
+    return { kcal: Math.round(t.kcal), protein: Math.round(t.protein), entries: t.entries, kcalT: tg.kcal || 2200, proteinT: tg.protein || 160 };
+  } catch (e) { return null; }
+}
+
+// ───────────────────────── UI primitives
+function toast(msg, actionLabel, action) {
+  let t = document.getElementById('toast'); if (!t) { t = h('div', { id: 'toast', class: 'toast', role: 'status' }); document.body.appendChild(t); }
+  clear(t).appendChild(h('span', null, msg));
+  if (actionLabel) t.appendChild(h('button', { class: 'toast-act', type: 'button', onclick: () => { t.classList.remove('show'); action(); } }, actionLabel));
+  t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), actionLabel ? 5500 : Math.min(9000, 3000 + msg.length * 30));
+}
+function openModal(title, bodyEl, opts) {
+  const back = h('div', { class: 'modal-back' }); const close = () => { back.remove(); if (opts && opts.onClose) opts.onClose(); };
+  back.addEventListener('click', e => { if (e.target === back) close(); });
+  back.appendChild(h('div', { class: 'modal', role: 'dialog', 'aria-label': title }, h('div', { class: 'modal-head' }, h('div', { class: 'modal-title' }, title), h('button', { class: 'modal-x', type: 'button', 'aria-label': 'Close', onclick: close }, '×')), bodyEl));
+  document.body.appendChild(back); return close;
+}
+function confirmModal(title, message, okText, onOk) {
+  const body = h('div', { class: 'log-body' }, h('p', { style: 'font-size:15px;margin-bottom:14px' }, message),
+    h('div', { class: 'two' }, h('button', { class: 'btn-ghost', type: 'button', onclick: () => close() }, 'Cancel'), h('button', { class: 'btn-primary', type: 'button', onclick: () => { close(); onOk(); } }, okText)));
+  const close = openModal(title, body);
+}
+function card(title, right, cls) { const c = h('div', { class: 'card' + (cls ? ' ' + cls : '') }); if (title) c.appendChild(h('div', { class: 'card-t' }, h('span', null, title), right ? h('span', { class: 'r' }, right) : null)); return c; }
+function gainFor(ids, fn) { const se = currentSeason(), b = {}; ids.forEach(i => b[i] = score(i, se).total); fn(); const o = {}; ids.forEach(i => o[i] = score(i, se).total - b[i]); return o; }
+function gainText(g) { return Object.keys(g).map(i => M(i).name + ' +' + g[i] + ' Merit').join(' · ') + (preseason() ? ' (scoring starts Dec 1)' : ''); }
+
+// ───────────────────────── Logging
+function logGroup(ids, base) {
+  const group = ids.length > 1 ? rid('g') : null, now = Date.now(), list = ids.map((id, i) => Object.assign({ id: rid('w') + i, type: 'workout', member: id, group, createdAt: now }, base));
+  putMany(list); return list.map(x => x.id);
+}
+function undoLog(ids) { ids.forEach(del); render(); }
+function quickUsual(u) {
+  const crew = u.together ? [me()].concat(memberIds().filter(x => x !== me() && isPup(x))) : [me()];
+  let ids; const g = gainFor(crew, () => { ids = logGroup(crew, { date: AZ.today(), act: u.act, min: u.min, felt: 'normal', by: me(), dogs: u.act === 'dogwalk' ? dogs().map(d => d.id) : null }); });
+  render(); toast(ACT[u.act].icon + ' ' + gainText(g), 'Undo', () => undoLog(ids));
+}
+function openLog(preset) {
+  const mine = me(), pup = isPup(mine), today = AZ.today();
+  const f = { act: (preset && preset.act) || (pup ? 'tkd' : 'tread'), min: (preset && preset.min) || 30, felt: 'normal', crew: [mine], detail: {}, open: false, dogs: dogs().map(d => d.id), date: today };
+  const body = h('div', { class: 'log-body' }), preview = h('div', { class: 'log-preview' });
+  function draw() {
+    clear(body);
+    const anyAdult = f.crew.some(i => !isPup(i));
+    if (!pup) body.appendChild(h('button', { class: 'ai-btn', type: 'button', onclick: () => { close(); openReader(); } }, '✨ Paste or snap a workout instead'));
+    const grid = h('div', { class: 'act-grid' }); let lastG = '';
+    ACTIVITIES.filter(a => !(pup && (a.id === 'strength' || a.id === 'bootcamp'))).forEach(a => {
+      if (a.group !== lastG) { lastG = a.group; grid.appendChild(h('div', { class: 'act-group' }, a.group)); }
+      grid.appendChild(h('button', { class: 'act-btn' + (f.act === a.id ? ' on' : ''), type: 'button', onclick: () => { f.act = a.id; f.detail = {}; draw(); } }, h('span', { class: 'act-ico' }, a.icon), h('span', null, a.name)));
+    });
+    body.appendChild(h('div', { class: 'fld' }, 'What')); body.appendChild(grid);
+    if (f.act === 'dogwalk') {
+      body.appendChild(h('div', { class: 'fld' }, 'Which dogs?'));
+      body.appendChild(h('div', { class: 'chips' }, dogs().map(dg => h('button', { class: 'chip-btn' + (f.dogs.includes(dg.id) ? ' on' : ''), type: 'button',
+        onclick: () => { f.dogs = f.dogs.includes(dg.id) ? f.dogs.filter(x => x !== dg.id) : f.dogs.concat(dg.id); if (!f.dogs.length) f.dogs = [dg.id]; draw(); } }, dg.icon + ' ' + dg.name))));
+    }
+    body.appendChild(h('div', { class: 'fld' }, 'How long'));
+    const custom = h('input', { class: 'txt num-sm', type: 'number', inputmode: 'numeric', min: '1', max: '300', placeholder: 'other', 'aria-label': 'Minutes', value: [10, 20, 30, 45, 60, 90].includes(f.min) ? '' : f.min,
+      onchange: e => { const v = parseInt(e.target.value, 10); if (v > 0 && v <= 300) { f.min = v; draw(); } } });
+    body.appendChild(h('div', { class: 'chips' }, [10, 20, 30, 45, 60, 90].map(n => h('button', { class: 'chip-btn' + (f.min === n ? ' on' : ''), type: 'button', onclick: () => { f.min = n; draw(); } }, n + 'm')), custom));
+    body.appendChild(h('div', { class: 'fld' }, 'When'));
+    const dIn = h('input', { class: 'txt num-sm', type: 'date', max: today, value: f.date, 'aria-label': 'Date', onchange: e => { if (e.target.value && e.target.value <= today) { f.date = e.target.value; draw(); } } });
+    body.appendChild(h('div', { class: 'chips' }, [[today, 'Today'], [addDays(today, -1), 'Yesterday']].map(x => h('button', { class: 'chip-btn' + (f.date === x[0] ? ' on' : ''), type: 'button', onclick: () => { f.date = x[0]; draw(); } }, x[1])), dIn));
+    body.appendChild(h('div', { class: 'fld' }, 'Who moved? ', h('small', null, 'one entry logs for everyone')));
+    body.appendChild(h('div', { class: 'chips' }, members().map(m => h('button', { class: 'chip-btn who' + (f.crew.includes(m.mid) ? ' on' : ''), type: 'button', style: '--house:' + houseColor(m.mid),
+      onclick: () => { f.crew = f.crew.includes(m.mid) ? f.crew.filter(x => x !== m.mid) : f.crew.concat(m.mid); if (!f.crew.length) f.crew = [mine]; draw(); } }, (m.role === 'pup' ? '🐾 ' : '') + m.name))));
+    if (anyAdult) {
+      body.appendChild(h('div', { class: 'fld' }, 'How did it feel? ', h('small', null, 'nudges effort points')));
+      body.appendChild(h('div', { class: 'chips' }, Object.keys(FELT).map(k => h('button', { class: 'chip-btn' + (f.felt === k ? ' on' : ''), type: 'button', onclick: () => { f.felt = k; draw(); } }, FELT[k].ico + ' ' + FELT[k].label))));
+      const kind = ACT[f.act].detail;
+      if (kind) {
+        body.appendChild(h('button', { class: 'more-btn', type: 'button', 'aria-expanded': f.open ? 'true' : 'false', onclick: () => { f.open = !f.open; draw(); } }, (f.open ? '▾ ' : '▸ ') + 'Add details for exact points (optional)'));
+        if (f.open) {
+          const num = (key, label, ph) => h('label', { class: 'num' }, label, h('input', { type: 'number', inputmode: 'decimal', step: '0.1', placeholder: ph, value: f.detail[key] || '', oninput: e => { const v = parseFloat(e.target.value); if (v > 0) f.detail[key] = v; else delete f.detail[key]; upd(); } }));
+          const row = h('div', { class: 'num-row' });
+          if (kind === 'tread') { row.appendChild(num('mph', 'Avg speed (mph)', '4.0')); row.appendChild(num('incline', 'Avg incline (%)', '3')); }
+          if (kind === 'bike') row.appendChild(num('watts', 'Avg output (watts)', '150'));
+          if (kind === 'dist') row.appendChild(num('miles', 'Distance (miles)', '1.5'));
+          body.appendChild(row);
+          body.appendChild(h('div', { class: 'hint' }, 'These are on the Peloton summary screen. Skip them and the activity type plus "how it felt" fills in.'));
+        }
+      }
+    }
+    body.appendChild(preview);
+    body.appendChild(h('button', { class: 'btn-primary', type: 'button', onclick: save }, 'Log it'));
+    upd();
+  }
+  function base() { return { date: f.date, act: f.act, min: f.min, felt: f.felt, by: mine, dogs: f.act === 'dogwalk' ? f.dogs.slice() : null, detail: Object.keys(f.detail).length ? Object.assign({}, f.detail) : null }; }
+  function upd() {
+    let g; // dry run: temporary records, never saved or synced
+    try { g = gainFor(f.crew, () => { const now = Date.now(); f.crew.forEach((id, i) => { DB.records['__tmp' + i] = Object.assign({ id: '__tmp' + i, type: 'workout', member: id, group: f.crew.length > 1 ? '__tmpg' : null, createdAt: now }, base()); }); _ver++; }); }
+    finally { f.crew.forEach((id, i) => delete DB.records['__tmp' + i]); _ver++; }
+    clear(preview).appendChild(h('div', { class: 'gain' }, f.crew.map(i => h('span', null, h('b', null, '+' + g[i]), ' ' + M(i).name))));
+    if (!isPup(f.crew[0])) { const mm = metFor(base()); preview.appendChild(h('div', { class: 'hint' }, ACT[f.act].name + ' ≈ ' + mm.met.toFixed(1) + ' MET · ' + mm.how)); }
+    if (preseason()) preview.appendChild(h('div', { class: 'hint' }, 'Practice entry: Merit starts counting Dec 1.'));
+  }
+  function save() { const crew = f.crew.slice(); let ids; const g = gainFor(crew, () => { ids = logGroup(crew, base()); }); close(); render(); toast(ACT[f.act].icon + ' ' + gainText(g), 'Undo', () => undoLog(ids)); }
+  const close = openModal(pup ? 'What did you do? 🐾' : 'Log a workout', body);
+  draw();
+}
+// Kids' chooser: big buttons first
+function openPupChooser() {
+  const grid = h('div', { class: 'big-acts' });
+  PUP_BUTTONS.forEach(a => grid.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => { close(); openLog({ act: a, min: a === 'tkd' || a === 'park' || a === 'hike' ? 60 : 30 }); } },
+    h('span', { class: 'ic' }, ACT[a].icon), a === 'bike' ? 'Peloton Bike' : a === 'tread' ? 'Peloton Tread' : a === 'dogwalk' ? dogs().map(d => d.name).join(' & ') : ACT[a].name)));
+  grid.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => { close(); openLog(); } }, h('span', { class: 'ic' }, '➕'), 'Other'));
+  const close = openModal('I moved! 🐾', grid);
+}
+
+// ───────────────────────── AI workout reader: paste text, snap/share a Peloton summary
+const WORKOUT_SCHEMA = { type: 'object', additionalProperties: false, required: ['workouts'], properties: { workouts: { type: 'array', items: {
+  type: 'object', additionalProperties: false, required: ['activity', 'minutes', 'title'], properties: {
+    activity: { type: 'string', enum: ACTIVITIES.map(a => a.id).concat(['skip']) }, minutes: { type: 'number' }, title: { type: 'string' },
+    date: { type: 'string', description: 'YYYY-MM-DD if shown' }, mph: { type: 'number' }, incline: { type: 'number' }, watts: { type: 'number' }, miles: { type: 'number' },
+    felt: { type: 'string', enum: ['easy', 'normal', 'brutal'] } } } } } };
+function readerPrompt(text) {
+  return 'Extract every workout from this ' + (text ? 'text' : 'screenshot') + ' (usually a Peloton or fitness-app summary). Map each to one activity id: ' +
+    ACTIVITIES.map(a => a.id + ' (' + a.long + ')').join(', ') + '. Peloton cycling = bike; Peloton running or walking = tread; stretching = yoga; meditation or anything that is not exercise = skip. ' +
+    'Copy numbers exactly as shown: average speed in mph, average incline in %, average output in watts, distance in miles. Leave out any number that is not shown rather than estimating it. Set felt only if the person says how it felt. Today is ' + AZ.today() + '.' +
+    (text ? '\n\n<workout_text>\n' + text + '\n</workout_text>' : '');
+}
+async function readWorkouts(text, image) {
+  const content = image ? [{ type: 'image', source: { type: 'base64', media_type: image.type, data: image.data } }, { type: 'text', text: readerPrompt('') }] : [{ type: 'text', text: readerPrompt(text) }];
+  const txt = await claude({ output_config: { effort: 'low', format: { type: 'json_schema', schema: WORKOUT_SCHEMA } }, messages: [{ role: 'user', content }] });
+  return (JSON.parse(txt).workouts || []);
+}
+function readSimple(text) {   // no-key fallback for pasted text
+  const lo = text.toLowerCase(), num = re => { const m = lo.match(re); return m ? parseFloat(m[1]) : undefined; };
+  const kinds = [['tread', /\b(run|running|tread|hills)\b/], ['bike', /\b(ride|cycling|bike|climb|output)\b/], ['strength', /\b(strength|upper body|lower body|arms|core)\b/], ['yoga', /\b(yoga|stretch)\b/], ['bootcamp', /bootcamp/], ['dogwalk', /\b(dog|cookie|biscuit)\b/], ['hike', /\bhike\b/], ['tkd', /taekwondo/]];
+  const k = kinds.find(x => x[1].test(lo));
+  return [{ activity: k ? k[0] : 'walk', minutes: num(/(\d+)\s*(?:min|minute)/) || 30, title: text.split('\n')[0].slice(0, 60) || 'Workout',
+    mph: num(/([\d.]+)\s*mph/), incline: num(/([\d.]+)\s*%\s*(?:avg\s*)?incline/) || num(/incline[^\d]{0,12}([\d.]+)/), watts: num(/([\d.]+)\s*(?:w\b|watts)/), miles: num(/([\d.]+)\s*(?:mi\b|miles)/), felt: /brutal|crushed|destroyed/.test(lo) ? 'brutal' : /easy|chill/.test(lo) ? 'easy' : undefined }];
+}
+function shrinkImage(blob) {
+  return new Promise((ok, bad) => { const img = new Image(), url = URL.createObjectURL(blob);
+    img.onload = () => { const sc = Math.min(1, 1568 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); ok({ type: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.85).split(',')[1] }); };
+    img.onerror = () => bad(new Error('IMAGE')); img.src = url; });
+}
+function openReader(shared) {
+  const body = h('div', { class: 'log-body' }), hasKey = !!getKey();
+  const ta = h('textarea', { class: 'ai-text', rows: '5', placeholder: 'Paste from Peloton, a text, anything. e.g. "45 min Climb Ride, 184 avg watts, felt brutal"' });
+  const photo = h('input', { type: 'file', accept: 'image/*', style: 'display:none', onchange: async e => { const fl = e.target.files[0]; if (!fl) return; try { run(null, await shrinkImage(fl)); } catch (er) { toast('Could not open that photo'); } } });
+  const status = h('div', { class: 'hint', role: 'status' });
+  async function run(text, image) {
+    if (!text && !image) { toast('Paste something or add a photo first'); return; }
+    status.textContent = hasKey ? 'Reading…' : '';
+    let list;
+    try { list = hasKey ? await readWorkouts(text, image) : readSimple(text || ''); } catch (er) { status.textContent = aiErr(er); return; }
+    review(list.filter(w => w.activity !== 'skip' && ACT[w.activity] && w.minutes > 0));
+  }
+  function review(list) {
+    clear(body);
+    if (!list.length) { body.appendChild(h('p', null, 'No workouts found in that.')); return; }
+    body.appendChild(h('p', { class: 'hint', style: 'font-size:14px;margin-bottom:6px' }, 'Check these, then add. Tap ✕ to drop one.'));
+    const today = AZ.today(), rows = list.map(w => { const detail = {}; ['mph', 'incline', 'watts', 'miles'].forEach(k => { if (w[k] > 0) detail[k] = w[k]; });
+      return { act: w.activity, min: Math.round(w.minutes), felt: w.felt || 'normal', date: /^\d{4}-\d{2}-\d{2}$/.test(w.date || '') && w.date <= today ? w.date : today, title: w.title, detail: Object.keys(detail).length ? detail : null, keep: true }; });
+    const listEl = h('div');
+    const drawRows = () => { clear(listEl); rows.forEach(r => { const mm = metFor(r), dupe = all('workout').some(x => x.member === me() && x.date === r.date && x.act === r.act && x.min === r.min);
+      listEl.appendChild(h('div', { class: 'imp-row' + (r.keep ? '' : ' off') }, h('span', { class: 'act-ico' }, ACT[r.act].icon),
+        h('span', { class: 'll' }, r.title || ACT[r.act].long, h('small', null, fmtShort(r.date) + ' · ' + r.min + ' min · ' + mm.met.toFixed(1) + ' MET · ' + mm.how + (dupe ? ' · looks already logged' : ''))),
+        h('button', { class: 'icon-btn', type: 'button', 'aria-label': r.keep ? 'Drop' : 'Keep', onclick: () => { r.keep = !r.keep; drawRows(); } }, r.keep ? '✕' : '↺'))); }); };
+    drawRows(); body.appendChild(listEl);
+    if (!hasKey) body.appendChild(h('p', { class: 'hint' }, 'Simple reader (no Claude key). With a key it reads photos and exact numbers.'));
+    body.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:14px', onclick: () => {
+      const keep = rows.filter(r => r.keep); let ids = [];
+      const g = gainFor([me()], () => { const now = Date.now(); const recs = keep.map((r, i) => ({ id: rid('w') + i, type: 'workout', member: me(), date: r.date, act: r.act, min: r.min, felt: r.felt, detail: r.detail, title: r.title, by: me(), createdAt: now })); ids = recs.map(x => x.id); putMany(recs); });
+      close(); render(); toast('Added ' + keep.length + ' · ' + gainText(g), 'Undo', () => undoLog(ids)); } }, 'Add workouts'));
+  }
+  body.appendChild(ta);
+  body.appendChild(h('div', { class: 'ai-row' }, h('button', { class: 'btn-primary', type: 'button', onclick: () => run(ta.value.trim(), null) }, 'Read it'),
+    h('button', { class: 'chip-btn', type: 'button', onclick: () => { if (!hasKey) { toast('Photos need a Claude key: Settings ⚙️'); return; } photo.click(); } }, '📷 Photo')));
+  body.appendChild(photo); body.appendChild(status);
+  body.appendChild(h('p', { class: 'hint' }, hasKey ? 'Uses the Claude key on this phone' + (keySource() === 'fuel' ? ' (from Fuel)' : '') + ' · about 1–2¢ a read. Tip: in the Peloton app tap Share → Howler Pack.' : 'No Claude key on this phone: pasted text uses a simple reader.'));
+  body.appendChild(h('button', { class: 'more-btn', type: 'button', onclick: () => { close(); openImport(); } }, '▸ Or import a whole Peloton CSV (backfill)'));
+  const close = openModal('✨ Paste or snap a workout', body);
+  if (shared) { if (shared.text) ta.value = shared.text; if (shared.image) run(null, shared.image); else if (shared.text) run(shared.text, null); }
+}
+
+// ───────────────────────── Peloton CSV import (free: onepeloton.com → Profile → Workouts → Download Workouts)
+function parseCSV(text) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) { const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true; else if (c === ',') { row.push(f); f = ''; } else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; } else f += c; }
+  if (f || row.length) { row.push(f); rows.push(row); }
+  const head = (rows.shift() || []).map(x => x.trim()); return rows.filter(r => r.length > 3).map(r => { const o = {}; head.forEach((k, i) => o[k] = (r[i] || '').trim()); return o; });
+}
+function pelotonRows(rows) {
+  const map = { cycling: 'bike', running: 'tread', walking: 'tread', strength: 'strength', yoga: 'yoga', stretching: 'yoga', bootcamp: 'bootcamp', 'bike bootcamp': 'bootcamp', 'tread bootcamp': 'bootcamp', 'row bootcamp': 'bootcamp', outdoor: 'walk', cardio: 'bootcamp' };
+  return rows.map(r => {
+    const disc = (r['Fitness Discipline'] || '').toLowerCase(), act = map[disc], date = (r['Workout Timestamp'] || '').slice(0, 10), min = parseFloat(r['Length (minutes)']);
+    if (!act || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !(min > 0)) return { skip: true, title: r['Title'] || disc || 'Unknown', reason: act ? 'missing data' : 'not counted (' + (disc || '?') + ')' };
+    const detail = {}, mph = parseFloat(r['Avg. Speed (mph)']), inc = parseFloat(r['Avg. Incline']), watts = parseFloat(r['Avg. Watts']);
+    if (act === 'tread' && mph > 0) { detail.mph = mph; detail.incline = inc > 0 ? inc : 0; } if (act === 'bike' && watts > 0) detail.watts = watts;
+    const id = 'w_pel_' + me() + '_' + (r['Workout Timestamp'] || '').replace(/[^0-9]/g, '').slice(0, 12) + '_' + act;
+    return { id, type: 'workout', member: me(), date, act, min, felt: 'normal', detail: Object.keys(detail).length ? detail : null, title: r['Title'], by: me(), source: 'peloton', dupe: !!DB.records[id] };
+  });
+}
+function openImport() {
+  const body = h('div', { class: 'log-body' });
+  const file = h('input', { type: 'file', accept: '.csv,text/csv', style: 'display:none', onchange: e => { const fl = e.target.files[0]; if (!fl) return; const rd = new FileReader(); rd.onload = () => show(String(rd.result)); rd.readAsText(fl); } });
+  function show(text) {
+    const list = pelotonRows(parseCSV(text)), fresh = list.filter(w => !w.skip && !w.dupe);
+    clear(body).appendChild(h('div', { class: 'hint', style: 'margin-bottom:8px' }, 'Found ' + list.length + ' workouts · ' + fresh.length + ' new'));
+    list.slice(0, 60).forEach(w => body.appendChild(h('div', { class: 'imp-row' + (w.skip || w.dupe ? ' off' : '') }, h('span', { class: 'act-ico' }, w.skip ? '·' : ACT[w.act].icon),
+      h('span', { class: 'll' }, w.title || '', h('small', null, w.skip ? w.reason : fmtShort(w.date) + ' · ' + w.min + ' min · ' + metFor(w).met.toFixed(1) + ' MET' + (w.dupe ? ' · already imported' : ''))))));
+    body.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:14px', onclick: () => {
+      const g = gainFor([me()], () => putMany(fresh.map(w => { const r = Object.assign({}, w, { createdAt: Date.now() }); delete r.dupe; return r; })));
+      close(); render(); toast('Imported ' + fresh.length + ' · ' + gainText(g)); } }, 'Add ' + fresh.length + ' workouts'));
+  }
+  body.appendChild(h('p', { class: 'hint', style: 'font-size:14px' }, 'On onepeloton.com: Profile → Workouts → Download Workouts. Re-importing never duplicates.'));
+  body.appendChild(file);
+  body.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:12px', onclick: () => file.click() }, 'Choose Peloton CSV'));
+  const close = openModal('Import from Peloton', body);
+}
+
+// ───────────────────────── Shared building blocks for the screens
+function ladderEl(sc) {
+  const r = sc.rank, bar = h('div', { class: 'ladder' }), names = h('div', { class: 'ladder-names' });
+  r.list.forEach((x, i) => { bar.appendChild(h('div', { class: 'rg' + (i < r.i ? ' done' : i === r.i ? ' cur' : ''), style: 'background:' + x.color })); names.appendChild(h('div', { class: i === r.i ? 'cur' : '' }, x.name)); });
+  return h('div', null, bar, names);
+}
+function weekDots(id) {
+  const sc = score(id), wk = weekKey(AZ.today()), box = h('div', { class: isPup(id) ? 'paws' : 'week' });
+  range(wk, addDays(wk, 6)).forEach(d => { const di = sc.days[d], on = di && di.active, cls = (on ? ' on act' : di ? ' part' : '') + (d === AZ.today() ? ' today' : '') + (d > AZ.today() ? ' fut' : '');
+    box.appendChild(isPup(id) ? h('div', { class: 'paw' }, h('div', { class: 'c' + cls }, '🐾'), DOWS[dow(d)].slice(0, 2))
+      : h('div', { class: 'wd' }, h('div', { class: 'c' + cls }, di ? ACT[di.list[di.list.length - 1].act].icon : ''), DOWS[dow(d)][0])); });
+  return box;
+}
+function lastActive(id) { const ws = all('workout').filter(w => w.member === id && w.date <= AZ.today()).map(w => w.date).sort(); return ws.length ? ws[ws.length - 1] : null; }
+function pctShared(id) { const p = all('pct').find(x => x.member === id && x.season === currentSeason().id); return p && p.series && p.series.length ? p : null; }
+function sparkPct(series) {
+  const W = 300, H = 46, pts = series.map(p => p.p), max = Math.max(1, ...pts) * 1.15;
+  const X = i => 4 + i / Math.max(1, pts.length - 1) * (W - 8), Y = v => H - 6 - Math.max(0, v) / max * (H - 12);
+  return s('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Percent lost over time' },
+    s('line', { x1: 0, x2: W, y1: Y(0), y2: Y(0), stroke: 'rgba(153,120,32,.25)', 'stroke-dasharray': '3 3' }),
+    s('polyline', { points: pts.map((v, i) => X(i) + ',' + Y(v)).join(' '), fill: 'none', stroke: '#2e7d32', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }),
+    s('circle', { cx: X(pts.length - 1), cy: Y(pts[pts.length - 1]), r: 4, fill: '#2e7d32' }));
+}
+
+// ───────────────────────── Screens
+let TAB = Store.get('tab', 'today');
+const openCards = {}, cardSide = {}, coachMsg = {};
+const CAT_COLORS = { consistency: '#9a1010', effort: '#b08a1e', progress: '#2e7d32', together: '#4a1878', bonus: '#c9a227' };
+const CAT_LABEL = { consistency: 'Showing up', effort: 'Effort', progress: 'Progress', together: 'Together & cheers', bonus: 'Primus, goals & race' };
+
+// The Pack: everyone at a glance; tap ▼ to open (like the original main page)
+function rankPct(sc) { const L = sc.rank.list; return Math.min(1, sc.total / L[L.length - 1].min); }
+function swordBar(sc) {
+  const r = sc.rank, pct = rankPct(sc), stops = r.list.map((x, i) => x.color + ' ' + Math.round(i / (r.list.length - 1) * 100) + '%').join(',');
+  return h('div', { class: 'sword' }, h('div', { class: 'sword-track' }, h('div', { class: 'sword-fill', style: 'width:' + Math.max(3, pct * 100) + '%;background:linear-gradient(90deg,' + stops + ');background-size:' + (100 / Math.max(.03, pct)) + '% 100%' })),
+    h('div', { class: 'sword-meta' }, h('span', null, h('b', { style: 'color:' + r.rank.color }, r.rank.name)), h('span', null, r.next ? (r.next.min - sc.total) + ' Merit to ' + r.next.name : 'Peerless Scarred')));
+}
+function playerCard(sc, isPrimus, place) {
+  const id = sc.id, m = M(id), mine = id === me(), last = lastActive(id), quiet = last ? daysBetween(last, AZ.today()) : 99, color = houseColor(id);
+  const lastWkKey = addDays(sc.cur.key, -7), cutoff = addDays(lastWkKey, dow(AZ.today())), thisM = sc.byWeek[sc.cur.key] || 0;
+  const prevM = score(id, seasonFor(lastWkKey) || sc.se).ledger.filter(e => e.date >= lastWkKey && e.date <= cutoff).reduce((a, e) => a + e.pts, 0);
+  const crowns = primusCount(id), cardEl = h('div', { class: 'player-card' + (isPrimus ? ' primus' : '') + (mine ? ' me' : '') + (openCards[id] ? ' card-open' : ''), style: '--house-color:' + color });
+  cardEl.appendChild(h('div', { class: 'card-rank-row' },
+    h('div', { class: 'card-rank-left' }, h('div', { class: 'card-house-dot' }), h('div', { class: 'card-house-label' }, (m.house || '').toUpperCase() + ' · ' + (m.role === 'pup' ? 'PUP' : 'PROCTOR'))),
+    h('div', { class: 'card-rank-right' },
+      all('cheer').some(c => c.to === id && c.date === AZ.today()) ? h('span', { title: 'Cheered today' }, '🐺') : null,
+      quiet >= 3 && quiet < 99 ? h('span', { class: 'card-quiet' }, '🌙 ' + quiet + 'd quiet') : null,
+      h('div', { class: 'card-rank-pill', style: 'background:' + sc.rank.rank.color }, sc.rank.rank.name),
+      isPrimus ? h('div', { class: 'card-arch' }, '♛ PRIMUS') : null)));
+  cardEl.appendChild(h('button', { class: 'card-summary', type: 'button', 'aria-expanded': openCards[id] ? 'true' : 'false', onclick: () => { openCards[id] = !openCards[id]; cardEl.classList.toggle('card-open', !!openCards[id]); } },
+    h('div', { class: 'card-name-block' }, h('div', { class: 'card-name' }, (isPrimus ? '♛ ' : '') + m.name + (mine ? ' (you)' : '')),
+      h('div', { class: 'card-sub' }, (sc.cur.standard ? '✦ Standard met' : sc.cur.active + ' of ' + R(id).standardDays + ' days this week') + (crowns ? ' · ♛×' + crowns : ''))),
+    h('div', { class: 'card-quick-stats' },
+      h('div', { class: 'card-qstat' }, h('div', { class: 'card-qstat-val' }, sc.total), h('div', { class: 'card-qstat-label' }, 'Merit')),
+      h('div', { class: 'card-qstat' }, h('div', { class: 'card-qstat-val', style: 'font-size:15px;color:' + (thisM >= prevM ? '#2e7d32' : '#9a1010') }, (thisM >= prevM ? '↑' : '↓') + Math.abs(thisM - prevM)), h('div', { class: 'card-qstat-label' }, 'vs last ' + DOWS[dow(AZ.today())]))),
+    h('div', { class: 'card-chevron', 'aria-hidden': 'true' }, '▼')));
+  const side = cardSide[id] || 'stats', inner = h('div', { class: 'card-detail-inner' });
+  inner.appendChild(h('div', { class: 'card-tab-row' }, [['stats', '⚔ Stats'], ['annals', '📜 The Annals']].map(t => h('button', { class: 'card-tab' + (side === t[0] ? ' active' : ''), type: 'button', onclick: () => { cardSide[id] = t[0]; render(); } }, t[1]))));
+  if (side === 'stats') {
+    inner.appendChild(swordBar(sc));
+    const se = sc.se, mins = workoutsOf(id, se.start, AZ.today()).reduce((a, w) => a + w.min, 0), ad = Object.keys(sc.days).filter(d => sc.days[d].active).length;
+    inner.appendChild(h('div', { class: 'card-stat-row' }, [[ad, 'Active days'], [mins.toLocaleString(), 'Minutes'], [sc.chain ? '🔥'.repeat(sc.chain) : '0', 'Chain'], [all('cheer').filter(c => c.to === id).length, 'Cheers']]
+      .map(x => h('div', { class: 'card-stat-cell' }, h('span', { class: 'card-stat-val' }, x[0]), h('span', { class: 'card-stat-lbl' }, x[1])))));
+    if (m.role !== 'pup') {
+      const shared = pctShared(id), mineT = mine ? trendSeries(se.start, se.end) : null;
+      const series = shared ? shared.series : mineT && mineT.series.length > 1 ? pctSeries(weighins().filter(w => w.date >= se.start && w.date <= se.end).sort((a, b) => a.date < b.date ? -1 : 1)) : null;
+      inner.appendChild(series && series.length > 1 ? h('div', { class: 'shared-prog' }, h('div', { class: 'lbl' }, h('span', null, '📉 PROGRESS SINCE ' + fmtShort(se.start).toUpperCase()), h('span', { style: 'color:#2e7d32' }, '▼ ' + series[series.length - 1].p.toFixed(1) + '% · goal ' + (m.goalPct || 10) + '%')),
+        sparkPct(series), h('small', { class: 'hint' }, mine && !m.share ? '🔒 Only you see this. Sharing is off.' : 'Percent of starting weight on the trend line. Pounds stay private.'))
+        : h('div', { class: 'shared-prog' }, h('div', { class: 'lbl' }, h('span', null, mine ? '⚖️ Weigh in to start your trend line' : '🔒 Keeps progress private'))));
+    } else {
+      const bs = pupBadges(id).filter(b => b.tier);
+      inner.appendChild(h('div', { class: 'mini-badges' }, bs.length ? bs.map(b => h('span', null, b.icon + ' ' + b.name + ' ' + '★'.repeat(b.tier))) : h('span', null, 'First badge coming soon')));
+    }
+    const ps = primusScores(sc.cur.key).find(x => x.id === id);
+    if (ps) inner.appendChild(h('div', { class: 'ghost' }, h('div', { class: 'lbl' }, h('span', null, '♛ PRIMUS RACE · #' + place), h('span', { style: 'color:var(--muted)' }, ps.active + '/' + ps.std + ' days')),
+      h('div', { class: 'track' }, h('i', { style: 'width:' + Math.min(100, ps.score / 1.75 * 100) + '%' })), h('small', null, ps.mins + ' min this week' + (ps.avg ? ' · usual ' + Math.round(ps.avg) : ''))));
+    inner.appendChild(h('div', { class: 'card-actions' }, mine
+      ? h('button', { class: 'primary', type: 'button', onclick: () => go('progress') }, '📈 My full progress')
+      : [h('button', { class: 'primary', type: 'button', onclick: () => openCheerNote(id) }, '🔥 Cheer ' + m.name),
+         quiet >= 3 ? h('button', { type: 'button', onclick: () => { cheer(id, '❤️', 'Thinking of you. Want to go for a walk?'); render(); toast('Encouragement sent to ' + m.name); } }, '🌙 Encourage') : null]));
+  } else {
+    const ws = all('workout').filter(w => w.member === id && w.date <= AZ.today()).sort((a, b) => (b.date + (b.createdAt || 0)) > (a.date + (a.createdAt || 0)) ? 1 : -1).slice(0, 8);
+    const canEdit = mine || (!isPup(me()) && isPup(id));
+    if (!ws.length) inner.appendChild(h('p', { class: 'hint' }, 'Nothing logged yet.'));
+    ws.forEach(w => inner.appendChild(h('div', { class: 'annal' }, h('span', { class: 'ad' }, fmtShort(w.date)),
+      h('span', { class: 'll' }, (ACT[w.act] ? ACT[w.act].icon : '') + ' ' + actLabel(w) + ' · ' + w.min + ' min',
+        h('small', null, (w.group ? 'with ' + all('workout').filter(x => x.group === w.group && x.member !== id).map(x => M(x.member).name).join(' & ') : 'solo') + (w.by && w.by !== id ? ' · added by ' + M(w.by).name : ''))),
+      canEdit ? h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Delete this workout', onclick: () => confirmModal('Delete workout?', actLabel(w) + ' on ' + fmtDow(w.date) + ' will be removed for everyone.', 'Delete', () => { del(w.id); render(); toast('Deleted', 'Undo', () => { put(Object.assign({}, w, { deleted: false })); render(); }); }) }, '✕') : null)));
+  }
+  cardEl.appendChild(h('div', { class: 'card-detail' }, inner));
+  return h('div', { class: 'pcard-wrap' }, cardEl);
+}
+function packSection(full) {
+  const se = currentSeason(), list = memberIds().map(id => score(id, se)), wk = weekKey(AZ.today()), ps = primusScores(wk), leader = preseason() ? null : primusOf(wk);
+  const box = h('div', { class: 'pack-section' });
+  box.appendChild(h('div', { class: 'pack-head' }, h('b', null, 'The Pack'), h('span', null, 'tap a name to open')));
+  if (full) {
+    const met = list.filter(x => x.cur.standard).length, dd = list.reduce((a, x) => a + x.cur.active, 0);
+    const tog = new Set(all('workout').filter(w => w.group && weekKey(w.date) === wk).map(w => w.group)).size;
+    box.appendChild(h('div', { class: 'pack-sum' }, h('div', { class: 'metric' }, h('b', null, dd), h('span', null, 'ACTIVE DAYS THIS WK')),
+      h('div', { class: 'metric go' }, h('b', null, met + '/' + list.length), h('span', null, 'MET THE STANDARD')), h('div', { class: 'metric' }, h('b', null, tog), h('span', null, 'TIMES TOGETHER'))));
+  }
+  const grid = h('div', { class: 'player-grid' });
+  const order = ps.map(x => x.id);
+  list.slice().sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id)).forEach(sc => grid.appendChild(playerCard(sc, sc.id === leader, order.indexOf(sc.id) + 1)));
+  box.appendChild(grid); return box;
+}
+
+// Race to the destination (seasonal, everyone contributes)
+function raceCard(full) {
+  const se = currentSeason(), rs = raceState(se), race = se.race, prize = (cfg().prizes || {})[se.id];
+  const c = card((race.name || 'The Race').toUpperCase(), rs.steps + ' / ' + rs.goal + ' ' + race.unit, 'race');
+  const pct = Math.min(1, rs.steps / rs.goal), road = h('div', { class: 'road' }, h('div', { class: 'road-fill', style: 'width:' + (pct * 100) + '%' }));
+  race.stations.forEach(st => road.appendChild(h('button', { class: 'station' + (rs.steps >= st.at ? ' done' : ''), type: 'button', style: 'left:' + (st.at / rs.goal * 100) + '%', 'aria-label': st.name, onclick: () => openLore(se, st) }, st.icon)));
+  road.appendChild(h('div', { class: 'runner', style: 'left:' + (pct * 100) + '%' }, '🐺'));
+  c.appendChild(road);
+  const daysLeft = daysBetween(AZ.today(), se.end), need = Math.max(0, rs.goal - rs.steps);
+  let line;
+  if (preseason()) line = 'Starts ' + fmtDow(se.start) + '. Every Active Day moves the pack one step; every activity done together adds one more.';
+  else if (rs.reached.goal) line = '🎉 The pack made it on ' + fmtShort(rs.reached.goal) + '! +' + RULES.raceFinish + ' Merit for everyone.';
+  else if (rs.next) line = 'Next: ' + rs.next.icon + ' ' + rs.next.name + ' in ' + (rs.next.at - rs.steps) + ' steps' + (rs.next.by ? ' (by ' + fmtShort(rs.next.by) + ' for +' + RULES.raceCheckpoint + ' each)' : '') + '.';
+  else line = need + ' steps to go.';
+  c.appendChild(h('p', { class: 'race-line' }, line));
+  if (!preseason() && !rs.reached.goal && daysLeft >= 0) c.appendChild(h('p', { class: 'hint' }, rs.projected >= rs.goal ? '✓ On pace to arrive by ' + fmtShort(se.end) + ' (projected ' + rs.projected + ').' : 'Pack needs about ' + (need / Math.max(1, daysLeft + 1)).toFixed(1) + ' steps a day. At this pace: ' + rs.projected + '.'));
+  c.appendChild(h('p', { class: 'prize' }, '🏆 ' + (prize ? 'Prize: ' + prize : 'Pick a family prize in Settings ⚙️')));
+  const unlocked = race.stations.filter(st => rs.steps >= st.at);
+  if (unlocked.length) c.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => openLore(se, unlocked[unlocked.length - 1]) }, '📜 Lore: ' + unlocked[unlocked.length - 1].name));
+  if (full) race.stations.forEach(st => c.appendChild(h('button', { class: 'lore-row' + (rs.steps >= st.at ? '' : ' locked'), type: 'button', onclick: () => openLore(se, st) },
+    h('span', { class: 'li' }, rs.steps >= st.at ? st.icon : '🔒'), h('span', { class: 'll' }, st.name, h('small', null, st.at + ' steps' + (st.by ? ' · by ' + fmtShort(st.by) : '') + (rs.reached[st.at] ? ' · reached ' + fmtShort(rs.reached[st.at]) : ''))))));
+  return c;
+}
+function openLore(se, st) {
+  const rs = raceState(se), open = rs.steps >= st.at;
+  openModal(st.icon + ' ' + st.name, h('div', { class: 'log-body' }, open ? h('p', { class: 'lore-text' }, st.lore) : h('p', null, '🔒 Unlocks at ' + st.at + ' Pack Steps. ' + (st.at - rs.steps) + ' to go. Keep moving!'),
+    h('p', { class: 'hint', style: 'margin-top:12px' }, 'From the Red Rising books by Pierce Brown.')));
+}
+
+// Weekly Primus: short-term target that resets every Monday
+function primusCard() {
+  const wk = weekKey(AZ.today()), ps = primusScores(wk), leader = primusOf(wk), lastWk = addDays(wk, -7);
+  const lastAw = all('award').find(a => a.kind === 'primus' && a.week === lastWk);
+  const c = card("THIS WEEK'S PRIMUS", 'crowned Sunday night · +' + RULES.primus);
+  ps.forEach((x, i) => c.appendChild(h('div', { class: 'prow' }, h('span', { class: 'pp' }, x.id === leader ? '♛' : i + 1), h('span', { class: 'pn', style: 'color:' + houseColor(x.id) }, M(x.id).name),
+    h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, x.score / 1.75 * 100) + '%;background:' + houseColor(x.id) })), h('span', { class: 'pv' }, x.active + '/' + x.std))));
+  c.appendChild(h('p', { class: 'hint' }, 'Primus goes to whoever beats their own weekly target by the most: days moved against your Standard, plus minutes against your own usual. Kids and parents compete fairly.' + (lastAw ? ' Last week: ♛ ' + M(lastAw.member).name + '.' : '')));
+  return c;
+}
+function coachCard(id) {
+  const c = coachOf(id), msg = coachMsg[id] || coachLine(id), hasKey = !!getKey();
+  const btn = h('button', { class: 'ask', type: 'button', onclick: async e => {
+    if (!hasKey) { toast('Live coaching needs a Claude key: Settings ⚙️'); return; }
+    e.target.textContent = c.name + ' is thinking…'; e.target.disabled = true;
+    try { coachMsg[id] = await askCoach(id); } catch (er) { toast(aiErr(er)); }
+    render(); } }, hasKey ? '💬 Ask ' + c.name + ' about my week' : '💬 Live coaching: add a key in Settings');
+  return h('div', { class: 'card coach', style: '--coach:' + c.color }, h('div', { class: 'av' }, c.icon),
+    h('div', { class: 'cbody' }, h('small', null, c.title + ' · HOUSE ' + c.house.toUpperCase()), h('p', null, msg), btn));
+}
+function newForYou() {
+  const seen = Local.get('seen', {}), mine = all('workout').filter(w => w.member === me() && w.by && w.by !== me() && !seen[w.id] && w.date >= addDays(AZ.today(), -7));
+  if (!mine.length) return null;
+  return h('div', { class: 'card newfor' }, h('span', { style: 'font-size:22px' }, '📬'),
+    h('span', null, M(mine[mine.length - 1].by).name + ' added ' + mine.map(w => ACT[w.act].icon + ' ' + ACT[w.act].name + ' (' + DOWS[dow(w.date)] + ')').join(', ') + ' for you.'),
+    h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Dismiss', onclick: () => { const s2 = Local.get('seen', {}); mine.forEach(w => s2[w.id] = 1); Local.set('seen', s2); render(); } }, '✓'));
+}
+function tkdPrompt() {
+  const kidsIds = memberIds().filter(isPup), seen = Local.get('seen', {});
+  if (!kidsIds.length) return null;
+  for (let back = 0; back < 3; back++) {
+    const d = addDays(AZ.today(), -back);
+    if (!cfg().tkdDays.includes(dow(d)) || seen['tkd' + d]) continue;
+    if (back === 0 && AZ.hour() < 17) continue;      // ask about tonight's class after 5pm
+    const went = kidsIds.filter(k => all('workout').some(w => w.member === k && w.date === d && w.act === 'tkd'));
+    const missing = kidsIds.filter(k => !went.includes(k)).filter(k => !isPup(me()) || k === me());
+    if (!missing.length) continue;
+    const when = back === 0 ? 'tonight' : back === 1 ? 'yesterday' : DOWS[dow(d)];
+    const log = ids => { let wIds; const g = gainFor(ids, () => { wIds = logGroup(ids, { date: d, act: 'tkd', min: 60, felt: 'normal', by: me() }); }); render(); toast('🥋 ' + gainText(g), 'Undo', () => undoLog(wIds)); };
+    const skip = () => { const s2 = Local.get('seen', {}); s2['tkd' + d] = 1; Local.set('seen', s2); render(); toast('No worries. Streaks are weekly, not daily.'); };
+    return h('div', { class: 'card prompt' }, h('p', null, '🥋 Taekwondo was ' + when + '. ' + (isPup(me()) ? 'Did you go?' : 'Did ' + missing.map(k => M(k).name).join(' & ') + ' go?')),
+      h('div', { class: 'row' }, missing.length > 1 ? h('button', { class: 'yes', type: 'button', onclick: () => log(missing) }, 'Both went') : null,
+        missing.map(k => h('button', { class: missing.length === 1 ? 'yes' : '', type: 'button', onclick: () => log([k]) }, isPup(me()) ? 'Yes, I went!' : missing.length > 1 ? 'Just ' + M(k).name : 'Yes, ' + M(k).name + ' went')),
+        h('button', { type: 'button', onclick: skip }, 'Skipped')));
+  }
+  return null;
+}
+function cheersForMe() {
+  const mine = all('cheer').filter(x => x.to === me() && x.date >= addDays(AZ.today(), -3)).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  if (!mine.length) return null;
+  const c = card('CHEERS FOR YOU', mine.length + ' lately');
+  mine.slice(0, 3).forEach(x => c.appendChild(h('div', { class: 'cheer-row' }, h('span', { class: 'ce' }, x.emoji), h('span', { class: 'ct' }, M(x.from).name + (x.text ? ': "' + x.text + '"' : ' cheered you on'), h('small', null, fmtDow(x.date))),
+    h('button', { class: 'chip-btn', type: 'button', onclick: () => { cheer(x.from, '❤️', ''); render(); toast('❤️ sent to ' + M(x.from).name + ' · +2 Merit'); } }, '❤️ back'))));
+  return c;
+}
+function myWeekCard() {
+  const id = me(), sc = score(id), r = R(id), left = Math.max(0, r.standardDays - sc.cur.active), c = card('THIS WEEK · ' + M(id).name.toUpperCase(), 'Chain ×' + sc.cur.mult.toFixed(1));
+  c.appendChild(weekDots(id));
+  c.appendChild(h('div', { class: 'metrics' }, h('div', { class: 'metric' + (sc.cur.standard ? ' go' : '') }, h('b', null, sc.cur.standard ? '✦' : sc.cur.active + '/' + r.standardDays), h('span', null, sc.cur.standard ? 'STANDARD MET' : left + ' MORE TO GO')),
+    h('div', { class: 'metric' }, h('b', null, sc.byWeek[sc.cur.key] || 0), h('span', null, 'MERIT THIS WEEK')), h('div', { class: 'metric' }, h('b', null, sc.total), h('span', null, 'SEASON MERIT'))));
+  c.appendChild(h('div', { class: 'rank-line' }, h('b', { style: 'color:' + sc.rank.rank.color + ';font-family:var(--fh);font-size:20px' }, sc.rank.rank.name), h('span', { class: 'rank-pts' }, sc.rank.next ? (sc.rank.next.min - sc.total) + ' to ' + sc.rank.next.name : 'Peerless Scarred')));
+  c.appendChild(ladderEl(sc)); return c;
+}
+function fuelCard() {
+  const f = readFuel(AZ.today()); if (!f || isPup(me())) return null;
+  const c = card('FUEL TODAY', f.entries + ' logged in Fuel');
+  c.appendChild(h('div', { class: 'fuel' }, h('div', { class: 'fl' }, h('div', null, f.kcal.toLocaleString() + ' / ' + f.kcalT.toLocaleString() + ' kcal'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, f.kcal / f.kcalT * 100) + '%' })),
+    h('div', null, 'Protein ' + f.protein + ' / ' + f.proteinT + ' g'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, f.protein / f.proteinT * 100) + '%;background:var(--green)' }))),
+    h('a', { href: FUEL_URL, target: '_blank', rel: 'noopener' }, 'Open Fuel ↗')));
+  c.appendChild(h('div', { class: 'hint' }, 'Read from Fuel on this phone only. Food never goes into the family data.'));
+  return c;
+}
+function weighRow() {
+  const today = AZ.today(), todayW = weighins().find(w => w.date === today);
+  const inp = h('input', { type: 'number', inputmode: 'decimal', step: '0.1', placeholder: todayW ? String(todayW.lbs) : 'lbs', 'aria-label': 'Weight in pounds' });
+  const save = () => { const v = parseFloat(inp.value); if (!(v > 50 && v < 500)) { toast('Enter your weight in lbs'); return; }
+    const g = gainFor([me()], () => { saveWeighins(weighins().filter(w => w.date !== today).concat({ date: today, lbs: Math.round(v * 10) / 10 })); syncProgressAwards(); _ver++; });
+    render(); toast('Weigh-in saved' + (g[me()] ? ' · +' + g[me()] + ' Merit' : '') + ' · pounds stay on this phone'); };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
+  return h('div', { class: 'wrow' }, h('span', null, '⚖️ Weigh-in'), inp, h('button', { type: 'button', onclick: save }, todayW ? 'Update' : 'Save'),
+    h('small', null, todayW ? '✓ Logged today. Merit comes from the weekly trend, so daily swings never cost you.' : 'Optional and private. Once a week earns +' + RULES.weighIn + '; the trend line does the rest.'));
+}
+function seasonBanner() {
+  const se = currentSeason(), t = AZ.today();
+  if (preseason()) return h('div', { class: 'season-banner' }, h('div', null, h('b', null, se.name + ' · ' + se.sub), h('small', null, 'Our December trial run starts ' + fmtDow(se.start) + '. Set your goals, log a practice walk, and get the app on everyone\'s phone.')),
+    h('div', { class: 'left' }, daysBetween(t, se.start), h('small', null, 'days to go')));
+  const nx = nextSeason(se);
+  return h('div', { class: 'season-banner' }, h('div', null, h('b', null, se.name + ' · ' + se.sub), h('small', null, se.trial ? 'December is practice. Everyone starts fresh Jan 1 for ' + (nx ? nx.name + ': ' + nx.sub : 'the new season') + '.' : fmtShort(se.start) + ' – ' + fmtShort(se.end) + ' · ranks reset each season')),
+    h('div', { class: 'left' }, daysBetween(t, se.end), h('small', null, 'days left')));
+}
+
+function renderToday(main) {
+  const id = me(), pup = isPup(id);
+  main.appendChild(seasonBanner());
+  main.appendChild(packSection(false));
+  const lc = h('div', { class: 'logbox' });
+  lc.appendChild(h('button', { class: 'log-big', type: 'button', onclick: () => pup ? openPupChooser() : openLog() }, pup ? '🐾 I moved!' : '＋ Log a workout'));
+  if (!pup) {
+    const us = h('div', { class: 'usuals' });
+    (M(id).usuals || []).forEach(u => us.appendChild(h('button', { class: 'usual', type: 'button', onclick: () => quickUsual(u) }, h('span', { class: 'ic' }, ACT[u.act].icon),
+      h('span', null, (u.act === 'dogwalk' ? dogs().map(x => x.name).join(' & ') : ACT[u.act].name) + ' ' + u.min + 'm', h('small', null, u.together ? '+ the kids · one tap' : 'one tap')))));
+    if ((M(id).usuals || []).length) lc.appendChild(us);
+    lc.appendChild(h('button', { class: 'ai-btn', type: 'button', onclick: () => openReader() }, '✨ Paste or snap a Peloton summary'));
+    lc.appendChild(weighRow());
+  }
+  main.appendChild(lc);
+  [newForYou(), tkdPrompt(), goalNudge()].forEach(x => { if (x) main.appendChild(x); });
+  main.appendChild(raceCard(false));
+  if (!preseason()) main.appendChild(primusCard());
+  main.appendChild(coachCard(id));
+  main.appendChild(myWeekCard());
+  [cheersForMe(), fuelCard()].forEach(x => { if (x) main.appendChild(x); });
+}
+function goalNudge() {
+  if (goalsOf(me(), 'month')) return null;
+  const win = windowOf('month', goalDay());
+  return h('div', { class: 'card prompt' }, h('p', null, '🎯 Set your ' + win.name + ' goals. It takes a minute, and suggestions are ready.'), h('div', { class: 'row' }, h('button', { class: 'yes', type: 'button', onclick: () => go('goals') }, 'Set goals')));
+}
+
+// ───────────────────────── Progress
+function weightChart(t, goalPct, se) {
+  const W = 520, H = 220, L = 34, Rr = 10, T = 12, B = 24, x0 = se.start, x1 = addDays(t.series[t.series.length - 1].date, 3), span = Math.max(7, daysBetween(x0, x1));
+  const lo = Math.min(...t.series.map(p => p.lbs)) - 2, hi = Math.max(t.start, ...t.series.map(p => p.lbs)) + 1, goalLbs = t.start * (1 - goalPct / 100);
+  const X = d => L + daysBetween(x0, d) / span * (W - L - Rr), Y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const g = s('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'chart', width: '100%', role: 'img', 'aria-label': 'Weight trend' });
+  const corr = d => { const k = daysBetween(x0, d) / 7; return [t.start * (1 - .005 * k), t.start * (1 - .01 * k)]; };
+  g.appendChild(s('polygon', { points: [x0, x1].map(d => X(d) + ',' + Y(corr(d)[0])).concat([x1, x0].map(d => X(d) + ',' + Y(corr(d)[1]))).join(' '), fill: 'rgba(46,125,50,.12)' }));
+  for (let v = Math.ceil(lo); v <= hi; v += 2) { g.appendChild(s('line', { x1: L, x2: W - Rr, y1: Y(v), y2: Y(v), stroke: 'rgba(153,120,32,.15)' })); g.appendChild(s('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end' }, v)); }
+  if (goalLbs > lo) g.appendChild(s('line', { x1: L, x2: W - Rr, y1: Y(goalLbs), y2: Y(goalLbs), stroke: '#7d6414', 'stroke-dasharray': '5 4' }));
+  else g.appendChild(s('text', { x: W - Rr, y: H - B - 4, 'text-anchor': 'end', style: 'fill:#7d6414' }, 'goal ' + goalLbs.toFixed(1) + ' ↓'));
+  for (let d = x0; d <= x1; d = addDays(d, 7)) g.appendChild(s('text', { x: X(d), y: H - 6, 'text-anchor': 'middle' }, fmtShort(d)));
+  t.series.forEach(p => g.appendChild(s('circle', { cx: X(p.date), cy: Y(p.lbs), r: 3, fill: 'rgba(30,26,20,.28)' })));
+  g.appendChild(s('polyline', { points: t.series.map(p => X(p.date) + ',' + Y(p.trend)).join(' '), fill: 'none', stroke: '#9a1010', 'stroke-width': 3, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+  const last = t.series[t.series.length - 1]; g.appendChild(s('circle', { cx: X(last.date), cy: Y(last.trend), r: 5, fill: '#9a1010', stroke: '#fffdf7', 'stroke-width': 2 }));
+  return g;
+}
+function milestoneLadder(id, se, t, goalPct) {
+  const cred = all('award').filter(a => a.member === id && a.id.indexOf('_st_' + se.id + '_') > 0).length * RULES.stepPct, actual = (t.start - t.low) / t.start * 100;
+  const top = Math.min(goalPct, [5, 10, 15, 20].find(x => x > Math.max(cred, actual)) || goalPct), lad = h('div', { class: 'ladder2' });
+  for (let p = 0.5; p <= top + 1e-9; p += 0.5) { const ms = [5, 10, 15].includes(p), done = cred >= p - 1e-9, capped = !done && actual >= p;
+    lad.appendChild(h('div', { class: 'rung' + (done ? ' done' : '') + (ms ? ' ms' : '') + (capped ? ' cap' : '') }, h('span', { class: 'lvl' }, '−' + p.toFixed(1) + '%'),
+      h('span', { class: 'bx' }, done ? '+25 Merit' + (ms ? ' · milestone' : '') : capped ? 'reached · unlocks next week (healthy-pace cap)' : ms ? 'Milestone · +' + { 5: 100, 10: 150, 15: 200 }[p] : '+25'))); }
+  return h('div', null, h('div', { class: 'card-t', style: 'margin-top:14px' }, h('span', null, 'MILESTONE LADDER'), h('span', { class: 'r' }, cred.toFixed(1) + '% credited · goal ' + goalPct + '%')), lad);
+}
+function minutesChart(id, se) {
+  const W = 520, H = 170, L = 10, B = 24, T = 16, today = AZ.today(), wks = [];
+  for (let wk = weekKey(se.start); wk <= (today < se.end ? today : se.end); wk = addDays(wk, 7)) wks.push(wk);
+  const shown = wks.slice(-8), vals = shown.map(wk => weekMinutes(id, wk)), max = Math.max(150, ...vals) * 1.15, bw = (W - L * 2) / Math.max(1, shown.length);
+  const g = s('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'chart', width: '100%', role: 'img', 'aria-label': 'Minutes per week' });
+  shown.forEach((wk, i) => { const hh = vals[i] / max * (H - T - B), x = L + i * bw + bw * .22, done = addDays(wk, 6) < today;
+    g.appendChild(s('rect', { x, y: H - B - hh, width: bw * .56, height: Math.max(0, hh), rx: 5, fill: done ? '#9a1010' : 'rgba(154,16,16,.4)' }));
+    g.appendChild(s('text', { x: x + bw * .28, y: H - B - hh - 5, 'text-anchor': 'middle', style: 'fill:#1e1a14;font-weight:600' }, vals[i] + 'm'));
+    g.appendChild(s('text', { x: x + bw * .28, y: H - 6, 'text-anchor': 'middle' }, fmtShort(wk))); });
+  return g;
+}
+function activityMix(id, se) {
+  const by = {}; workoutsOf(id, se.start, AZ.today()).forEach(w => by[w.act] = (by[w.act] || 0) + w.min);
+  const tot = Object.values(by).reduce((a, b) => a + b, 0) || 1, box = h('div');
+  const keys = Object.keys(by).sort((a, b) => by[b] - by[a]).slice(0, 6);
+  if (!keys.length) box.appendChild(h('p', { class: 'hint' }, 'Nothing logged this season yet.'));
+  keys.forEach(k => box.appendChild(h('div', { class: 'mix' }, h('span', null, ACT[k] ? ACT[k].icon : '·'), h('div', { class: 'bar' }, h('i', { style: 'width:' + (by[k] / tot * 100) + '%' })), h('span', { class: 'v' }, by[k] + 'm'))));
+  return box;
+}
+function activeCalendar(id, se) {
+  const cal = h('div', { class: 'cal' }), sc = score(id, se), a = se.trial ? se.start : AZ.today().slice(0, 8) + '01', b = se.trial ? se.end : monthEnd(a);
+  DOWS.forEach(d => cal.appendChild(h('div', { class: 'h' }, d[0])));
+  for (let i = 0; i < dow(a); i++) cal.appendChild(h('div'));
+  range(a, b).forEach(d => cal.appendChild(h('div', { class: 'd' + (sc.days[d] && sc.days[d].active ? ' on' : '') + (d > AZ.today() ? ' fut' : '') + (d === AZ.today() ? ' today' : '') }, toD(d).getUTCDate())));
+  return cal;
+}
+function scorecards(id, se) {
+  const sc = score(id, se), c = card('WEEKLY SCORECARDS', 'season total ' + sc.total);
+  if (!sc.weeks.length) c.appendChild(h('p', { class: 'hint' }, 'Scorecards start ' + fmtShort(se.start) + '.'));
+  sc.weeks.slice().reverse().slice(0, 8).forEach(wk => {
+    const parts = { consistency: 0, effort: 0, progress: 0, together: 0, bonus: 0 };
+    sc.ledger.filter(e => weekKey(e.date) === wk.key).forEach(e => parts[e.cat] = (parts[e.cat] || 0) + e.pts);
+    const seg = h('div', { class: 'seg' }); Object.keys(parts).forEach(k => seg.appendChild(h('i', { style: 'flex:' + (parts[k] || .001) + ';background:' + CAT_COLORS[k] })));
+    c.appendChild(h('div', { class: 'wkrow' }, h('div', null, h('b', null, fmtShort(wk.key)), h('div', { class: 'meta' }, wk.complete ? 'final' : 'in progress')),
+      h('div', null, seg, h('div', { class: 'meta' }, wk.active + ' active days · ' + (wk.standard ? '✦ Standard' : 'no Standard') + ' · ×' + wk.mult.toFixed(1))), h('div', { class: 'pts' }, sc.byWeek[wk.key] || 0)));
+  });
+  c.appendChild(h('div', { class: 'legend' }, Object.keys(CAT_LABEL).filter(k => !(isPup(id) && k === 'progress')).map(k => h('span', null, h('i', { style: 'background:' + CAT_COLORS[k] }), CAT_LABEL[k]))));
+  return c;
+}
+function renderProgress(main) {
+  const id = me(), se = currentSeason(), sc = score(id, se);
+  if (!isPup(id)) {
+    const t = trendSeries(se.start, se.end), goalPct = M(id).goalPct || 10, c = card('THE ASCENT', 'trend line, not daily noise');
+    if (t && t.series.length) {
+      const weeks = Math.max(1, (daysBetween(t.series[0].date, AZ.today()) + 1) / 7);
+      c.appendChild(h('div', { class: 'stats4' }, [[t.start.toFixed(1), 'START'], [t.trend.toFixed(1), 'TREND'], ['−' + Math.max(0, t.pct).toFixed(1) + '%', 'LOST'], [(t.pct / weeks).toFixed(2) + '%', 'PER WEEK']]
+        .map((x, i) => h('div', { class: 'metric' + (i === 2 ? ' go' : '') }, h('b', null, x[0]), h('span', null, x[1])))));
+      c.appendChild(weightChart(t, goalPct, se));
+      c.appendChild(h('div', { class: 'private' }, '🔒 Pounds stay on this phone. The family sees ' + (M(id).share ? 'your % lost.' : 'nothing; sharing is off in Settings.') + ' Green band = healthy pace, 0.5–1% a week.'));
+      c.appendChild(milestoneLadder(id, se, t, goalPct));
+      if (se.trial) c.appendChild(h('div', { class: 'hold' }, h('div', { style: 'font-size:30px' }, t.trend <= t.start * 1.005 ? '🛡️' : '⚠️'),
+        h('div', null, h('b', null, t.trend <= t.start * 1.005 ? 'Holding the line' : 'Above the line'), h('div', null, 'The Holiday Hold: finish Dec 31 with your trend no more than 0.5% above where you started for +' + RULES.hold + ' Merit. Holding steady through the holidays counts as winning.'))));
+    } else c.appendChild(h('p', { class: 'hint', style: 'font-size:14px' }, 'Weigh in on Today to start your trend line. It stays on this phone.'));
+    main.appendChild(c);
+  }
+  const mc = card('MOVEMENT', 'minutes per week'); mc.appendChild(minutesChart(id, se));
+  mc.appendChild(h('div', { class: 'card-t', style: 'margin-top:12px' }, h('span', null, 'WHAT YOU DID'), h('span', { class: 'r' }, 'minutes by activity'))); mc.appendChild(activityMix(id, se)); main.appendChild(mc);
+  const cc = card('ACTIVE DAYS', Object.keys(sc.days).filter(d => sc.days[d].active).length + ' this season'); cc.appendChild(activeCalendar(id, se)); main.appendChild(cc);
+  main.appendChild(scorecards(id, se));
+  if (isPup(id)) { const bg = h('div', { class: 'badges4' });
+    pupBadges(id).forEach(b => bg.appendChild(h('div', { class: 'b4 t' + b.tier }, h('div', { class: 'ic' }, b.icon), h('b', null, b.name), h('div', { class: 'stars' }, '★'.repeat(b.tier) + '☆'.repeat(3 - b.tier)), h('small', null, b.v + (b.tiers[b.tier] ? '/' + b.tiers[b.tier] : '')))));
+    const bc = card('MY BADGES'); bc.appendChild(bg); main.appendChild(bc); }
+  const led = card('RECENT MERIT');
+  if (!sc.ledger.length) led.appendChild(h('p', { class: 'hint' }, preseason() ? 'Merit starts counting ' + fmtDow(SEASONS[0].start) + '.' : 'Log something to start earning Merit.'));
+  sc.ledger.slice(0, 12).forEach(e => led.appendChild(h('div', { class: 'ledger-row' }, h('span', { class: 'ld' }, fmtShort(e.date)), h('span', { class: 'll' }, e.label), h('span', { class: 'lp' }, '+' + e.pts))));
+  main.appendChild(led);
+}
+function pupBadges(id) {
+  const ws = all('workout').filter(w => w.member === id), dd = new Set(SEASONS.flatMap(se => Object.keys(days(id, se)).filter(d => days(id, se)[d].active))).size;
+  return [{ icon: '🥋', name: 'Black Belt Bound', v: ws.filter(w => w.act === 'tkd').length, tiers: [4, 16, 32] }, { icon: '🐕', name: 'Best Friend', v: ws.filter(w => w.act === 'dogwalk').length, tiers: [5, 20, 50] },
+    { icon: '🛝', name: 'Park Ranger', v: ws.filter(w => w.act === 'park').length, tiers: [3, 10, 25] }, { icon: '🐾', name: 'Paw Prints', v: dd, tiers: [5, 25, 60] }]
+    .map(b => Object.assign(b, { tier: b.tiers.filter(t => b.v >= t).length }));
+}
+
+// ───────────────────────── Goals
+function goalRow(id, g, scope) {
+  const T = GOAL_TYPES[g.type]; if (!T) return null; const st = goalStatus(id, g, scope), r = R(id);
+  return h('div', { class: 'goal' + (st.done ? ' done' : '') }, h('div', { class: 'goal-top' }, h('span', { class: 'gi' }, T.icon),
+    h('span', { class: 'gl' }, T.label(g.target), h('small', null, (st.done ? '✓ Done! +' : '+') + r[scope === 'month' ? 'goalMonth' : 'goalSeason'] + ' Merit' + (st.done ? '' : st.onPace ? ' · on pace' : ' · a little behind pace') + (T.private ? ' · 🔒 only you see this' : ''))),
+    h('span', { class: 'gv' }, (T.step === 0.5 ? st.v.toFixed(1) : st.v) + '/' + g.target)), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(st.pct * 100) + '%' })));
+}
+function saveGoals(id, scope, list) { const day = goalDay(); put({ id: 'goals_' + id + '_' + scope + '_' + periodOf(scope, day), type: 'goals', member: id, scope, period: periodOf(scope, day), list }); }
+function openGoalEditor(scope, startList) {
+  const id = me(), list = (startList || goalsOf(id, scope) || suggestGoals(id, scope)).map(g => Object.assign({}, g)), body = h('div', { class: 'log-body' }), win = windowOf(scope, goalDay());
+  function draw() {
+    clear(body);
+    body.appendChild(h('p', { class: 'hint', style: 'font-size:14px' }, scope === 'month' ? 'Up to 3 goals for ' + win.name + '.' : 'Up to 2 goals for ' + win.name + '.'));
+    Object.keys(GOAL_TYPES).filter(k => GOAL_TYPES[k].who === 'all' || (GOAL_TYPES[k].who === 'proctor' && !isPup(id))).forEach(k => {
+      const T = GOAL_TYPES[k], g = list.find(x => x.type === k), max = scope === 'month' ? 3 : 2, step = T.step || 1;
+      body.appendChild(h('div', { class: 'edit-row' }, h('span', { class: 'gi' }, T.icon), h('span', { class: 'gl' }, g ? T.label(g.target) : T.label('…').replace('… ', '').replace('…', '')),
+        g ? h('div', { class: 'stepper' }, h('button', { type: 'button', 'aria-label': 'Less', onclick: () => { g.target = Math.max(step, Math.round((g.target - step) * 10) / 10); draw(); } }, '−'), h('b', null, g.target),
+          h('button', { type: 'button', 'aria-label': 'More', onclick: () => { g.target = Math.round((g.target + step) * 10) / 10; draw(); } }, '+'), h('button', { type: 'button', 'aria-label': 'Remove', onclick: () => { list.splice(list.indexOf(g), 1); draw(); } }, '✕'))
+          : h('button', { class: 'chip-btn', type: 'button', onclick: () => { if (list.length >= max) { toast('Up to ' + max + ' goals'); return; } list.push({ type: k, target: T.step === 0.5 ? 1 : T.step === 60 ? 600 : 8 }); draw(); } }, 'Add')));
+    });
+    body.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:14px', onclick: () => { saveGoals(id, scope, list); close(); render(); toast('Goals saved'); } }, 'Save goals'));
+  }
+  const close = openModal(win.name + ' goals', body); draw();
+}
+function renderGoals(main) {
+  const id = me(), day = goalDay(), se = seasonFor(day) || currentSeason();
+  main.appendChild(seasonBanner());
+  [['month', windowOf('month', day)], ['season', windowOf('season', day)]].forEach(([scope, win]) => {
+    const list = goalsOf(id, scope), c = card(win.name.toUpperCase() + ' GOALS', scope === 'month' ? daysBetween(AZ.today() < win.a ? win.a : AZ.today(), win.b) + ' days left' : se.trial ? 'practice round' : 'this season');
+    if (list) list.forEach(g => { const r = goalRow(id, g, scope); if (r) c.appendChild(r); });
+    else { c.appendChild(h('p', { class: 'hint', style: 'font-size:14px' }, 'No goals yet. Here is a suggestion based on how you move:'));
+      suggestGoals(id, scope).forEach(g => c.appendChild(h('div', { class: 'goal' }, h('div', { class: 'goal-top' }, h('span', { class: 'gi' }, GOAL_TYPES[g.type].icon), h('span', { class: 'gl' }, GOAL_TYPES[g.type].label(g.target))))));
+      c.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:10px', onclick: () => { saveGoals(id, scope, suggestGoals(id, scope)); render(); toast('Goals set. Tweak them any time.'); } }, 'Use these')); }
+    c.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => openGoalEditor(scope) }, list ? 'Edit goals' : 'Choose my own'));
+    main.appendChild(c);
+  });
+  const nx = nextSeason(se);
+  if (se.trial && nx && !preseason()) { const c = card('SUGGESTED FOR ' + nx.name.toUpperCase(), 'from your December', 'suggest');
+    suggestGoals(id, 'month').forEach(g => c.appendChild(h('div', { class: 'goal' }, h('div', { class: 'goal-top' }, h('span', { class: 'gi' }, GOAL_TYPES[g.type].icon), h('span', { class: 'gl' }, 'January: ' + GOAL_TYPES[g.type].label(g.target))))));
+    c.appendChild(h('p', { class: 'hint' }, 'On Jan 1 you will get a quick goal check-in with these pre-filled.')); main.appendChild(c); }
+  const hon = h('div', { class: 'honors' });
+  SEASONS.forEach(x => { const past = x.end < AZ.today(), cur = x === se && !preseason(), fin = past ? score(id, x).rank.rank : null;
+    hon.appendChild(h('div', null, h('div', { class: 'crest' + (cur ? ' cur' : ''), style: fin ? 'background:' + fin.color + ';border-color:' + fin.color + ';color:#fff' : '' }, fin ? fin.name[0] : cur ? '⏳' : '·'), x.trial ? 'Trial' : x.name.replace('Season ', 'S'))); });
+  const hc = card('HALL OF HONORS', 'your finishing color each season'); hc.appendChild(hon); main.appendChild(hc);
+}
+
+// ───────────────────────── Pack tab
+function cheerFeed() {
+  const c = card('CHEER SOMEONE ON', '+2 Merit per cheer · up to 5 a day'), seen = {};
+  const items = all('workout').filter(w => w.member !== me() && w.date >= addDays(AZ.today(), -2) && w.date <= AZ.today()).sort((a, b) => (b.date + (b.createdAt || 0)) > (a.date + (a.createdAt || 0)) ? 1 : -1)
+    .filter(w => { const k = (w.group || w.id) + w.member; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, 8);
+  if (!items.length) c.appendChild(h('p', { class: 'hint' }, 'Nobody else has logged in the last couple of days. Maybe send some encouragement?'));
+  items.forEach(w => { const m = M(w.member), sent = all('cheer').find(x => x.from === me() && x.to === w.member && x.date === AZ.today());
+    c.appendChild(h('div', { class: 'act-feed' }, h('div', { class: 'who' }, h('div', { class: 'fav', style: 'background:' + houseColor(w.member) }, m.role === 'pup' ? '🐾' : m.name[0]),
+      h('div', null, m.name + ' · ' + (ACT[w.act] ? ACT[w.act].icon : '') + ' ' + actLabel(w) + ' ' + w.min + 'm', h('small', null, fmtDow(w.date)))),
+      h('div', { class: 'emoji-row' }, CHEER_EMOJI.map(e => h('button', { class: sent && sent.emoji === e ? 'done' : '', type: 'button', 'aria-label': 'Cheer ' + e, onclick: () => { cheer(w.member, e, ''); render(); toast(e + ' sent to ' + m.name + ' · +2 Merit'); } }, e)),
+        h('button', { class: 'note', type: 'button', onclick: () => openCheerNote(w.member) }, '✍️ note')))); });
+  return c;
+}
+function openCheerNote(to) {
+  const body = h('div', { class: 'log-body' }), inp = h('input', { class: 'txt', type: 'text', maxlength: '140', placeholder: 'Say something kind…' }); let emoji = '👏';
+  const emo = h('div', { class: 'chips' }); const drawE = () => { clear(emo); CHEER_EMOJI.forEach(e => emo.appendChild(h('button', { class: 'chip-btn' + (e === emoji ? ' on' : ''), type: 'button', onclick: () => { emoji = e; drawE(); } }, e))); }; drawE();
+  body.appendChild(emo); body.appendChild(h('div', { class: 'chips', style: 'margin-top:10px' }, CHEER_PRESETS.map(t => h('button', { class: 'chip-btn', type: 'button', onclick: () => { inp.value = t; } }, t))));
+  body.appendChild(h('div', { style: 'margin-top:10px' }, inp));
+  body.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:12px', onclick: () => { cheer(to, emoji, inp.value.trim()); close(); render(); toast(emoji + ' Cheer sent to ' + M(to).name); } }, 'Send cheer'));
+  const close = openModal('Cheer ' + M(to).name, body);
+}
+function renderPack(main) {
+  main.appendChild(packSection(true));
+  main.appendChild(raceCard(true));
+  main.appendChild(cheerFeed());
+  const crowns = all('award').filter(a => a.kind === 'primus').sort((a, b) => a.week < b.week ? 1 : -1);
+  const pc = card('PRIMUS HISTORY', crowns.length + ' crowned');
+  if (!crowns.length) pc.appendChild(h('p', { class: 'hint' }, 'The first Primus is crowned at the end of the first week.'));
+  crowns.slice(0, 8).forEach(a => pc.appendChild(h('div', { class: 'ledger-row' }, h('span', { class: 'ld' }, fmtShort(a.week)), h('span', { class: 'll', style: 'color:' + houseColor(a.member) }, '♛ ' + M(a.member).name), h('span', { class: 'lp' }, '+' + a.pts))));
+  main.appendChild(pc);
+  const dc = card('THE DOGS', 'walks this season'), se = currentSeason();
+  dc.appendChild(h('div', { class: 'dogrow' }, dogs().map(dg => { const n = new Set(all('workout').filter(w => w.act === 'dogwalk' && w.date >= se.start && (w.dogs || []).includes(dg.id)).map(w => w.group || w.id)).size; return h('div', { class: 'dog' }, h('b', null, dg.icon + ' ' + n), dg.name); })));
+  main.appendChild(dc);
+  const wall = card('CHEER WALL', 'the whole family');
+  const cs = all('cheer').sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 8);
+  if (!cs.length) wall.appendChild(h('p', { class: 'hint' }, 'No cheers yet. Be the first.'));
+  cs.forEach(x => wall.appendChild(h('div', { class: 'cheer-row' }, h('span', { class: 'ce' }, x.emoji), h('span', { class: 'ct' }, M(x.from).name + ' → ' + M(x.to).name + (x.text ? ': "' + x.text + '"' : ''), h('small', null, fmtDow(x.date))))));
+  main.appendChild(wall);
+  main.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: openLoreLibrary }, '📜 The Lore of the Pack: learn the world of Red Rising'));
+}
+const GLOSSARY = [
+  ['🐺', 'The Howlers', 'Darrow\'s loyal crew in House Mars. They wear wolf cloaks and never leave anyone behind. Our app is named after them.'],
+  ['♛', 'Primus', 'The leader of a House at the Institute. Here, each week\'s Primus is whoever beat their own target by the most.'],
+  ['🎓', 'Proctors', 'The teachers who watch over the Institute. In our pack, the parents are Proctors.'],
+  ['🐾', 'Pups', 'Young wolves still learning the pack\'s ways. The kids are Pups, with their own ladder.'],
+  ['🎖', 'Merit', 'Our points. Earned by showing up, effort, time together, cheering, and hitting goals.'],
+  ['🌈', 'The Colors', 'In Red Rising everyone is born into a Color with a job. Our ranks climb the Colors: Red, Gray, Obsidian, Copper, Silver, Gold, then Peerless.'],
+  ['✦', 'Peerless Scarred', 'Golds who finish the Institute earn a scar and this title. It is the top rank of each season.'],
+  ['⚒', 'Sons of Ares', 'A secret group working for a fairer world. Dancer is one of their leaders and one of our coaches.'],
+  ['🎭', 'Carvers', 'Violets who reshape people with incredible skill. Mickey is one, and he coaches here.'],
+  ['🌸', 'Pinks', 'Experts in manners and the art of fitting in. Matteo is one, and he coaches here.'],
+];
+function openLoreLibrary() {
+  const body = h('div', { class: 'log-body' });
+  GLOSSARY.forEach(g => body.appendChild(h('div', { class: 'gloss' }, h('span', { class: 'gi' }, g[0]), h('div', null, h('b', null, g[1]), h('p', null, g[2])))));
+  const se = currentSeason(), rs = raceState(se);
+  body.appendChild(h('div', { class: 'fld' }, se.race.name + ' stations'));
+  se.race.stations.forEach(st => body.appendChild(h('button', { class: 'lore-row' + (rs.steps >= st.at ? '' : ' locked'), type: 'button', onclick: () => openLore(se, st) }, h('span', { class: 'li' }, rs.steps >= st.at ? st.icon : '🔒'), h('span', { class: 'll' }, st.name))));
+  body.appendChild(h('p', { class: 'hint', style: 'margin-top:12px' }, 'From the Red Rising books by Pierce Brown, retold kid-friendly.'));
+  openModal('📜 The Lore of the Pack', body);
+}
+
+// ───────────────────────── Settings: everything set once lives here
+function joinLink() { return location.origin + location.pathname + '#join=' + btoa(JSON.stringify({ g: Sync.id(), t: Sync.token() })); }
+function readJoin(str) {
+  try { const m = String(str).match(/#join=([A-Za-z0-9+/=_-]+)/); if (!m) return null; const o = JSON.parse(atob(m[1])); return o && o.g && o.t ? o : null; } catch (e) { return null; }
+}
+async function joinWith(o) {
+  Store.set('gist_id', o.g); Store.set('gist_token', o.t);
+  const ok = await Sync.pull(); if (ok !== false || Sync.state === 'ok') { ensureFamily(); toast('Joined the family pack ✓'); } render();
+}
+function openSettings() {
+  const body = h('div', { class: 'log-body' });
+  let pick = null;
+  const sec = (title, note) => { const x = h('div', { class: 'set-sec' }, h('h3', null, title)); if (note) x.appendChild(h('p', null, note)); body.appendChild(x); return x; };
+  const toggle = (label, on, fn) => h('button', { class: 'toggle' + (on ? ' on' : ''), type: 'button', role: 'switch', 'aria-checked': on ? 'true' : 'false', onclick: fn }, label, h('span', { class: 'sw' }));
+  const saveMember = patch => put(Object.assign({}, M(me()), patch));
+  function draw() {
+    clear(body); const id = me(), m = M(id), pup = isPup(id), c = cfg();
+    if (PREVIEW) sec('SAMPLE DATA', 'You are looking at sample data. Nothing you do here is saved or synced.').appendChild(h('button', { class: 'btn-primary', type: 'button', onclick: () => { close(); exitPreview(); } }, 'Leave sample data'));
+    sec('THIS PHONE', 'Who uses this phone. Set once; parents can still log for the kids.').appendChild(h('div', { class: 'chips' }, members().map(x => h('button', { class: 'chip-btn who' + (x.mid === id ? ' on' : ''), style: '--house:' + houseColor(x.mid), type: 'button', onclick: () => { Local.set('me', x.mid); draw(); render(); } }, (x.role === 'pup' ? '🐾 ' : '') + x.name))));
+    const cs = sec('MY COACH', 'Your voice from the Council of Coaches.' + (pup ? ' Pups\' coaches only ever talk about moving and having fun.' : ''));
+    cs.appendChild(h('div', { class: 'chips' }, Object.keys(COACHES).map(k => h('button', { class: 'chip-btn' + (m.coach === k ? ' on' : ''), type: 'button', onclick: () => { saveMember({ coach: k }); delete coachMsg[id]; draw(); render(); } }, COACHES[k].icon + ' ' + COACHES[k].name))));
+    if (!pup) {
+      const ws = sec('MY WEIGHT GOAL', 'Private. Pounds never leave this phone. The family sees your % only if you turn sharing on.');
+      ws.appendChild(h('div', { class: 'edit-row' }, h('span', { class: 'gl' }, 'Season goal'), h('div', { class: 'stepper' },
+        h('button', { type: 'button', 'aria-label': 'Less', onclick: () => { saveMember({ goalPct: Math.max(1, (m.goalPct || 10) - 1) }); draw(); render(); } }, '−'), h('b', null, '−' + (m.goalPct || 10) + '%'),
+        h('button', { type: 'button', 'aria-label': 'More', onclick: () => { saveMember({ goalPct: Math.min(20, (m.goalPct || 10) + 1) }); draw(); render(); } }, '+'))));
+      ws.appendChild(toggle('Share my % lost with the family', !!m.share, () => { saveMember({ share: !m.share }); syncProgressAwards(); draw(); render(); }));
+      const us = sec('MY USUALS', 'One-tap buttons on Today. Up to 4.'), usuals = (m.usuals || []).slice();
+      usuals.forEach((u, i) => us.appendChild(h('div', { class: 'edit-row' }, h('span', { class: 'gi' }, ACT[u.act].icon), h('span', { class: 'gl' }, ACT[u.act].name + ' · ' + u.min + ' min' + (u.together ? ' · with the kids' : '')),
+        h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Remove', onclick: () => { usuals.splice(i, 1); saveMember({ usuals }); draw(); render(); } }, '✕'))));
+      if (usuals.length < 4) {
+        if (!pick) us.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => { pick = { act: 'tread', min: 30, together: false }; draw(); } }, '＋ Add a usual'));
+        else { us.appendChild(h('div', { class: 'chips', style: 'margin-top:8px' }, ACTIVITIES.map(a => h('button', { class: 'chip-btn' + (pick.act === a.id ? ' on' : ''), type: 'button', 'aria-label': a.name, onclick: () => { pick.act = a.id; draw(); } }, a.icon))));
+          us.appendChild(h('div', { class: 'chips', style: 'margin-top:8px' }, [10, 20, 30, 45, 60].map(n => h('button', { class: 'chip-btn' + (pick.min === n ? ' on' : ''), type: 'button', onclick: () => { pick.min = n; draw(); } }, n + 'm'))));
+          us.appendChild(toggle('Includes the kids', pick.together, () => { pick.together = !pick.together; draw(); }));
+          us.appendChild(h('button', { class: 'btn-primary', type: 'button', onclick: () => { usuals.push(pick); pick = null; saveMember({ usuals }); draw(); render(); } }, 'Save ' + ACT[pick.act].name + ' ' + pick.min + 'm')); }
+      }
+      const fam = sec('FAMILY', 'Parents set these once for everyone.');
+      fam.appendChild(h('div', { class: 'fld', style: 'margin-top:0' }, 'Taekwondo days'));
+      fam.appendChild(h('div', { class: 'chips' }, DOWS.map((d, i) => h('button', { class: 'chip-btn' + (c.tkdDays.includes(i) ? ' on' : ''), type: 'button', onclick: () => { put(Object.assign({}, c, { tkdDays: c.tkdDays.includes(i) ? c.tkdDays.filter(x => x !== i) : c.tkdDays.concat(i).sort() })); draw(); render(); } }, d))));
+      fam.appendChild(h('div', { class: 'fld' }, 'The dogs'));
+      fam.appendChild(h('div', { class: 'two' }, c.dogs.map((dg, i) => h('input', { class: 'txt', type: 'text', value: dg.name, maxlength: '20', 'aria-label': 'Dog name', onchange: e => { const nd = c.dogs.map(x => Object.assign({}, x)); nd[i].name = e.target.value.trim() || dg.name; put(Object.assign({}, c, { dogs: nd })); render(); } }))));
+      const se = currentSeason();
+      fam.appendChild(h('div', { class: 'fld' }, 'Prize for ' + se.race.name));
+      fam.appendChild(h('input', { class: 'txt', type: 'text', maxlength: '80', placeholder: 'e.g. pancake breakfast + movie night', value: (c.prizes || {})[se.id] || '', onchange: e => { const p = Object.assign({}, c.prizes || {}); p[se.id] = e.target.value.trim(); put(Object.assign({}, c, { prizes: p })); render(); } }));
+    }
+    // Family sync
+    const sy = sec('FAMILY SYNC', Sync.on() ? (Sync.state === 'error' ? '⚠️ Last sync failed. Saved on this phone; it will retry.' : '✓ Connected. Changes sync within a few seconds.' + (Sync.lastAt ? ' Last sync ' + new Date(Sync.lastAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + '.' : '')) : 'Not connected: this phone only.');
+    if (Sync.on()) {
+      sy.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => Sync.pull().then(() => { render(); draw(); }) }, '↻ Sync now'));
+      if (!pup) sy.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:8px', onclick: async () => {
+        const link = joinLink();
+        if (navigator.share) { try { await navigator.share({ title: 'Join the Howler Pack', text: 'Open this on your phone to join the Howler Pack:', url: link }); return; } catch (e) { /* cancelled */ } }
+        try { await navigator.clipboard.writeText(link); toast('Join link copied. Send it to the family.'); } catch (e) { toast('Could not copy. Long-press to copy from the box below.'); }
+      } }, '📲 Invite family (join link)'));
+      if (!pup) sy.appendChild(h('p', { class: 'hint' }, 'The link carries the family sync key. Only send it to family, by text.'));
+    } else {
+      const ji = h('input', { class: 'txt', type: 'text', placeholder: 'Paste the family join link', autocomplete: 'off' });
+      sy.appendChild(h('div', { class: 'ai-row' }, ji, h('button', { class: 'chip-btn', type: 'button', onclick: () => { const o = readJoin(ji.value); if (!o) { toast('That doesn\'t look like a join link'); return; } joinWith(o).then(draw); } }, 'Join')));
+      if (!pup) {
+        const ti = h('input', { class: 'txt', type: 'password', placeholder: 'GitHub token (gist scope)', autocomplete: 'off' });
+        sy.appendChild(h('p', { class: 'hint', style: 'margin-top:10px' }, 'Starting the family pack? A parent pastes a GitHub token with gist access once; the app creates a private family file and gives you a link for everyone else.'));
+        sy.appendChild(h('div', { class: 'ai-row' }, ti, h('button', { class: 'chip-btn', type: 'button', onclick: async () => {
+          const t = ti.value.trim(); if (!t) { toast('Paste a token first'); return; }
+          try { ensureFamily(); const gid = await Sync.create(t); Store.set('gist_token', t); Store.set('gist_id', gid); Sync.set('ok'); toast('Family pack created ✓ Now invite the family.'); draw(); render(); } catch (e) { toast(/40[13]/.test(e.message) ? 'GitHub refused that token. It needs gist access.' : 'Could not create it (' + e.message + ').'); }
+        } }, 'Start')));
+      }
+    }
+    // Claude key
+    const ks = sec('CLAUDE KEY', pup ? 'Ask a parent to set this up on your phone.' : 'Powers the workout reader and live coaching. Stored only on this phone. Set a monthly spend limit on the key.');
+    if (keySource() === 'fuel') ks.appendChild(h('p', { class: 'hint' }, '✓ Using the key from your Fuel app on this phone.'));
+    const kin = h('input', { class: 'txt', type: 'password', placeholder: Store.get('anthropic_key', '') ? '•••••• saved' : 'sk-ant-…', autocomplete: 'off' });
+    ks.appendChild(h('div', { class: 'ai-row' }, kin, h('button', { class: 'chip-btn', type: 'button', onclick: () => { const v = kin.value.trim(); if (v) Store.set('anthropic_key', v); else Store.remove('anthropic_key'); toast(v ? 'Key saved on this phone' : 'Key removed'); draw(); render(); } }, 'Save')));
+    if (!pup) {
+      const fu = sec('FUEL', 'Your food app. The Pack reads today\'s calories and protein from it on this phone only.');
+      fu.appendChild(h('p', { class: 'hint' }, readFuel(AZ.today()) ? '✓ Fuel found on this phone.' : 'Fuel isn\'t on this phone yet.'));
+      fu.appendChild(h('a', { class: 'btn-ghost linkbtn', href: FUEL_URL, target: '_blank', rel: 'noopener' }, 'Open Fuel ↗'));
+      sec('PELOTON HISTORY', 'Missed a week? Pull everything from Peloton\'s free CSV.').appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => { close(); openImport(); } }, 'Import Peloton CSV'));
+    }
+    const nt = sec('REMINDERS', 'On your Pixel, the installed app can send notifications: cheers from the family, and an evening nudge if you haven\'t moved. Android decides how often it checks, so these can arrive late.');
+    const nOn = Store.get('notify', false) && 'Notification' in window && Notification.permission === 'granted';
+    nt.appendChild(toggle('Notifications on this phone', nOn, async () => { if (nOn) { Store.set('notify', false); swConfig(); draw(); return; } await enableNotifications(); draw(); }));
+    if (window.OrtizDrive && !pup && !PREVIEW) { const dv = sec('GOOGLE DRIVE COPY', 'A dated backup of the family data in your Drive (Ortiz App Backups › Howler Pack).'); try { dv.appendChild(OrtizDrive.settingsBlock({ buttonClass: 'btn-ghost', hintClass: 'hint' })); } catch (e) { /* drive unavailable */ } }
+    const dt = sec('DATA');
+    if (!PREVIEW) dt.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => { close(); enterPreview(); } }, '👀 Preview with sample data'));
+    dt.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => { const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' }); const a = h('a', { href: URL.createObjectURL(blob), download: 'howler-pack-' + AZ.today() + '.json' }); document.body.appendChild(a); a.click(); a.remove(); } }, '⬇ Save a backup file'));
+    if (!PREVIEW) dt.appendChild(h('button', { class: 'btn-ghost danger', type: 'button', onclick: () => confirmModal('Reset this phone?', 'Removes the pack data, keys and weigh-ins stored on this phone. Family data in sync stays safe.', 'Reset', () => {
+      ['data', 'me', 'gist_id', 'gist_token', 'anthropic_key', 'weighins', 'seen', 'tab', 'notify'].forEach(k => Store.remove(k)); location.reload(); }) }, 'Reset this phone'));
+    body.appendChild(h('p', { class: 'hint', style: 'margin-top:18px;text-align:center' }, 'The Howler Pack · ' + APP_VERSION));
+  }
+  const close = openModal('Settings', body); draw();
+}
+
+// ───────────────────────── Notifications (service worker polls the family file; Android decides the cadence)
+async function enableNotifications() {
+  if (!('Notification' in window) || !navigator.serviceWorker) { toast('This browser can\'t send notifications.'); return; }
+  const p = await Notification.requestPermission(); if (p !== 'granted') { toast('Notifications are blocked for this app in Android settings.'); return; }
+  Store.set('notify', true); swConfig();
+  try { const reg = await navigator.serviceWorker.ready; if (reg.periodicSync) await reg.periodicSync.register('pack-check', { minInterval: 3 * 3600 * 1000 }); } catch (e) { /* install the app for background checks */ }
+  toast('Notifications on ✓');
+}
+function swConfig() {
+  if (!navigator.serviceWorker || !navigator.serviceWorker.controller || PREVIEW) return;
+  navigator.serviceWorker.controller.postMessage({ type: 'CONFIG', config: { on: !!Store.get('notify', false), gistId: Sync.id(), token: Sync.token(), file: Sync.filename, me: me(), name: M(me()).name } });
+}
+
+// ───────────────────────── First run
+function renderWelcome(main) {
+  const join = readJoin(location.hash);
+  const c = h('div', { class: 'welcome' }, h('div', { class: 'crest-big' }, '🐺'), h('h1', null, 'The Howler Pack'),
+    h('p', { class: 'lede' }, 'Move together. Climb from Red to Gold. One season at a time.'),
+    h('div', { class: 'fld' }, 'Whose phone is this?'),
+    h('div', { class: 'who-grid' }, (members().length ? members() : DEFAULT_ROSTER.map(r => Object.assign({ mid: r.id }, r))).map(m => h('button', { class: 'who-btn', type: 'button', style: '--house:' + (HOUSES[m.house] || '#6e5f46'), onclick: async () => {
+      ensureFamily(); Local.set('me', m.mid);
+      if (join) { history.replaceState(null, '', location.pathname); await joinWith(join); } else render();
+      if (!Sync.on() && !PREVIEW) setTimeout(() => toast('Tip: connect family sync in Settings ⚙️'), 600);
+    } }, h('span', { class: 'who-dot' }, m.role === 'pup' ? '🐾' : m.name[0]), m.name, h('small', null, m.role === 'pup' ? 'Pup' : 'Proctor')))),
+    join ? h('p', { class: 'hint', style: 'text-align:center' }, '✓ Family link found. Pick your name to join.') : h('p', { class: 'hint', style: 'text-align:center' }, 'Have a join link from family? Open it on this phone first.'),
+    h('button', { class: 'btn-ghost', type: 'button', onclick: enterPreview }, '👀 Just look around with sample data'));
+  main.appendChild(c);
+}
+
+// ───────────────────────── Sample data preview (in memory only; pretends today is Dec 18)
+let _saved = null;
+function enterPreview() {
+  _saved = { DB, me: me() }; PREVIEW = true; for (const k in PREVIEW_MEM) delete PREVIEW_MEM[k];
+  DB = { records: {} }; ensureFamily(); Local.set('me', _saved.me || 'chris'); seedSample(); _ver++; TAB = 'today'; render(); scrollTo(0, 0);
+}
+function exitPreview() { PREVIEW = false; DB = _saved ? _saved.DB : Store.get('data', { records: {} }); _ver++; _saved = null; render(); scrollTo(0, 0); }
+function seedSample() {
+  let a = 7; const r = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const kidsIds = memberIds().filter(isPup), adults = memberIds().filter(x => !isPup(x)), list = [];
+  const grp = (ids, base) => { const g = ids.length > 1 ? rid('g') : null; ids.forEach((id, i) => list.push(Object.assign({ id: rid('w') + i, type: 'workout', member: id, group: g, createdAt: Date.now() }, base))); };
+  range('2026-12-01', addDays(PREVIEW_TODAY, -1)).forEach((d, i) => {
+    const wd = dow(d), weekend = wd >= 5;
+    if (cfg().tkdDays.includes(wd) && d !== addDays(PREVIEW_TODAY, -1)) grp(kidsIds, { date: d, act: 'tkd', min: 60, felt: 'normal', by: adults[1] || adults[0] });
+    if (r() < .6) { const crew = memberIds().filter(() => r() < .55); if (crew.length) grp(crew, { date: d, act: 'dogwalk', min: 20 + Math.floor(r() * 3) * 5, felt: 'easy', dogs: r() < .6 ? dogs().map(x => x.id) : [dogs()[r() < .5 ? 0 : 1].id] }); }
+    if (weekend && r() < .7) grp(kidsIds.concat(adults[r() < .5 ? 0 : 1] || adults[0]), { date: d, act: 'park', min: 60 + Math.floor(r() * 3) * 15, felt: 'normal' });
+    kidsIds.forEach(k => { if (!weekend && r() < .3) grp([k], { date: d, act: ['play', 'ride', 'bike', 'run', 'yoga'][Math.floor(r() * 5)], min: [20, 30][Math.floor(r() * 2)], felt: 'normal' }); });
+    adults.forEach((id, j) => { if (r() < (j ? .6 : .72)) { const acts = j ? ['bike', 'yoga', 'strength', 'bike'] : ['tread', 'bike', 'strength', 'tread'], act = acts[Math.floor(r() * 4)];
+      grp([id], { date: d, act, min: [20, 30, 30, 45][Math.floor(r() * 4)], felt: r() < .3 ? 'brutal' : r() < .6 ? 'normal' : 'easy', detail: act === 'tread' && r() < .6 ? { mph: Math.round((3.2 + r() * 3) * 10) / 10, incline: Math.round(r() * 8) } : act === 'bike' && r() < .6 ? { watts: 110 + Math.round(r() * 80) } : null }); } });
+  });
+  [['kat', 'chris', '2026-12-17', '🔥', 'That hill ride was no joke!'], ['sedona', 'river', '2026-12-17', '👏', ''], ['chris', 'sedona', '2026-12-16', '💪', 'Proud of you for going to TKD tired.'], ['river', 'kat', '2026-12-15', '🐺', '']]
+    .forEach(([f, t, d, e, x], i) => { if (rec('member_' + f) && rec('member_' + t)) list.push({ id: 'c_s' + i, type: 'cheer', from: f, to: t, date: d, emoji: e, text: x, createdAt: Date.now() - i * 1000 }); });
+  memberIds().forEach(id => ['month', 'season'].forEach(scope => list.push({ id: 'goals_' + id + '_' + scope + '_' + (scope === 'month' ? '2026-12' : 's0'), type: 'goals', member: id, scope, period: scope === 'month' ? '2026-12' : 's0',
+    list: scope === 'month' ? (isPup(id) ? [{ type: 'activeDays', target: 14 }, { type: 'tkd', target: 8 }] : [{ type: 'activeDays', target: 18 }, { type: 'peloton', target: 12 }, { type: 'weight', target: 2 }]) : [{ type: 'standards', target: 4 }] })));
+  const c0 = cfg(); list.push(Object.assign({}, c0, { prizes: { s0: 'Pancake breakfast + movie night 🥞🎬' } }));
+  DB.records = {}; ensureFamily(); list.forEach(x => { x.updatedAt = Date.now(); DB.records[x.id] = x; });
+  if (!isPup(me())) { const st = me() === 'kat' ? 158 : 214, rate = me() === 'kat' ? .07 : .21; const ws = [];
+    range('2026-12-01', addDays(PREVIEW_TODAY, -1)).forEach((d, i) => { if (i === 0 || r() < .8) ws.push({ date: d, lbs: Math.round((st - rate * i + (i ? (r() - .5) * 1.6 : 0)) * 10) / 10 }); });
+    saveWeighins(ws); Local.set('me', me()); put(Object.assign({}, M(me()), { share: true })); syncProgressAwards(); }
+  // crown the sample weeks' Primus
+  ['2026-11-30', '2026-12-07'].forEach(wk => { const p = primusOf(wk); if (p) DB.records['aw_primus_' + wk] = { id: 'aw_primus_' + wk, type: 'award', kind: 'primus', week: wk, member: p, cat: 'bonus', date: addDays(wk, 6), label: '♛ Primus of the week of ' + fmtShort(wk), pts: RULES.primus, updatedAt: Date.now() }; });
+  _ver++;
+}
+
+// ───────────────────────── Shell
+function go(tab) { TAB = tab; Store.set('tab', tab); render(); scrollTo(0, 0); }
+function render() {
+  const main = clear(document.getElementById('main')), tb = clear(document.getElementById('tabbar')), id = me();
+  document.getElementById('preview-bar').hidden = !PREVIEW;
+  if (!id || !rec('member_' + id)) { document.body.className = 'welcome-mode'; tb.hidden = true; document.getElementById('fab').hidden = true; renderWelcome(main); return; }
+  document.body.className = isPup(id) ? 'pup' : '';
+  tb.hidden = false;
+  const se = currentSeason();
+  document.getElementById('season').textContent = (preseason() ? 'Starts ' + fmtShort(se.start) : se.name + ' · ' + se.sub) + ' · ' + M(id).name;
+  [['today', '🏠', 'Today'], ['progress', '📈', 'Progress'], ['goals', '🎯', 'Goals'], ['pack', '🐺', 'Pack']].forEach(t => tb.appendChild(h('button', { class: TAB === t[0] ? 'on' : '', type: 'button', 'aria-current': TAB === t[0] ? 'page' : null, onclick: () => go(t[0]) }, h('span', { 'aria-hidden': 'true' }, t[1]), t[2])));
+  const fab = document.getElementById('fab'); fab.hidden = TAB === 'today'; fab.textContent = isPup(id) ? '🐾 I moved!' : '＋ Log';
+  try {
+    if (TAB === 'progress') renderProgress(main); else if (TAB === 'goals') renderGoals(main); else if (TAB === 'pack') renderPack(main); else renderToday(main);
+  } catch (e) { console.error(e); main.appendChild(card('SOMETHING WENT WRONG', null)).appendChild(h('p', null, 'This screen hit an error: ' + e.message + '. Your data is safe. Try another tab or reload.')); }
+  Sync.set(Sync.on() ? (Sync.state === 'off' ? 'ok' : Sync.state) : 'off');
+}
+async function handleShare() {
+  if (!/[?&]share=1/.test(location.search) || !('caches' in window)) return;
+  history.replaceState(null, '', location.pathname + location.hash);
+  try {
+    const c = await caches.open('pack-share'), imgRes = await c.match('shared-image'), txtRes = await c.match('shared-text');
+    const shared = {}; if (txtRes) shared.text = (await txtRes.text()).trim(); if (imgRes) shared.image = await shrinkImage(await imgRes.blob());
+    await c.delete('shared-image'); await c.delete('shared-text');
+    if ((shared.text || shared.image) && me()) openReader(shared);
+  } catch (e) { toast('Could not read what was shared.'); }
+}
+async function boot() {
+  loadLocal();
+  const join = readJoin(location.hash);
+  if (join && me()) { history.replaceState(null, '', location.pathname); await joinWith(join); }
+  if (me()) ensureFamily();
+  render();
+  if (Sync.on()) { await Sync.pull(); afterSync(); }
+  document.getElementById('gear').addEventListener('click', openSettings);
+  document.getElementById('fab').addEventListener('click', () => isPup(me()) ? openPupChooser() : openLog());
+  document.getElementById('sync-dot').addEventListener('click', () => { if (Sync.on()) Sync.pull().then(afterSync); else openSettings(); });
+  document.getElementById('preview-exit').addEventListener('click', exitPreview);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Sync.on()) Sync.pull().then(afterSync); });
+  setInterval(() => { if (document.visibilityState === 'visible' && Sync.on() && !document.querySelector('.modal-back')) Sync.pull().then(ch => { if (ch) afterSync(); }); }, 60000);
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready).then(() => { swConfig(); handleShare(); }).catch(() => { /* offline install not available */ });
+  }
+  if (window.OrtizDrive) try { OrtizDrive.init({ app: 'Howler Pack', prefix: 'howler-pack', getData: () => DB, toast, allowed: () => !!me() && !isPup(me()) && !PREVIEW, onChange: () => {} }); OrtizDrive.check(); } catch (e) { /* drive optional */ }
+}
+function afterSync() { if (PREVIEW || !me()) return; syncProgressAwards(); syncGoalAndPrimusAwards(); if (!document.querySelector('.modal-back')) render(); swConfig(); if (window.OrtizDrive) try { OrtizDrive.check(); } catch (e) { /* optional */ } }
+const APP_VERSION = 'v1.0 · Nov 2026';
+boot();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbf7ee"/><stop offset="1" stop-color="#efe3c6"/></linearGradient>
+    <linearGradient id="sh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a81414"/><stop offset="1" stop-color="#6e0b0b"/></linearGradient>
+    <linearGradient id="au" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1d77a"/><stop offset="1" stop-color="#b8920f"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <path d="M256,476 Q86,398 86,240 L86,96 Q170,74 256,54 Q342,74 426,96 L426,240 Q426,398 256,476 Z" fill="url(#sh)" stroke="#c9a227" stroke-width="10"/>
+  <path d="M256,446 Q114,376 114,240 L114,118 Q184,100 256,84 Q328,100 398,118 L398,240 Q398,376 256,446 Z" fill="none" stroke="#c9a227" stroke-width="3" opacity=".55"/>
+  <!-- wolf head -->
+  <path fill="url(#au)" d="M168,128 L214,206 L256,192 L298,206 L344,128 L352,238 L330,300 L292,344 L256,392 L220,344 L182,300 L160,238 Z"/>
+  <path fill="#7a0d0d" d="M256,392 L236,352 L256,340 L276,352 Z"/>
+  <path fill="#7a0d0d" d="M206,252 L236,262 L226,276 Z M306,252 L276,262 L286,276 Z"/>
+  <path fill="none" stroke="#7a0d0d" stroke-width="5" stroke-linejoin="round" d="M256,206 L256,322"/>
+</svg>
