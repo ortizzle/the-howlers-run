@@ -189,7 +189,7 @@ body.pup .fab { font-family: var(--fp); font-weight: 800; letter-spacing: 0; fon
 .season-banner small { color: var(--ink2); font-size: 13px; }
 .season-banner .left { text-align: right; font-family: var(--fh); font-size: 24px; line-height: 1; }
 .season-banner .left small { display: block; font-family: var(--fb); font-size: 11px; color: var(--ink2); }
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: 1fr 1fr 1fr; background: rgba(18,22,40,.96); border-top: 1px solid var(--line);
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: repeat(4, 1fr); background: rgba(18,22,40,.96); border-top: 1px solid var(--line);
   padding: 4px 8px calc(4px + env(safe-area-inset-bottom)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .tabbar button { min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); letter-spacing: .04em; }
 .tabbar button span { font-size: 20px; line-height: 1.1; }
@@ -229,6 +229,78 @@ body { padding-bottom: calc(150px + env(safe-area-inset-bottom)); }
 body.pup .big-acts { grid-template-columns: repeat(3, 1fr); gap: 8px; }
 body.pup .big-act { min-height: 86px; font-size: 14px; border-radius: 18px; }
 body.pup .big-act .ic { font-size: 30px; }
+/* ---------- round 4 ---------- */
+.logcard .usuals { margin-bottom: 8px; }
+.wrow { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; margin-top: 10px; }
+.wrow label { font-size: 14px; color: var(--muted); }
+.wrow input { min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); padding: 0 12px; font-size: 17px; width: 100%; }
+.wrow button { min-height: 48px; padding: 0 16px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.wrow small { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.coach { display: flex; gap: 12px; align-items: flex-start; }
+.coach .av { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-family: var(--fh); font-weight: 900; font-size: 18px; color: #fff; flex: 0 0 auto; }
+.coach .cbody { flex: 1; }
+.coach small { display: block; font-family: var(--fh); font-size: 11px; letter-spacing: .14em; color: var(--muted); }
+.coach p { font-style: italic; font-size: 16px; margin-top: 2px; }
+.coach .ask { margin-top: 8px; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); font-size: 13px; color: var(--ink2); }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.metric { background: var(--panel2); border-radius: 12px; padding: 10px 6px; text-align: center; }
+.metric b { display: block; font-family: var(--fh); font-size: 20px; line-height: 1.1; }
+.metric span { font-size: 11px; color: var(--muted); letter-spacing: .04em; }
+.metric.go b { color: var(--teal); }
+.fuel { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+.fuel .fl { font-size: 14px; }
+.fuel .fl .bar { margin: 4px 0 8px; height: 7px; }
+.fuel a { min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 12px; border: 1px solid var(--accent); color: var(--accent); text-decoration: none; font-size: 14px; white-space: nowrap; }
+.cheer-row { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.cheer-row:first-of-type { border-top: 0; }
+.cheer-row .ce { font-size: 24px; }
+.cheer-row .ct { flex: 1; line-height: 1.3; }
+.cheer-row .ct small { display: block; color: var(--muted); font-size: 12px; }
+.act-feed { padding: 12px 0; border-top: 1px solid var(--line); }
+.act-feed:first-of-type { border-top: 0; }
+.act-feed .who { display: flex; gap: 10px; align-items: center; font-size: 15px; }
+.act-feed .who small { display: block; color: var(--muted); font-size: 12px; }
+.emoji-row { display: flex; gap: 6px; margin-top: 8px; padding-left: 48px; flex-wrap: wrap; }
+.emoji-row button { min-width: 44px; min-height: 40px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); font-size: 18px; }
+.emoji-row button.note { font-size: 13px; padding: 0 10px; color: var(--muted); }
+.emoji-row button.done { border-color: var(--teal); background: rgba(79,195,181,.15); }
+.stats4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.stats4 .metric b { font-size: 17px; }
+.chart text { font-family: var(--fb); font-size: 10px; fill: var(--muted); }
+.private { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 8px; }
+.ladder2 { display: flex; flex-direction: column-reverse; gap: 3px; }
+.rung { display: flex; align-items: center; gap: 10px; font-size: 12px; min-height: 28px; }
+.rung .lvl { width: 44px; text-align: right; color: var(--muted); }
+.rung .bx { flex: 1; height: 24px; border-radius: 6px; border: 1px dashed var(--line); display: flex; align-items: center; padding: 0 10px; color: var(--muted); }
+.rung.done .bx { background: var(--accent); border: 1px solid var(--accent); color: var(--on-accent); font-weight: 600; }
+.rung.ms .bx { border-style: solid; }
+.rung.cap .bx { background: repeating-linear-gradient(45deg, rgba(242,169,59,.15) 0 6px, transparent 6px 12px); border-style: solid; color: var(--accent); }
+.wkrow { display: grid; grid-template-columns: 62px 1fr 48px; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.wkrow:first-of-type { border-top: 0; }
+.wkrow .seg { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: var(--panel2); }
+.wkrow .meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.wkrow .pts { font-family: var(--fh); font-size: 18px; text-align: right; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.mix { display: grid; grid-template-columns: 28px 1fr 56px; gap: 8px; align-items: center; font-size: 13px; margin-top: 6px; }
+.mix .v { text-align: right; color: var(--muted); }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal .h { font-size: 10px; text-align: center; color: var(--muted); }
+.cal .d { aspect-ratio: 1; border-radius: 8px; font-size: 11px; display: grid; place-items: center; color: var(--muted); background: var(--panel2); }
+.cal .d.on { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.cal .d.fut { opacity: .35; }
+.cal .d.today { box-shadow: 0 0 0 2px var(--ink2) inset; }
+.set-sec { margin-top: 18px; }
+.set-sec:first-of-type { margin-top: 4px; }
+.set-sec h3 { font-family: var(--fh); font-size: 13px; letter-spacing: .14em; color: var(--accent); margin-bottom: 8px; }
+.set-sec p { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.toggle { display: flex; align-items: center; justify-content: space-between; min-height: 48px; font-size: 15px; width: 100%; text-align: left; }
+.toggle .sw { width: 50px; height: 30px; border-radius: 99px; background: var(--panel2); border: 1px solid var(--line); position: relative; flex: 0 0 auto; }
+.toggle .sw::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--muted); transition: left .15s; }
+.toggle.on .sw { background: var(--accent); }
+.toggle.on .sw::after { left: 23px; background: var(--on-accent); }
+.txt { min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); padding: 0 12px; font-size: 16px; width: 100%; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 </style>
 </head>
 <body>
@@ -289,14 +361,14 @@ function fmtDow(k) { return DOWS[dow(k)] + ' ' + fmtShort(k); }
 
 /* ============================================================
    THE HOWLERS · FAMILY PACK — prototype engine (Season II: Iron Rain)
-   Pack (adults): Merit = consistency + MET-based effort + progress + habits
-   Pups (kids):   Paws  = consistency + moving minutes + together bonus
+   Proctors (parents): Merit = consistency + MET-based effort + progress (weight trend) + cheers
+   Pups (kids):        Merit = consistency + moving minutes + together + cheers (own, easier ladder)
    Prototype only: in-memory state, simulated "today" = Fri Dec 18.
    (DOM/date helpers are prepended from engine.js by build.py)
    ============================================================ */
 
 // ---------- Naming (placeholders until the family decides) ----------
-const NAMES = { pack: 'Family Pack', adults: 'Proctors', kids: 'Pups', adultUnit: 'Merit', kidUnit: 'Fangs', adultOne: 'Proctor', kidOne: 'Pup' };
+const NAMES = { pack: 'Family Pack', adults: 'Proctors', kids: 'Pups', adultUnit: 'Merit', kidUnit: 'Merit', adultOne: 'Proctor', kidOne: 'Pup' };
 
 // ---------- Seasons: December is the trial run, then quarterly seasons ----------
 const SEASONS = [
@@ -367,10 +439,13 @@ const PUP_BUTTONS = [{ act: 'tkd', min: 60 }, { act: 'dogwalk', min: 30 }, { act
   { act: 'run', min: 20 }, { act: 'walk', min: 30 }, { act: 'hike', min: 60 }, { act: 'yoga', min: 20 },
   { act: 'ride', min: 30 }, { act: 'bike', min: 20 }, { act: 'tread', min: 20 }];
 const MEM = {}; MEMBERS.forEach(m => MEM[m.id] = m);
-const TKD_DAYS = [0, 3]; // Mon & Thu
+const TKD_DAYS = [0, 3]; // Mon & Thu (editable in Settings → S.cfg.tkdDays)
 const KIDS = MEMBERS.filter(m => m.pup).map(m => m.id);
 
-const S = { workouts: [], weighins: [], habits: {}, goals: {}, me: 'chris', seen: {} };
+const S = { workouts: [], weighins: [], habits: {}, goals: {}, cheers: [], me: 'chris', seen: {},
+  // One-time setup lives in Settings
+  cfg: { tkdDays: [0, 3], dogs: ['Cookie', 'Biscuit'], fuelUrl: 'https://ortizzle.github.io/fuel/',
+    people: { chris: { coach: 'Sevro', goalPct: 10, share: true }, kat: { coach: 'Mustang', goalPct: 8, share: true }, sedona: { coach: 'Pax' }, river: { coach: 'Holiday' } } } };
 let _id = 1; function nid() { return 'x' + (_id++); }
 function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
@@ -433,10 +508,16 @@ function seedDemo() {
     });
     // Adult habits + weigh-ins
     [['chris', 214, 0.21, 0.85], ['kat', 158, 0.07, 0.5]].forEach(([mid, start, rate, p]) => {
-      (S.habits[mid] = S.habits[mid] || {})[d] = MEM[mid].habits.map(() => r() < 0.7);
       if (i === 0 || r() < p) S.weighins.push({ member: mid, date: d, lbs: Math.round((start - rate * i + (i ? (r() - 0.5) * 1.6 : 0)) * 10) / 10 });
     });
   });
+  S.cheers = [
+    { id: nid(), from: 'kat', to: 'chris', date: '2026-12-17', emoji: '🔥', text: 'That hill ride was no joke!' },
+    { id: nid(), from: 'sedona', to: 'river', date: '2026-12-17', emoji: '👏', text: '' },
+    { id: nid(), from: 'chris', to: 'sedona', date: '2026-12-16', emoji: '💪', text: 'Proud of you for going to TKD tired.' },
+    { id: nid(), from: 'river', to: 'kat', date: '2026-12-15', emoji: '🐺', text: '' },
+    { id: nid(), from: 'chris', to: 'kat', date: '2026-12-18', emoji: '👏', text: 'Way to show up!' },
+  ];
   S.goals = {
     chris:  { month: [{ type: 'activeDays', target: 20 }, { type: 'peloton', target: 14 }, { type: 'weight', target: 2 }], season: [{ type: 'standards', target: 4 }] },
     kat:    { month: [{ type: 'activeDays', target: 16 }, { type: 'dogs', target: 15 }, { type: 'weight', target: 1.5 }], season: [{ type: 'standards', target: 3 }] },
@@ -494,6 +575,12 @@ function score(mid) {
     weeks.push({ key: wk, complete, active, standard: std, mult });
     if (complete) chain = std ? Math.min(chain + 1, RULES.chainMax) : Math.max(chain - 1, 0);
   }
+  // Cheering others: +2 Merit each, up to 5 a day. Support is a skill worth practicing.
+  const cheerDays = {};
+  S.cheers.filter(c => c.from === mid && c.date >= SEASON.start && c.date <= today).forEach(c => {
+    cheerDays[c.date] = (cheerDays[c.date] || 0) + 1;
+    if (cheerDays[c.date] <= 5) add(c.date, 'together', 'Cheered ' + MEM[c.to].name + ' ' + c.emoji, 2);
+  });
   let pctLost = null;
   if (!m.pup) {
     const ws = S.weighins.filter(w => w.member === mid && w.date <= today).sort((a, b) => a.date < b.date ? -1 : 1);
@@ -663,6 +750,76 @@ function openImport(onDone) {
   const close = openModal('Import from Peloton', body);
 }
 
+// ---------- Council of Ares: coaches for everyone ----------
+const COACHES = {
+  Sevro:   { color: '#9a1010', voice: 'Sevro: scrappy, funny, fiercely loyal; short punchy lines; playful nicknames like "goodman"; never crude.' },
+  Mustang: { color: '#c9a227', voice: 'Mustang: calm, wise, strategic; speaks about patience and the long game.' },
+  Ragnar:  { color: '#4a5d78', voice: 'Ragnar: gentle giant; slow, steady encouragement about strength and patience.' },
+  Pax:     { color: '#d48a1a', voice: 'Pax: big-hearted and joyful; cheers loudly and celebrates every small win.' },
+  Holiday: { color: '#5a7a5a', voice: 'Holiday: steady, dry humor; notices consistency and quiet effort.' },
+};
+function coachOf(mid) { return S.cfg.people[mid].coach; }
+function coachStats(mid) {
+  const sc = score(mid), m = MEM[mid], wk = sc.cur, left = Math.max(0, sc.R.standardDays - wk.active);
+  const last = S.workouts.filter(w => w.member === mid && w.date <= SEASON.today).sort((a, b) => a.date < b.date ? 1 : -1)[0];
+  const cheersIn = S.cheers.filter(c => c.to === mid && c.date >= addDays(SEASON.today, -3)).length;
+  const o = { name: m.name, role: m.pup ? 'kid (age ' + m.age + ')' : 'parent', activeDaysThisWeek: wk.active, weeklyTarget: sc.R.standardDays, daysLeftInWeek: 6 - dow(SEASON.today),
+    standardMet: wk.standard, chainWeeks: sc.chain, rank: sc.rank.rank.name, lastWorkout: last ? ACT[last.act].name + ' on ' + fmtDow(last.date) : 'none yet', cheersReceivedLast3Days: cheersIn };
+  if (!m.pup && S.cfg.people[mid].goalPct) { const w = S.weighins.filter(x => x.member === mid); if (w.length > 1) o.weightTrendPctSinceStart = -(sc.pctLost || 0).toFixed(1); }
+  o.left = left; return o;
+}
+// Offline line (no key): built from the same stats
+function coachLine(mid) {
+  const st = coachStats(mid), c = coachOf(mid), kid = MEM[mid].pup;
+  const open = { Sevro: 'Listen, goodman.', Mustang: 'Steady.', Ragnar: 'Strength is patience.', Pax: 'YES!', Holiday: 'Noted.' }[c];
+  if (st.standardMet) return open + ' ' + (kid ? 'You hit your ' + st.weeklyTarget + ' days already. Everything else this week is a bonus.' : 'Standard met with ' + st.daysLeftInWeek + ' days to spare. Rest is part of the plan too.');
+  if (st.left <= st.daysLeftInWeek + 1) return open + ' ' + st.left + ' more active day' + (st.left === 1 ? '' : 's') + ' this week. ' + (kid ? 'A walk with Cookie & Biscuit counts!' : 'Twenty minutes is all it costs.');
+  return open + ' This week got away from us. That happens. Show up tomorrow and the streak starts climbing again.';
+}
+async function askCoach(mid) {
+  const key = getKey(); if (!key) throw new Error('NO_KEY');
+  const st = coachStats(mid), kid = MEM[mid].pup, c = coachOf(mid);
+  const system = 'You are ' + COACHES[c].voice + ' You coach one member of a family fitness app themed on the Red Rising books. ' +
+    'Write 2 or 3 short sentences of encouragement based only on the stats given. Be specific to the numbers. Celebrate effort and consistency over results. ' +
+    (kid ? 'This is a child: talk only about movement, fun and showing up. Never mention weight, food, bodies or appearance. Keep it warm and age-appropriate. '
+         : 'This is a parent. If a weight trend is given, mention it lightly and never shame; consistency matters more. Never suggest crash dieting. ') +
+    'Points are called Merit; never confuse Merit with minutes or miles. No hashtags, no emoji spam (one emoji at most).';
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2026-10-21',
+      'anthropic-beta': 'server-side-fallback-2026-07-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: AI_MODEL, max_tokens: 16000, fallbacks: 'default', output_config: { effort: 'low' }, system,
+      messages: [{ role: 'user', content: 'Stats as of ' + fmtDow(SEASON.today) + ':\n' + JSON.stringify(st) }] }),
+  });
+  if (!res.ok) throw new Error('HTTP_' + res.status);
+  const data = await res.json();
+  if (data.stop_reason === 'refusal') throw new Error('REFUSED');
+  return data.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+}
+
+// ---------- Cheers: support, never trash talk ----------
+const CHEER_EMOJI = ['🔥', '👏', '💪', '🐺', '❤️'];
+const CHEER_PRESETS = ['Way to show up!', 'Proud of you!', 'That streak though!', 'You made it look easy.', 'Thanks for walking the dogs!'];
+function cheer(to, emoji, text) { S.cheers.unshift({ id: nid(), from: S.me, to, date: SEASON.today, emoji, text: text || '' }); }
+
+// ---------- Fuel (ortizzle.github.io/fuel) — read-only, same site so same storage ----------
+// Fuel keeps fuel_data {records:{id: entry}} and fuel_settings {targets}. Read on this phone only; never synced to the family data.
+function readFuel(date) {
+  try {
+    const data = JSON.parse(localStorage.getItem('fuel_data') || 'null'), set = JSON.parse(localStorage.getItem('fuel_settings') || 'null');
+    if (data && data.records) {
+      const t = { kcal: 0, protein: 0, entries: 0 };
+      Object.values(data.records).forEach(e => { if (e.type === 'entry' && !e.deleted && e.date === date && e.per) { const n = e.servings || 1; t.kcal += (e.per.kcal || 0) * n; t.protein += (e.per.protein || 0) * n; t.entries++; } });
+      const tg = (set && set.targets) || { kcal: 2200, protein: 160 };
+      return { live: true, kcal: Math.round(t.kcal), protein: Math.round(t.protein), entries: t.entries, kcalT: tg.kcal, proteinT: tg.protein };
+    }
+  } catch (e) { /* fall through */ }
+  return S.me === 'chris' ? { live: false, kcal: 1420, protein: 112, entries: 3, kcalT: 2200, proteinT: 160 } : null; // prototype demo
+}
+
+// ---------- Quick weigh-in (parents, private) ----------
+function logWeighIn(lbs) { const before = score(S.me).total; S.weighins = S.weighins.filter(w => !(w.member === S.me && w.date === SEASON.today)); S.weighins.push({ member: S.me, date: SEASON.today, lbs }); return score(S.me).total - before; }
+
 // ---------- Settings (API key lives only in this browser's localStorage) ----------
 const KEY_NAME = 'howlers_family_anthropic_key';
 function getKey() { try { return localStorage.getItem(KEY_NAME) || ''; } catch (e) { return ''; } }
@@ -781,33 +938,34 @@ seedDemo();
 
 
 let TAB = 'today';
+const coachMsg = {}; // AI replies, per person, this session
+const CAT_COLORS = { consistency: '#f2a93b', effort: '#ff8a5b', progress: '#4fc3b5', together: '#a78bfa', habits: '#888' };
+const CAT_LABEL = { consistency: 'Showing up', effort: 'Effort', progress: 'Progress', together: 'Together & cheers' };
 
+// ---------- shared pieces ----------
+function card(title, right) { const c = h('div', { class: 'card' }); if (title) c.appendChild(h('div', { class: 'card-t' }, h('span', null, title), right ? h('span', { class: 'r' }, right) : null)); return c; }
 function ladderEl(sc) {
-  const r = sc.rank, L = r.list;
-  const bar = h('div', { class: 'ladder' }), names = h('div', { class: 'ladder-names' });
+  const r = sc.rank, L = r.list, bar = h('div', { class: 'ladder' }), names = h('div', { class: 'ladder-names' });
   L.forEach((x, i) => { bar.appendChild(h('div', { class: 'rg' + (i < r.i ? ' done' : i === r.i ? ' cur' : ''), style: 'background:' + x.color })); names.appendChild(h('div', { class: i === r.i ? 'cur' : '' }, x.name)); });
   return [bar, names];
 }
-function rankCard(sc, pup) {
-  const r = sc.rank, unit = sc.R.unit;
-  return h('div', { class: 'card' },
-    h('div', { class: 'card-t' }, h('span', null, SEASON.name.toUpperCase() + ' RANK'), h('span', { class: 'r' }, 'resets each season')),
-    h('div', { class: 'rank-line' },
-      h('div', { class: pup ? 'pup-rank' : 'rank-big', style: 'color:' + r.rank.color }, r.rank.name + (pup ? ' ' + NAMES.kidOne : '')),
-      h('div', { class: 'rank-pts' }, sc.total + ' ' + unit + (r.next ? ' · ' + (r.next.min - sc.total) + ' to ' + r.next.name : ''))),
-    ladderEl(sc));
+function rankCard(sc) {
+  const r = sc.rank, c = card(SEASON.name.toUpperCase() + ' RANK', 'resets each season');
+  c.appendChild(h('div', { class: 'rank-line' }, h('div', { class: sc.m.pup ? 'pup-rank' : 'rank-big', style: 'color:' + r.rank.color }, r.rank.name + (sc.m.pup ? ' ' + NAMES.kidOne : '')),
+    h('div', { class: 'rank-pts' }, sc.total + ' Merit' + (r.next ? ' · ' + (r.next.min - sc.total) + ' to ' + r.next.name : ''))));
+  c.appendChild(h('div', null, ladderEl(sc))); return c;
 }
 function seasonBanner() {
   const left = daysBetween(SEASON.today, SEASON.end);
   return h('div', { class: 'season-banner' },
     h('div', null, h('b', null, SEASON.name + (SEASON.trial ? ' · ' + SEASON.sub : '')),
-      h('small', null, SEASON.trial ? 'December is practice. Everyone starts fresh on Jan 1 for ' + NEXT_SEASON.name + '.' : SEASON.sub + ' · ' + fmtShort(SEASON.start) + ' – ' + fmtShort(SEASON.end))),
+      h('small', null, SEASON.trial ? 'December is practice. Everyone starts fresh Jan 1 for ' + NEXT_SEASON.name + ': ' + NEXT_SEASON.sub + '.' : SEASON.sub + ' · ' + fmtShort(SEASON.start) + ' – ' + fmtShort(SEASON.end))),
     h('div', { class: 'left' }, left, h('small', null, 'days left')));
 }
 function tkdPrompt() {
   for (let back = 0; back < 3; back++) {
     const d = addDays(SEASON.today, -back);
-    if (!TKD_DAYS.includes(dow(d))) continue;
+    if (!S.cfg.tkdDays.includes(dow(d))) continue;
     const went = KIDS.filter(k => S.workouts.some(w => w.member === k && w.date === d && w.act === 'tkd'));
     if (went.length === KIDS.length || S.seen['tkd' + d]) return null;
     const missing = KIDS.filter(k => !went.includes(k)).filter(k => !MEM[S.me].pup || k === S.me);
@@ -823,70 +981,229 @@ function tkdPrompt() {
   }
   return null;
 }
-// "Mom added Taekwondo for you" — entries someone else logged since you last looked
 function newForYou() {
   const mine = S.workouts.filter(w => w.member === S.me && w.by && w.by !== S.me && !S.seen[w.id] && w.date >= addDays(SEASON.today, -7));
   if (!mine.length) return null;
   const who = MEM[mine[mine.length - 1].by].name;
-  const acts = mine.map(w => ACT[w.act].icon + ' ' + ACT[w.act].name + ' (' + DOWS[dow(w.date)] + ')').join(', ');
-  return h('div', { class: 'card newfor' }, h('span', { style: 'font-size:22px' }, '📬'), h('span', null, who + ' added ' + acts + ' for you.'),
+  return h('div', { class: 'card newfor' }, h('span', { style: 'font-size:22px' }, '📬'),
+    h('span', null, who + ' added ' + mine.map(w => ACT[w.act].icon + ' ' + ACT[w.act].name + ' (' + DOWS[dow(w.date)] + ')').join(', ') + ' for you.'),
     h('button', { class: 'modal-x x', type: 'button', 'aria-label': 'Dismiss', onclick: () => { mine.forEach(w => S.seen[w.id] = 1); render(); } }, '✓'));
 }
-function familyBoard(all) {
-  const box = h('div');
-  MEMBERS.forEach(m => {
-    const sc = all[m.id], mini = h('div', { class: 'mini' });
-    range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => mini.appendChild(h('i', { class: sc.isActive(d) ? 'on' : '' })));
-    box.appendChild(h('div', { class: 'fam' }, h('div', { class: 'fav', style: 'background:' + m.house }, m.pup ? '🐾' : m.name[0]),
-      h('div', { class: 'fname' }, m.name, h('span', { class: 'rpill', style: 'background:' + sc.rank.rank.color }, sc.rank.rank.name),
-        h('small', null, (m.pup ? NAMES.kidOne : NAMES.adultOne) + ' · ' + sc.cur.active + '/' + sc.R.standardDays + ' this week' + (sc.cur.standard ? ' ✦' : '') + (sc.chain ? ' · ' + '🔥'.repeat(sc.chain) : ''))), mini));
-  });
-  return h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'THE ' + NAMES.pack.toUpperCase()), h('span', { class: 'r' }, 'own ladders')), box);
+function coachCard(mid) {
+  const c = coachOf(mid), msg = coachMsg[mid] || coachLine(mid), hasKey = !!getKey();
+  const btn = h('button', { class: 'ask', type: 'button', onclick: async e => {
+    if (!hasKey) { toast('Live coaching needs a Claude key: Settings ⚙️'); return; }
+    e.target.textContent = c + ' is thinking…'; e.target.disabled = true;
+    try { coachMsg[mid] = await askCoach(mid); } catch (er) { toast(er.message === 'HTTP_401' ? 'Key not accepted. Check Settings.' : 'Coach is unavailable right now'); }
+    render(); } }, hasKey ? '💬 Ask ' + c + ' about my week' : '💬 Live coaching: add a key in Settings');
+  return h('div', { class: 'card coach' }, h('div', { class: 'av', style: 'background:' + COACHES[c].color }, c[0]),
+    h('div', { class: 'cbody' }, h('small', null, 'COUNCIL OF ARES · ' + c.toUpperCase()), h('p', null, msg), btn));
 }
-function questsCard() {
-  const c = h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'FAMILY QUESTS'), h('span', { class: 'r' }, 'done together')));
-  familyQuests().forEach(q => c.appendChild(h('div', { class: 'quest' },
-    h('div', { class: 'qtop' }, h('span', null, q.icon + ' ' + q.name + ' ', h('small', null, q.val.toLocaleString() + '/' + q.goal.toLocaleString())), h('span', { class: 'rw' }, q.reward)),
-    h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, q.val / q.goal * 100) + '%' })))));
-  c.appendChild(h('div', { class: 'dogrow' }, DOGS.map(dg => h('div', { class: 'dog' }, h('b', null, dg.icon + ' ' + dogWalks(dg.id)), dg.name + "'s walks"))));
+function cheersForMe() {
+  const mine = S.cheers.filter(x => x.to === S.me && x.date >= addDays(SEASON.today, -3));
+  if (!mine.length) return null;
+  const c = card('CHEERS FOR YOU', mine.length + ' this week');
+  mine.slice(0, 3).forEach(x => c.appendChild(h('div', { class: 'cheer-row' }, h('span', { class: 'ce' }, x.emoji),
+    h('span', { class: 'ct' }, MEM[x.from].name + (x.text ? ': "' + x.text + '"' : ' cheered you on'), h('small', null, fmtDow(x.date))),
+    h('button', { class: 'chip-btn', type: 'button', onclick: () => { cheer(x.from, '❤️', ''); render(); toast('❤️ sent to ' + MEM[x.from].name + ' · +2 Merit'); } }, '❤️ back'))));
   return c;
 }
-function weekCard(sc) {
+function weekDots(sc) {
   const week = h('div', { class: 'week' });
-  range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => {
-    const di = sc.day[d], on = sc.isActive(d);
-    week.appendChild(h('div', { class: 'wd' }, h('div', { class: 'c' + (on ? ' act' : di ? ' part' : '') + (d === SEASON.today ? ' today' : '') + (d > SEASON.today ? ' fut' : '') }, di ? ACT[di.list[di.list.length - 1].act].icon : ''), DOWS[dow(d)][0]));
-  });
-  return h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'THIS WEEK · ' + sc.m.name.toUpperCase()), h('span', { class: 'r' }, 'Chain ×' + sc.cur.mult.toFixed(1))), week,
-    h('div', { class: 'wk-sum' }, h('span', null, sc.cur.standard ? '✦ Standard met' : sc.cur.active + ' of ' + sc.R.standardDays + ' Active Days'), h('span', null, h('b', null, sc.byWeek[sc.cur.key] || 0), ' ' + sc.R.unit)));
+  range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => { const di = sc.day[d];
+    week.appendChild(h('div', { class: 'wd' }, h('div', { class: 'c' + (sc.isActive(d) ? ' act' : di ? ' part' : '') + (d === SEASON.today ? ' today' : '') + (d > SEASON.today ? ' fut' : '') }, di ? ACT[di.list[di.list.length - 1].act].icon : ''), DOWS[dow(d)][0])); });
+  return week;
+}
+function weightSeries(mid) {
+  const ws = S.weighins.filter(w => w.member === mid && w.date >= SEASON.start && w.date <= SEASON.today).sort((a, b) => a.date < b.date ? -1 : 1);
+  if (!ws.length) return null;
+  const start = ws[0].lbs; let trend = start, low = start, cred = 0; const series = [], wkStart = {};
+  ws.forEach(w => { trend += 0.3 * (w.lbs - trend); low = Math.min(low, trend); series.push({ date: w.date, lbs: w.lbs, trend });
+    const wk = weekKey(w.date); if (!(wk in wkStart)) wkStart[wk] = cred;
+    const tgt = Math.floor(Math.min((start - low) / start * 100, wkStart[wk] + RULES.weeklyPctCap) / RULES.stepPct) * RULES.stepPct; if (tgt > cred) cred = tgt; });
+  const goalPct = S.cfg.people[mid].goalPct || 10, weeks = Math.max(1, (daysBetween(SEASON.start, SEASON.today) + 1) / 7), pct = (start - trend) / start * 100;
+  return { start, trend, low, pct, credited: cred, series, goalPct, goalLbs: start * (1 - goalPct / 100), pace: pct / weeks, holdOk: trend <= start * 1.005 };
 }
 
-// ---------- Goals tab ----------
+// ---------- TODAY ----------
+function renderParentToday(main, all) {
+  const sc = all[S.me], m = sc.m;
+  const nf = newForYou(); if (nf) main.appendChild(nf);
+  // 1) Entry first
+  const lc = card('LOG IT', 'tap = logged · 5s undo'); lc.classList.add('logcard');
+  const us = h('div', { class: 'usuals' });
+  m.usuals.forEach(u => us.appendChild(h('button', { class: 'usual', type: 'button', onclick: () => quickUsual(u, render) }, h('span', { class: 'ic' }, ACT[u.act].icon),
+    h('span', null, (u.act === 'dogwalk' ? DOGS.map(x => x.name).join(' & ') : ACT[u.act].name) + ' ' + u.min + 'm', h('small', null, u.together ? '+ the kids' : 'one tap')))));
+  lc.appendChild(us);
+  lc.appendChild(h('button', { class: 'ai-btn', type: 'button', onclick: () => openAIReader(render) }, '✨ Paste or snap a Peloton summary'));
+  const todayW = S.weighins.find(w => w.member === S.me && w.date === SEASON.today);
+  const win = h('input', { type: 'number', inputmode: 'decimal', step: '0.1', placeholder: todayW ? String(todayW.lbs) : 'lbs', 'aria-label': 'Weight in pounds' });
+  lc.appendChild(h('div', { class: 'wrow' }, h('label', null, '⚖️ Weigh-in'), win,
+    h('button', { type: 'button', onclick: () => { const v = parseFloat(win.value); if (!(v > 50 && v < 500)) { toast('Enter your weight in lbs'); return; } const g = logWeighIn(v); render(); toast('Weigh-in saved' + (g ? ' · +' + g + ' Merit' : '') + ' · only you see pounds'); } }, todayW ? 'Update' : 'Save'),
+    h('small', null, todayW ? '✓ Logged today. Points come from the weekly trend, so daily swings never cost you.' : 'Optional and private. Once a week earns +5; the trend line does the rest.')));
+  lc.appendChild(h('button', { class: 'more-link', type: 'button', onclick: () => openLog(render) }, 'Something else…'));
+  main.appendChild(lc);
+  const p = tkdPrompt(); if (p) main.appendChild(p);
+  // 2) Motivation
+  main.appendChild(coachCard(S.me));
+  const w = weightSeries(S.me), mc = card('THIS WEEK', 'Chain ×' + sc.cur.mult.toFixed(1));
+  mc.appendChild(weekDots(sc));
+  mc.appendChild(h('div', { class: 'metrics' },
+    h('div', { class: 'metric' + (sc.cur.standard ? ' go' : '') }, h('b', null, sc.cur.standard ? '✦' : sc.cur.active + '/' + sc.R.standardDays), h('span', null, sc.cur.standard ? 'STANDARD MET' : 'ACTIVE DAYS')),
+    h('div', { class: 'metric' }, h('b', null, sc.byWeek[sc.cur.key] || 0), h('span', null, 'MERIT THIS WEEK')),
+    w ? h('div', { class: 'metric go', role: 'button', tabindex: '0', onclick: () => { TAB = 'progress'; render(); scrollTo(0, 0); } }, h('b', null, '▼' + w.pct.toFixed(1) + '%'), h('span', null, 'TREND SINCE DEC 1 ›'))
+      : h('div', { class: 'metric' }, h('b', null, sc.chain ? '🔥'.repeat(sc.chain) : '—'), h('span', null, 'STREAK'))));
+  mc.appendChild(h('div', { style: 'margin-top:12px' }, h('div', { class: 'rank-line' }, h('b', { style: 'color:' + sc.rank.rank.color + ';font-family:var(--fh)' }, sc.rank.rank.name),
+    h('span', { class: 'rank-pts' }, sc.total + ' Merit' + (sc.rank.next ? ' · ' + (sc.rank.next.min - sc.total) + ' to ' + sc.rank.next.name : ''))), ladderEl(sc)));
+  main.appendChild(mc);
+  const ch = cheersForMe(); if (ch) main.appendChild(ch);
+  const f = readFuel(SEASON.today);
+  if (f) {
+    const fc = card('FUEL TODAY', f.live ? 'from your Fuel app' : 'demo · from your Fuel app');
+    fc.appendChild(h('div', { class: 'fuel' }, h('div', { class: 'fl' },
+      h('div', null, f.kcal.toLocaleString() + ' / ' + f.kcalT.toLocaleString() + ' kcal'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, f.kcal / f.kcalT * 100) + '%' })),
+      h('div', null, 'Protein ' + f.protein + ' / ' + f.proteinT + ' g'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, f.protein / f.proteinT * 100) + '%;background:var(--teal)' }))),
+      h('a', { href: S.cfg.fuelUrl, target: '_blank', rel: 'noopener' }, 'Open Fuel ↗')));
+    fc.appendChild(h('div', { class: 'hint' }, 'Read from Fuel on this phone only. Food never goes into the family data.'));
+    main.appendChild(fc);
+  }
+}
+function renderPupToday(main, all) {
+  const sc = all[S.me], m = sc.m, left = Math.max(0, sc.R.standardDays - sc.cur.active);
+  main.appendChild(h('div', { class: 'pup-hi' }, 'Hi ' + m.name + '! 🐾', h('small', null, sc.chain ? 'Your streak is on fire ' + '🔥'.repeat(sc.chain) : 'Every day you move counts.')));
+  const nf = newForYou(); if (nf) main.appendChild(nf);
+  const acts = h('div', { class: 'big-acts' });
+  PUP_BUTTONS.forEach(u => acts.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => openLog(render, u) }, h('span', { class: 'ic' }, ACT[u.act].icon),
+    u.act === 'bike' ? 'Peloton Bike' : u.act === 'tread' ? 'Peloton Tread' : u.act === 'dogwalk' ? DOGS.map(x => x.name).join(' & ') : ACT[u.act].name)));
+  acts.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => openLog(render) }, h('span', { class: 'ic' }, '➕'), 'Other'));
+  const ac = card('I MOVED!'); ac.appendChild(acts); main.appendChild(ac);
+  const p = tkdPrompt(); if (p) main.appendChild(p);
+  const paws = h('div', { class: 'paws' });
+  range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => paws.appendChild(h('div', { class: 'paw' }, h('div', { class: 'c' + (sc.isActive(d) ? ' on' : '') + (d === SEASON.today ? ' today' : '') }, '🐾'), DOWS[dow(d)].slice(0, 2))));
+  const wc = card('THIS WEEK', sc.byWeek[sc.cur.key] + ' Merit'); wc.appendChild(paws);
+  wc.appendChild(h('div', { class: 'pup-msg' }, left ? left + ' more day' + (left > 1 ? 's' : '') + ' this week!' : 'Week goal done! 🎉',
+    h('small', null, left ? 'Move on ' + sc.R.standardDays + ' days to keep your streak growing' : 'Anything else this week is bonus Merit')));
+  main.appendChild(wc);
+  main.appendChild(coachCard(S.me));
+  const ch = cheersForMe(); if (ch) main.appendChild(ch);
+}
+
+// ---------- PROGRESS ----------
+function weightChart(w) {
+  const W = 520, H = 220, L = 34, R = 10, T = 12, B = 24, x0 = SEASON.start, x1 = addDays(SEASON.today, 3), span = daysBetween(x0, x1);
+  const lo = Math.min(...w.series.map(p => p.lbs)) - 2, hi = Math.max(w.start, ...w.series.map(p => p.lbs)) + 1;
+  const X = d => L + daysBetween(x0, d) / span * (W - L - R), Y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const g = s('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'chart', width: '100%', role: 'img', 'aria-label': 'Weight trend' });
+  const corr = d => { const k = daysBetween(x0, d) / 7; return [w.start * (1 - 0.005 * k), w.start * (1 - 0.01 * k)]; };
+  g.appendChild(s('polygon', { points: [x0, x1].map(d => X(d) + ',' + Y(corr(d)[0])).concat([x1, x0].map(d => X(d) + ',' + Y(corr(d)[1]))).join(' '), fill: 'rgba(79,195,181,.14)' }));
+  for (let v = Math.ceil(lo); v <= hi; v += 2) { g.appendChild(s('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: 'rgba(255,255,255,.07)' })); g.appendChild(s('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end' }, v)); }
+  if (w.goalLbs <= lo) g.appendChild(s('text', { x: W - R, y: H - B - 4, 'text-anchor': 'end', style: 'fill:#f2a93b' }, 'goal ' + w.goalLbs.toFixed(1) + ' ↓'));
+  ['2026-12-01', '2026-12-08', '2026-12-15'].forEach(d => g.appendChild(s('text', { x: X(d), y: H - 6, 'text-anchor': 'middle' }, fmtShort(d))));
+  w.series.forEach(p => g.appendChild(s('circle', { cx: X(p.date), cy: Y(p.lbs), r: 3, fill: 'rgba(243,236,220,.3)' })));
+  g.appendChild(s('polyline', { points: w.series.map(p => X(p.date) + ',' + Y(p.trend)).join(' '), fill: 'none', stroke: '#f2a93b', 'stroke-width': 3, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+  const last = w.series[w.series.length - 1]; g.appendChild(s('circle', { cx: X(last.date), cy: Y(last.trend), r: 5, fill: '#f2a93b', stroke: '#121628', 'stroke-width': 2 }));
+  return g;
+}
+function milestoneLadder(w) {
+  const lad = h('div', { class: 'ladder2' }), actual = (w.start - w.low) / w.start * 100;
+  const top = Math.min(w.goalPct, [5, 10, 15, 20].find(x => x > Math.max(w.credited, actual)) || w.goalPct); // up to the next milestone
+  for (let p = 0.5; p <= top; p += 0.5) {
+    const ms = [5, 10, 15].includes(p), done = w.credited >= p, capped = !done && actual >= p;
+    lad.appendChild(h('div', { class: 'rung' + (done ? ' done' : '') + (ms ? ' ms' : '') + (capped ? ' cap' : '') }, h('span', { class: 'lvl' }, '−' + p.toFixed(1) + '%'),
+      h('span', { class: 'bx' }, done ? '+25 Merit' + (ms ? ' · milestone' : '') : capped ? 'reached · unlocks next week (healthy-pace cap)' : ms ? 'Milestone · +' + { 5: 100, 10: 150, 15: 200 }[p] : '+25')));
+  }
+  return lad;
+}
+function minutesChart(sc) {
+  const W = 520, H = 170, L = 10, B = 24, T = 16, wks = sc.weeks;
+  const vals = wks.map(wk => range(wk.key, addDays(wk.key, 6)).reduce((a, d) => a + (sc.day[d] ? sc.day[d].min : 0), 0));
+  const max = Math.max(150, ...vals) * 1.15, bw = (W - L * 2) / wks.length, g = s('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'chart', width: '100%', role: 'img', 'aria-label': 'Minutes per week' });
+  wks.forEach((wk, i) => { const hh = vals[i] / max * (H - T - B), x = L + i * bw + bw * .22;
+    g.appendChild(s('rect', { x, y: H - B - hh, width: bw * .56, height: hh, rx: 5, fill: wk.complete ? '#f2a93b' : 'rgba(242,169,59,.45)' }));
+    g.appendChild(s('text', { x: x + bw * .28, y: H - B - hh - 5, 'text-anchor': 'middle', style: 'fill:#f3ecdc;font-weight:600' }, vals[i] + ' min'));
+    g.appendChild(s('text', { x: x + bw * .28, y: H - 6, 'text-anchor': 'middle' }, 'Wk of ' + fmtShort(wk.key))); });
+  return g;
+}
+function activityMix(mid) {
+  const by = {}; S.workouts.filter(w => w.member === mid && w.date >= SEASON.start && w.date <= SEASON.today).forEach(w => by[w.act] = (by[w.act] || 0) + w.min);
+  const tot = Object.values(by).reduce((a, b) => a + b, 0) || 1, box = h('div');
+  Object.keys(by).sort((a, b) => by[b] - by[a]).slice(0, 6).forEach(k => box.appendChild(h('div', { class: 'mix' }, h('span', null, ACT[k].icon), h('div', { class: 'bar' }, h('i', { style: 'width:' + (by[k] / tot * 100) + '%' })), h('span', { class: 'v' }, by[k] + 'm'))));
+  return box;
+}
+function activeCalendar(sc) {
+  const cal = h('div', { class: 'cal' }); DOWS.forEach(d => cal.appendChild(h('div', { class: 'h' }, d[0])));
+  for (let i = 0; i < dow(SEASON.start); i++) cal.appendChild(h('div'));
+  range(SEASON.start, SEASON.end).forEach(d => cal.appendChild(h('div', { class: 'd' + (sc.isActive(d) ? ' on' : '') + (d > SEASON.today ? ' fut' : '') + (d === SEASON.today ? ' today' : '') }, toD(d).getUTCDate())));
+  return cal;
+}
+function scorecards(sc) {
+  const c = card('WEEKLY SCORECARDS', 'total ' + sc.total);
+  sc.weeks.slice().reverse().forEach(wk => {
+    const parts = { consistency: 0, effort: 0, progress: 0, together: 0 };
+    sc.ledger.filter(e => weekKey(e.date) === wk.key && parts[e.cat] != null).forEach(e => parts[e.cat] += e.pts);
+    const seg = h('div', { class: 'seg' }); Object.keys(parts).forEach(k => seg.appendChild(h('i', { style: 'flex:' + (parts[k] || .001) + ';background:' + CAT_COLORS[k] })));
+    c.appendChild(h('div', { class: 'wkrow' }, h('div', null, h('b', null, fmtShort(wk.key)), h('div', { class: 'meta' }, wk.complete ? 'final' : 'in progress')),
+      h('div', null, seg, h('div', { class: 'meta' }, wk.active + ' active days · ' + (wk.standard ? '✦ Standard' : 'no Standard') + ' · ×' + wk.mult.toFixed(1))), h('div', { class: 'pts' }, sc.byWeek[wk.key] || 0)));
+  });
+  c.appendChild(h('div', { class: 'legend' }, Object.keys(CAT_LABEL).filter(k => !(sc.m.pup && k === 'progress')).map(k => h('span', null, h('i', { style: 'background:' + CAT_COLORS[k] }), CAT_LABEL[k]))));
+  return c;
+}
+function renderProgress(main, all) {
+  const sc = all[S.me], m = sc.m;
+  if (!m.pup) {
+    const w = weightSeries(S.me);
+    if (w) {
+      const c = card('THE ASCENT', 'trend line, not daily noise');
+      c.appendChild(h('div', { class: 'stats4' },
+        h('div', { class: 'metric' }, h('b', null, w.start.toFixed(1)), h('span', null, 'START')),
+        h('div', { class: 'metric' }, h('b', null, w.trend.toFixed(1)), h('span', null, 'TREND')),
+        h('div', { class: 'metric go' }, h('b', null, '−' + w.pct.toFixed(1) + '%'), h('span', null, 'LOST')),
+        h('div', { class: 'metric' }, h('b', null, w.pace.toFixed(2) + '%'), h('span', null, 'PER WEEK'))));
+      c.appendChild(weightChart(w));
+      c.appendChild(h('div', { class: 'private' }, '🔒 Pounds are only on your phone. The family sees ' + (S.cfg.people[S.me].share ? 'your % lost.' : 'nothing; sharing is off in Settings.') + ' Green band = healthy pace, 0.5–1% a week.'));
+      main.appendChild(c);
+      const lc = card('MILESTONE LADDER', w.credited.toFixed(1) + '% credited · goal −' + w.goalPct + '%'); lc.appendChild(milestoneLadder(w)); main.appendChild(lc);
+      if (SEASON.trial) main.appendChild(h('div', { class: 'card hold', style: 'display:flex;gap:14px;align-items:center' }, h('div', { style: 'font-size:34px' }, w.holdOk ? '🛡️' : '⚠️'),
+        h('div', null, h('b', { style: 'font-family:var(--fh)' }, w.holdOk ? 'Holding the line' : 'Above the line'), h('div', { style: 'font-size:14px' }, 'The Holiday Hold: finish Dec 31 with your trend no more than 0.5% above Dec 1 for +100 Merit. Maintaining through the holidays counts as winning.'))));
+    }
+  }
+  const ac = card('MOVEMENT', sc.activeDays ? '' : '');
+  ac.appendChild(minutesChart(sc));
+  ac.appendChild(h('div', { class: 'card-t', style: 'margin-top:12px' }, h('span', null, 'WHAT YOU DID'), h('span', { class: 'r' }, 'minutes by activity')));
+  ac.appendChild(activityMix(S.me));
+  main.appendChild(ac);
+  const cc = card('ACTIVE DAYS · ' + SEASON.name.toUpperCase(), Object.keys(sc.day).filter(d => sc.isActive(d)).length + ' so far'); cc.appendChild(activeCalendar(sc)); main.appendChild(cc);
+  main.appendChild(scorecards(sc));
+  if (m.pup) {
+    const bg = h('div', { class: 'badges4' });
+    pupBadges(m.id).forEach(b => bg.appendChild(h('div', { class: 'b4 t' + b.tier }, h('div', { class: 'ic' }, b.icon), h('b', null, b.name), h('div', { class: 'stars' }, '★'.repeat(b.tier) + '☆'.repeat(3 - b.tier)), h('small', null, b.v + (b.tiers[b.tier] ? '/' + b.tiers[b.tier] : '')))));
+    const bc = card('MY BADGES'); bc.appendChild(bg); main.appendChild(bc);
+  }
+  main.appendChild(rankCard(sc));
+  const led = card('RECENT MERIT');
+  sc.ledger.slice(0, 10).forEach(e => led.appendChild(h('div', { class: 'ledger-row' }, h('span', { class: 'ld' }, fmtShort(e.date)), h('span', { class: 'll' }, e.label), h('span', { class: 'lp' }, '+' + e.pts))));
+  main.appendChild(led);
+}
+
+// ---------- GOALS ----------
 function goalRow(mid, g, scope) {
-  const T = GOAL_TYPES[g.type], st = goalStatus(mid, g, scope), mine = mid === S.me;
-  const showVal = !T.private || mine;
-  const unitBonus = MEM[mid].pup ? RULES.pup : RULES.pack;
+  const T = GOAL_TYPES[g.type], st = goalStatus(mid, g, scope), R = MEM[mid].pup ? RULES.pup : RULES.pack;
   return h('div', { class: 'goal' + (st.done ? ' done' : '') },
     h('div', { class: 'goal-top' }, h('span', { class: 'gi' }, T.icon),
-      h('span', { class: 'gl' }, showVal ? T.label(g.target) : 'Private progress goal', h('small', null,
-        (st.done ? '✓ Done! +' : '+') + (scope === 'month' ? unitBonus.goalMonth : unitBonus.goalSeason) + ' ' + unitBonus.unit +
-        (st.done ? '' : st.onPace ? ' · on pace' : ' · a little behind pace') + (T.private ? ' · 🔒 only you see the number' : ''))),
-      h('span', { class: 'gv' }, showVal ? (T.step ? st.v.toFixed(1) : st.v) + '/' + g.target : Math.round(st.pct * 100) + '%')),
+      h('span', { class: 'gl' }, T.label(g.target), h('small', null, (st.done ? '✓ Done! +' : '+') + (scope === 'month' ? R.goalMonth : R.goalSeason) + ' Merit' + (st.done ? '' : st.onPace ? ' · on pace' : ' · a little behind pace') + (T.private ? ' · 🔒 only you see this' : ''))),
+      h('span', { class: 'gv' }, (T.step ? st.v.toFixed(1) : st.v) + '/' + g.target)),
     h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(st.pct * 100) + '%' })));
 }
 function openGoalEditor(scope) {
-  const mid = S.me, m = MEM[mid], list = S.goals[mid][scope].map(g => Object.assign({}, g));
-  const body = h('div', { class: 'log-body' });
+  const mid = S.me, m = MEM[mid], list = S.goals[mid][scope].map(g => Object.assign({}, g)), body = h('div', { class: 'log-body' });
   function draw() {
     clear(body);
     body.appendChild(h('p', { class: 'hint', style: 'font-size:14px' }, scope === 'month' ? 'Pick up to 3 goals for ' + monthWindow().name + '.' : 'Pick up to 2 goals for ' + SEASON.name + '.'));
     Object.keys(GOAL_TYPES).filter(k => GOAL_TYPES[k].who === 'all' || GOAL_TYPES[k].who === (m.pup ? 'kid' : 'adult')).forEach(k => {
-      const T = GOAL_TYPES[k], g = list.find(x => x.type === k), max = scope === 'month' ? 3 : 2;
-      const step = T.step || (T.unit === 'min' ? 60 : 1);
+      const T = GOAL_TYPES[k], g = list.find(x => x.type === k), max = scope === 'month' ? 3 : 2, step = T.step || (T.unit === 'min' ? 60 : 1);
       body.appendChild(h('div', { class: 'edit-row' }, h('span', { class: 'gi' }, T.icon), h('span', { class: 'gl' }, g ? T.label(g.target) : T.label('…').replace('… ', '')),
         g ? h('div', { class: 'stepper' },
-          h('button', { type: 'button', 'aria-label': 'Less', onclick: () => { g.target = Math.max(step, Math.round((g.target - step) * 10) / 10); draw(); } }, '−'),
-          h('b', null, g.target),
+          h('button', { type: 'button', 'aria-label': 'Less', onclick: () => { g.target = Math.max(step, Math.round((g.target - step) * 10) / 10); draw(); } }, '−'), h('b', null, g.target),
           h('button', { type: 'button', 'aria-label': 'More', onclick: () => { g.target = Math.round((g.target + step) * 10) / 10; draw(); } }, '+'),
           h('button', { type: 'button', 'aria-label': 'Remove', onclick: () => { list.splice(list.indexOf(g), 1); draw(); } }, '✕'))
           : h('button', { class: 'chip-btn', type: 'button', onclick: () => { if (list.length >= max) { toast('Up to ' + max + ' goals'); return; } list.push({ type: k, target: T.step ? 1 : T.unit === 'min' ? 600 : 8 }); draw(); } }, 'Add')));
@@ -896,86 +1213,149 @@ function openGoalEditor(scope) {
   const close = openModal(scope === 'month' ? monthWindow().name + ' goals' : SEASON.name + ' goals', body); draw();
 }
 function renderGoals(main, all) {
-  const mid = S.me, m = MEM[mid], G = S.goals[mid], mw = monthWindow();
-  const pupVoice = m.pup;
-  const month = h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, (pupVoice ? 'MY ' : '') + mw.name.toUpperCase() + ' GOALS'), h('span', { class: 'r' }, daysBetween(SEASON.today, mw.b) + ' days left')));
+  const mid = S.me, G = S.goals[mid], mw = monthWindow();
+  const month = card(mw.name.toUpperCase() + ' GOALS', daysBetween(SEASON.today, mw.b) + ' days left');
   G.month.forEach(g => month.appendChild(goalRow(mid, g, 'month')));
-  month.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => openGoalEditor('month') }, 'Edit ' + mw.name + ' goals'));
-  main.appendChild(month);
-  const season = h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, SEASON.name.toUpperCase() + ' GOALS'), h('span', { class: 'r' }, SEASON.trial ? 'practice round' : 'this quarter')));
+  month.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => openGoalEditor('month') }, 'Edit ' + mw.name + ' goals')); main.appendChild(month);
+  const season = card(SEASON.name.toUpperCase() + ' GOALS', SEASON.trial ? 'practice round' : 'this quarter');
   G.season.forEach(g => season.appendChild(goalRow(mid, g, 'season')));
-  season.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => openGoalEditor('season') }, 'Edit season goals'));
-  main.appendChild(season);
+  season.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => openGoalEditor('season') }, 'Edit season goals')); main.appendChild(season);
   if (SEASON.trial) {
-    const sug = h('div', { class: 'card suggest' }, h('div', { class: 'card-t' }, h('span', null, 'SUGGESTED FOR ' + NEXT_SEASON.name.toUpperCase()), h('span', { class: 'r' }, 'from your December')));
-    suggestGoals(mid).forEach(g => { const T = GOAL_TYPES[g.type]; sug.appendChild(h('div', { class: 'goal' }, h('div', { class: 'goal-top' }, h('span', { class: 'gi' }, T.icon), h('span', { class: 'gl' }, 'January: ' + T.label(g.target).replace(/^[A-Z]/, c => c.toLowerCase()).replace('cookie', 'Cookie'), h('small', null, g.why))))); });
-    sug.appendChild(h('div', { class: 'hint' }, 'On Jan 1 everyone gets a 2-minute goal-setting check-in with these pre-filled.'));
-    main.appendChild(sug);
+    const sug = card('SUGGESTED FOR ' + NEXT_SEASON.name.toUpperCase(), 'from your December'); sug.classList.add('suggest');
+    suggestGoals(mid).forEach(g => { const T = GOAL_TYPES[g.type]; sug.appendChild(h('div', { class: 'goal' }, h('div', { class: 'goal-top' }, h('span', { class: 'gi' }, T.icon),
+      h('span', { class: 'gl' }, 'January: ' + T.label(g.target).replace(/^[A-Z]/, c => c.toLowerCase()).replace('cookie', 'Cookie'), h('small', null, g.why))))); });
+    sug.appendChild(h('div', { class: 'hint' }, 'On Jan 1 everyone gets a 2-minute goal check-in with these pre-filled.')); main.appendChild(sug);
   }
-  // Hall of Honors: the rank you finish each season on
   const hon = h('div', { class: 'honors' });
-  SEASONS.forEach(s => hon.appendChild(h('div', null, h('div', { class: 'crest' + (s.id === SEASON.id ? ' cur' : ''), style: s.id === SEASON.id ? 'background:' + all[mid].rank.rank.color + '33' : '' }, s.id === SEASON.id ? '⏳' : s.trial ? '🎯' : '·'), s.trial ? 'Trial' : s.name.replace('Season ', 'S'))));
-  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'HALL OF HONORS'), h('span', { class: 'r' }, 'your finishing color, each season')), hon));
+  SEASONS.forEach(x => hon.appendChild(h('div', null, h('div', { class: 'crest' + (x.id === SEASON.id ? ' cur' : '') }, x.id === SEASON.id ? '⏳' : x.trial ? '🎯' : '·'), x.trial ? 'Trial' : x.name.replace('Season ', 'S'))));
+  const hc = card('HALL OF HONORS', 'your finishing color each season'); hc.appendChild(hon); main.appendChild(hc);
 }
 
-// ---------- Today tabs ----------
-function renderPackToday(main, all) {
-  const sc = all[S.me], m = sc.m;
-  const nf = newForYou(); if (nf) main.appendChild(nf);
-  main.appendChild(weekCard(sc));
-  const us = h('div', { class: 'usuals' });
-  m.usuals.forEach(u => us.appendChild(h('button', { class: 'usual', type: 'button', onclick: () => quickUsual(u, render) }, h('span', { class: 'ic' }, ACT[u.act].icon),
-    h('span', null, (u.act === 'dogwalk' ? 'Cookie & Biscuit' : ACT[u.act].name) + ' ' + u.min + 'm', h('small', null, u.together ? '+ the kids · one tap' : 'one tap')))));
-  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'YOUR USUALS'), h('span', { class: 'r' }, 'tap = logged, 5s to undo')), us,
-    h('button', { class: 'ai-btn', type: 'button', style: 'margin-top:10px', onclick: () => openAIReader(render) }, '✨ Paste or snap a Peloton summary'),
-    h('button', { class: 'more-link', type: 'button', onclick: () => openLog(render) }, 'Something else…')));
-  const p = tkdPrompt(); if (p) main.appendChild(p);
-  main.appendChild(rankCard(sc, false));
-  const led = h('div'); sc.ledger.slice(0, 8).forEach(e => led.appendChild(h('div', { class: 'ledger-row' }, h('span', { class: 'ld' }, fmtShort(e.date)), h('span', { class: 'll' }, e.label), h('span', { class: 'lp' }, '+' + e.pts))));
-  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'RECENT ' + NAMES.adultUnit.toUpperCase())), led));
+// ---------- PACK ----------
+function familyBoard(all) {
+  const c = card('THE ' + NAMES.pack.toUpperCase(), 'everyone climbs their own ladder');
+  MEMBERS.forEach(m => { const sc = all[m.id], mini = h('div', { class: 'mini' });
+    range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => mini.appendChild(h('i', { class: sc.isActive(d) ? 'on' : '' })));
+    const w = !m.pup && S.cfg.people[m.id].share ? weightSeries(m.id) : null;
+    c.appendChild(h('div', { class: 'fam' }, h('div', { class: 'fav', style: 'background:' + m.house }, m.pup ? '🐾' : m.name[0]),
+      h('div', { class: 'fname' }, m.name, h('span', { class: 'rpill', style: 'background:' + sc.rank.rank.color }, sc.rank.rank.name),
+        h('small', null, sc.cur.active + '/' + sc.R.standardDays + ' this week' + (sc.cur.standard ? ' ✦' : '') + (sc.chain ? ' · ' + '🔥'.repeat(sc.chain) : '') + (w ? ' · ▼' + w.pct.toFixed(1) + '%' : ''))), mini)); });
+  return c;
 }
-function renderPupToday(main, all) {
-  const sc = all[S.me], m = sc.m, left = Math.max(0, sc.R.standardDays - sc.cur.active);
-  main.appendChild(h('div', { class: 'pup-hi' }, 'Hi ' + m.name + '! 🐾', h('small', null, sc.chain ? 'Your streak is on fire ' + '🔥'.repeat(sc.chain) : 'Every day you move earns a paw print.')));
-  const nf = newForYou(); if (nf) main.appendChild(nf);
-  const paws = h('div', { class: 'paws' });
-  range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => paws.appendChild(h('div', { class: 'paw' }, h('div', { class: 'c' + (sc.isActive(d) ? ' on' : '') + (d === SEASON.today ? ' today' : '') }, '🐾'), DOWS[dow(d)].slice(0, 2))));
-  main.appendChild(h('div', { class: 'card' }, paws, h('div', { class: 'pup-msg' },
-    left ? left + ' more day' + (left > 1 ? 's' : '') + ' this week!' : NAMES.kidOne + ' Standard done! 🎉',
-    h('small', null, left ? 'Move on ' + sc.R.standardDays + ' days to keep your streak growing' : 'Anything else this week is bonus ' + NAMES.kidUnit))));
-  const p = tkdPrompt(); if (p) main.appendChild(p);
-  const acts = h('div', { class: 'big-acts' });
-  PUP_BUTTONS.forEach(u => acts.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => openLog(render, u) }, h('span', { class: 'ic' }, ACT[u.act].icon), u.act === 'bike' ? 'Peloton Bike' : u.act === 'tread' ? 'Peloton Tread' : ACT[u.act].name)));
-  acts.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => openLog(render) }, h('span', { class: 'ic' }, '➕'), 'Other'));
-  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'I MOVED!')), acts));
-  main.appendChild(rankCard(sc, true));
-  const bg = h('div', { class: 'badges4' });
-  pupBadges(m.id).forEach(b => bg.appendChild(h('div', { class: 'b4 t' + b.tier }, h('div', { class: 'ic' }, b.icon), h('b', null, b.name), h('div', { class: 'stars' }, '★'.repeat(b.tier) + '☆'.repeat(3 - b.tier)), h('small', null, b.v + (b.tiers[b.tier] ? '/' + b.tiers[b.tier] : '')))));
-  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'MY BADGES')), bg));
+function cheerFeed() {
+  const c = card('CHEER SOMEONE ON', '+2 Merit per cheer · up to 5 a day');
+  const seen = {}, items = S.workouts.filter(w => w.member !== S.me && w.date >= addDays(SEASON.today, -2) && w.date <= SEASON.today)
+    .sort((a, b) => a.date < b.date ? 1 : -1).filter(w => { const k = (w.group || w.id) + w.member; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, 6);
+  if (!items.length) c.appendChild(h('p', { class: 'hint' }, 'Nobody else has logged in the last couple of days.'));
+  items.forEach(w => { const m = MEM[w.member], sent = S.cheers.find(x => x.from === S.me && x.to === w.member && x.date === SEASON.today);
+    c.appendChild(h('div', { class: 'act-feed' },
+      h('div', { class: 'who' }, h('div', { class: 'fav', style: 'background:' + m.house }, m.pup ? '🐾' : m.name[0]),
+        h('div', null, m.name + ' · ' + ACT[w.act].icon + ' ' + ACT[w.act].name + ' ' + w.min + 'm', h('small', null, fmtDow(w.date) + (w.dogs ? ' · with ' + w.dogs.map(d => DOGS.find(x => x.id === d).name).join(' & ') : '')))),
+      h('div', { class: 'emoji-row' }, CHEER_EMOJI.map(e => h('button', { class: sent && sent.emoji === e ? 'done' : '', type: 'button', 'aria-label': 'Cheer ' + e, onclick: () => { cheer(w.member, e, ''); render(); toast(e + ' sent to ' + m.name + ' · +2 Merit'); } }, e)),
+        h('button', { class: 'note', type: 'button', onclick: () => openCheerNote(w.member) }, '✍️ note')))); });
+  return c;
+}
+function openCheerNote(to) {
+  const body = h('div', { class: 'log-body' }), inp = h('input', { class: 'txt', type: 'text', maxlength: '140', placeholder: 'Say something kind…' });
+  let emoji = '👏';
+  const emo = h('div', { class: 'chips' }); const drawE = () => { clear(emo); CHEER_EMOJI.forEach(e => emo.appendChild(h('button', { class: 'chip-btn' + (e === emoji ? ' on' : ''), type: 'button', onclick: () => { emoji = e; drawE(); } }, e))); }; drawE();
+  body.appendChild(emo);
+  body.appendChild(h('div', { class: 'chips', style: 'margin-top:10px' }, CHEER_PRESETS.map(t => h('button', { class: 'chip-btn', type: 'button', onclick: () => { inp.value = t; } }, t))));
+  body.appendChild(h('div', { style: 'margin-top:10px' }, inp));
+  body.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:12px', onclick: () => { cheer(to, emoji, inp.value.trim()); close(); render(); toast(emoji + ' Cheer sent to ' + MEM[to].name); } }, 'Send cheer'));
+  const close = openModal('Cheer ' + MEM[to].name, body);
+}
+function cheerWall() {
+  const c = card('CHEER WALL', 'the whole family');
+  S.cheers.slice(0, 6).forEach(x => c.appendChild(h('div', { class: 'cheer-row' }, h('span', { class: 'ce' }, x.emoji),
+    h('span', { class: 'ct' }, MEM[x.from].name + ' → ' + MEM[x.to].name + (x.text ? ': "' + x.text + '"' : ''), h('small', null, fmtDow(x.date))))));
+  return c;
 }
 function renderPack(main, all) {
+  main.appendChild(cheerFeed());
   main.appendChild(familyBoard(all));
   main.appendChild(questsCard());
+  main.appendChild(cheerWall());
+}
+function questsCard() {
+  const c = card('FAMILY QUESTS', 'done together');
+  familyQuests().forEach(q => c.appendChild(h('div', { class: 'quest' },
+    h('div', { class: 'qtop' }, h('span', null, q.icon + ' ' + q.name + ' ', h('small', null, q.val.toLocaleString() + '/' + q.goal.toLocaleString())), h('span', { class: 'rw' }, q.reward)),
+    h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, q.val / q.goal * 100) + '%' })))));
+  c.appendChild(h('div', { class: 'dogrow' }, DOGS.map(dg => h('div', { class: 'dog' }, h('b', null, dg.icon + ' ' + dogWalks(dg.id)), dg.name + "'s walks"))));
+  return c;
 }
 
+// ---------- SETTINGS: everything you set once ----------
+function openSettingsFull() {
+  const body = h('div', { class: 'log-body' });
+  let pick = null; // usual being added
+  function sec(title, note) { const x = h('div', { class: 'set-sec' }, h('h3', null, title)); if (note) x.appendChild(h('p', null, note)); body.appendChild(x); return x; }
+  function toggle(label, on, fn) { return h('button', { class: 'toggle' + (on ? ' on' : ''), type: 'button', onclick: fn }, label, h('span', { class: 'sw' })); }
+  function draw() {
+    clear(body); const me = MEM[S.me], P = S.cfg.people[S.me];
+    sec('THIS PHONE', 'Set once when the app is installed. Everyone has their own phone; parents can still log for the kids.')
+      .appendChild(h('div', { class: 'chips' }, MEMBERS.map(m => h('button', { class: 'chip-btn who' + (m.id === S.me ? ' on' : ''), style: '--house:' + m.house, type: 'button', onclick: () => { S.me = m.id; draw(); render(); } }, (m.pup ? '🐾 ' : '') + m.name))));
+    sec('MY COACH', 'Your voice from the Council of Ares. ' + (me.pup ? 'Kids\' coaches only ever talk about moving and having fun.' : ''))
+      .appendChild(h('div', { class: 'chips' }, Object.keys(COACHES).map(c => h('button', { class: 'chip-btn' + (P.coach === c ? ' on' : ''), type: 'button', onclick: () => { P.coach = c; delete coachMsg[S.me]; draw(); render(); } }, c))));
+    if (!me.pup) {
+      const ws = sec('MY WEIGHT GOAL', 'Private. Only the % shows up for the family, and only if you choose.');
+      ws.appendChild(h('div', { class: 'edit-row' }, h('span', { class: 'gl' }, 'Season goal'), h('div', { class: 'stepper' },
+        h('button', { type: 'button', 'aria-label': 'Less', onclick: () => { P.goalPct = Math.max(1, P.goalPct - 1); draw(); render(); } }, '−'), h('b', null, '−' + P.goalPct + '%'),
+        h('button', { type: 'button', 'aria-label': 'More', onclick: () => { P.goalPct = Math.min(20, P.goalPct + 1); draw(); render(); } }, '+'))));
+      ws.appendChild(toggle('Share my % lost with the family', P.share, () => { P.share = !P.share; draw(); render(); }));
+      const us = sec('MY USUALS', 'One-tap buttons on Today. Up to 4.');
+      me.usuals.forEach((u, i) => us.appendChild(h('div', { class: 'edit-row' }, h('span', { class: 'gi' }, ACT[u.act].icon), h('span', { class: 'gl' }, ACT[u.act].name + ' · ' + u.min + ' min' + (u.together ? ' · with the kids' : '')),
+        h('button', { class: 'chip-btn', type: 'button', 'aria-label': 'Remove', onclick: () => { me.usuals.splice(i, 1); draw(); render(); } }, '✕'))));
+      if (me.usuals.length < 4) {
+        if (!pick) us.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => { pick = { act: 'tread', min: 30 }; draw(); } }, '＋ Add a usual'));
+        else {
+          us.appendChild(h('div', { class: 'chips', style: 'margin-top:8px' }, ACTIVITIES.map(a => h('button', { class: 'chip-btn' + (pick.act === a.id ? ' on' : ''), type: 'button', onclick: () => { pick.act = a.id; draw(); } }, a.icon))));
+          us.appendChild(h('div', { class: 'chips', style: 'margin-top:8px' }, [10, 20, 30, 45, 60].map(n => h('button', { class: 'chip-btn' + (pick.min === n ? ' on' : ''), type: 'button', onclick: () => { pick.min = n; draw(); } }, n + 'm'))));
+          us.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => { me.usuals.push({ act: pick.act, min: pick.min, together: pick.act === 'dogwalk' }); pick = null; draw(); render(); } }, 'Save ' + ACT[pick.act].name + ' ' + pick.min + 'm'));
+        }
+      }
+      const fam = sec('FAMILY SCHEDULE', 'Parents set these once for everyone.');
+      fam.appendChild(h('div', { class: 'fld', style: 'margin-top:0' }, 'Taekwondo days'));
+      fam.appendChild(h('div', { class: 'chips' }, DOWS.map((d, i) => h('button', { class: 'chip-btn' + (S.cfg.tkdDays.includes(i) ? ' on' : ''), type: 'button', onclick: () => { S.cfg.tkdDays = S.cfg.tkdDays.includes(i) ? S.cfg.tkdDays.filter(x => x !== i) : S.cfg.tkdDays.concat(i).sort(); draw(); render(); } }, d))));
+      fam.appendChild(h('div', { class: 'fld' }, 'The dogs'));
+      fam.appendChild(h('div', { class: 'two' }, DOGS.map(dg => h('input', { class: 'txt', type: 'text', value: dg.name, 'aria-label': 'Dog name', onchange: e => { dg.name = e.target.value.trim() || dg.name; render(); } }))));
+      const fu = sec('FUEL', 'Your food app. The Howlers reads today\'s calories and protein from it on this phone only, never into the family data.');
+      const f = readFuel(SEASON.today);
+      fu.appendChild(h('div', { class: 'hint', style: 'font-size:14px' }, f ? (f.live ? '✓ Fuel found on this phone.' : 'Demo numbers shown. Install Fuel on this phone to connect it.') : 'Fuel isn\'t set up on this phone.'));
+      fu.appendChild(h('a', { class: 'btn-ghost', style: 'display:flex;align-items:center;justify-content:center;text-decoration:none', href: S.cfg.fuelUrl, target: '_blank', rel: 'noopener' }, 'Open Fuel ↗'));
+      sec('PELOTON HISTORY', 'Missed a week? Pull everything from Peloton\'s free CSV.').appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => { close(); openImport(render); } }, 'Import Peloton CSV'));
+    }
+    const ks = sec('CLAUDE KEY', me.pup ? 'Ask a parent to set this up on your phone.' : 'Powers the workout reader and live coaching. Stored only on this phone. Set a monthly spend limit on the key.');
+    const inp = h('input', { class: 'txt', type: 'password', placeholder: getKey() ? '•••••• saved' : 'sk-ant-…', autocomplete: 'off' });
+    ks.appendChild(h('div', { class: 'ai-row' }, inp, h('button', { class: 'chip-btn', type: 'button', onclick: () => { setKey(inp.value.trim()); toast(inp.value.trim() ? 'Key saved on this phone' : 'Key removed'); draw(); render(); } }, 'Save')));
+    sec('REMINDERS', 'On your Pixel, the installed app can send real notifications.').appendChild(
+      toggle('Evening nudge if I haven\'t moved today', !!P.nudge, () => { P.nudge = !P.nudge; draw(); }));
+  }
+  const close = openModal('Settings', body); draw();
+}
+
+// ---------- shell ----------
 function render() {
   const all = scoreAll(), me = MEM[S.me];
   document.body.classList.toggle('pup', me.pup);
   document.getElementById('season').textContent = NAMES.pack + ' · ' + (me.pup ? NAMES.kids : NAMES.adults);
-  document.getElementById('fab').textContent = me.pup ? '🐾 I moved!' : '＋ Log Trial';
+  document.getElementById('fab').textContent = me.pup ? '🐾 I moved!' : '＋ Log';
+  document.getElementById('fab').style.display = TAB === 'today' ? 'none' : '';
   const mem = clear(document.getElementById('members'));
   MEMBERS.forEach(x => mem.appendChild(h('button', { class: 'mchip' + (x.id === S.me ? ' on' : ''), type: 'button', onclick: () => { S.me = x.id; render(); scrollTo(0, 0); } },
     h('span', { class: 'dot', style: 'background:' + x.house }, x.pup ? '🐾' : x.name[0]), x.name + "'s phone")));
   const tb = clear(document.getElementById('tabbar'));
-  [['today', '🏠', 'Today'], ['goals', '🎯', 'Goals'], ['pack', '🐺', 'Pack']].forEach(t => tb.appendChild(h('button', { class: TAB === t[0] ? 'on' : '', type: 'button', onclick: () => { TAB = t[0]; render(); scrollTo(0, 0); } }, h('span', null, t[1]), t[2])));
+  [['today', '🏠', 'Today'], ['progress', '📈', 'Progress'], ['goals', '🎯', 'Goals'], ['pack', '🐺', 'Pack']].forEach(t => tb.appendChild(h('button', { class: TAB === t[0] ? 'on' : '', type: 'button', onclick: () => { TAB = t[0]; render(); scrollTo(0, 0); } }, h('span', null, t[1]), t[2])));
   const main = clear(document.getElementById('main'));
-  main.appendChild(seasonBanner());
-  if (TAB === 'today') (me.pup ? renderPupToday : renderPackToday)(main, all);
-  else if (TAB === 'goals') renderGoals(main, all);
+  if (TAB === 'today') (me.pup ? renderPupToday : renderParentToday)(main, all);
+  else if (TAB === 'progress') renderProgress(main, all);
+  else if (TAB === 'goals') { main.appendChild(seasonBanner()); renderGoals(main, all); }
   else renderPack(main, all);
+  if (TAB === 'today') main.appendChild(seasonBanner());
 }
 document.getElementById('fab').addEventListener('click', () => openLog(render));
-document.getElementById('gear').addEventListener('click', () => openSettings(render));
+document.getElementById('gear').addEventListener('click', openSettingsFull);
 render();
 </script>
 </body>

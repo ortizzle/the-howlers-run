@@ -1,13 +1,13 @@
 /* ============================================================
    THE HOWLERS · FAMILY PACK — prototype engine (Season II: Iron Rain)
-   Pack (adults): Merit = consistency + MET-based effort + progress + habits
-   Pups (kids):   Paws  = consistency + moving minutes + together bonus
+   Proctors (parents): Merit = consistency + MET-based effort + progress (weight trend) + cheers
+   Pups (kids):        Merit = consistency + moving minutes + together + cheers (own, easier ladder)
    Prototype only: in-memory state, simulated "today" = Fri Dec 18.
    (DOM/date helpers are prepended from engine.js by build.py)
    ============================================================ */
 
 // ---------- Naming (placeholders until the family decides) ----------
-const NAMES = { pack: 'Family Pack', adults: 'Proctors', kids: 'Pups', adultUnit: 'Merit', kidUnit: 'Fangs', adultOne: 'Proctor', kidOne: 'Pup' };
+const NAMES = { pack: 'Family Pack', adults: 'Proctors', kids: 'Pups', adultUnit: 'Merit', kidUnit: 'Merit', adultOne: 'Proctor', kidOne: 'Pup' };
 
 // ---------- Seasons: December is the trial run, then quarterly seasons ----------
 const SEASONS = [
@@ -78,10 +78,13 @@ const PUP_BUTTONS = [{ act: 'tkd', min: 60 }, { act: 'dogwalk', min: 30 }, { act
   { act: 'run', min: 20 }, { act: 'walk', min: 30 }, { act: 'hike', min: 60 }, { act: 'yoga', min: 20 },
   { act: 'ride', min: 30 }, { act: 'bike', min: 20 }, { act: 'tread', min: 20 }];
 const MEM = {}; MEMBERS.forEach(m => MEM[m.id] = m);
-const TKD_DAYS = [0, 3]; // Mon & Thu
+const TKD_DAYS = [0, 3]; // Mon & Thu (editable in Settings → S.cfg.tkdDays)
 const KIDS = MEMBERS.filter(m => m.pup).map(m => m.id);
 
-const S = { workouts: [], weighins: [], habits: {}, goals: {}, me: 'chris', seen: {} };
+const S = { workouts: [], weighins: [], habits: {}, goals: {}, cheers: [], me: 'chris', seen: {},
+  // One-time setup lives in Settings
+  cfg: { tkdDays: [0, 3], dogs: ['Cookie', 'Biscuit'], fuelUrl: 'https://ortizzle.github.io/fuel/',
+    people: { chris: { coach: 'Sevro', goalPct: 10, share: true }, kat: { coach: 'Mustang', goalPct: 8, share: true }, sedona: { coach: 'Pax' }, river: { coach: 'Holiday' } } } };
 let _id = 1; function nid() { return 'x' + (_id++); }
 function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
@@ -144,10 +147,16 @@ function seedDemo() {
     });
     // Adult habits + weigh-ins
     [['chris', 214, 0.21, 0.85], ['kat', 158, 0.07, 0.5]].forEach(([mid, start, rate, p]) => {
-      (S.habits[mid] = S.habits[mid] || {})[d] = MEM[mid].habits.map(() => r() < 0.7);
       if (i === 0 || r() < p) S.weighins.push({ member: mid, date: d, lbs: Math.round((start - rate * i + (i ? (r() - 0.5) * 1.6 : 0)) * 10) / 10 });
     });
   });
+  S.cheers = [
+    { id: nid(), from: 'kat', to: 'chris', date: '2026-12-17', emoji: '🔥', text: 'That hill ride was no joke!' },
+    { id: nid(), from: 'sedona', to: 'river', date: '2026-12-17', emoji: '👏', text: '' },
+    { id: nid(), from: 'chris', to: 'sedona', date: '2026-12-16', emoji: '💪', text: 'Proud of you for going to TKD tired.' },
+    { id: nid(), from: 'river', to: 'kat', date: '2026-12-15', emoji: '🐺', text: '' },
+    { id: nid(), from: 'chris', to: 'kat', date: '2026-12-18', emoji: '👏', text: 'Way to show up!' },
+  ];
   S.goals = {
     chris:  { month: [{ type: 'activeDays', target: 20 }, { type: 'peloton', target: 14 }, { type: 'weight', target: 2 }], season: [{ type: 'standards', target: 4 }] },
     kat:    { month: [{ type: 'activeDays', target: 16 }, { type: 'dogs', target: 15 }, { type: 'weight', target: 1.5 }], season: [{ type: 'standards', target: 3 }] },
@@ -205,6 +214,12 @@ function score(mid) {
     weeks.push({ key: wk, complete, active, standard: std, mult });
     if (complete) chain = std ? Math.min(chain + 1, RULES.chainMax) : Math.max(chain - 1, 0);
   }
+  // Cheering others: +2 Merit each, up to 5 a day. Support is a skill worth practicing.
+  const cheerDays = {};
+  S.cheers.filter(c => c.from === mid && c.date >= SEASON.start && c.date <= today).forEach(c => {
+    cheerDays[c.date] = (cheerDays[c.date] || 0) + 1;
+    if (cheerDays[c.date] <= 5) add(c.date, 'together', 'Cheered ' + MEM[c.to].name + ' ' + c.emoji, 2);
+  });
   let pctLost = null;
   if (!m.pup) {
     const ws = S.weighins.filter(w => w.member === mid && w.date <= today).sort((a, b) => a.date < b.date ? -1 : 1);
@@ -373,6 +388,76 @@ function openImport(onDone) {
   body.appendChild(h('button', { class: 'more-btn', type: 'button', style: 'margin-top:8px;width:100%', onclick: () => show(SAMPLE_CSV) }, 'Try it with a sample file'));
   const close = openModal('Import from Peloton', body);
 }
+
+// ---------- Council of Ares: coaches for everyone ----------
+const COACHES = {
+  Sevro:   { color: '#9a1010', voice: 'Sevro: scrappy, funny, fiercely loyal; short punchy lines; playful nicknames like "goodman"; never crude.' },
+  Mustang: { color: '#c9a227', voice: 'Mustang: calm, wise, strategic; speaks about patience and the long game.' },
+  Ragnar:  { color: '#4a5d78', voice: 'Ragnar: gentle giant; slow, steady encouragement about strength and patience.' },
+  Pax:     { color: '#d48a1a', voice: 'Pax: big-hearted and joyful; cheers loudly and celebrates every small win.' },
+  Holiday: { color: '#5a7a5a', voice: 'Holiday: steady, dry humor; notices consistency and quiet effort.' },
+};
+function coachOf(mid) { return S.cfg.people[mid].coach; }
+function coachStats(mid) {
+  const sc = score(mid), m = MEM[mid], wk = sc.cur, left = Math.max(0, sc.R.standardDays - wk.active);
+  const last = S.workouts.filter(w => w.member === mid && w.date <= SEASON.today).sort((a, b) => a.date < b.date ? 1 : -1)[0];
+  const cheersIn = S.cheers.filter(c => c.to === mid && c.date >= addDays(SEASON.today, -3)).length;
+  const o = { name: m.name, role: m.pup ? 'kid (age ' + m.age + ')' : 'parent', activeDaysThisWeek: wk.active, weeklyTarget: sc.R.standardDays, daysLeftInWeek: 6 - dow(SEASON.today),
+    standardMet: wk.standard, chainWeeks: sc.chain, rank: sc.rank.rank.name, lastWorkout: last ? ACT[last.act].name + ' on ' + fmtDow(last.date) : 'none yet', cheersReceivedLast3Days: cheersIn };
+  if (!m.pup && S.cfg.people[mid].goalPct) { const w = S.weighins.filter(x => x.member === mid); if (w.length > 1) o.weightTrendPctSinceStart = -(sc.pctLost || 0).toFixed(1); }
+  o.left = left; return o;
+}
+// Offline line (no key): built from the same stats
+function coachLine(mid) {
+  const st = coachStats(mid), c = coachOf(mid), kid = MEM[mid].pup;
+  const open = { Sevro: 'Listen, goodman.', Mustang: 'Steady.', Ragnar: 'Strength is patience.', Pax: 'YES!', Holiday: 'Noted.' }[c];
+  if (st.standardMet) return open + ' ' + (kid ? 'You hit your ' + st.weeklyTarget + ' days already. Everything else this week is a bonus.' : 'Standard met with ' + st.daysLeftInWeek + ' days to spare. Rest is part of the plan too.');
+  if (st.left <= st.daysLeftInWeek + 1) return open + ' ' + st.left + ' more active day' + (st.left === 1 ? '' : 's') + ' this week. ' + (kid ? 'A walk with Cookie & Biscuit counts!' : 'Twenty minutes is all it costs.');
+  return open + ' This week got away from us. That happens. Show up tomorrow and the streak starts climbing again.';
+}
+async function askCoach(mid) {
+  const key = getKey(); if (!key) throw new Error('NO_KEY');
+  const st = coachStats(mid), kid = MEM[mid].pup, c = coachOf(mid);
+  const system = 'You are ' + COACHES[c].voice + ' You coach one member of a family fitness app themed on the Red Rising books. ' +
+    'Write 2 or 3 short sentences of encouragement based only on the stats given. Be specific to the numbers. Celebrate effort and consistency over results. ' +
+    (kid ? 'This is a child: talk only about movement, fun and showing up. Never mention weight, food, bodies or appearance. Keep it warm and age-appropriate. '
+         : 'This is a parent. If a weight trend is given, mention it lightly and never shame; consistency matters more. Never suggest crash dieting. ') +
+    'Points are called Merit; never confuse Merit with minutes or miles. No hashtags, no emoji spam (one emoji at most).';
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2026-10-21',
+      'anthropic-beta': 'server-side-fallback-2026-07-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: AI_MODEL, max_tokens: 16000, fallbacks: 'default', output_config: { effort: 'low' }, system,
+      messages: [{ role: 'user', content: 'Stats as of ' + fmtDow(SEASON.today) + ':\n' + JSON.stringify(st) }] }),
+  });
+  if (!res.ok) throw new Error('HTTP_' + res.status);
+  const data = await res.json();
+  if (data.stop_reason === 'refusal') throw new Error('REFUSED');
+  return data.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+}
+
+// ---------- Cheers: support, never trash talk ----------
+const CHEER_EMOJI = ['🔥', '👏', '💪', '🐺', '❤️'];
+const CHEER_PRESETS = ['Way to show up!', 'Proud of you!', 'That streak though!', 'You made it look easy.', 'Thanks for walking the dogs!'];
+function cheer(to, emoji, text) { S.cheers.unshift({ id: nid(), from: S.me, to, date: SEASON.today, emoji, text: text || '' }); }
+
+// ---------- Fuel (ortizzle.github.io/fuel) — read-only, same site so same storage ----------
+// Fuel keeps fuel_data {records:{id: entry}} and fuel_settings {targets}. Read on this phone only; never synced to the family data.
+function readFuel(date) {
+  try {
+    const data = JSON.parse(localStorage.getItem('fuel_data') || 'null'), set = JSON.parse(localStorage.getItem('fuel_settings') || 'null');
+    if (data && data.records) {
+      const t = { kcal: 0, protein: 0, entries: 0 };
+      Object.values(data.records).forEach(e => { if (e.type === 'entry' && !e.deleted && e.date === date && e.per) { const n = e.servings || 1; t.kcal += (e.per.kcal || 0) * n; t.protein += (e.per.protein || 0) * n; t.entries++; } });
+      const tg = (set && set.targets) || { kcal: 2200, protein: 160 };
+      return { live: true, kcal: Math.round(t.kcal), protein: Math.round(t.protein), entries: t.entries, kcalT: tg.kcal, proteinT: tg.protein };
+    }
+  } catch (e) { /* fall through */ }
+  return S.me === 'chris' ? { live: false, kcal: 1420, protein: 112, entries: 3, kcalT: 2200, proteinT: 160 } : null; // prototype demo
+}
+
+// ---------- Quick weigh-in (parents, private) ----------
+function logWeighIn(lbs) { const before = score(S.me).total; S.weighins = S.weighins.filter(w => !(w.member === S.me && w.date === SEASON.today)); S.weighins.push({ member: S.me, date: SEASON.today, lbs }); return score(S.me).total - before; }
 
 // ---------- Settings (API key lives only in this browser's localStorage) ----------
 const KEY_NAME = 'howlers_family_anthropic_key';
