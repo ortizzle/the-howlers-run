@@ -6,11 +6,27 @@
    (DOM/date helpers are prepended from engine.js by build.py)
    ============================================================ */
 
-const SEASON = { name: 'Season II · Iron Rain', start: '2026-12-01', end: '2027-03-21', today: '2026-12-18' };
+// ---------- Naming (placeholders until the family decides) ----------
+const NAMES = { pack: 'Family Pack', adults: 'Proctors', kids: 'Pups', adultUnit: 'Merit', kidUnit: 'Fangs', adultOne: 'Proctor', kidOne: 'Pup' };
+
+// ---------- Seasons: December is the trial run, then quarterly seasons ----------
+const SEASONS = [
+  { id: 's0', name: 'The Passage', sub: 'Trial run', start: '2026-12-01', end: '2026-12-31', trial: true },
+  { id: 's1', name: 'Season 1', sub: 'Iron Rain', start: '2027-01-01', end: '2027-03-31' },
+  { id: 's2', name: 'Season 2', sub: 'The Institute', start: '2027-04-01', end: '2027-06-30' },
+  { id: 's3', name: 'Season 3', sub: 'Mars Rising', start: '2027-07-01', end: '2027-09-30' },
+  { id: 's4', name: 'Season 4', sub: 'Siege of Luna', start: '2027-10-01', end: '2027-12-31' },
+];
+const TODAY = '2026-12-18';
+const SEASON = Object.assign({ today: TODAY }, SEASONS.find(s => s.start <= TODAY && TODAY <= s.end));
+const NEXT_SEASON = SEASONS[SEASONS.findIndex(s => s.id === SEASON.id) + 1];
+// Rank thresholds are written for a 13-week season and scale with the season's length
+const SEASON_SCALE = (daysBetween(SEASON.start, SEASON.end) + 1) / 91;
+const DOGS = [{ id: 'cookie', name: 'Cookie', icon: '🍪' }, { id: 'biscuit', name: 'Biscuit', icon: '🥨' }];
 
 const RULES = {
-  pack: { activeMin: 20, activeMetMin: 100, activeDay: 15, standardDays: 4, standard: 50, effortDiv: 10, effortCap: 40, unit: 'Merit' },
-  pup:  { activeMin: 20, activeDay: 10, standardDays: 3, standard: 30, minPer: 5, minCap: 12, unit: 'Paws' },
+  pack: { activeMin: 20, activeMetMin: 100, activeDay: 15, standardDays: 4, standard: 50, effortDiv: 10, effortCap: 40, unit: NAMES.adultUnit, goalMonth: 50, goalSeason: 150 },
+  pup:  { activeMin: 20, activeDay: 10, standardDays: 3, standard: 30, minPer: 5, minCap: 12, unit: NAMES.kidUnit, goalMonth: 25, goalSeason: 75 },
   chainStep: 0.10, chainMax: 5,
   together: 5, togetherDailyMax: 2,
   habit: 2, habitsMax: 3,
@@ -38,12 +54,15 @@ const ACTIVITIES = [
 const ACT = {}; ACTIVITIES.forEach(a => ACT[a.id] = a);
 const FELT = { easy: { i: 0, label: 'Easy', ico: '🙂' }, normal: { i: 1, label: 'Normal', ico: '😤' }, brutal: { i: 2, label: 'Brutal', ico: '🥵' } };
 
-const PACK_RANKS = [
-  { name: 'Red', min: 0, color: '#b3261e' }, { name: 'Gray', min: 300, color: '#7a7f87' }, { name: 'Obsidian', min: 750, color: '#3a4f6e' },
-  { name: 'Copper', min: 1300, color: '#a0572a' }, { name: 'Silver', min: 2000, color: '#a8b0bb' }, { name: 'Gold', min: 2800, color: '#d4a82a' },
-  { name: 'Peerless', min: 3700, color: '#f2cf55' },
+// Per 13-week season. Ranks reset each season; the color you finish on goes in the Hall of Honors.
+const RANK_BASE = [
+  { name: 'Red', color: '#b3261e', adult: 0, kid: 0 }, { name: 'Gray', color: '#7a7f87', adult: 450, kid: 250 },
+  { name: 'Obsidian', color: '#3a4f6e', adult: 1100, kid: 550 }, { name: 'Copper', color: '#a0572a', adult: 1900, kid: 900 },
+  { name: 'Silver', color: '#a8b0bb', adult: 2800, kid: 1300 }, { name: 'Gold', color: '#d4a82a', adult: 3800, kid: 1750 },
+  { name: 'Peerless', color: '#f2cf55', adult: 4800, kid: 2200 },
 ];
-const PUP_RANKS = PACK_RANKS.map((r, i) => Object.assign({}, r, { min: [0, 150, 350, 600, 900, 1250, 1650][i] }));
+const PACK_RANKS = RANK_BASE.map(r => ({ name: r.name, color: r.color, min: Math.round(r.adult * SEASON_SCALE / 10) * 10 }));
+const PUP_RANKS = RANK_BASE.map(r => ({ name: r.name, color: r.color, min: Math.round(r.kid * SEASON_SCALE / 10) * 10 }));
 function rankFor(pts, pup) { const L = pup ? PUP_RANKS : PACK_RANKS; let i = 0; L.forEach((r, j) => { if (pts >= r.min) i = j; }); return { i, rank: L[i], next: L[i + 1] || null, list: L }; }
 
 const MEMBERS = [
@@ -51,16 +70,54 @@ const MEMBERS = [
     usuals: [{ act: 'tread', min: 30 }, { act: 'bike', min: 45 }, { act: 'strength', min: 20 }, { act: 'dogwalk', min: 30, together: true }] },
   { id: 'kat', name: 'Kat', title: 'Obsidian', house: '#1e3858', pup: false, habits: ['Water 80oz', '8k steps', 'Sleep 7h'],
     usuals: [{ act: 'bike', min: 30 }, { act: 'yoga', min: 20 }, { act: 'dogwalk', min: 30, together: true }, { act: 'park', min: 60, together: true }] },
-  { id: 'sedona', name: 'Sedona', title: 'Violet', house: '#6a2aa8', pup: true },
-  { id: 'river', name: 'River', title: 'Copper', house: '#b0601e', pup: true },
+  { id: 'sedona', name: 'Sedona', title: 'Violet', house: '#6a2aa8', pup: true, age: 13 },
+  { id: 'river', name: 'River', title: 'Copper', house: '#b0601e', pup: true, age: 10 },
 ];
+// Kids' big buttons (everything except adult-only Peloton strength/bootcamp is still under "Something else")
+const PUP_BUTTONS = [{ act: 'tkd', min: 60 }, { act: 'dogwalk', min: 30 }, { act: 'park', min: 60 }, { act: 'play', min: 30 },
+  { act: 'run', min: 20 }, { act: 'walk', min: 30 }, { act: 'hike', min: 60 }, { act: 'yoga', min: 20 },
+  { act: 'ride', min: 30 }, { act: 'bike', min: 20 }, { act: 'tread', min: 20 }];
 const MEM = {}; MEMBERS.forEach(m => MEM[m.id] = m);
 const TKD_DAYS = [0, 3]; // Mon & Thu
 const KIDS = MEMBERS.filter(m => m.pup).map(m => m.id);
 
-const S = { workouts: [], weighins: [], habits: {}, me: 'chris' };
+const S = { workouts: [], weighins: [], habits: {}, goals: {}, me: 'chris', seen: {} };
 let _id = 1; function nid() { return 'x' + (_id++); }
 function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+// ---------- Goals: monthly + season (quarterly). December goals are practice. ----------
+const GOAL_TYPES = {
+  activeDays: { label: n => n + ' Active Days', icon: '📅', unit: 'days', who: 'all', val: (mid, a, b) => activeDaysIn(mid, a, b) },
+  standards:  { label: n => 'Hit the Standard ' + n + ' weeks', icon: '✦', unit: 'weeks', who: 'all', val: (mid, a, b) => score(mid).weeks.filter(w => w.standard && w.key >= weekKey(a) && w.key <= b).length },
+  minutes:    { label: n => n.toLocaleString() + ' minutes moving', icon: '⏱️', unit: 'min', who: 'all', val: (mid, a, b) => minutesIn(mid, a, b) },
+  tkd:        { label: n => n + ' Taekwondo classes', icon: '🥋', unit: 'classes', who: 'kid', val: (mid, a, b) => countIn(mid, a, b, w => w.act === 'tkd') },
+  dogs:       { label: n => 'Walk Cookie & Biscuit ' + n + ' times', icon: '🐕', unit: 'walks', who: 'all', val: (mid, a, b) => countIn(mid, a, b, w => w.act === 'dogwalk') },
+  outside:    { label: n => n + ' outside sessions', icon: '🌵', unit: 'sessions', who: 'all', val: (mid, a, b) => countIn(mid, a, b, w => ['Together', 'Classes & Outside'].includes(ACT[w.act].group)) },
+  peloton:    { label: n => n + ' Peloton classes', icon: '🚴', unit: 'classes', who: 'all', val: (mid, a, b) => countIn(mid, a, b, w => ACT[w.act].group === 'Peloton') },
+  weight:     { label: n => 'Trend down ' + n + '%', icon: '⚖️', unit: '%', who: 'adult', private: true, step: 0.5, val: (mid, a, b) => trendPct(mid, a, b) },
+};
+function inWin(w, mid, a, b) { return w.member === mid && w.date >= a && w.date <= b && w.date <= SEASON.today; }
+function countIn(mid, a, b, fn) { return S.workouts.filter(w => inWin(w, mid, a, b) && fn(w)).length; }
+function minutesIn(mid, a, b) { return S.workouts.filter(w => inWin(w, mid, a, b)).reduce((s, w) => s + w.min, 0); }
+function activeDaysIn(mid, a, b) { const sc = score(mid); return Object.keys(sc.day).filter(d => d >= a && d <= b && sc.isActive(d)).length; }
+function trendPct(mid, a, b) { const ws = S.weighins.filter(w => w.member === mid && w.date >= a && w.date <= b && w.date <= SEASON.today).sort((x, y) => x.date < y.date ? -1 : 1); if (ws.length < 2) return 0; let t = ws[0].lbs; ws.forEach(w => t += 0.3 * (w.lbs - t)); return Math.max(0, Math.round((ws[0].lbs - t) / ws[0].lbs * 1000) / 10); }
+function monthWindow() { const d = SEASON.today; const y = +d.slice(0, 4), m = +d.slice(5, 7); const end = toK(new Date(Date.UTC(y, m, 0))); return { a: d.slice(0, 8) + '01', b: end, name: ['January','February','March','April','May','June','July','August','September','October','November','December'][m - 1] }; }
+function goalStatus(mid, g, scope) {
+  const win = scope === 'month' ? monthWindow() : { a: SEASON.start, b: SEASON.end };
+  const v = GOAL_TYPES[g.type].val(mid, win.a, win.b);
+  const elapsed = (daysBetween(win.a, SEASON.today) + 1) / (daysBetween(win.a, win.b) + 1);
+  return { v, pct: Math.min(1, v / g.target), done: v >= g.target, onPace: v >= g.target * elapsed * 0.95, elapsed };
+}
+// Suggest next-season goals from what each person actually did in the trial run
+function suggestGoals(mid) {
+  const m = MEM[mid], days = daysBetween(SEASON.start, SEASON.today) + 1, per = x => x / days;
+  const ad = activeDaysIn(mid, SEASON.start, SEASON.today), dogs = countIn(mid, SEASON.start, SEASON.today, w => w.act === 'dogwalk');
+  const out = [{ type: 'activeDays', target: Math.min(24, Math.max(8, Math.round(per(ad) * 31))), why: 'you averaged ' + (per(ad) * 7).toFixed(1) + ' active days a week in December' + (per(ad) * 31 > 24 ? ', capped at 24 so rest days stay guilt-free' : '') }];
+  if (m.pup) out.push({ type: 'tkd', target: 8, why: 'twice a week, every week' });
+  out.push({ type: 'dogs', target: Math.max(4, Math.round(per(dogs) * 31)), why: 'Cookie & Biscuit say thanks' });
+  if (!m.pup) out.push({ type: 'weight', target: 2, why: 'about 0.5% a week, a steady healthy pace', private: true });
+  return out;
+}
 
 function logGroup(members, base) { const g = members.length > 1 ? nid() : null; const ids = []; members.forEach(mid => { const id = nid(); ids.push(id); S.workouts.push(Object.assign({ id, member: mid, group: g }, base)); }); return ids; }
 
@@ -69,13 +126,13 @@ function seedDemo() {
   range(SEASON.start, addDays(SEASON.today, -1)).forEach((d, i) => {
     const wd = dow(d), weekend = wd >= 5;
     // Taekwondo Mon/Thu for both kids (Dec 17 left unlogged to show the catch-up prompt)
-    if (TKD_DAYS.includes(wd) && d !== '2026-12-17') logGroup(KIDS, { date: d, act: 'tkd', min: 60, felt: 'normal' });
+    if (TKD_DAYS.includes(wd) && d !== '2026-12-17') logGroup(KIDS, { date: d, act: 'tkd', min: 60, felt: 'normal', by: 'kat' });
     // Family dog walk most days, random crew
-    if (r() < 0.6) { const crew = MEMBERS.map(m => m.id).filter(() => r() < 0.55); if (crew.length) logGroup(crew, { date: d, act: 'dogwalk', min: 20 + Math.floor(r() * 3) * 5, felt: 'easy' }); }
+    if (r() < 0.6) { const crew = MEMBERS.map(m => m.id).filter(() => r() < 0.55); if (crew.length) logGroup(crew, { date: d, act: 'dogwalk', min: 20 + Math.floor(r() * 3) * 5, felt: 'easy', dogs: r() < 0.6 ? ['cookie', 'biscuit'] : [r() < 0.5 ? 'cookie' : 'biscuit'] }); }
     // Park on weekends
     if (weekend && r() < 0.7) logGroup(['sedona', 'river', r() < 0.5 ? 'kat' : 'chris'], { date: d, act: 'park', min: 60 + Math.floor(r() * 3) * 15, felt: 'normal' });
     // Kids extra play
-    KIDS.forEach(k => { if (!weekend && !TKD_DAYS.includes(wd) && r() < 0.3) S.workouts.push({ id: nid(), member: k, date: d, act: r() < 0.5 ? 'play' : 'ride', min: 30, felt: 'normal' }); });
+    KIDS.forEach(k => { if (!weekend && !TKD_DAYS.includes(wd) && r() < 0.3) S.workouts.push({ id: nid(), member: k, date: d, act: ['play', 'ride', 'bike', 'run', 'yoga'][Math.floor(r() * 5)], min: [20, 30][Math.floor(r() * 2)], felt: 'normal' }); });
     // Adults Peloton
     [['chris', 0.72, ['tread', 'bike', 'strength', 'tread']], ['kat', 0.6, ['bike', 'yoga', 'strength', 'bike']]].forEach(([mid, p, acts]) => {
       if (r() < p) {
@@ -91,6 +148,12 @@ function seedDemo() {
       if (i === 0 || r() < p) S.weighins.push({ member: mid, date: d, lbs: Math.round((start - rate * i + (i ? (r() - 0.5) * 1.6 : 0)) * 10) / 10 });
     });
   });
+  S.goals = {
+    chris:  { month: [{ type: 'activeDays', target: 20 }, { type: 'peloton', target: 14 }, { type: 'weight', target: 2 }], season: [{ type: 'standards', target: 4 }] },
+    kat:    { month: [{ type: 'activeDays', target: 16 }, { type: 'dogs', target: 15 }, { type: 'weight', target: 1.5 }], season: [{ type: 'standards', target: 3 }] },
+    sedona: { month: [{ type: 'activeDays', target: 14 }, { type: 'tkd', target: 8 }], season: [{ type: 'minutes', target: 900 }] },
+    river:  { month: [{ type: 'activeDays', target: 14 }, { type: 'outside', target: 10 }], season: [{ type: 'tkd', target: 8 }] },
+  };
 }
 
 // ---------- Effort math ----------
@@ -117,7 +180,7 @@ function score(mid) {
     const d = day[w.date] || (day[w.date] = { min: 0, metMin: 0, eff: 0, tog: 0, list: [] });
     const mm = metFor(w); d.min += w.min; d.metMin += mm.met * w.min; d.list.push(w);
     let pts;
-    if (m.pup) { pts = Math.max(0, Math.min(Math.floor(w.min / R.minPer), R.minCap - d.eff)); add(w.date, 'effort', ACT[w.act].name + ' · ' + w.min + ' min', pts); }
+    if (m.pup) { pts = Math.max(0, Math.min(Math.floor(w.min / R.minPer), R.minCap - d.eff)); add(w.date, 'effort', ACT[w.act].name + ' · ' + w.min + ' min' + (w.by && w.by !== mid ? ' (added by ' + MEM[w.by].name + ')' : ''), pts); }
     else { pts = Math.max(0, Math.min(Math.round(mm.met * w.min / R.effortDiv), R.effortCap - d.eff)); add(w.date, 'effort', ACT[w.act].name + ' · ' + w.min + ' min · ' + mm.met.toFixed(1) + ' MET (' + mm.how + ')', pts); }
     d.eff += pts;
     if (w.group && d.tog < RULES.togetherDailyMax) {
@@ -161,10 +224,11 @@ function scoreAll() { const o = {}; MEMBERS.forEach(m => o[m.id] = score(m.id));
 
 function count(fn) { return S.workouts.filter(w => w.date <= SEASON.today && fn(w)).length; }
 function groupsOf(act) { const g = {}; S.workouts.filter(w => w.group && w.act === act && w.date <= SEASON.today).forEach(w => g[w.group] = 1); return Object.keys(g).length; }
+function dogWalks(dogId) { const g = {}; S.workouts.filter(w => w.act === 'dogwalk' && w.date <= SEASON.today && (w.dogs || []).includes(dogId)).forEach(w => g[w.group || w.id] = 1); return Object.keys(g).length; }
 function familyQuests() {
   const togetherMin = (() => { const g = {}; S.workouts.filter(w => w.group && w.date <= SEASON.today).forEach(w => g[w.group] = w.min); return Object.values(g).reduce((a, b) => a + b, 0); })();
   return [
-    { icon: '🐕', name: 'The Pack Walk', desc: 'Family dog walks (2+ of us)', val: groupsOf('dogwalk'), goal: 40, reward: '+50 each' },
+    { icon: '🐕', name: 'Walkies', desc: 'Cookie & Biscuit family walks (2+ of us)', val: groupsOf('dogwalk'), goal: 40, reward: '+50 each' },
     { icon: '🛝', name: 'Park Patrol', desc: 'Family park trips', val: groupsOf('park'), goal: 15, reward: '+40 each' },
     { icon: '⏳', name: 'Hours Together', desc: 'Minutes moving as a family', val: togetherMin, goal: 3000, reward: '+75 each' },
   ];
@@ -172,7 +236,7 @@ function familyQuests() {
 function pupBadges(mid) {
   return [
     { icon: '🥋', name: 'Black Belt Bound', v: count(w => w.member === mid && w.act === 'tkd'), tiers: [4, 16, 32] },
-    { icon: '🐕', name: 'Good Dog', v: count(w => w.member === mid && w.act === 'dogwalk'), tiers: [5, 20, 50] },
+    { icon: '🐕', name: 'Best Friend', v: count(w => w.member === mid && w.act === 'dogwalk'), tiers: [5, 20, 50] },
     { icon: '🛝', name: 'Park Ranger', v: count(w => w.member === mid && w.act === 'park'), tiers: [3, 10, 25] },
     { icon: '🐾', name: 'Paw Prints', v: Object.keys(score(mid).day).filter(d => score(mid).isActive(d)).length, tiers: [5, 25, 60] },
   ].map(b => Object.assign(b, { tier: b.tiers.filter(t => b.v >= t).length }));
@@ -222,19 +286,19 @@ function openModal(title, bodyEl) {
   document.body.appendChild(back); return close;
 }
 function gainFor(mids, fn) { const before = {}; mids.forEach(id => before[id] = score(id).total); fn(); const out = {}; mids.forEach(id => out[id] = score(id).total - before[id]); return out; }
-function gainText(g) { return Object.keys(g).map(id => MEM[id].name + ' +' + g[id] + ' ' + (MEM[id].pup ? 'Paws' : 'Merit')).join(' · '); }
+function gainText(g) { return Object.keys(g).map(id => MEM[id].name + ' +' + g[id] + ' ' + (MEM[id].pup ? NAMES.kidUnit : NAMES.adultUnit) + (g[id] === 0 ? ' (today\'s effort cap reached)' : '')).join(' · '); }
 
 // One-tap usual: logs immediately, offers Undo
 function quickUsual(u, onDone) {
   const crew = u.together ? [S.me].concat(MEMBERS.filter(m => m.id !== S.me && m.pup).map(m => m.id)) : [S.me];
-  let ids; const g = gainFor(crew, () => { ids = logGroup(crew, { date: SEASON.today, act: u.act, min: u.min, felt: 'normal' }); });
+  let ids; const g = gainFor(crew, () => { ids = logGroup(crew, { date: SEASON.today, act: u.act, min: u.min, felt: 'normal', by: S.me, dogs: u.act === 'dogwalk' ? ['cookie', 'biscuit'] : null }); });
   onDone(); toast(ACT[u.act].icon + ' ' + gainText(g), 'Undo', () => { S.workouts = S.workouts.filter(w => !ids.includes(w.id)); onDone(); });
 }
 
 // Full log sheet: activity, duration chips, who moved, optional felt/details
 function openLog(onDone, preset) {
   const me = MEM[S.me];
-  const f = { act: (preset && preset.act) || (me.pup ? 'tkd' : 'tread'), min: (preset && preset.min) || 30, felt: 'normal', crew: [S.me], detail: {}, open: false };
+  const f = { act: (preset && preset.act) || (me.pup ? 'tkd' : 'tread'), min: (preset && preset.min) || 30, felt: 'normal', crew: [S.me], detail: {}, open: false, dogs: ['cookie', 'biscuit'] };
   const body = h('div', { class: 'log-body' }), preview = h('div', { class: 'log-preview' });
   function draw() {
     clear(body);
@@ -245,8 +309,14 @@ function openLog(onDone, preset) {
       if (a.group !== lastG) { lastG = a.group; grid.appendChild(h('div', { class: 'act-group' }, a.group)); }
       grid.appendChild(h('button', { class: 'act-btn' + (f.act === a.id ? ' on' : ''), type: 'button', onclick: () => { f.act = a.id; f.detail = {}; draw(); } }, h('span', { class: 'act-ico' }, a.icon), h('span', null, a.name)));
     });
+    if (!me.pup) body.appendChild(h('button', { class: 'ai-btn', type: 'button', onclick: () => { close(); openAIReader(onDone); } }, '✨ Paste or snap a workout instead'));
     body.appendChild(h('label', { class: 'fld' }, 'What'));
     body.appendChild(grid);
+    if (f.act === 'dogwalk') {
+      body.appendChild(h('label', { class: 'fld' }, 'Which pups?'));
+      body.appendChild(h('div', { class: 'chips' }, DOGS.map(dg => h('button', { class: 'chip-btn' + (f.dogs.includes(dg.id) ? ' on' : ''), type: 'button',
+        onclick: () => { f.dogs = f.dogs.includes(dg.id) ? f.dogs.filter(x => x !== dg.id) : f.dogs.concat(dg.id); if (!f.dogs.length) f.dogs = [dg.id]; draw(); } }, dg.icon + ' ' + dg.name))));
+    }
     body.appendChild(h('label', { class: 'fld' }, 'How long'));
     body.appendChild(h('div', { class: 'chips' }, [10, 20, 30, 45, 60, 90].map(n => h('button', { class: 'chip-btn' + (f.min === n ? ' on' : ''), type: 'button', onclick: () => { f.min = n; draw(); } }, n + 'm'))));
     body.appendChild(h('label', { class: 'fld' }, 'Who moved? ', h('small', null, 'one entry logs for everyone')));
@@ -273,7 +343,7 @@ function openLog(onDone, preset) {
     body.appendChild(h('button', { class: 'btn-primary', type: 'button', onclick: save }, 'Log it'));
     upd();
   }
-  function base() { return { date: SEASON.today, act: f.act, min: f.min, felt: f.felt, detail: Object.keys(f.detail).length ? Object.assign({}, f.detail) : null }; }
+  function base() { return { date: SEASON.today, act: f.act, min: f.min, felt: f.felt, by: S.me, dogs: f.act === 'dogwalk' ? f.dogs.slice() : null, detail: Object.keys(f.detail).length ? Object.assign({}, f.detail) : null }; }
   function upd() {
     const snap = S.workouts.slice(); const g = gainFor(f.crew, () => logGroup(f.crew, base())); S.workouts = snap;
     clear(preview).appendChild(h('div', { class: 'gain' }, f.crew.map(id => h('span', null, h('b', null, '+' + g[id]), ' ' + MEM[id].name))));
@@ -302,6 +372,120 @@ function openImport(onDone) {
   body.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:12px', onclick: () => file.click() }, 'Choose Peloton CSV'));
   body.appendChild(h('button', { class: 'more-btn', type: 'button', style: 'margin-top:8px;width:100%', onclick: () => show(SAMPLE_CSV) }, 'Try it with a sample file'));
   const close = openModal('Import from Peloton', body);
+}
+
+// ---------- Settings (API key lives only in this browser's localStorage) ----------
+const KEY_NAME = 'howlers_family_anthropic_key';
+function getKey() { try { return localStorage.getItem(KEY_NAME) || ''; } catch (e) { return ''; } }
+function setKey(v) { try { if (v) localStorage.setItem(KEY_NAME, v); else localStorage.removeItem(KEY_NAME); } catch (e) { /* private mode */ } }
+function openSettings(onDone) {
+  const inp = h('input', { type: 'password', class: 'lbs-input', placeholder: 'sk-ant-…', value: getKey(), autocomplete: 'off' });
+  const body = h('div', { class: 'log-body' },
+    h('p', { class: 'hint', style: 'font-size:14px' }, 'Your Claude API key powers the workout reader and the coaches. It is stored only on this phone, never in the app code or the shared family data.'),
+    h('label', { class: 'fld' }, 'Claude API key'), inp,
+    h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:14px', onclick: () => { setKey(inp.value.trim()); close(); toast(inp.value.trim() ? 'Key saved on this phone' : 'Key removed'); if (onDone) onDone(); } }, 'Save'));
+  const close = openModal('Settings', body);
+}
+
+// ---------- AI workout reader: paste text or snap the Peloton summary ----------
+const AI_MODEL = 'claude-opus-5-5';
+const WORKOUT_SCHEMA = {
+  type: 'object', additionalProperties: false, required: ['workouts'],
+  properties: { workouts: { type: 'array', items: {
+    type: 'object', additionalProperties: false, required: ['activity', 'minutes', 'title'],
+    properties: {
+      activity: { type: 'string', enum: ACTIVITIES.map(a => a.id).concat(['skip']) },
+      minutes: { type: 'number' }, title: { type: 'string' },
+      date: { type: 'string', description: 'YYYY-MM-DD if shown' },
+      mph: { type: 'number' }, incline: { type: 'number' }, watts: { type: 'number' }, miles: { type: 'number' },
+      felt: { type: 'string', enum: ['easy', 'normal', 'brutal'] },
+    } } } },
+};
+function aiPrompt(text) {
+  return 'Extract every workout from this ' + (text ? 'text' : 'screenshot') + ' (usually a Peloton or fitness-app summary). ' +
+    'Map each to one activity id: ' + ACTIVITIES.map(a => a.id + ' (' + a.name + ')').join(', ') + '. ' +
+    'Peloton cycling = bike; Peloton running or walking = tread; stretching = yoga; meditation or anything that is not exercise = skip. ' +
+    'Copy numbers exactly as shown: average speed in mph, average incline in %, average output in watts, distance in miles. ' +
+    'Leave out any number that is not shown rather than estimating it. Set felt only if the person says how it felt. Today is ' + SEASON.today + '.' +
+    (text ? '\n\n<workout_text>\n' + text + '\n</workout_text>' : '');
+}
+async function readWithClaude(text, image) {
+  const key = getKey(); if (!key) throw new Error('NO_KEY');
+  const content = image ? [{ type: 'image', source: { type: 'base64', media_type: image.type, data: image.data } }, { type: 'text', text: aiPrompt('') }] : [{ type: 'text', text: aiPrompt(text) }];
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2026-10-21',
+      'anthropic-beta': 'server-side-fallback-2026-07-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: AI_MODEL, max_tokens: 16000, fallbacks: 'default', output_config: { effort: 'low', format: { type: 'json_schema', schema: WORKOUT_SCHEMA } },
+      messages: [{ role: 'user', content }] }),
+  });
+  if (!res.ok) throw new Error('HTTP_' + res.status);
+  const data = await res.json();
+  if (data.stop_reason === 'refusal') throw new Error('REFUSED');
+  if (data.stop_reason === 'max_tokens') throw new Error('TRUNCATED');
+  const txt = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+  return JSON.parse(txt).workouts || [];
+}
+// Offline stand-in so the prototype works with no key: reads common numbers from pasted text
+function readDemo(text) {
+  const lo = text.toLowerCase(), num = re => { const m = lo.match(re); return m ? parseFloat(m[1]) : undefined; };
+  const kinds = [['tread', /\b(run|running|tread|walk(ing)? class|hiit run|hills)\b/], ['bike', /\b(ride|cycling|bike|climb|output)\b/], ['strength', /\b(strength|upper body|lower body|arms|core)\b/],
+    ['yoga', /\b(yoga|stretch)\b/], ['bootcamp', /bootcamp/], ['dogwalk', /\b(dog|cookie|biscuit)\b/], ['hike', /\bhike\b/], ['tkd', /taekwondo/]];
+  const k = kinds.find(x => x[1].test(lo));
+  return [{ activity: k ? k[0] : 'walk', minutes: num(/(\d+)\s*(?:min|minute)/) || 30, title: text.split('\n')[0].slice(0, 60) || 'Workout',
+    mph: num(/([\d.]+)\s*mph/), incline: num(/([\d.]+)\s*%\s*(?:avg\s*)?incline/) || num(/incline[^\d]{0,12}([\d.]+)/), watts: num(/([\d.]+)\s*(?:w\b|watts)/), miles: num(/([\d.]+)\s*(?:mi\b|miles)/) }];
+}
+function shrinkImage(file) {
+  return new Promise((ok, bad) => { const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => { const sc = Math.min(1, 1568 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); ok({ type: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.85).split(',')[1] }); };
+    img.onerror = () => bad(new Error('IMAGE')); img.src = url; });
+}
+function openAIReader(onDone) {
+  const body = h('div', { class: 'log-body' });
+  const ta = h('textarea', { class: 'ai-text', rows: '5', placeholder: 'Paste from Peloton, Apple Fitness, a text… e.g. "45 min Climb Ride, 184 avg watts, felt brutal"' });
+  const photo = h('input', { type: 'file', accept: 'image/*', style: 'display:none', onchange: async e => { const fl = e.target.files[0]; if (!fl) return; try { run(null, await shrinkImage(fl)); } catch (er) { toast('Could not open that photo'); } } });
+  const status = h('div', { class: 'hint' });
+  const hasKey = !!getKey();
+  async function run(text, image) {
+    if (!text && !image) { toast('Paste something or add a photo first'); return; }
+    status.textContent = hasKey ? 'Reading…' : '';
+    let list;
+    try { list = hasKey ? await readWithClaude(text, image) : readDemo(text || ''); }
+    catch (er) {
+      const msg = { NO_KEY: 'Add a Claude key in Settings to read photos.', REFUSED: 'The reader declined that one. Try logging it by hand.', HTTP_401: 'That API key was not accepted. Check Settings.', TRUNCATED: 'That was too long to read. Try one workout at a time.' }[er.message];
+      status.textContent = msg || 'Could not read it (' + er.message + '). Try again or log by hand.'; return;
+    }
+    review(list.filter(w => w.activity !== 'skip' && ACT[w.activity] && w.minutes > 0));
+  }
+  function review(list) {
+    clear(body);
+    if (!list.length) { body.appendChild(h('p', null, 'No workouts found in that.')); return; }
+    body.appendChild(h('p', { class: 'hint', style: 'font-size:14px;margin-bottom:6px' }, 'Check these, then add. Tap ✕ to drop one.'));
+    const rows = list.map(w => {
+      const detail = {}; ['mph', 'incline', 'watts', 'miles'].forEach(k => { if (w[k] > 0) detail[k] = w[k]; });
+      return { act: w.activity, min: Math.round(w.minutes), felt: w.felt || 'normal', date: /^\d{4}-\d{2}-\d{2}$/.test(w.date || '') && w.date <= SEASON.today ? w.date : SEASON.today, title: w.title, detail: Object.keys(detail).length ? detail : null, keep: true };
+    });
+    const listEl = h('div');
+    function drawRows() { clear(listEl); rows.forEach(r => { const mm = metFor(r);
+      listEl.appendChild(h('div', { class: 'imp-row' + (r.keep ? '' : ' off') }, h('span', { class: 'act-ico' }, ACT[r.act].icon),
+        h('span', { class: 'll' }, r.title || ACT[r.act].name, h('small', null, fmtShort(r.date) + ' · ' + r.min + ' min · ' + mm.met.toFixed(1) + ' MET · ' + mm.how)),
+        h('button', { class: 'modal-x', type: 'button', 'aria-label': 'Drop', onclick: () => { r.keep = !r.keep; drawRows(); } }, r.keep ? '✕' : '↺'))); }); }
+    drawRows(); body.appendChild(listEl);
+    if (!hasKey) body.appendChild(h('p', { class: 'hint' }, 'Demo reader (no key set). With a Claude key it reads photos and exact numbers.'));
+    body.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:14px', onclick: () => {
+      const keep = rows.filter(r => r.keep);
+      const g = gainFor([S.me], () => keep.forEach(r => S.workouts.push({ id: nid(), member: S.me, date: r.date, act: r.act, min: r.min, felt: r.felt, detail: r.detail, by: S.me })));
+      close(); onDone(); toast('Added ' + keep.length + ' · ' + gainText(g)); } }, 'Add workouts'));
+  }
+  body.appendChild(ta);
+  body.appendChild(h('div', { class: 'ai-row' },
+    h('button', { class: 'btn-primary', type: 'button', onclick: () => run(ta.value.trim(), null) }, 'Read it'),
+    h('button', { class: 'chip-btn', type: 'button', onclick: () => { if (!hasKey) { toast('Photos need a Claude key — see Settings'); return; } photo.click(); } }, '📷 Photo')));
+  body.appendChild(photo); body.appendChild(status);
+  body.appendChild(h('p', { class: 'hint' }, hasKey ? 'Uses your Claude key · about 1–2¢ per read.' : 'No Claude key on this phone yet: pasted text uses a simple demo reader.'));
+  body.appendChild(h('button', { class: 'more-btn', type: 'button', onclick: () => { close(); openImport(onDone); } }, '▸ Or import a whole Peloton CSV (backfill)'));
+  const close = openModal('✨ Paste or snap a workout', body);
 }
 
 seedDemo();

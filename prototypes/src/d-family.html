@@ -114,18 +114,69 @@ body.pup .card { border-radius: 24px; }
 .b4 small { font-size: 12px; color: var(--muted); }
 .stars { font-size: 11px; letter-spacing: 1px; }
 body.pup .fab { font-family: var(--fp); font-weight: 800; letter-spacing: 0; font-size: 19px; }
+/* ---------- round 3 ---------- */
+.topbar { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+.gear { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); font-size: 20px; flex: 0 0 auto; }
+.season-banner { margin-top: 12px; border-radius: 16px; padding: 12px 14px; background: linear-gradient(120deg, rgba(179,38,30,.35), rgba(212,168,42,.25)); border: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.season-banner b { font-family: var(--fh); font-size: 18px; display: block; line-height: 1.1; }
+.season-banner small { color: var(--ink2); font-size: 13px; }
+.season-banner .left { text-align: right; font-family: var(--fh); font-size: 24px; line-height: 1; }
+.season-banner .left small { display: block; font-family: var(--fb); font-size: 11px; color: var(--ink2); }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: 1fr 1fr 1fr; background: rgba(18,22,40,.96); border-top: 1px solid var(--line);
+  padding: 4px 8px calc(4px + env(safe-area-inset-bottom)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.tabbar button { min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); letter-spacing: .04em; }
+.tabbar button span { font-size: 20px; line-height: 1.1; }
+.tabbar button.on { color: var(--accent); }
+.fab { bottom: calc(76px + env(safe-area-inset-bottom)); }
+body { padding-bottom: calc(150px + env(safe-area-inset-bottom)); }
+.ai-btn { width: 100%; min-height: 48px; margin-top: 4px; border-radius: 12px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-soft); font-size: 15px; }
+.ai-text { width: 100%; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); padding: 12px; font-size: 16px; font-family: var(--fb); resize: vertical; }
+.ai-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 10px; }
+.ai-row .btn-primary { min-height: 48px; }
+.goal { padding: 12px 0; border-top: 1px solid var(--line); }
+.goal:first-of-type { border-top: 0; }
+.goal-top { display: flex; gap: 10px; align-items: center; font-size: 15px; }
+.goal-top .gi { font-size: 22px; width: 30px; text-align: center; }
+.goal-top .gl { flex: 1; line-height: 1.25; }
+.goal-top .gl small { display: block; font-size: 12px; color: var(--muted); }
+.goal-top .gv { font-family: var(--fh); font-size: 15px; white-space: nowrap; }
+.goal .bar { margin: 8px 0 0 40px; }
+.goal.done .bar > i { background: var(--teal); }
+.lock { font-size: 11px; color: var(--muted); }
+.suggest { border: 1px dashed var(--accent); }
+.suggest .goal-top .gl small { font-style: italic; }
+.btn-ghost { width: 100%; min-height: 48px; margin-top: 12px; border-radius: 12px; border: 1px solid var(--accent); color: var(--accent); font-size: 15px; }
+.honors { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; font-size: 11px; color: var(--muted); }
+.honors .crest { aspect-ratio: 1; border-radius: 50%; border: 2px dashed var(--line); display: grid; place-items: center; font-size: 18px; margin-bottom: 4px; }
+.honors .crest.cur { border-style: solid; border-color: var(--accent); }
+.newfor { background: rgba(79,195,181,.12); border-color: rgba(79,195,181,.4); display: flex; gap: 10px; align-items: center; font-size: 15px; }
+.newfor .x { margin-left: auto; }
+.dogrow { display: flex; gap: 10px; margin-top: 12px; }
+.dog { flex: 1; text-align: center; border-radius: 14px; background: var(--panel2); padding: 10px 6px; font-size: 13px; color: var(--muted); }
+.dog b { display: block; font-family: var(--fp); font-size: 22px; color: var(--ink); }
+.stepper { display: flex; align-items: center; gap: 8px; }
+.stepper button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); font-size: 20px; }
+.stepper b { min-width: 48px; text-align: center; font-family: var(--fh); }
+.edit-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.edit-row .gl { flex: 1; }
+body.pup .big-acts { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+body.pup .big-act { min-height: 86px; font-size: 14px; border-radius: 18px; }
+body.pup .big-act .ic { font-size: 30px; }
 </style>
 </head>
 <body>
-<div class="proto-bar">Prototype D · Family Pack + Pups · demo data, simulated Fri Dec 18 · <a href="index.html">all prototypes</a></div>
+<div class="proto-bar">Prototype D · Family Pack · demo data, pretend today is Fri Dec 18 · <a href="index.html">all prototypes</a></div>
 <div class="wrap">
-  <header><div class="brand">THE HOWLERS<small id="season"></small></div></header>
+  <header class="topbar"><div class="brand">THE HOWLERS<small id="season"></small></div><button class="gear" id="gear" type="button" aria-label="Settings">⚙️</button></header>
   <div class="members" id="members"></div>
   <div id="main"></div>
 </div>
 <button class="fab" id="fab" type="button"></button>
+<nav class="tabbar" id="tabbar"></nav>
 <script>
 /*ENGINE*/
+
+let TAB = 'today';
 
 function ladderEl(sc) {
   const r = sc.rank, L = r.list;
@@ -136,28 +187,46 @@ function ladderEl(sc) {
 function rankCard(sc, pup) {
   const r = sc.rank, unit = sc.R.unit;
   return h('div', { class: 'card' },
+    h('div', { class: 'card-t' }, h('span', null, SEASON.name.toUpperCase() + ' RANK'), h('span', { class: 'r' }, 'resets each season')),
     h('div', { class: 'rank-line' },
-      h('div', { class: pup ? 'pup-rank' : 'rank-big', style: 'color:' + r.rank.color }, r.rank.name + (pup ? ' Pup' : '')),
+      h('div', { class: pup ? 'pup-rank' : 'rank-big', style: 'color:' + r.rank.color }, r.rank.name + (pup ? ' ' + NAMES.kidOne : '')),
       h('div', { class: 'rank-pts' }, sc.total + ' ' + unit + (r.next ? ' · ' + (r.next.min - sc.total) + ' to ' + r.next.name : ''))),
     ladderEl(sc));
 }
-function tkdPrompt(render) {
-  // Most recent TKD day (today or earlier this week) with no taekwondo logged for either kid
+function seasonBanner() {
+  const left = daysBetween(SEASON.today, SEASON.end);
+  return h('div', { class: 'season-banner' },
+    h('div', null, h('b', null, SEASON.name + (SEASON.trial ? ' · ' + SEASON.sub : '')),
+      h('small', null, SEASON.trial ? 'December is practice. Everyone starts fresh on Jan 1 for ' + NEXT_SEASON.name + '.' : SEASON.sub + ' · ' + fmtShort(SEASON.start) + ' – ' + fmtShort(SEASON.end))),
+    h('div', { class: 'left' }, left, h('small', null, 'days left')));
+}
+function tkdPrompt() {
   for (let back = 0; back < 3; back++) {
     const d = addDays(SEASON.today, -back);
     if (!TKD_DAYS.includes(dow(d))) continue;
     const went = KIDS.filter(k => S.workouts.some(w => w.member === k && w.date === d && w.act === 'tkd'));
-    if (went.length === KIDS.length) return null;
-    const missing = KIDS.filter(k => !went.includes(k));
+    if (went.length === KIDS.length || S.seen['tkd' + d]) return null;
+    const missing = KIDS.filter(k => !went.includes(k)).filter(k => !MEM[S.me].pup || k === S.me);
+    if (!missing.length) return null;
     const when = back === 0 ? 'tonight' : back === 1 ? 'yesterday' : DOWS[dow(d)];
-    const log = ids => { let wIds; const g = gainFor(ids, () => { wIds = logGroup(ids, { date: d, act: 'tkd', min: 60, felt: 'normal' }); }); render(); toast('🥋 ' + gainText(g), 'Undo', () => { S.workouts = S.workouts.filter(w => !wIds.includes(w.id)); render(); }); };
-    return h('div', { class: 'card prompt' }, h('p', null, '🥋 Taekwondo was ' + when + '. Did ' + missing.map(k => MEM[k].name).join(' & ') + ' go?'),
+    const log = ids => { let wIds; const g = gainFor(ids, () => { wIds = logGroup(ids, { date: d, act: 'tkd', min: 60, felt: 'normal', by: S.me }); }); render(); toast('🥋 ' + gainText(g), 'Undo', () => { S.workouts = S.workouts.filter(w => !wIds.includes(w.id)); render(); }); };
+    const q = MEM[S.me].pup ? 'Did you go?' : 'Did ' + missing.map(k => MEM[k].name).join(' & ') + ' go?';
+    return h('div', { class: 'card prompt' }, h('p', null, '🥋 Taekwondo was ' + when + '. ' + q),
       h('div', { class: 'row' },
         missing.length > 1 ? h('button', { class: 'yes', type: 'button', onclick: () => log(missing) }, 'Both went') : null,
-        missing.map(k => h('button', { class: missing.length === 1 ? 'yes' : '', type: 'button', onclick: () => log([k]) }, missing.length > 1 ? 'Just ' + MEM[k].name : 'Yes, ' + MEM[k].name + ' went')),
-        h('button', { type: 'button', onclick: e => { e.target.closest('.prompt').remove(); toast('No worries. The streak is weekly, not daily.'); } }, 'Skipped')));
+        missing.map(k => h('button', { class: missing.length === 1 ? 'yes' : '', type: 'button', onclick: () => log([k]) }, MEM[S.me].pup ? 'Yes, I went!' : missing.length > 1 ? 'Just ' + MEM[k].name : 'Yes, ' + MEM[k].name + ' went')),
+        h('button', { type: 'button', onclick: () => { S.seen['tkd' + d] = 1; render(); toast('No worries. Streaks are weekly, not daily.'); } }, 'Skipped')));
   }
   return null;
+}
+// "Mom added Taekwondo for you" — entries someone else logged since you last looked
+function newForYou() {
+  const mine = S.workouts.filter(w => w.member === S.me && w.by && w.by !== S.me && !S.seen[w.id] && w.date >= addDays(SEASON.today, -7));
+  if (!mine.length) return null;
+  const who = MEM[mine[mine.length - 1].by].name;
+  const acts = mine.map(w => ACT[w.act].icon + ' ' + ACT[w.act].name + ' (' + DOWS[dow(w.date)] + ')').join(', ');
+  return h('div', { class: 'card newfor' }, h('span', { style: 'font-size:22px' }, '📬'), h('span', null, who + ' added ' + acts + ' for you.'),
+    h('button', { class: 'modal-x x', type: 'button', 'aria-label': 'Dismiss', onclick: () => { mine.forEach(w => S.seen[w.id] = 1); render(); } }, '✓'));
 }
 function familyBoard(all) {
   const box = h('div');
@@ -166,75 +235,143 @@ function familyBoard(all) {
     range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => mini.appendChild(h('i', { class: sc.isActive(d) ? 'on' : '' })));
     box.appendChild(h('div', { class: 'fam' }, h('div', { class: 'fav', style: 'background:' + m.house }, m.pup ? '🐾' : m.name[0]),
       h('div', { class: 'fname' }, m.name, h('span', { class: 'rpill', style: 'background:' + sc.rank.rank.color }, sc.rank.rank.name),
-        h('small', null, sc.cur.active + '/' + sc.R.standardDays + ' this week' + (sc.cur.standard ? ' ✦' : '') + (sc.chain ? ' · ' + '🔥'.repeat(sc.chain) : ''))), mini));
+        h('small', null, (m.pup ? NAMES.kidOne : NAMES.adultOne) + ' · ' + sc.cur.active + '/' + sc.R.standardDays + ' this week' + (sc.cur.standard ? ' ✦' : '') + (sc.chain ? ' · ' + '🔥'.repeat(sc.chain) : ''))), mini));
   });
-  return h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'THE FAMILY PACK'), h('span', { class: 'r' }, 'own ladders')), box);
+  return h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'THE ' + NAMES.pack.toUpperCase()), h('span', { class: 'r' }, 'own ladders')), box);
 }
 function questsCard() {
   const c = h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'FAMILY QUESTS'), h('span', { class: 'r' }, 'done together')));
   familyQuests().forEach(q => c.appendChild(h('div', { class: 'quest' },
     h('div', { class: 'qtop' }, h('span', null, q.icon + ' ' + q.name + ' ', h('small', null, q.val.toLocaleString() + '/' + q.goal.toLocaleString())), h('span', { class: 'rw' }, q.reward)),
     h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, q.val / q.goal * 100) + '%' })))));
+  c.appendChild(h('div', { class: 'dogrow' }, DOGS.map(dg => h('div', { class: 'dog' }, h('b', null, dg.icon + ' ' + dogWalks(dg.id)), dg.name + "'s walks"))));
   return c;
 }
-
-function renderPack(main, all) {
-  const sc = all[S.me], m = sc.m;
+function weekCard(sc) {
   const week = h('div', { class: 'week' });
   range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => {
     const di = sc.day[d], on = sc.isActive(d);
     week.appendChild(h('div', { class: 'wd' }, h('div', { class: 'c' + (on ? ' act' : di ? ' part' : '') + (d === SEASON.today ? ' today' : '') + (d > SEASON.today ? ' fut' : '') }, di ? ACT[di.list[di.list.length - 1].act].icon : ''), DOWS[dow(d)][0]));
   });
-  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'THIS WEEK · ' + m.name.toUpperCase()), h('span', { class: 'r' }, 'Chain ×' + sc.cur.mult.toFixed(1))), week,
-    h('div', { class: 'wk-sum' }, h('span', null, sc.cur.standard ? '✦ Standard met' : sc.cur.active + ' of ' + sc.R.standardDays + ' Active Days'), h('span', null, h('b', null, sc.byWeek[sc.cur.key] || 0), ' Merit'))));
-  main.appendChild(rankCard(sc, false));
-  const us = h('div', { class: 'usuals' });
-  m.usuals.forEach(u => us.appendChild(h('button', { class: 'usual', type: 'button', onclick: () => quickUsual(u, render) }, h('span', { class: 'ic' }, ACT[u.act].icon),
-    h('span', null, ACT[u.act].name + ' ' + u.min + 'm', h('small', null, u.together ? '+ the pups · one tap' : 'one tap')))));
-  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'YOUR USUALS'), h('span', { class: 'r' }, 'tap = logged, undo for 5s')), us,
-    h('button', { class: 'more-link', type: 'button', onclick: () => openLog(render) }, 'Something else…')));
-  const p = tkdPrompt(render); if (p) main.appendChild(p);
-  main.appendChild(h('div', { class: 'card imp' }, h('p', null, '🚴 Peloton workouts: download the free CSV from onepeloton.com once a week and drop it here. No Strava needed.'),
-    h('button', { type: 'button', onclick: () => openImport(render) }, 'Import')));
-  main.appendChild(questsCard());
-  main.appendChild(familyBoard(all));
-  const led = h('div'); sc.ledger.slice(0, 8).forEach(e => led.appendChild(h('div', { class: 'ledger-row' }, h('span', { class: 'ld' }, fmtShort(e.date)), h('span', { class: 'll' }, e.label), h('span', { class: 'lp' }, '+' + e.pts))));
-  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'RECENT MERIT')), led));
+  return h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'THIS WEEK · ' + sc.m.name.toUpperCase()), h('span', { class: 'r' }, 'Chain ×' + sc.cur.mult.toFixed(1))), week,
+    h('div', { class: 'wk-sum' }, h('span', null, sc.cur.standard ? '✦ Standard met' : sc.cur.active + ' of ' + sc.R.standardDays + ' Active Days'), h('span', null, h('b', null, sc.byWeek[sc.cur.key] || 0), ' ' + sc.R.unit)));
 }
 
-function renderPup(main, all) {
+// ---------- Goals tab ----------
+function goalRow(mid, g, scope) {
+  const T = GOAL_TYPES[g.type], st = goalStatus(mid, g, scope), mine = mid === S.me;
+  const showVal = !T.private || mine;
+  const unitBonus = MEM[mid].pup ? RULES.pup : RULES.pack;
+  return h('div', { class: 'goal' + (st.done ? ' done' : '') },
+    h('div', { class: 'goal-top' }, h('span', { class: 'gi' }, T.icon),
+      h('span', { class: 'gl' }, showVal ? T.label(g.target) : 'Private progress goal', h('small', null,
+        (st.done ? '✓ Done! +' : '+') + (scope === 'month' ? unitBonus.goalMonth : unitBonus.goalSeason) + ' ' + unitBonus.unit +
+        (st.done ? '' : st.onPace ? ' · on pace' : ' · a little behind pace') + (T.private ? ' · 🔒 only you see the number' : ''))),
+      h('span', { class: 'gv' }, showVal ? (T.step ? st.v.toFixed(1) : st.v) + '/' + g.target : Math.round(st.pct * 100) + '%')),
+    h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(st.pct * 100) + '%' })));
+}
+function openGoalEditor(scope) {
+  const mid = S.me, m = MEM[mid], list = S.goals[mid][scope].map(g => Object.assign({}, g));
+  const body = h('div', { class: 'log-body' });
+  function draw() {
+    clear(body);
+    body.appendChild(h('p', { class: 'hint', style: 'font-size:14px' }, scope === 'month' ? 'Pick up to 3 goals for ' + monthWindow().name + '.' : 'Pick up to 2 goals for ' + SEASON.name + '.'));
+    Object.keys(GOAL_TYPES).filter(k => GOAL_TYPES[k].who === 'all' || GOAL_TYPES[k].who === (m.pup ? 'kid' : 'adult')).forEach(k => {
+      const T = GOAL_TYPES[k], g = list.find(x => x.type === k), max = scope === 'month' ? 3 : 2;
+      const step = T.step || (T.unit === 'min' ? 60 : 1);
+      body.appendChild(h('div', { class: 'edit-row' }, h('span', { class: 'gi' }, T.icon), h('span', { class: 'gl' }, g ? T.label(g.target) : T.label('…').replace('… ', '')),
+        g ? h('div', { class: 'stepper' },
+          h('button', { type: 'button', 'aria-label': 'Less', onclick: () => { g.target = Math.max(step, Math.round((g.target - step) * 10) / 10); draw(); } }, '−'),
+          h('b', null, g.target),
+          h('button', { type: 'button', 'aria-label': 'More', onclick: () => { g.target = Math.round((g.target + step) * 10) / 10; draw(); } }, '+'),
+          h('button', { type: 'button', 'aria-label': 'Remove', onclick: () => { list.splice(list.indexOf(g), 1); draw(); } }, '✕'))
+          : h('button', { class: 'chip-btn', type: 'button', onclick: () => { if (list.length >= max) { toast('Up to ' + max + ' goals'); return; } list.push({ type: k, target: T.step ? 1 : T.unit === 'min' ? 600 : 8 }); draw(); } }, 'Add')));
+    });
+    body.appendChild(h('button', { class: 'btn-primary', type: 'button', style: 'margin-top:14px', onclick: () => { S.goals[mid][scope] = list; close(); render(); toast('Goals saved'); } }, 'Save goals'));
+  }
+  const close = openModal(scope === 'month' ? monthWindow().name + ' goals' : SEASON.name + ' goals', body); draw();
+}
+function renderGoals(main, all) {
+  const mid = S.me, m = MEM[mid], G = S.goals[mid], mw = monthWindow();
+  const pupVoice = m.pup;
+  const month = h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, (pupVoice ? 'MY ' : '') + mw.name.toUpperCase() + ' GOALS'), h('span', { class: 'r' }, daysBetween(SEASON.today, mw.b) + ' days left')));
+  G.month.forEach(g => month.appendChild(goalRow(mid, g, 'month')));
+  month.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => openGoalEditor('month') }, 'Edit ' + mw.name + ' goals'));
+  main.appendChild(month);
+  const season = h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, SEASON.name.toUpperCase() + ' GOALS'), h('span', { class: 'r' }, SEASON.trial ? 'practice round' : 'this quarter')));
+  G.season.forEach(g => season.appendChild(goalRow(mid, g, 'season')));
+  season.appendChild(h('button', { class: 'btn-ghost', type: 'button', onclick: () => openGoalEditor('season') }, 'Edit season goals'));
+  main.appendChild(season);
+  if (SEASON.trial) {
+    const sug = h('div', { class: 'card suggest' }, h('div', { class: 'card-t' }, h('span', null, 'SUGGESTED FOR ' + NEXT_SEASON.name.toUpperCase()), h('span', { class: 'r' }, 'from your December')));
+    suggestGoals(mid).forEach(g => { const T = GOAL_TYPES[g.type]; sug.appendChild(h('div', { class: 'goal' }, h('div', { class: 'goal-top' }, h('span', { class: 'gi' }, T.icon), h('span', { class: 'gl' }, 'January: ' + T.label(g.target).replace(/^[A-Z]/, c => c.toLowerCase()).replace('cookie', 'Cookie'), h('small', null, g.why))))); });
+    sug.appendChild(h('div', { class: 'hint' }, 'On Jan 1 everyone gets a 2-minute goal-setting check-in with these pre-filled.'));
+    main.appendChild(sug);
+  }
+  // Hall of Honors: the rank you finish each season on
+  const hon = h('div', { class: 'honors' });
+  SEASONS.forEach(s => hon.appendChild(h('div', null, h('div', { class: 'crest' + (s.id === SEASON.id ? ' cur' : ''), style: s.id === SEASON.id ? 'background:' + all[mid].rank.rank.color + '33' : '' }, s.id === SEASON.id ? '⏳' : s.trial ? '🎯' : '·'), s.trial ? 'Trial' : s.name.replace('Season ', 'S'))));
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'HALL OF HONORS'), h('span', { class: 'r' }, 'your finishing color, each season')), hon));
+}
+
+// ---------- Today tabs ----------
+function renderPackToday(main, all) {
+  const sc = all[S.me], m = sc.m;
+  const nf = newForYou(); if (nf) main.appendChild(nf);
+  main.appendChild(weekCard(sc));
+  const us = h('div', { class: 'usuals' });
+  m.usuals.forEach(u => us.appendChild(h('button', { class: 'usual', type: 'button', onclick: () => quickUsual(u, render) }, h('span', { class: 'ic' }, ACT[u.act].icon),
+    h('span', null, (u.act === 'dogwalk' ? 'Cookie & Biscuit' : ACT[u.act].name) + ' ' + u.min + 'm', h('small', null, u.together ? '+ the kids · one tap' : 'one tap')))));
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'YOUR USUALS'), h('span', { class: 'r' }, 'tap = logged, 5s to undo')), us,
+    h('button', { class: 'ai-btn', type: 'button', style: 'margin-top:10px', onclick: () => openAIReader(render) }, '✨ Paste or snap a Peloton summary'),
+    h('button', { class: 'more-link', type: 'button', onclick: () => openLog(render) }, 'Something else…')));
+  const p = tkdPrompt(); if (p) main.appendChild(p);
+  main.appendChild(rankCard(sc, false));
+  const led = h('div'); sc.ledger.slice(0, 8).forEach(e => led.appendChild(h('div', { class: 'ledger-row' }, h('span', { class: 'ld' }, fmtShort(e.date)), h('span', { class: 'll' }, e.label), h('span', { class: 'lp' }, '+' + e.pts))));
+  main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'RECENT ' + NAMES.adultUnit.toUpperCase())), led));
+}
+function renderPupToday(main, all) {
   const sc = all[S.me], m = sc.m, left = Math.max(0, sc.R.standardDays - sc.cur.active);
-  main.appendChild(h('div', { class: 'pup-hi' }, 'Hi ' + m.name + '! 🐾', h('small', null, sc.chain ? 'Your streak is on fire ' + '🔥'.repeat(sc.chain) : 'Every day you move earns a paw.')));
+  main.appendChild(h('div', { class: 'pup-hi' }, 'Hi ' + m.name + '! 🐾', h('small', null, sc.chain ? 'Your streak is on fire ' + '🔥'.repeat(sc.chain) : 'Every day you move earns a paw print.')));
+  const nf = newForYou(); if (nf) main.appendChild(nf);
   const paws = h('div', { class: 'paws' });
   range(sc.cur.key, addDays(sc.cur.key, 6)).forEach(d => paws.appendChild(h('div', { class: 'paw' }, h('div', { class: 'c' + (sc.isActive(d) ? ' on' : '') + (d === SEASON.today ? ' today' : '') }, '🐾'), DOWS[dow(d)].slice(0, 2))));
   main.appendChild(h('div', { class: 'card' }, paws, h('div', { class: 'pup-msg' },
-    left ? left + ' more paw' + (left > 1 ? 's' : '') + ' this week!' : 'Pup Standard done! 🎉',
-    h('small', null, left ? 'Get ' + sc.R.standardDays + ' paws to keep your streak growing' : 'Anything else this week is bonus Paws'))));
-  const p = tkdPrompt(render); if (p) main.appendChild(p);
+    left ? left + ' more day' + (left > 1 ? 's' : '') + ' this week!' : NAMES.kidOne + ' Standard done! 🎉',
+    h('small', null, left ? 'Move on ' + sc.R.standardDays + ' days to keep your streak growing' : 'Anything else this week is bonus ' + NAMES.kidUnit))));
+  const p = tkdPrompt(); if (p) main.appendChild(p);
   const acts = h('div', { class: 'big-acts' });
-  [{ act: 'tkd', min: 60 }, { act: 'dogwalk', min: 30 }, { act: 'park', min: 60 }, { act: 'play', min: 30 }, { act: 'ride', min: 30 }].forEach(u => acts.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => openLog(render, u) }, h('span', { class: 'ic' }, ACT[u.act].icon), ACT[u.act].name)));
-  acts.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => openLog(render) }, h('span', { class: 'ic' }, '➕'), 'Something else'));
+  PUP_BUTTONS.forEach(u => acts.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => openLog(render, u) }, h('span', { class: 'ic' }, ACT[u.act].icon), u.act === 'bike' ? 'Peloton Bike' : u.act === 'tread' ? 'Peloton Tread' : ACT[u.act].name)));
+  acts.appendChild(h('button', { class: 'big-act', type: 'button', onclick: () => openLog(render) }, h('span', { class: 'ic' }, '➕'), 'Other'));
   main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'I MOVED!')), acts));
   main.appendChild(rankCard(sc, true));
   const bg = h('div', { class: 'badges4' });
   pupBadges(m.id).forEach(b => bg.appendChild(h('div', { class: 'b4 t' + b.tier }, h('div', { class: 'ic' }, b.icon), h('b', null, b.name), h('div', { class: 'stars' }, '★'.repeat(b.tier) + '☆'.repeat(3 - b.tier)), h('small', null, b.v + (b.tiers[b.tier] ? '/' + b.tiers[b.tier] : '')))));
   main.appendChild(h('div', { class: 'card' }, h('div', { class: 'card-t' }, h('span', null, 'MY BADGES')), bg));
-  main.appendChild(questsCard());
+}
+function renderPack(main, all) {
   main.appendChild(familyBoard(all));
+  main.appendChild(questsCard());
 }
 
 function render() {
   const all = scoreAll(), me = MEM[S.me];
   document.body.classList.toggle('pup', me.pup);
-  document.getElementById('season').textContent = (me.pup ? 'Howler Pups · ' : 'Family Pack · ') + SEASON.name;
+  document.getElementById('season').textContent = NAMES.pack + ' · ' + (me.pup ? NAMES.kids : NAMES.adults);
   document.getElementById('fab').textContent = me.pup ? '🐾 I moved!' : '＋ Log Trial';
   const mem = clear(document.getElementById('members'));
   MEMBERS.forEach(x => mem.appendChild(h('button', { class: 'mchip' + (x.id === S.me ? ' on' : ''), type: 'button', onclick: () => { S.me = x.id; render(); scrollTo(0, 0); } },
-    h('span', { class: 'dot', style: 'background:' + x.house }, x.pup ? '🐾' : x.name[0]), x.name)));
+    h('span', { class: 'dot', style: 'background:' + x.house }, x.pup ? '🐾' : x.name[0]), x.name + "'s phone")));
+  const tb = clear(document.getElementById('tabbar'));
+  [['today', '🏠', 'Today'], ['goals', '🎯', 'Goals'], ['pack', '🐺', 'Pack']].forEach(t => tb.appendChild(h('button', { class: TAB === t[0] ? 'on' : '', type: 'button', onclick: () => { TAB = t[0]; render(); scrollTo(0, 0); } }, h('span', null, t[1]), t[2])));
   const main = clear(document.getElementById('main'));
-  (me.pup ? renderPup : renderPack)(main, all);
+  main.appendChild(seasonBanner());
+  if (TAB === 'today') (me.pup ? renderPupToday : renderPackToday)(main, all);
+  else if (TAB === 'goals') renderGoals(main, all);
+  else renderPack(main, all);
 }
 document.getElementById('fab').addEventListener('click', () => openLog(render));
+document.getElementById('gear').addEventListener('click', () => openSettings(render));
 render();
 </script>
 </body>
